@@ -1,106 +1,110 @@
 ## 2.10 Dai requisiti analitici ai requisiti dati
 
-Una volta chiarita la domanda, bisogna tradurla in dati necessari.
+Una volta chiarita la domanda, dobbiamo tradurla in **evidenza necessaria** e poi in dati.
 
-Questo passaggio sembra tecnico, ma è ancora profondamente analitico.
+L'ordine è importante.
+
+Partire da “quali tabelle abbiamo?” favorisce analisi determinate dalla disponibilità del dato. Partire da “che cosa dovremmo osservare per distinguere le ipotesi?” rende invece visibile ciò che manca.
 
 Supponiamo che la domanda sia:
 
 > **Perché la retention dei nuovi clienti è diminuita negli ultimi sei mesi?**
 
-Non basta dire "servono i dati clienti".
+Dire “servono i dati clienti” non è un requisito.
 
-Dobbiamo specificare:
+Potrebbero servire:
 
-- identificativo cliente;
-- data di acquisizione;
-- canale di acquisizione;
+- identificativo cliente coerente nel tempo;
+- data e canale di acquisizione;
 - prodotto o piano iniziale;
 - eventi di utilizzo;
-- transazioni;
-- rinnovi;
+- transazioni e rinnovi;
 - cancellazioni;
-- eventuali ticket di supporto;
-- prezzi e promozioni applicate;
-- modifiche di prodotto avvenute nel periodo;
+- prezzi e promozioni;
+- ticket di supporto;
+- cambiamenti di prodotto;
 - paese o mercato;
-- definizione di cliente attivo.
+- eventuali segnali di esposizione a onboarding differenti.
 
-### Requisiti minimi
+Ogni elemento dovrebbe essere collegato a una domanda o a un'ipotesi. Se non sappiamo perché ci serve, probabilmente non è un requisito prioritario.
 
-Per ogni variabile o tabella richiesta dovremmo sapere almeno:
+### Required, useful, proxy
 
-1. cosa rappresenta;
-2. qual è la granularità;
-3. qual è la chiave;
-4. con quale frequenza viene aggiornata;
-5. quale periodo storico è disponibile;
-6. quali valori mancanti sono possibili;
-7. quali trasformazioni vengono applicate;
-8. chi è responsabile della fonte;
-9. se esistono cambiamenti di definizione nel tempo.
+Nel brief è utile classificare i dati.
 
-### Il concetto di grain
+**Required** — senza questa informazione non possiamo rispondere alla domanda primaria.
 
-Il *grain* è il livello elementare rappresentato da una riga.
+**Useful** — aumenta la profondità o permette segmentazioni importanti, ma l'analisi può iniziare senza.
 
-Una riga può rappresentare:
+**Proxy** — sostituisce imperfettamente un concetto che non osserviamo direttamente.
 
-- un ordine;
-- una riga d'ordine;
-- una sessione;
-- un cliente al giorno;
-- un evento;
-- un pagamento;
-- un ticket.
+Questa distinzione aiuta quando una fonte non è disponibile o richiederebbe settimane di engineering.
 
-Confondere il grain è una delle cause più frequenti di doppio conteggio.
+### Dati necessari e disponibili non coincidono
 
-Se una tabella contiene una riga per ordine e la uniamo a una tabella con più righe per pagamento, il numero di ordini potrebbe moltiplicarsi dopo la JOIN.
+Una delle conclusioni più professionali che un analyst possa produrre prima dell'analisi è:
 
-Per questo, prima di scrivere una query, l'analista dovrebbe riuscire a completare la frase:
+> “Con i dati attuali possiamo descrivere il fenomeno, ma non distinguere tra le ipotesi A e B. Per farlo servirebbe misurare X.”
 
-> **Una riga di questa tabella rappresenta...**
+Non è un fallimento. È un **gap informativo identificato prima di promettere una risposta che i dati non possono sostenere**.
 
-### Dati disponibili e dati necessari non coincidono
+### Il grain entra nel requisito, non soltanto nella query
 
-Un principio importante è non confondere:
-
-**"quali dati abbiamo?"**
-
-con:
-
-**"quali dati servirebbero per rispondere correttamente?"**
-
-A volte i dati necessari non esistono.
-
-Questa non è una sconfitta dell'analisi. È un risultato.
-
-L'analista deve poter concludere:
-
-> "Con le informazioni disponibili possiamo descrivere il fenomeno, ma non possiamo distinguere tra queste due spiegazioni. Per farlo servirebbe misurare X."
-
-### Data lineage mentale
-
-Anche senza essere Data Engineer, l'analista dovrebbe ricostruire il percorso principale del dato:
-
-**evento reale → sistema sorgente → registrazione → trasformazione → warehouse/lakehouse → semantic layer → report/analisi**
-
-Ogni passaggio può introdurre errori o modificare il significato.
-
-### Requisiti dati come contratto
-
-Una buona specifica dati trasforma una domanda astratta in un contratto verificabile.
+Il Capitolo 3 studierà in profondità grain, chiavi e qualità. Nel brief basta dichiarare a quale livello serve l'informazione.
 
 Per esempio:
 
-| Campo | Significato | Grain | Fonte | Necessario per |
+| Dato | Significato | Grain richiesto | Perché serve | Priorità |
 |---|---|---|---|---|
-| customer_id | cliente univoco | cliente | CRM | coorti |
-| signup_date | data acquisizione | cliente | CRM | anzianità |
-| event_date | evento utilizzo | evento | product analytics | engagement |
-| cancel_date | cancellazione | contratto | billing | churn |
+| customer_id | identità coerente del cliente | cliente | coorti e repeat purchase | required |
+| order_date | data dell'ordine valido | ordine | finestre di acquisto | required |
+| acquisition_channel | canale iniziale | cliente | test mix acquisizione | useful |
+| delivery_delay | giorni oltre promessa | spedizione | ipotesi experience | useful |
+| satisfaction | proxy esperienza | survey response | ipotesi CX | proxy |
 
-Questo documento riduce incomprensioni tra analyst, business e data engineering.
+Se una fonte disponibile ha grain diverso da quello necessario, il problema va identificato prima di costruire aggregazioni fragili.
 
-Nell'era dell'AI diventa ancora più importante, perché un agente può generare query molto rapidamente ma non può correggere una semantica che nessuno ha chiarito.
+### Requisiti minimi per una fonte critica
+
+Prima di considerare disponibile un dato importante dovremmo sapere almeno:
+
+- che cosa rappresenta;
+- quale grain ha;
+- quale chiave lo identifica;
+- quale storico copre;
+- con quale latenza diventa completo;
+- quali trasformazioni principali subisce;
+- chi possiede la fonte;
+- se definizioni o tracking sono cambiati nel periodo.
+
+Non serve trasformare il brief in un data catalog. Serve sapere abbastanza da valutare **fattibilità e rischi dell'analisi**.
+
+### Dal requisito al piano di acquisizione
+
+Per ogni gap possiamo scegliere:
+
+- usare una fonte esistente;
+- costruire una trasformazione;
+- usare un proxy dichiarato;
+- raccogliere nuovo dato;
+- ridurre la domanda;
+- rinviare una conclusione più forte a una fase successiva.
+
+Queste sono decisioni di progetto analitico, non soltanto tecniche.
+
+### Campo del brief
+
+```text
+Dato / segnale:
+Ruolo: required / useful / proxy
+Grain richiesto:
+Fonte disponibile:
+Owner:
+Storico/freshness:
+Problemi noti:
+Gap e piano di mitigazione:
+```
+
+Il Capitolo 3 riprenderà da qui e insegnerà come capire se le fonti che abbiamo dichiarato “disponibili” meritano davvero fiducia.
+
+> **Non chiedere soltanto quali dati possiedi. Chiedi quali osservazioni servono per distinguere le spiegazioni che contano.**
