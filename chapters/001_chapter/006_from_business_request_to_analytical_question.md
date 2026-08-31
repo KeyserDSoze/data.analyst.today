@@ -1,22 +1,24 @@
 ## 1.5 Dalla richiesta di business alla domanda analitica
 
-Le richieste che arrivano a un analista sono spesso formulate nel linguaggio del business, non nel linguaggio dell'analisi.
+Le richieste che arrivano a un analista sono formulate nel linguaggio del business, non in quello dell'analisi.
 
-"Perché stiamo perdendo clienti?"
+> “Perché stiamo perdendo clienti?”
 
-"Quali prodotti dobbiamo spingere?"
+> “Quali prodotti dobbiamo spingere?”
 
-"La campagna marketing ha funzionato?"
+> “La campagna marketing ha funzionato?”
 
-"Dobbiamo aumentare i prezzi?"
+> “Dobbiamo aumentare i prezzi?”
 
-"Quali clienti rischiano di abbandonarci?"
+> “Quali clienti rischiano di abbandonarci?”
 
-Queste sono domande importanti, ma non sono ancora specifiche abbastanza da essere analizzate direttamente.
+Sono domande importanti, ma contengono ancora concetti vaghi, popolazioni implicite, periodi non dichiarati e diversi possibili obiettivi analitici.
 
-Il lavoro dell'analista consiste nel trasformarle in domande più precise, misurabili e verificabili.
+Il lavoro dell'analista consiste nel trasformarle in domande che possano essere **misurate, confrontate e smentite dai dati**.
 
-### Un esempio: "stiamo perdendo clienti"
+Il Capitolo 2 costruirà un vero analytical brief. Qui introduciamo la trasformazione mentale che viene prima del documento.
+
+### Esempio: “stiamo perdendo clienti”
 
 La prima operazione è definire il fenomeno.
 
@@ -25,61 +27,83 @@ Che cosa significa perdere un cliente?
 - non compra da 30 giorni?
 - non rinnova l'abbonamento?
 - cancella formalmente il contratto?
-- diminuisce la frequenza d'acquisto?
+- riduce la frequenza d'acquisto?
 - smette di utilizzare il prodotto?
 
-Poi dobbiamo definire la popolazione.
+Poi serve la popolazione.
 
-Parliamo di tutti i clienti o soltanto di quelli acquisiti negli ultimi dodici mesi? Clienti B2B o B2C? Clienti di una determinata linea di prodotto?
+Tutti i clienti? Soltanto quelli acquisiti negli ultimi dodici mesi? B2B o B2C? Una linea di prodotto specifica?
 
-Poi dobbiamo definire il periodo.
+Poi serve il tempo.
 
-Il churn è aumentato rispetto al mese precedente, allo stesso periodo dell'anno scorso o alla media storica?
+Il fenomeno è aumentato rispetto al mese precedente, all'anno precedente o a una baseline storica?
 
-Infine dobbiamo stabilire cosa vogliamo ottenere dall'analisi.
+Infine serve capire che cosa vogliamo ottenere.
 
-Descrivere il fenomeno? Identificare i segmenti più colpiti? Capire possibili cause? Costruire un sistema predittivo? Valutare una strategia di retention?
+Descrivere il churn, localizzarlo, prevederlo, stimare l'effetto di un intervento e scegliere quale intervento convenga sono problemi diversi.
 
-Sono obiettivi differenti e richiedono metodi differenti.
+### Cinque tipi di domanda da non confondere
 
-### Domande descrittive, diagnostiche, predittive e decisionali
+La tassonomia non è universale, ma questa distinzione è molto utile nel lavoro quotidiano.
 
-Una distinzione utile è separare almeno quattro classi di domanda.
+**Descrittiva — Che cosa è successo?**
 
-**Descrittiva:** che cosa è successo?
+> “Quanto è aumentato il churn nell'ultimo trimestre?”
 
-Esempio: "Quanto è aumentato il churn nell'ultimo trimestre?"
+Richiede soprattutto definizioni e misurazione corrette.
 
-**Diagnostica:** dove e in quali condizioni è successo?
+**Diagnostica — Dove e in quali condizioni è successo?**
 
-Esempio: "In quali segmenti di clientela il churn è aumentato maggiormente?"
+> “In quali coorti, canali e segmenti è aumentato maggiormente?”
 
-**Predittiva:** cosa è probabile che succeda?
+Serve a localizzare il fenomeno e restringere le ipotesi.
 
-Esempio: "Quali clienti hanno maggiore probabilità di abbandonare nei prossimi 30 giorni?"
+**Predittiva — Che cosa è probabile che succeda?**
 
-**Decisionale:** quale azione conviene intraprendere?
+> “Quali clienti hanno maggiore probabilità di abbandonare nei prossimi 30 giorni?”
 
-Esempio: "Quale intervento di retention genera il miglior rapporto tra costo e churn evitato?"
+Qui il problema è stimare un esito futuro, non necessariamente spiegarne la causa.
 
-Il fatto che una domanda sia più sofisticata non significa automaticamente che sia più utile. Spesso una buona analisi descrittiva risolve il problema meglio di un modello predittivo complesso.
+**Causale — Che cosa cambierebbe se intervenissimo?**
 
-### La domanda deve essere falsificabile
+> “Un onboarding guidato ridurrebbe il churn rispetto all'esperienza attuale?”
 
-Una buona domanda analitica dovrebbe essere formulata in modo tale che i dati possano almeno potenzialmente smentirla.
+Questa domanda richiede un disegno capace di sostenere un confronto controfattuale.
 
-"I clienti sono insoddisfatti" è troppo vago.
+**Decisionale — Quale azione conviene intraprendere?**
 
-"Il tasso di rinnovo dei clienti che hanno aperto almeno due ticket di supporto negli ultimi 90 giorni è inferiore rispetto a quello dei clienti comparabili che non hanno aperto ticket" è molto più preciso.
+> “Tra onboarding guidato, sconto e contatto del customer success, quale intervento genera il miglior valore netto per i segmenti su cui possiamo intervenire?”
 
-Una formulazione precisa obbliga l'analista a chiarire variabili, popolazione, periodo e confronto.
+Qui entrano anche costi, capacità operative, rischio e valore economico.
+
+Una domanda non è “migliore” perché appartiene a una categoria più sofisticata. Spesso una buona decomposizione descrittiva risolve il problema senza bisogno di un modello.
+
+### Rendere la domanda falsificabile
+
+“Gli utenti sono insoddisfatti” è difficile da analizzare perché non specifica quale osservazione potrebbe smentire l'affermazione.
+
+Una domanda migliore potrebbe essere:
+
+> “Il tasso di rinnovo dei clienti che hanno aperto almeno due ticket ad alta severità nei 90 giorni precedenti è inferiore a quello di clienti comparabili senza ticket ad alta severità?”
+
+Ora sono espliciti:
+
+- una popolazione;
+- un'esposizione;
+- un outcome;
+- una finestra temporale;
+- un confronto.
+
+La formulazione non garantisce che l'analisi sarà valida, ma rende visibili le scelte che dovremo discutere.
 
 ### La decisione viene prima della dashboard
 
-Prima di costruire qualsiasi report è utile completare una frase molto semplice:
+Prima di costruire un report è utile provare a completare una frase:
 
-> **Se l'analisi mostra X, allora faremo Y.**
+> **“Se l'analisi mostra X, allora prenderemo in considerazione Y.”**
 
-Se non riusciamo a immaginare nessuna decisione che cambierebbe in funzione del risultato, probabilmente dobbiamo chiederci se quell'analisi sia davvero prioritaria.
+Non tutte le analisi devono produrre subito una decisione operativa, ma dovrebbero almeno poter spiegare quale incertezza riducono e perché quella riduzione conta.
 
-L'obiettivo non è produrre informazioni. È produrre informazioni che abbiano la possibilità di cambiare una decisione.
+Se nessun risultato plausibile cambierebbe alcuna scelta, potremmo trovarci davanti a una richiesta informativa a bassa priorità o a una dashboard senza un vero processo decisionale collegato.
+
+> **Trasformare una richiesta in una buona domanda è già analisi.**
