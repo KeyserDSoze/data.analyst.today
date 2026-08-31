@@ -1,0 +1,42 @@
+name: Normalize book sources
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/normalize_sources.py
+      - .github/workflows/normalize-sources.yml
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Normalize Markdown sources
+        run: python scripts/normalize_sources.py
+
+      - name: Commit normalized sources
+        run: |
+          if git diff --quiet -- chapters; then
+            echo "No source changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add chapters
+          git commit -m "Normalize Markdown headings and Italian accents"
+          git push
