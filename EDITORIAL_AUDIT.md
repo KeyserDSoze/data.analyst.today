@@ -1,6 +1,6 @@
 # Editorial audit — data.analyst.today
 
-Ultimo aggiornamento: 31 agosto 2026.
+Ultimo aggiornamento: 1 settembre 2026.
 
 Questo documento registra lo stato della revisione del manoscritto dopo il completamento del corpo principale, Capitoli 0–19.
 
@@ -11,52 +11,70 @@ Questo documento registra lo stato della revisione del manoscritto dopo il compl
 - Il libro parte da `chapters/000_chapter/` con **Capitolo 0 — Al timone**.
 - I capitoli proseguono in modo continuo fino a `019_chapter`.
 - I prefissi numerici duplicati presenti in diversi capitoli sono stati normalizzati.
-- `scripts/build.py` usa ora un ordinamento deterministico `(prefisso numerico, nome file)` come ulteriore protezione.
+- `scripts/build.py` usa un ordinamento deterministico `(prefisso numerico, nome file)`.
 - Gli artefatti generati `.md`, `.docx` e `.pdf` dentro `build/` sono ignorati da Git.
+- Le sezioni interne sono state normalizzate a `##`/`###`; non restano H1 spurii nel manoscritto.
+- Le grafie ASCII come `e'`, `piu'`, `puo'` sono state normalizzate nelle sorgenti, evitando codice e URL.
 
 ### Regola
 
 Per ogni capitolo:
 
 - `001_*.md` contiene il titolo del capitolo;
-- `002_*.md` corrisponde alla sezione `X.1`;
-- `003_*.md` corrisponde alla sezione `X.2`;
-- e così via.
-
-I prefissi devono essere univoci e contigui.
+- i file successivi seguono un ordine numerico univoco e contiguo;
+- il primo heading del capitolo usa `#`;
+- le sezioni interne usano `##`, `###`, ecc.
 
 ## 2. Build Markdown → DOCX/PDF
 
 ### Corretto
 
-Il builder ora:
+Il builder:
 
 - ordina le sorgenti in modo deterministico;
 - abilita le tabelle Markdown;
 - evita la duplicazione dei blockquote;
 - conserva grassetto, corsivo e codice inline nei principali output;
-- gestisce le tabelle anche in DOCX e PDF;
+- gestisce tabelle in DOCX e PDF;
 - non trasforma ogni separatore orizzontale in un page break;
-- protegge la build da sezioni legacy scritte accidentalmente come H1;
 - crea page break sui veri titoli di capitolo.
+
+La CI costruisce automaticamente Markdown aggregato, DOCX e PDF a ogni modifica del `main`.
+
+### Ultima build validata
+
+Dopo la revisione editoriale di Capitoli 0–1:
+
+- **20 capitoli**;
+- **321 file Markdown**;
+- **165.293 parole stimate**;
+- **1.185.307 caratteri**;
+- **118 URL esterni distinti**;
+- **737 pagine PDF**;
+- build Markdown, DOCX e PDF completata con successo.
+
+La riduzione da 745 a 737 pagine è dovuta soprattutto alla rimozione di ridondanze nei primi capitoli, non a un impoverimento del contenuto.
 
 ### Da completare prima della release tipografica
 
 - rendering professionale delle formule matematiche attualmente scritte con notazione LaTeX;
-- indice/TOC con page number nella versione impaginata;
+- indice/TOC con numeri di pagina nella versione impaginata;
 - verifica della resa di tabelle molto larghe;
 - controllo di widows/orphans, code block lunghi e page break;
-- eventuale stile definitivo per note, fonti e callout.
+- stile definitivo per note, fonti e callout.
 
-## 3. Lint automatico
+## 3. Lint e normalizzazione automatica
 
-È stato aggiunto:
+Sono disponibili:
 
 ```bash
+python scripts/normalize_sources.py --check
 python scripts/lint_book.py
 ```
 
-Il controllo verifica:
+La CI esegue entrambi prima della build.
+
+Il lint controlla, tra le altre cose:
 
 - continuità dei capitoli;
 - prefissi duplicati o mancanti;
@@ -67,40 +85,27 @@ Il controllo verifica:
 - presenza di `utm_source=chatgpt.com`;
 - numero di URL esterni;
 - presenza di formule/LaTeX;
-- ortografia ASCII come `e'`, `piu'`, `puo'`;
+- ortografia ASCII;
 - conteggio di parole e stima indicativa delle pagine.
 
-Per una release:
+### Stato corrente del lint
+
+La struttura è valida e le sorgenti risultano normalizzate.
+
+Resta **un solo warning globale**:
+
+- notazione matematica/LaTeX presente in 25 file, da gestire nella pipeline tipografica.
+
+Per una release candidata:
 
 ```bash
 python scripts/lint_book.py --strict
+python scripts/build.py
 ```
 
-dovrebbe terminare senza errori e, idealmente, senza warning editoriali.
+dovrà terminare senza warning editoriali bloccanti.
 
-## 4. Heading Markdown
-
-### Problema rilevato
-
-Le sezioni dei capitoli più recenti, in particolare **Capitolo 0 e Capitoli 13–19**, sono state in parte create con heading H1 del tipo:
-
-```markdown
-# 14.8 AI e causalità
-```
-
-La convenzione corretta è:
-
-```markdown
-## 14.8 AI e causalità
-```
-
-Il builder oggi riconosce una heading numerata `X.Y` e la tratta correttamente come H2, quindi la build non crea più page break errati.
-
-### Da fare
-
-Normalizzare anche le sorgenti Markdown, non soltanto la resa in build. È un intervento meccanico, da fare prima della release stabile.
-
-## 5. Formule matematiche
+## 4. Formule matematiche
 
 Nel manoscritto sono presenti formule in blocchi del tipo:
 
@@ -122,129 +127,117 @@ Scegliere uno dei tre approcci:
 
 Per un libro professionale la seconda o la terza opzione sono preferibili.
 
-## 6. Qualità linguistica
+## 5. Casi reali e casi simulati
 
-### Problema rilevato
+### Convenzione fissata
 
-Alcune sezioni più vecchie contengono grafie ASCII:
-
-- `e'` invece di `è`;
-- `piu'` invece di `più`;
-- `puo'` invece di `può`;
-- forme analoghe.
-
-La sorgente è UTF-8, quindi non esiste una ragione tecnica per mantenerle.
-
-### Da fare
-
-Eseguire una normalizzazione linguistica controllata, evitando sostituzioni cieche dentro:
-
-- SQL;
-- Python;
-- URL;
-- nomi propri;
-- stringhe di codice.
-
-Dopo la normalizzazione, rileggere almeno le frasi modificate.
-
-## 7. Casi reali e casi simulati
-
-### Corretto
-
-Il Capitolo 0 e il README dichiarano ora esplicitamente la convenzione:
+Il Capitolo 0 e il README dichiarano esplicitamente:
 
 - **caso reale documentato**: supportato da una fonte pubblica attendibile;
 - **caso simulato/composito**: costruito a fini didattici.
 
-I nomi aziendali fittizi devono essere interpretati come simulati/compositi.
+Durante la revisione editoriale i casi fittizi vengono marcati esplicitamente quando possono essere letti come narrazioni reali.
 
-### Da verificare
+### Da verificare in ogni capitolo
 
-Durante la revisione finale, ogni caso reale importante deve avere:
+Ogni caso reale importante deve avere:
 
 - organizzazione identificabile;
 - fonte leggibile;
 - claim proporzionato a ciò che la fonte documenta;
 - nessuna confusione tra correlazione, causalità e risultato commerciale dichiarato.
 
-## 8. Fonti e link
+## 6. Fonti e link
 
 ### Corretto
 
-La ricerca nel repository non rileva link contenenti `chatgpt.com` o `utm_source=chatgpt.com` nel manoscritto.
+- Nessun link nel manoscritto contiene `utm_source=chatgpt.com`.
+- Le revisioni mantengono la preferenza per documentazione ufficiale e fonti primarie.
 
-### Da fare
+### Da fare prima della release
 
-Prima della release:
-
-- controllare link rotti o redirect permanenti;
-- preferire documentazione ufficiale e fonti primarie;
-- uniformare il modo in cui vengono presentate le sezioni `Fonti`;
-- valutare una bibliografia generale o un indice delle fonti oltre alle fonti locali per capitolo;
+- controllare sistematicamente link rotti e redirect;
+- verificare che ogni fonte supporti davvero il claim a cui è associata;
+- uniformare le sezioni `Fonti`, `Riferimenti` e `Approfondimenti`;
+- valutare una bibliografia generale o un indice delle fonti;
 - registrare data di accesso solo dove editorialmente utile.
 
-## 9. Sovrapposizioni concettuali
+## 7. Revisione editoriale capitolo per capitolo
 
-Le ripetizioni principali non sono errori in sé, ma devono essere trasformate in richiami intenzionali.
+Obiettivo della revisione:
+
+- togliere ridondanze senza assottigliare il contenuto;
+- dare a ogni sezione un ruolo distinto;
+- preferire rimandi interni alla ripetizione integrale;
+- rafforzare il percorso `teoria → esempio → errore → metodo`;
+- rendere esplicita la natura simulata/composita dei casi fittizi;
+- preservare e migliorare i casi reali documentati;
+- uniformare terminologia, tono e profondità.
+
+### Stato
+
+| Capitolo | Stato editoriale | Nota |
+|---|---|---|
+| 0 — Al timone | **Revisionato** | Ridisegnato come manifesto operativo: orchestrazione, accountability, verification by design, stop condition, deskilling, trust levels, caso multi-agent, manifesto finale. |
+| 1 — Tutto è cambiato. Il problema è rimasto lo stesso | **Revisionato** | Eliminata la duplicazione con Ch. 0; fissata una sola catena analitica canonica; cinque tipi di domanda; caso vendite riscritto e marcato simulato/composito; rimandi a Ch. 2/8/9/11/12/13/14/18/19. |
+| 2–19 | **Da revisionare** | Procedere in ordine, controllando anche sovrapposizioni inter-capitolo. |
+
+## 8. Sovrapposizioni concettuali da governare
+
+Le ripetizioni principali devono diventare richiami intenzionali.
 
 ### Capitolo 0 / 14 / 19 — AI
 
-Ruolo consigliato:
+Ruolo:
 
 - **0 — Al timone:** mentalità, responsabilità, delega, supervisione;
 - **14 — AI-assisted analytics:** uso operativo, eval, privacy, auditability, workflow;
 - **19 — 2026–2035:** conseguenze sul ruolo, skill e carriera.
 
-Regola di revisione: evitare di rispiegare integralmente in 14 o 19 il manifesto del Capitolo 0; richiamarlo e aggiungere un livello nuovo.
+Regola: non rispiegare integralmente il manifesto del Capitolo 0 nei capitoli successivi.
+
+### Capitolo 1 / 2 — domanda analitica
+
+Ruolo:
+
+- **1:** mentalità di base e tipi di domanda;
+- **2:** trasformare formalmente una richiesta in un analytical brief operativo, con metriche, ipotesi, scope, dati, priorità e stop rule.
 
 ### Capitolo 2 / 15 — decisione
 
-Ruolo consigliato:
+Ruolo:
 
-- **2:** tradurre la richiesta di business in problema analitico;
+- **2:** progettare l'analisi prima di eseguirla;
 - **15:** trasformare evidenza e incertezza in raccomandazione e decisione.
 
 ### Capitolo 3 / 11 / 12 / 18 — qualità, semantica, governance
 
-Ruolo consigliato:
+Ruolo:
 
 - **3:** capire il dato prima di analizzarlo;
 - **11:** formalizzare grain, join, trasformazioni e metriche in SQL/modeling;
 - **12:** capire l'architettura che produce e trasporta il dato;
 - **18:** rendere il sistema analitico affidabile e scalabile nell'organizzazione.
 
-## 10. Arco narrativo complessivo
+## 9. Arco narrativo complessivo
 
-La sequenza attuale è coerente:
+La sequenza resta coerente:
 
 **mentalità → domanda → dati → statistica → comportamento → tempo → causalità → esperimenti → modelli → SQL → architettura → strumenti → AI → decisione → comunicazione → casi completi → scala → futuro**.
 
-Il Capitolo 0 funziona come contratto mentale iniziale e il Capitolo 19 chiude tornando allo stesso principio di responsabilità.
+Il Capitolo 0 funziona come contratto mentale iniziale e il Capitolo 19 chiude tornando al tema della responsabilità e delle competenze che restano preziose.
 
-## 11. Lunghezza
+## 10. Lunghezza
 
 Non usare il numero di capitoli come proxy della lunghezza.
 
-La misura da usare è il conteggio reale prodotto da:
+La misura corrente viene dalla pipeline reale.
 
-```bash
-python scripts/lint_book.py
-```
+Dopo i primi due capitoli revisionati il PDF è ancora di **737 pagine**, quindi la revisione può continuare a tagliare ripetizioni senza alcun rischio rispetto all'obiettivo minimo di 400+ pagine.
 
-La stima `parole / 250–300` è utile soltanto come ordine di grandezza. Il numero finale di pagine dipenderà molto da:
+L'obiettivo non è preservare un numero massimo di pagine. È massimizzare **densità di valore per pagina**.
 
-- formule;
-- tabelle;
-- codice;
-- spaziatura;
-- font;
-- dimensione pagina;
-- apertura dei capitoli;
-- figure future.
-
-La soglia di **400+ pagine** deve quindi essere verificata sulla build impaginata, non dichiarata sulla base del solo volume Markdown.
-
-## 12. Elementi editoriali ancora mancanti
+## 11. Elementi editoriali ancora mancanti
 
 Prima della prima release stabile valutare:
 
@@ -259,11 +252,12 @@ Prima della prima release stabile valutare:
 - ringraziamenti;
 - numero/versione della release.
 
-## 13. Release gate
+## 12. Release gate
 
-Una release candidata dovrebbe passare questo percorso:
+Una release candidata dovrebbe passare:
 
 ```bash
+python scripts/normalize_sources.py --check
 python scripts/lint_book.py --strict
 python scripts/build.py
 ```
@@ -283,6 +277,6 @@ Poi controllo manuale di:
 
 ## Stato sintetico
 
-Il **contenuto principale del libro esiste ed è strutturalmente completo**.
+Il contenuto principale del libro è strutturalmente completo.
 
-Non siamo più nella fase “scrivere i capitoli mancanti”. Siamo nella fase in cui un manoscritto lungo deve diventare un libro: ridurre ridondanze, uniformare la lingua, verificare le fonti, rendere robusta la pipeline di build e curare la tipografia.
+La revisione editoriale è iniziata e i **Capitoli 0 e 1 sono ora revisionati**. Il lavoro non consiste più nell'aggiungere volume, ma nel trasformare un manoscritto molto ricco in un libro più compatto, coerente, verificabile e leggibile senza perdere profondità.
