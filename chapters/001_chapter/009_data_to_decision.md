@@ -1,116 +1,136 @@
 ## 1.8 Dai dati alla decisione: la catena del valore analitico
 
-Un dataset non è ancora un'analisi. Un grafico non è ancora un insight. E un insight non è ancora una decisione.
+Un dataset non è ancora un'analisi.
 
-Per capire il lavoro del Data Analyst è utile separare con precisione i diversi passaggi che collegano un'osservazione grezza a un'azione concreta.
+Un grafico non è ancora un insight.
 
-Possiamo rappresentare il processo in questo modo:
+Un insight non è ancora una decisione.
 
-**Dati → Informazione → Evidenza → Interpretazione → Decisione → Azione → Risultato → Nuovi dati**
+Per capire dove nasce il valore dell'analisi è utile separare i passaggi che collegano un'osservazione a un'azione.
 
-Questa sequenza è circolare. Ogni decisione produce conseguenze; le conseguenze generano nuovi dati; i nuovi dati permettono di valutare se la decisione ha funzionato.
+Useremo questa catena come riferimento per tutto il libro:
 
-### Dati
+**Problema → Domanda → Dati → Metodo → Evidenza → Interpretazione → Decisione → Azione → Misurazione**
 
-I dati sono registrazioni di eventi, stati o misurazioni. Una riga in una tabella ordini, una visita a una pagina, il timestamp di un pagamento, la temperatura rilevata da un sensore o il saldo di un conto sono dati.
+Non è un processo perfettamente lineare. Si torna spesso indietro: un problema nei dati può costringerci a riformulare la domanda; un risultato inatteso può richiedere una nuova segmentazione; una decisione può generare nuove informazioni.
 
-Il dato da solo non porta necessariamente significato. Il numero `1842`, senza contesto, non dice quasi nulla. Potrebbe essere un numero di ordini, una quantità prodotta, un identificativo o una misura espressa in una certa unità.
+Ma la sequenza rende visibile una cosa importante: **ogni passaggio introduce scelte e possibili errori diversi.**
 
-### Informazione
+### Problema e domanda
 
-Il dato diventa informazione quando viene collocato in un contesto.
+Il problema appartiene al mondo reale.
 
-> Questo mese abbiamo registrato 1.842 ordini.
+> “I nuovi clienti stanno acquistando meno.”
 
-Ora conosciamo il fenomeno e il periodo. Ma non sappiamo ancora se 1.842 sia molto, poco, buono o cattivo.
+La domanda analitica formalizza ciò che vogliamo verificare.
 
-Aggiungiamo un confronto:
+> “Il numero di ordini per nuovo cliente nei primi 30 giorni è diminuito rispetto alle coorti comparabili dell'anno precedente?”
 
-> Questo mese abbiamo registrato 1.842 ordini, il 13% in meno rispetto allo stesso mese dell'anno precedente.
+Senza questa trasformazione rischiamo di interrogare dati senza sapere che cosa dovrebbe contare come risposta.
 
-Il confronto rende l'informazione più utile. Tuttavia non abbiamo ancora spiegato il fenomeno.
+### Dati e metodo
+
+Una volta definita la domanda, dobbiamo individuare quali dati rappresentano il fenomeno e quale metodo è appropriato.
+
+Possiamo aver bisogno di:
+
+- ordini e clienti;
+- coorti di acquisizione;
+- canali marketing;
+- resi e cancellazioni;
+- eventi di prodotto;
+- variazioni di prezzo o di esperienza.
+
+Il metodo può essere una semplice decomposizione, un confronto tra coorti, un test statistico, un modello o un esperimento.
+
+La complessità del metodo non è un obiettivo. Deve essere proporzionata alla domanda.
 
 ### Evidenza
 
-L'evidenza nasce quando l'analisi restringe il campo delle spiegazioni possibili.
+Supponiamo che l'analisi mostri:
 
-Supponiamo di scoprire che:
+- ordini dei clienti esistenti stabili;
+- calo concentrato nei nuovi clienti;
+- traffico invariato;
+- conversione dei nuovi utenti in diminuzione;
+- peggioramento concentrato nei mercati dove è stata introdotta una nuova soglia per la spedizione gratuita.
 
-- gli ordini dei clienti esistenti sono rimasti stabili;
-- il calo proviene quasi interamente dai nuovi clienti;
-- il traffico sul sito è invariato;
-- il tasso di conversione dei nuovi utenti è diminuito;
-- il calo è concentrato nei paesi in cui è stato recentemente introdotto un costo di spedizione minimo.
+Questi elementi restringono lo spazio delle spiegazioni possibili.
 
-A questo punto non abbiamo ancora dimostrato una relazione causale, ma abbiamo costruito evidenza molto più utile di un semplice grafico delle vendite.
+È questo che intendiamo per **evidenza**: non un dato isolato, ma un insieme di osservazioni che rende alcune spiegazioni più compatibili dei concorrenti.
 
 ### Interpretazione
 
-L'evidenza deve essere interpretata.
+L'evidenza non parla da sola.
 
-L'analista potrebbe formulare l'ipotesi che il nuovo costo di spedizione abbia contribuito al calo della conversione. Ma un analista rigoroso distingue tra ciò che osserva e ciò che conclude.
+Una formulazione prudente potrebbe essere:
 
-Osservazione:
+> “Il calo della conversione è concentrato nei mercati interessati dalla nuova politica di spedizione; la modifica è quindi una spiegazione plausibile da verificare.”
 
-> La diminuzione della conversione è maggiore nei mercati interessati dalla nuova politica di spedizione.
+È diverso da:
 
-Interpretazione:
+> “La nuova politica di spedizione ha causato il calo.”
 
-> La nuova politica di spedizione è una spiegazione plausibile del calo e merita una verifica più rigorosa.
+La seconda frase richiede un livello di evidenza causale più forte.
 
-La differenza è fondamentale. Una buona analisi non nasconde il livello di incertezza delle proprie conclusioni.
+L'interpretazione è il passaggio in cui l'analista deve distinguere ciò che osserva da ciò che inferisce.
 
 ### Decisione
 
-A questo punto il problema diventa manageriale.
-
-L'azienda potrebbe decidere di:
+L'azienda potrebbe:
 
 - ripristinare temporaneamente le condizioni precedenti;
-- effettuare un test controllato su una parte degli utenti;
-- modificare la soglia della spedizione gratuita;
-- segmentare la politica in base al valore del carrello;
-- non intervenire, se il costo della modifica supera il beneficio atteso.
+- testare soglie diverse;
+- segmentare la policy per valore del carrello;
+- non intervenire se il costo della modifica supera il beneficio atteso.
 
-L'analisi non prende automaticamente la decisione. Fornisce una struttura informativa migliore per prenderla.
+I dati non selezionano automaticamente una di queste opzioni.
 
-### Azione e risultato
+La decisione combina evidenza con costi, vincoli, rischio, reversibilità e obiettivi aziendali.
 
-La qualità dell'analisi dovrebbe essere valutata anche dopo la decisione.
+### Azione e misurazione
 
-Se una modifica viene implementata, dobbiamo misurarne l'effetto. È aumentata la conversione? È diminuito il margine? Il valore medio del carrello è cambiato? Ci sono conseguenze inattese?
+La catena non termina quando il management approva una slide.
 
-Il processo analitico quindi non termina con una presentazione o con una dashboard.
+Se viene modificata la soglia di spedizione, dobbiamo osservare ciò che succede dopo:
 
-Termina quando siamo in grado di osservare il risultato dell'azione e aggiornare ciò che pensiamo di sapere.
+- conversione;
+- margine;
+- valore medio del carrello;
+- costi logistici;
+- comportamento per segmento;
+- effetti inattesi.
+
+La misurazione successiva serve sia a valutare l'azione sia ad aggiornare il nostro modello del fenomeno.
+
+### Dove può rompersi la catena
+
+Ogni anello ha un failure mode tipico.
+
+| Passaggio | Possibile errore |
+|---|---|
+| Problema | affrontiamo un sintomo irrilevante |
+| Domanda | la formulazione è vaga o non verificabile |
+| Dati | la rappresentazione è incompleta o distorta |
+| Metodo | il confronto o il modello non sono adatti |
+| Evidenza | selezioniamo solo risultati favorevoli |
+| Interpretazione | andiamo oltre ciò che i dati sostengono |
+| Decisione | ignoriamo costi, rischio o vincoli |
+| Azione | l'intervento viene implementato diversamente dal previsto |
+| Misurazione | non sappiamo se la decisione ha funzionato |
+
+Questo è il motivo per cui la qualità analitica non può essere valutata soltanto controllando il codice.
 
 ### Il rischio delle dashboard senza decisione
 
-Molte organizzazioni accumulano dashboard che descrivono continuamente ciò che è successo ma non sono collegate a un processo decisionale definito.
+Molte organizzazioni accumulano report che descrivono ciò che è successo senza essere collegati a un comportamento o a un processo decisionale.
 
-Una dashboard può essere tecnicamente perfetta e organizzativamente inutile.
+Una domanda utile durante la progettazione è:
 
-Una domanda utile da porre durante la progettazione di qualsiasi analisi è:
+> **“Quale comportamento potrebbe cambiare se questa informazione fosse diversa da ciò che ci aspettiamo?”**
 
-> **Quale comportamento potrebbe cambiare se questa informazione fosse diversa da ciò che ci aspettiamo?**
+Se nessuno sa rispondere, il report può comunque avere valore informativo, ma dobbiamo essere onesti sul suo ruolo. Non è automaticamente decision support.
 
-Se nessuno sa rispondere, è possibile che stiamo producendo reporting e non vera analisi decisionale.
+La catena del valore analitico ci aiuta proprio a evitare questa confusione.
 
-### Il ciclo analitico
-
-Nel resto del libro utilizzeremo spesso il seguente ciclo:
-
-1. definire la decisione;
-2. formulare la domanda analitica;
-3. individuare i dati necessari;
-4. verificarne significato e qualità;
-5. scegliere il metodo;
-6. produrre evidenza;
-7. interpretare l'evidenza;
-8. comunicare limiti e incertezza;
-9. prendere o supportare una decisione;
-10. misurarne l'effetto.
-
-L'AI può accelerare quasi tutti questi passaggi operativi. Ma la struttura logica rimane la stessa.
-
-Ed è questa struttura, più di qualsiasi software, che distingue un'analisi utile da una semplice elaborazione di dati.
+> **Il valore non nasce quando produciamo il numero. Nasce quando il numero, attraverso un processo affidabile, modifica ciò che sappiamo e migliora ciò che facciamo.**
