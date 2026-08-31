@@ -1,62 +1,53 @@
-## 2.6 Popolazione, granularità e tempo: dove nasce gran parte degli errori
+## 2.6 Scope: popolazione, unità di analisi e tempo
 
-Anche una domanda apparentemente chiara può produrre risultati diversi se cambiamo popolazione, granularità o finestra temporale.
+Una domanda può sembrare precisa e produrre comunque risultati incompatibili se persone diverse immaginano popolazioni, unità di analisi o finestre temporali diverse.
 
-Questi tre elementi dovrebbero essere esplicitati prima di analizzare.
+Per questo il brief deve fissare lo **scope** prima che inizi l'estrazione dei dati.
+
+Il Capitolo 3 entrerà nel dettaglio tecnico di grain, chiavi, eventi e snapshot. Qui ci interessa la specifica analitica: **che cosa deve essere dentro e fuori dall'indagine?**
 
 ### Popolazione
 
-Chi o che cosa stiamo studiando?
+Chi o che cosa è eleggibile per l'analisi?
 
 Esempi:
 
-- tutti i clienti;
-- solo clienti attivi;
-- nuovi clienti acquisiti negli ultimi sei mesi;
-- account enterprise;
-- ordini completati;
-- sessioni web valide;
-- prodotti venduti almeno una volta nel periodo.
+- tutti i clienti con contratto attivo all'inizio del mese;
+- nuovi clienti acquisiti tra gennaio e giugno;
+- ordini completati e non integralmente rimborsati;
+- sessioni web non interne e non bot;
+- prodotti disponibili per almeno l'80% del periodo.
 
-Una piccola differenza nella popolazione può cambiare completamente una metrica.
+Scrivere “clienti” o “ordini” non basta quando esistono stati e condizioni diverse.
 
-### Granularità
+Una buona popolazione contiene anche le **esclusioni intenzionali**.
 
-Qual è l'unità elementare dell'analisi?
+### Unità di analisi
 
-Possibili livelli:
+Qual è l'entità elementare a cui attribuiamo il fenomeno?
+
+Possiamo ragionare a livello di:
 
 - evento;
 - sessione;
 - ordine;
-- riga d'ordine;
 - cliente;
 - account;
 - prodotto;
 - negozio;
-- giorno;
-- settimana;
-- mese.
+- giorno o coorte.
 
-Mescolare granularità è una fonte classica di errori.
+Questa scelta non è soltanto tecnica.
 
-Esempio: una tabella `orders` contiene una riga per ordine, mentre `order_items` contiene più righe per ordine. Fare una join e poi sommare il fatturato dell'ordine senza correggere la duplicazione può moltiplicare artificialmente i ricavi.
+Se la domanda è “quale percentuale di clienti riacquista?”, il cliente è un'unità naturale. Se la domanda è “dove fallisce il pagamento?”, probabilmente servono tentativi o eventi. Se stiamo valutando una policy assegnata per negozio, analizzare ogni transazione come osservazione indipendente può dare un'immagine ingannevole.
 
-Questo non è un problema di SQL in senso stretto. È un problema di modello mentale del dato.
+Prima della query dobbiamo riuscire a completare:
 
-### Tempo
+> **“Una osservazione nella mia analisi rappresenta…”**
 
-Il tempo non è solo una colonna data.
+### Periodo e campo temporale
 
-Dobbiamo decidere:
-
-- quale timestamp rappresenta il fenomeno;
-- quale timezone usare;
-- se confrontare giorni, settimane, mesi o coorti;
-- come trattare stagionalità e festività;
-- se il periodo è completo;
-- se i dati arrivano con ritardo;
-- come gestire eventi che attraversano più periodi.
+Anche “ultimo trimestre” è ambiguo se non specifichiamo quale evento determina il periodo.
 
 Un ordine può avere:
 
@@ -66,65 +57,56 @@ Un ordine può avere:
 - `delivered_at`;
 - `returned_at`.
 
-Quale data rappresenta "la vendita" dipende dalla domanda e dalla definizione contabile o operativa.
+La data corretta dipende dal fenomeno.
 
-### Snapshot vs flow
+Nel brief annotiamo almeno:
 
-Alcune metriche rappresentano uno **stock** in un momento preciso:
+- campo temporale principale;
+- timezone, se rilevante;
+- inizio e fine della finestra;
+- eventuale periodo di maturazione necessario;
+- ritardo con cui il dato diventa completo.
 
+La **maturazione** è particolarmente importante per metriche future rispetto all'evento iniziale. Per misurare retention a 90 giorni non possiamo trattare come pienamente osservabili clienti acquisiti dieci giorni fa.
+
+### Stock e flow
+
+Lo scope dovrebbe inoltre chiarire se stiamo misurando uno stato in un istante o un evento durante un intervallo.
+
+**Stock**:
 - clienti attivi a fine mese;
 - inventario disponibile oggi;
-- pipeline commerciale aperta.
+- pipeline aperta al 31 marzo.
 
-Altre rappresentano un **flusso** durante un intervallo:
-
-- nuovi clienti nel mese;
+**Flow**:
+- nuovi clienti acquisiti nel mese;
 - ordini ricevuti;
 - ticket aperti;
-- ricavi riconosciuti.
+- revenue riconosciuta durante il trimestre.
 
-Confondere stock e flow genera confronti ingannevoli.
+Confrontare uno stock con un flow senza rendere esplicito il modello temporale produce facilmente KPI confusi.
 
-### Denominatori
+### Scope creep
 
-Molte metriche sono rapporti. Il denominatore merita la stessa attenzione del numeratore.
+Definire lo scope serve anche a impedire che una domanda si espanda durante l'esecuzione.
 
-Esempio:
+Partiamo dal churn enterprise europeo e, dopo due giorni, qualcuno chiede di includere anche SMB, pricing globale, support e tre anni di storico. Le nuove domande possono essere valide, ma devono essere trattate come ampliamento del brief, non come dettaglio gratuito.
 
-`conversion rate = ordini / visite`
+Ogni espansione modifica costo, tempi e potenzialmente la decisione supportata.
 
-Ma visite significa:
+### Campo del brief
 
-- page views?
-- sessioni?
-- utenti unici?
-- sessioni con product view?
-- sessioni eleggibili?
+```text
+Popolazione eleggibile:
+Esclusioni:
+Unità di analisi:
+Grain richiesto per i dati:
+Campo temporale principale:
+Timezone:
+Finestra di analisi:
+Periodo di maturazione:
+Data latency / data complete as of:
+Fuori scope:
+```
 
-Un cambiamento nel denominatore può far muovere il KPI senza alcun cambiamento reale nel comportamento che pensavamo di misurare.
-
-### Measurement before modeling
-
-NIST sottolinea da tempo che ogni misura nasce da un processo di misurazione e che bias, variabilità, stabilità e incertezza determinano quanto il valore sia adatto a supportare decisioni. Nei sistemi digitali il principio è identico: gli strumenti cambiano, ma anche un evento registrato automaticamente può essere incompleto, duplicato, ritardato o definito male.
-
-### Checklist minima di scope
-
-Prima di eseguire l'analisi, completa:
-
-- **Population:**
-- **Unit of analysis:**
-- **Numerator:**
-- **Denominator:**
-- **Time field:**
-- **Timezone:**
-- **Analysis window:**
-- **Baseline:**
-- **Known exclusions:**
-- **Data latency:**
-
-Questa piccola scheda previene una quantità sorprendente di errori.
-
-## Riferimenti
-
-- NIST/SEMATECH, *Measurement Process Characterization*: https://www.nist.gov/publications/nistsematech-engineering-statistics-handbook-chapter-2-measurement-process
-- NIST, *Measurement Uncertainty*: https://www.nist.gov/itl/sed/topic-areas/measurement-uncertainty
+> **Lo scope non serve a limitare la curiosità. Serve a sapere esattamente a quale popolazione e a quale periodo potremo applicare la conclusione.**
