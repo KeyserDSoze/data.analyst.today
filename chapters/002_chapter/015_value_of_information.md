@@ -1,45 +1,79 @@
 ## 2.14 Value of Information: quanto vale sapere qualcosa in più?
 
-Un'analisi ha valore quando riduce un'incertezza che conta per una decisione.
+Prioritizzare decide **quale** domanda affrontare. Il Value of Information aiuta a decidere **quanto approfondirla prima di agire**.
 
-Questa idea può essere formalizzata con il concetto di **Value of Information**: quanto siamo disposti a investire per ottenere informazione aggiuntiva prima di decidere?
+L'idea è semplice:
 
-Non serve trasformare ogni analisi in un modello decisionale formale. È sufficiente imparare a porre alcune domande.
+> un'informazione aggiuntiva ha valore nella misura in cui può cambiare una decisione o ridurre un rischio che conta.
 
-- La decisione è reversibile o irreversibile?
-- Quanto è costoso sbagliare?
-- Quanto sono differenti gli scenari alternativi?
-- L'informazione aggiuntiva può realmente cambiare la scelta?
-- Quanto tempo possiamo aspettare?
+Non serve costruire ogni volta un modello decisionale formale. Basta usare il concetto per evitare due estremi:
 
-### Esempio semplice
+- decidere con troppo poca evidenza;
+- inseguire una certezza che costa più di quanto vale.
 
-Un'azienda deve decidere se investire 2 milioni di euro in una nuova campagna di acquisizione.
+### Cinque domande
 
-Se una breve analisi da due giorni può mostrare che il segmento target ha un churn estremamente elevato, quell'analisi può avere un valore enorme.
+Prima di aggiungere un'altra settimana di analisi, chiediamoci:
 
-Al contrario, spendere tre settimane per migliorare dal 93% al 94% la precisione di una previsione che non cambia alcuna decisione operativa può avere un valore molto basso.
+1. La decisione è reversibile?
+2. Quanto costa sbagliare?
+3. Le alternative hanno conseguenze materialmente diverse?
+4. L'informazione aggiuntiva ha una probabilità realistica di cambiare la scelta?
+5. Quanto costa aspettare?
+
+### Caso simulato/composito: analizzare prima di spendere €2 milioni
+
+Un'azienda sta per investire €2 milioni in una nuova campagna di acquisizione.
+
+Il piano presuppone che il segmento target abbia economics simili ai clienti acquisiti l'anno precedente. Un controllo preliminare di due giorni mostra però che il churn del segmento è molto più elevato e che il payback atteso supera di parecchio l'orizzonte accettato dal business.
+
+L'analisi non deve essere perfetta per avere enorme valore.
+
+Se cambia la decisione di investire €2 milioni, il beneficio potenziale dell'informazione è molto superiore al costo di due giorni di lavoro.
+
+Al contrario, migliorare per tre settimane un forecast dal 93% al 94% di accuratezza può avere valore quasi nullo se nessuna decisione di stock, staffing o budget cambia dentro quell'intervallo.
 
 ### Informazione perfetta e informazione sufficiente
 
-Nel mondo reale non cerchiamo quasi mai informazione perfetta.
+Nel lavoro reale cerchiamo raramente informazione perfetta.
 
-Cerchiamo informazione **sufficiente** per prendere una decisione ragionevole.
+Cerchiamo una quantità di evidenza **sufficiente rispetto al costo dell'errore**.
 
-Questo porta a una distinzione fondamentale:
+Questa distinzione è importante perché ogni approfondimento può produrre un beneficio decrescente.
 
-> L'obiettivo dell'analisi non è eliminare tutta l'incertezza. È ridurre abbastanza l'incertezza da permettere una decisione migliore.
+Una prima decomposizione può cambiare completamente la decisione. Il ventesimo segmento aggiuntivo magari no.
 
-### Il costo dell'attesa
+### Il valore del tempo
 
-Anche aspettare dati migliori ha un costo.
+Aspettare dati migliori ha un costo.
 
-Se una decisione può generare 100.000 euro di valore al mese, attendere tre mesi per ottenere una stima leggermente più precisa può essere peggiore che agire oggi con un'incertezza ben dichiarata.
+Se un intervento reversibile può generare €100.000 al mese di beneficio, attendere tre mesi per ridurre modestamente l'incertezza può essere meno razionale che agire oggi con un test controllato e guardrail chiari.
 
-Per questo il valore dell'informazione deve sempre essere confrontato con il valore del tempo.
+Viceversa, se una decisione è irreversibile e può produrre un danno enorme, raccogliere più informazione prima di agire può essere molto prezioso.
 
-### AI e Value of Information
+Il Value of Information non dice sempre “analizza di più”. Dice **analizza quanto vale la pena**.
 
-L'AI riduce spesso il costo di produrre una prima analisi. Questo rende conveniente fare più rapidamente controlli preliminari, sensitivity analysis, segmentazioni e confronti.
+### Il brief può contenere una domanda di VoI
 
-Ma non elimina il principio fondamentale: un'informazione ha valore solo se può cambiare una decisione, una priorità o un livello di rischio.
+Per progetti importanti possiamo aggiungere:
+
+```text
+Quale incertezza, se ridotta, potrebbe cambiare la decisione?
+Quale informazione aggiuntiva avrebbe più valore?
+Quanto costa ottenerla?
+Quanto costa aspettarla?
+```
+
+Queste domande aiutano anche a scegliere il prossimo passo quando l'analisi è inconcludente.
+
+### AI e costo dell'informazione
+
+L'AI può ridurre il costo di controlli preliminari, sensitivity analysis, segmentazioni e prime ricerche.
+
+Questo aumenta il numero di verifiche che può essere razionale fare.
+
+Ma non cambia il criterio economico fondamentale:
+
+> **un'informazione non vale perché è facile da produrre. Vale se può cambiare una decisione abbastanza importante da giustificarne il costo e il tempo.**
+
+Il Capitolo 15 riprenderà questi concetti dal punto di vista della decisione vera e propria. Qui servono a progettare la profondità dell'analisi prima che diventi infinita.
