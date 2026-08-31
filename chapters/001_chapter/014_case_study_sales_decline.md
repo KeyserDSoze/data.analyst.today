@@ -1,12 +1,14 @@
 ## 1.13 Caso studio: “Le vendite stanno scendendo”
 
-Una buona teoria analitica diventa utile quando regge davanti a una richiesta reale. Immaginiamo che il direttore commerciale dica semplicemente:
+**Caso simulato/composito.** Una buona teoria analitica diventa utile quando regge davanti a una richiesta concreta.
+
+Immaginiamo che il direttore commerciale dica:
 
 > “Le vendite stanno scendendo. Voglio capire perché.”
 
-A prima vista sembra una richiesta chiara. In realtà contiene numerose ambiguità.
+La frase sembra chiara. In realtà contiene quasi tutte le ambiguità affrontate nel capitolo.
 
-### 1.13.1 Prima domanda: cosa significa “vendite”?
+### 1.13.1 Prima domanda: che cosa significa “vendite”?
 
 La parola può indicare:
 
@@ -17,130 +19,144 @@ La parola può indicare:
 - margine;
 - valore medio dell'ordine;
 - ordini completati;
-- ordini acquisiti, anche se non ancora evasi.
+- ordini acquisiti ma non ancora evasi.
 
-Se due persone usano definizioni diverse, possono produrre analisi entrambe tecnicamente corrette e arrivare a conclusioni opposte.
+Se due persone usano definizioni diverse, possono costruire analisi entrambe tecnicamente corrette e arrivare a conclusioni incompatibili.
 
-### 1.13.2 Seconda domanda: rispetto a cosa?
+Il direttore chiarisce che gli interessa il **fatturato netto degli ordini completati**, perché sta decidendo se intervenire su pricing, marketing o assortimento nel trimestre successivo.
 
-Dire che una metrica “scende” implica un confronto. Bisogna esplicitarlo.
+La richiesta è già diventata più analizzabile.
 
-Possibili baseline:
+### 1.13.2 Seconda domanda: rispetto a che cosa?
+
+Dire che una metrica “scende” implica una baseline.
+
+Possiamo confrontare con:
 
 - mese precedente;
 - stesso mese dell'anno precedente;
-- media mobile degli ultimi dodici mesi;
+- media mobile;
 - budget;
 - forecast;
-- periodo pre-promozione;
-- benchmark di mercato.
+- periodo pre-promozione.
 
-Un calo rispetto al mese precedente potrebbe essere perfettamente normale in un business stagionale. Lo stesso valore, confrontato con l'anno precedente, potrebbe invece essere un segnale importante.
+Il business è stagionale, quindi il confronto con il mese precedente sarebbe debole. L'analista usa soprattutto lo stesso periodo dell'anno precedente e il forecast, verificando che il perimetro dei negozi sia comparabile.
 
-### 1.13.3 Terza domanda: il calo è uniforme?
+Il calo risulta circa del 10% in entrambi i confronti.
 
-La prima analisi dovrebbe decomporre il fenomeno.
+### 1.13.3 Scomporre prima di spiegare
 
-Per esempio:
+Una prima identità utile è:
 
 **Ricavi = numero di ordini × valore medio dell'ordine**
 
-Se il fatturato diminuisce, almeno una delle due componenti deve essere cambiata.
+Il valore medio è quasi stabile. Gli ordini sono diminuiti.
 
-Ma possiamo continuare:
+Possiamo quindi continuare:
 
-**Ordini = traffico × conversion rate**
+**Ordini = traffico qualificato × conversion rate**
 
-E ancora:
+Il traffico complessivo è stabile, mentre la conversione diminuisce.
 
-**Fatturato = clienti × frequenza di acquisto × valore medio dell'ordine**
+Le identità non sono modelli causali. Sono un **issue tree** che trasforma una domanda generica in componenti osservabili.
 
-Queste decomposizioni non sono formule universali. Sono modi di costruire un albero del problema.
+### 1.13.4 Segmentare prima di costruire una storia
 
-L'obiettivo è passare da una frase generica a componenti osservabili.
+Il calo non è uniforme.
 
-### 1.13.4 Segmentare prima di spiegare
+L'analista trova che:
 
-Supponiamo che il fatturato sia diminuito del 10%.
+- il segmento enterprise cresce;
+- il consumer diminuisce;
+- quasi tutto il delta viene dall'e-commerce;
+- desktop è stabile;
+- mobile mostra il peggioramento principale;
+- clienti esistenti sono relativamente stabili;
+- la perdita si concentra nei nuovi visitatori mobile.
 
-Un'analisi aggregata potrebbe nascondere che:
+Ora la domanda non è più:
 
-- il segmento enterprise è cresciuto del 15%;
-- il segmento consumer è diminuito del 18%;
-- una sola area geografica spiega quasi tutto il calo;
-- un prodotto ad alto volume è temporaneamente non disponibile;
-- i clienti esistenti sono stabili, mentre le nuove acquisizioni sono diminuite.
+> “Perché le vendite sono scese?”
 
-La domanda “perché le vendite sono scese?” diventa quindi una serie di domande più precise.
+ma:
 
-### 1.13.5 Dal pattern all'ipotesi
+> “Perché la conversione dei nuovi visitatori mobile è peggiorata?”
 
-Dopo aver localizzato il problema possiamo formulare spiegazioni plausibili.
+Questa è una riduzione enorme dello spazio investigativo.
 
-Se il calo è concentrato nei nuovi clienti, potremmo indagare:
+### 1.13.5 Prima di cercare cause di business, escludere un artefatto
 
-- riduzione del traffico;
-- aumento del costo di acquisizione;
-- peggioramento della conversione;
-- cambiamento nelle campagne;
-- problemi nel checkout;
-- variazioni di prezzo;
-- modifiche alle condizioni di spedizione;
-- errori di tracking.
+L'analista controlla:
 
-Il dato non ci consegna automaticamente la spiegazione. Ci permette di restringere lo spazio delle spiegazioni possibili.
+- freshness delle sorgenti;
+- ordini mancanti;
+- duplicati;
+- cambio di definizione di `completed_order`;
+- fusi orari;
+- modifiche al tracking mobile;
+- riconciliazione del fatturato con una fonte indipendente.
 
-### 1.13.6 Verificare che il fenomeno non sia un artefatto
+Il fenomeno rimane.
 
-Prima di cercare cause di business bisogna escludere cause tecniche.
+Questo passaggio è poco spettacolare, ma evita di costruire una spiegazione sofisticata di un bug nella pipeline.
 
-Per esempio:
+### 1.13.6 Dal pattern alle ipotesi
 
-- una sorgente dati non è stata aggiornata;
-- alcuni ordini non vengono caricati nel warehouse;
-- è cambiata la definizione di “ordine completato”;
-- una migrazione ha modificato i codici prodotto;
-- il fuso orario sposta transazioni da un giorno all'altro;
-- una tabella contiene duplicati;
-- resi e cancellazioni sono stati contabilizzati diversamente.
+Negli stessi giorni sono avvenuti diversi cambiamenti:
 
-Questo passaggio è spesso poco visibile, ma distingue un'analisi affidabile da una conclusione prematura.
+- nuova versione del checkout mobile;
+- variazione del mix delle campagne;
+- modifica delle condizioni di spedizione su alcuni mercati;
+- promozioni su categorie specifiche.
 
-### 1.13.7 Quando fermarsi
+Il team potrebbe scegliere la prima storia plausibile e fermarsi.
 
-Una buona analisi non deve spiegare tutto. Deve produrre abbastanza evidenza per una decisione.
+L'analista invece formula ipotesi concorrenti e cerca osservazioni che le distinguano.
 
-Supponiamo di scoprire che il 75% della diminuzione deriva da un calo della conversione mobile iniziato subito dopo il rilascio di una nuova versione del checkout.
+La decomposizione del funnel mostra che il peggioramento principale avviene tra selezione del metodo di pagamento e conferma.
 
-A questo punto l'azione più razionale potrebbe essere:
+Il pattern inizia subito dopo il rollout del nuovo checkout ed è molto più forte sugli utenti effettivamente esposti alla nuova versione.
 
-1. verificare tecnicamente il funnel mobile;
-2. confrontare vecchia e nuova versione;
-3. identificare il punto di drop-off;
-4. correggere il problema;
-5. misurare se la conversione torna verso il livello precedente.
+Questo non dimostra ancora da solo una causa, ma rende il problema tecnico una priorità investigativa.
 
-L'analisi continua dopo l'azione. La verifica dell'effetto è parte del lavoro.
+### 1.13.7 Quando l'evidenza è sufficiente per agire
 
-### 1.13.8 Il ruolo dell'AI nel caso studio
+L'analista stima che circa il 75% del calo osservato sia concentrato nel funnel mobile interessato dal rollout.
 
-Un assistente AI può accelerare quasi ogni fase operativa:
+Il checkout è reversibile rapidamente e il costo di aspettare è elevato.
 
-- generare SQL per segmentare gli ordini;
+La decisione non richiede quindi una prova causale perfetta prima di qualsiasi intervento.
+
+Il team decide di:
+
+1. verificare tecnicamente gli errori e la telemetria del nuovo checkout;
+2. sospendere ulteriori rollout;
+3. ripristinare temporaneamente la versione precedente per una parte del traffico;
+4. confrontare conversione e failure rate;
+5. misurare se il recupero del funnel si traduce anche in ordini e fatturato.
+
+L'analisi non termina con la diagnosi.
+
+La risposta del sistema all'intervento diventa nuova evidenza.
+
+### 1.13.8 Dove può aiutare l'AI
+
+Un assistente AI può accelerare molti passaggi:
+
+- generare query di segmentazione;
 - proporre decomposizioni;
-- produrre codice Python;
-- sintetizzare anomalie;
-- suggerire visualizzazioni;
-- aiutare a documentare le ipotesi.
+- scrivere controlli;
+- sintetizzare log o anomalie;
+- produrre visualizzazioni esplorative;
+- suggerire ipotesi rivali.
 
-Ma non conosce automaticamente la definizione corretta di fatturato, il motivo per cui una determinata baseline è rilevante o la decisione che il direttore commerciale deve prendere.
+Ma la definizione di fatturato, la baseline, la decisione e il livello di evidenza necessario derivano dal contesto del problema.
 
-La documentazione Microsoft su Copilot per Power BI avverte esplicitamente che prompt vaghi, modelli semantici ambigui e una preparazione insufficiente possono produrre risposte inaccurate o persino fuorvianti. Questo è un caso concreto del principio sviluppato in questo capitolo: l'automazione dell'esecuzione non elimina la necessità di definire bene il problema e la semantica dei dati.
+La documentazione Microsoft su Copilot in Power BI offre un esempio concreto dello stesso principio: prompt e output dipendono dalla qualità e dalla semantica del modello sottostante.
+
+Riferimento:
+- https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
 
 ### Regola operativa
 
-> Prima di spiegare un cambiamento, scomponilo. Prima di scomporlo, definisci la metrica. Prima di definire la metrica, chiarisci quale decisione deve supportare.
-
-### Riferimenti
-
-- Microsoft Learn, *Use Copilot with semantic models in Power BI*: https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
+> **Prima di spiegare un cambiamento, localizzalo. Prima di localizzarlo, definisci metrica e confronto. Prima di definire metrica e confronto, chiarisci la decisione.**
