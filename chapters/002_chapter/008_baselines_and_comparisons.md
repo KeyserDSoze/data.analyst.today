@@ -1,63 +1,100 @@
-## 2.7 Baseline e confronti: ogni numero ha bisogno di un riferimento
+## 2.7 Baseline: rispetto a quale mondo giudicheremo il risultato?
 
 Un numero isolato dice poco.
 
-Dire che il tasso di conversione è del 3,4% non basta. È alto? Basso? In crescita? Peggiore delle attese? Migliore rispetto allo scorso anno? Diverso tra canali, mercati o segmenti?
+`Conversion rate = 3,4%` non ci dice se il business stia migliorando, peggiorando o rispettando le attese.
 
-Per trasformare un valore in informazione serve quasi sempre una **baseline**, cioè un riferimento rispetto al quale interpretarlo.
+Il brief deve quindi specificare il **riferimento** con cui interpreteremo l'outcome.
 
-Le baseline più comuni sono:
+### Baseline diverse rispondono a domande diverse
+
+Possiamo confrontare con:
 
 - periodo precedente;
 - stesso periodo dell'anno precedente;
 - target o budget;
+- forecast;
+- media o mediana storica;
+- segmento comparabile;
 - benchmark esterno;
-- gruppo di controllo;
-- media storica;
-- mediana storica;
-- performance di un segmento comparabile.
+- gruppo di controllo.
 
-La scelta della baseline non è neutrale. Confrontare gennaio con dicembre può produrre una conclusione diversa rispetto a confrontare gennaio con gennaio dell'anno precedente. In presenza di stagionalità, il confronto sbagliato può generare un falso allarme.
+Non sono alternative intercambiabili.
 
-### Confronti assoluti e relativi
+Confrontare gennaio con dicembre chiede “che cosa è cambiato da un mese all'altro?”. Confrontare gennaio con gennaio dell'anno precedente prova a neutralizzare parte della stagionalità. Confrontare con il budget chiede se stiamo rispettando un piano. Confrontare con un gruppo di controllo cerca di avvicinarsi a una domanda controfattuale.
 
-Supponiamo che gli ordini passino da 10.000 a 9.000.
+La baseline deve quindi derivare dalla domanda, non dalla colonna più semplice da aggiungere al grafico.
 
-La variazione assoluta è:
+### Caso simulato/composito: lo stesso +8%, tre storie
 
-**-1.000 ordini**
+Un canale e-commerce cresce dell'8%.
 
-La variazione relativa è:
+- rispetto al mese precedente: **+8%**;
+- rispetto allo stesso mese dell'anno precedente: **-4%**;
+- rispetto al budget: **-12%**.
 
-**-10%**
+Tutti e tre i numeri possono essere corretti.
 
-Entrambe sono corrette, ma rispondono a esigenze diverse. La variazione assoluta aiuta a stimare l'impatto operativo; quella relativa aiuta a confrontare fenomeni con scale differenti.
+Ma sostengono conversazioni diverse: momentum recente, performance strutturale e execution rispetto al piano.
 
-### Attenzione ai denominatori
+Il brief dovrebbe specificare quale conversazione conta per la decisione.
 
-Molti errori nascono da confronti tra percentuali senza controllare il denominatore.
+### Variazione assoluta e relativa
 
-Un tasso di conversione può crescere dal 2% al 3% mentre il numero assoluto di conversioni diminuisce, se il traffico totale crolla abbastanza.
+Se gli ordini passano da 10.000 a 9.000:
 
-Per questo ogni rapporto dovrebbe essere pensato come:
+- variazione assoluta: **-1.000 ordini**;
+- variazione relativa: **-10%**.
 
-> **numeratore / denominatore / popolazione / finestra temporale**
+La percentuale facilita confronti tra scale diverse. Il delta assoluto aiuta a quantificare impatto operativo ed economico.
+
+Quando possibile conviene osservare entrambi, soprattutto nei casi in cui una percentuale elevata nasce da una base molto piccola.
+
+### La comparabilità viene prima del calcolo
+
+Prima di accettare una baseline chiediamo:
+
+- la popolazione è comparabile?
+- la metrica ha la stessa definizione?
+- il periodo è completo?
+- esiste stagionalità?
+- il mix dei segmenti è cambiato?
+- sono cambiati prezzi, tracking, processi o perimetro aziendale?
+
+Se una catena ha acquisito cinquanta nuovi negozi, confrontare ricavi totali year-over-year può rispondere a una domanda diversa dal confronto **same-store**.
+
+Non basta avere due periodi. Serve sapere che cosa rende sensato confrontarli.
 
 ### Baseline dinamiche
 
-In sistemi molto variabili, una baseline fissa può essere poco utile. Si possono allora usare medie mobili, finestre storiche, bande di variabilità o modelli stagionali.
+In sistemi volatili una baseline fissa può essere poco informativa. Possiamo utilizzare:
 
-Il principio rimane lo stesso: un numero acquista significato solo quando sappiamo **rispetto a cosa lo stiamo giudicando**.
+- media mobile;
+- mediana storica;
+- bande di variabilità;
+- modello stagionale;
+- forecast atteso.
 
-### Domande operative
+Il Capitolo 7 entrerà nei metodi temporali. Nel brief basta dichiarare quale riferimento useremo e perché.
 
-Prima di accettare un confronto, chiedersi:
+### Un'anticipazione importante: baseline non significa sempre controfattuale
 
-1. I periodi sono realmente comparabili?
-2. La popolazione è la stessa?
-3. Le definizioni delle metriche sono rimaste uguali?
-4. Ci sono effetti stagionali?
-5. Sono cambiate campagne, prezzi, processi o sistemi di tracking?
-6. La differenza osservata è abbastanza grande da essere rilevante per il business?
+Il mese precedente è un confronto. Non è automaticamente il mondo che avremmo osservato senza un intervento.
 
-Il confronto non è una decorazione del dato. È parte integrante del modello analitico.
+Questa distinzione diventerà centrale nei Capitoli 8 e 9 su causalità ed esperimenti.
+
+Per ora ricordiamo:
+
+> **Una baseline rende un numero interpretabile. Una buona baseline causale deve fare qualcosa di più: rappresentare in modo credibile ciò che sarebbe successo altrimenti.**
+
+### Campo del brief
+
+```text
+Baseline primaria:
+Baseline secondarie utili:
+Motivazione della comparabilità:
+Delta da riportare: assoluto / relativo / entrambi
+Fattori noti che compromettono il confronto:
+```
+
+Il confronto non è una decorazione del risultato. È parte del disegno dell'analisi.
