@@ -1,156 +1,103 @@
 ## 0.1 Diventare manager di N agenti
+
 Il salto più importante non è passare da Excel a Python, da SQL a un LLM o da un notebook a un agente.
 
-Il salto è passare da **esecutore di task** a **orchestratore di capacità**.
+È passare da **esecutore di task** a **orchestratore di capacità**.
 
-Un analista AI-native potrebbe avere agenti diversi per:
+Un analista AI-native può coordinare agenti diversi per data discovery, SQL, data quality, metriche, forecasting, causalità, visualizzazione, documentazione, code review ed executive communication.
 
-- data discovery;
-- SQL generation;
-- data quality;
-- metric verification;
-- forecasting;
-- causal reasoning;
-- visualization;
-- documentation;
-- code review;
-- executive communication.
+La novità non è soltanto che ciascuno di questi compiti può essere accelerato. È che più attività possono essere eseguite contemporaneamente.
 
-Questi agenti possono lavorare in parallelo. Ma parallelizzare il lavoro non significa parallelizzare automaticamente il giudizio.
+Ma c'è un limite fondamentale:
 
-## Caso realistico: dieci agenti, una sola decisione
+> **possiamo parallelizzare l'esecuzione; non possiamo dare per scontato che si parallelizzi anche il giudizio.**
+
+### Caso simulato/composito: dieci agenti, una sola decisione
 
 Un marketplace vede il Gross Merchandise Value scendere del 9% in Spagna.
 
-Il responsabile analytics lancia una squadra di agenti.
+Il responsabile analytics non apre dieci dashboard a caso. Scompone il problema e assegna ruoli distinti.
 
-### Agent 1 — Data health
+| Agente | Compito | Primo risultato |
+|---|---|---|
+| Data health | controllare completezza e freshness | feed ordini completo al 99,8% |
+| Funnel | localizzare il punto di rottura | calo nella conversione checkout |
+| Payments | analizzare i fallimenti | payment failures in aumento |
+| Releases | ricostruire i deploy | release mobile due giorni prima |
+| Segmentation | cercare concentrazioni | calo soprattutto su iOS |
+| Geography | decomporre il delta | Madrid e Barcellona spiegano il 71% |
+| Hypothesis | proporre spiegazioni | release iOS come ipotesi principale |
+| SQL review | controllare logica e metrica | query coerenti con il GMV certificato |
+| Counter-hypothesis | cercare spiegazioni rivali | incidente di un provider di pagamento |
+| Executive draft | preparare una sintesi | propone rollback della release |
 
-Segnala che il feed ordini è completo al 99,8%.
+In pochi minuti il team virtuale ha prodotto più piste di quante una persona avrebbe potuto esplorare nello stesso tempo.
 
-### Agent 2 — Funnel
+Ma l'ultima riga della tabella mostra il rischio.
 
-Trova un calo nella conversione checkout.
+L'agente incaricato della sintesi ha ricevuto il compito di produrre una raccomandazione. Davanti a due spiegazioni concorrenti — release iOS e incidente del provider — può essere spinto a trasformare un conflitto ancora aperto in una conclusione netta.
 
-### Agent 3 — Payments
+Qui serve il timoniere.
 
-Individua un aumento dei payment failures.
+L'analista non chiede semplicemente quale ipotesi “sembra più probabile”. Chiede quali osservazioni distinguono le due spiegazioni:
 
-### Agent 4 — Releases
+- quali utenti hanno ricevuto davvero la release?
+- quale provider di pagamento usavano?
+- il problema compare anche su iOS con provider alternativi?
+- compare sul provider coinvolto anche fuori da iOS?
+- la sequenza temporale coincide meglio con il deploy o con l'incidente?
+- esistono segmenti che funzionano come controllo naturale?
 
-Trova una release mobile avvenuta due giorni prima.
+Gli agenti hanno moltiplicato la capacità investigativa. L'analista deve trasformarla in una **gerarchia di evidenze**.
 
-### Agent 5 — Segmentation
+### Disegnare ruoli, non una catena di consenso
 
-Mostra che il calo è concentrato su iOS.
+Un errore frequente è costruire workflow in cui ogni agente assume corretto l'output del precedente.
 
-### Agent 6 — Geography
+Se il primo interpreta male una metrica, il secondo può scrivere una query perfetta sulla metrica sbagliata, il terzo può visualizzarla bene e il quarto può produrre una sintesi molto convincente.
 
-Mostra che Madrid e Barcellona spiegano il 71% del delta.
+La qualità formale aumenta. L'errore iniziale rimane.
 
-### Agent 7 — Causal reasoning
+Una struttura più robusta separa almeno quattro funzioni:
 
-Propone la release iOS come principale ipotesi causale.
+1. **worker agents** — producono analisi, codice, ricerche o trasformazioni;
+2. **critic/review agents** — cercano errori, ipotesi rivali e controesempi;
+3. **control layer** — esegue test deterministici, reconciliation e policy;
+4. **human owner** — risolve conflitti, valuta l'incertezza e decide il livello di fiducia appropriato.
 
-### Agent 8 — SQL reviewer
+Il punto non è inserire sempre quattro componenti diverse. È evitare che produzione, verifica e decisione coincidano nello stesso passaggio senza frizioni.
 
-Conferma che le query sono coerenti con la definizione certificata di GMV.
+### Manager non significa micromanager
 
-### Agent 9 — Counter-hypothesis
+Essere al timone non significa leggere ogni token o riscrivere ogni query.
 
-Nota che un provider di pagamento ha avuto un incidente nello stesso intervallo.
+Un manager di agenti deve invece rendere espliciti alcuni elementi prima che il lavoro parta:
 
-### Agent 10 — Executive writer
+- **scope** — che cosa può fare l'agente;
+- **input** — a quali dati e strumenti può accedere;
+- **obiettivo** — quale risultato deve produrre;
+- **definition of done** — quando il task può considerarsi concluso;
+- **checks** — quali verifiche sono obbligatorie;
+- **escalation** — quali condizioni richiedono intervento umano;
+- **budget** — quante iterazioni, tempo e costo può consumare;
+- **authority** — quali azioni può eseguire senza approvazione.
 
-Produce una raccomandazione:
+Questi elementi trasformano un prompt generico in un mandato operativo.
 
-> “Rollback immediato della release iOS.”
+### Il collo di bottiglia cambia
 
-A prima vista il sistema sembra straordinario.
+Quando N agenti possono lavorare contemporaneamente, il collo di bottiglia si sposta.
 
-Il problema è che due spiegazioni competono:
+Non è più soltanto produrre query, grafici o memo. Diventa:
 
-- release iOS;
-- outage del provider di pagamento.
+- scegliere le priorità;
+- decomporre bene il problema;
+- coordinare dipendenze;
+- risolvere conflitti tra evidenze;
+- riconoscere assunzioni sbagliate;
+- decidere quando l'analisi è sufficiente;
+- assumersi la responsabilità della conclusione.
 
-Se l'executive agent ha il compito di “produrre una raccomandazione”, potrebbe trasformare un conflitto non risolto in una conclusione troppo netta.
+Per questo analytical thinking, business understanding e semantica acquistano valore proprio mentre l'esecuzione tecnica diventa più accessibile.
 
-Qui serve il manager.
-
-L'analista deve chiedere:
-
-- quali utenti hanno davvero ricevuto la release?
-- quale provider usavano?
-- il problema esiste anche su iOS con provider alternativi?
-- il timing coincide con deploy o incidente?
-- quali segmenti costituiscono un controllo naturale?
-
-Gli agenti hanno moltiplicato la capacità investigativa. L'analista deve trasformarla in una gerarchia di evidenze.
-
-## Non tutti gli agenti hanno la stessa autorità
-
-Un sistema maturo distingue tra agenti:
-
-### Esplorativi
-
-Possono generare ipotesi e cercare pattern.
-
-Il loro output non è una decisione.
-
-### Operativi
-
-Possono generare query, report o trasformazioni entro confini definiti.
-
-Richiedono controlli automatici.
-
-### Critici
-
-Possono autorizzare o proporre azioni che incidono su clienti, denaro, compliance o sistemi di produzione.
-
-Qui la soglia di supervisione deve essere molto più alta.
-
-## Una possibile gerarchia
-
-Un workflow potrebbe essere progettato così:
-
-1. **worker agents** producono analisi;
-2. **review agents** cercano errori e controesempi;
-3. **control layer** esegue test deterministici;
-4. **human owner** valuta conflitti, incertezza e decisione.
-
-L'errore è costruire una catena in cui ogni agente prende per vero l'output del precedente.
-
-Se il primo agente interpreta male una metrica, dieci agenti successivi possono produrre una montagna di lavoro coerente con un'assunzione sbagliata.
-
-## Manager non significa micromanager
-
-Essere al timone non significa leggere ogni token prodotto.
-
-Un manager di agenti deve progettare:
-
-- **scope**: cosa può fare ciascun agente;
-- **input**: a quali dati può accedere;
-- **definition of done**: quando un task è concluso;
-- **checks**: quali verifiche sono obbligatorie;
-- **escalation**: quando deve fermarsi e chiedere aiuto;
-- **budget**: quante iterazioni e quanto costo può consumare;
-- **authority**: quali azioni può eseguire senza approvazione.
-
-È una logica molto simile alla gestione di un team.
-
-## Il collo di bottiglia cambia
-
-Quando N agenti possono lavorare contemporaneamente, il collo di bottiglia non è più la produzione.
-
-Diventa:
-
-- priorità;
-- coordinamento;
-- risoluzione dei conflitti;
-- qualità degli obiettivi;
-- capacità di verifica;
-- decisione.
-
-Questo è uno dei motivi per cui analytical thinking, business understanding e semantica acquistano valore proprio mentre la capacità tecnica diventa più accessibile.
-
-**Il futuro dell'analista non è competere con dieci agenti. È saper dirigere dieci agenti verso una risposta che meriti fiducia.**
+> **Il futuro dell'analista non è competere con dieci agenti. È saper dirigere dieci agenti verso una risposta che meriti fiducia.**
