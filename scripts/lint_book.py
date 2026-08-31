@@ -15,6 +15,10 @@ WORD_RE = re.compile(r"\b[\wÀ-ÖØ-öø-ÿ’'-]+\b", re.UNICODE)
 URL_RE = re.compile(r"https?://[^\s)>]+")
 DISPLAY_MATH_RE = re.compile(r"\\\[(.*?)\\\]", re.DOTALL)
 LATEX_COMMAND_RE = re.compile(r"\\(?:frac|sqrt|sum|prod|int|alpha|beta|sigma|mu|theta|hat|bar)\b")
+ASCII_ACCENT_RE = re.compile(
+    r"\b(?:e'|piu'|puo'|cosi'|perche'|gia'|pero'|qualita'|attivita'|realta'|probabilita'|modalita'|unita'|societa')\b",
+    re.IGNORECASE,
+)
 
 
 def prefix(path: Path) -> int:
@@ -45,6 +49,7 @@ def main() -> int:
     total_files = 0
     external_urls: set[str] = set()
     math_files: list[Path] = []
+    ascii_accent_files: list[Path] = []
 
     chapter_dirs = sorted(
         [p for p in CHAPTERS_DIR.glob("*_chapter") if p.is_dir()],
@@ -87,6 +92,8 @@ def main() -> int:
 
             if DISPLAY_MATH_RE.search(text) or LATEX_COMMAND_RE.search(text):
                 math_files.append(path)
+            if ASCII_ACCENT_RE.search(text):
+                ascii_accent_files.append(path)
 
             if not text.strip():
                 errors.append(f"{path}: file vuoto.")
@@ -140,6 +147,7 @@ def main() -> int:
     print(f"- caratteri: {total_chars:,}".replace(",", "."))
     print(f"- URL esterni distinti: {len(external_urls)}")
     print(f"- file con notazione matematica/LaTeX: {len(math_files)}")
+    print(f"- file con accenti ASCII da normalizzare: {len(ascii_accent_files)}")
     print(
         f"- pagine indicative: {approx_pages_300:.0f} a 300 parole/pagina; "
         f"{approx_pages_250:.0f} a 250 parole/pagina"
@@ -150,6 +158,11 @@ def main() -> int:
             "Notazione matematica presente in "
             f"{len(math_files)} file: la build corrente la conserva come testo, "
             "ma una release tipografica richiede un renderer di formule o una normalizzazione editoriale."
+        )
+    if ascii_accent_files:
+        warnings.append(
+            "Ortografia ASCII (per esempio e', piu', puo') presente in "
+            f"{len(ascii_accent_files)} file: eseguire una normalizzazione linguistica prima della release."
         )
 
     if warnings:
