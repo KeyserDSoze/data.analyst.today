@@ -1,208 +1,196 @@
 ## 0.3 Verificare senza rifare tutto a mano
-Se per usare l'AI dobbiamo rifare manualmente ogni passaggio, abbiamo perso gran parte del vantaggio.
 
-Ma se non verifichiamo nulla, abbiamo perso il controllo.
+Se per usare l'AI dobbiamo replicare manualmente ogni passaggio, perdiamo gran parte del vantaggio.
 
-La domanda corretta non è quindi:
+Se invece non verifichiamo nulla, perdiamo il controllo.
+
+La domanda utile non è:
 
 > “Devo ricontrollare tutto?”
 
-La domanda è:
+È:
 
-> **“Quale sistema di controlli mi permette di ottenere sufficiente fiducia senza replicare l'intero lavoro?”**
+> **“Quale sistema di controlli mi dà fiducia sufficiente per questa decisione senza duplicare l'intero lavoro?”**
 
-È una differenza fondamentale.
+Questa è la differenza tra review artigianale e **verification by design**.
 
-## Verifica non significa duplicazione
+### Verificare non significa duplicare
 
-Un buon processo di verifica utilizza controlli indipendenti e mirati.
+Un buon controllo cerca i punti in cui il risultato potrebbe rompersi.
 
-Se un agente calcola il revenue mensile, non serve necessariamente riscrivere la stessa query da zero.
-
-Possiamo controllare:
+Se un agente calcola la revenue mensile, non è sempre necessario riscrivere la stessa query da zero. Possiamo controllare, per esempio:
 
 - il totale contro Finance;
-- il numero di ordini contro la sorgente operativa;
-- alcuni record campione;
+- il numero di ordini contro una sorgente operativa;
 - la cardinalità dei join;
-- la coerenza con il mese precedente;
+- alcuni record campione;
 - la somma dei segmenti rispetto al totale;
-- la presenza di valori impossibili.
+- la coerenza con periodi precedenti;
+- valori impossibili o salti inattesi.
 
-Se un agente costruisce un modello predittivo, possiamo verificare:
+Se un agente costruisce un modello predittivo, i controlli cambiano:
 
-- split temporale o casuale corretto;
-- leakage;
-- baseline semplice;
+- split corretto;
+- assenza di leakage;
+- confronto con una baseline semplice;
 - metriche su holdout;
 - calibrazione;
-- stabilità su segmenti;
-- performance dopo il deployment.
+- stabilità sui segmenti;
+- monitoraggio dopo il deployment.
 
-Se un agente propone una spiegazione causale, possiamo controllare:
+Se propone una spiegazione causale, cambiano ancora:
 
-- temporalità;
+- ordine temporale;
 - confondenti plausibili;
 - gruppi comparabili;
 - design sperimentale o quasi-sperimentale;
-- alternative explanation.
+- spiegazioni alternative compatibili con i dati.
 
-La verifica deve cercare **punti di rottura**, non replicare ogni operazione.
+La verifica non replica l'analisi. **La mette sotto pressione nei punti in cui un errore sarebbe più probabile o più costoso.**
 
-## Il principio dei controlli ortogonali
+### Il principio dei controlli ortogonali
 
-Un controllo è particolarmente utile quando misura il risultato da un'angolazione diversa.
+Un controllo è particolarmente informativo quando usa una strada diversa da quella che ha prodotto il risultato.
 
-Se una query dice che il fatturato è €12,4M e un secondo agente riscrive la stessa query con la stessa logica, abbiamo due implementazioni della stessa assunzione.
+Supponiamo che una query calcoli fatturato per €12,4 milioni. Chiedere a un secondo agente di riscrivere la stessa query, con la stessa metrica e le stesse tabelle, può essere utile per trovare errori di implementazione.
 
-Non necessariamente due evidenze indipendenti.
+Ma non ci protegge necessariamente da un'assunzione semantica condivisa.
 
-Meglio confrontare il dato con:
+Se entrambe le query usano la tabella sbagliata, possono concordare perfettamente.
+
+Per aumentare l'indipendenza possiamo confrontare il risultato con:
 
 - ledger Finance;
 - incassi;
 - ordini spediti;
-- reconciliation esistente;
-- trend storico.
-
-Questo principio può essere espresso così:
+- reconciliation esistenti;
+- trend storici;
+- una sorgente con grain diverso.
 
 > **Più il controllo è indipendente dall'errore che stiamo cercando, più è informativo.**
 
-## Caso realistico: una query giusta per la tabella sbagliata
+### Caso simulato/composito: la query giusta sulla tabella sbagliata
 
 Un agente riceve il compito:
 
 > “Calcola il churn mensile degli abbonati.”
 
-Genera una query formalmente corretta usando `subscriptions_current`.
+Genera una query formalmente corretta usando `subscriptions_current` e restituisce un churn del 4,1%.
 
-Il risultato mostra churn al 4,1%.
+Il numero è plausibile. La query passa la review sintattica. Un secondo agente, leggendo la stessa tabella, conferma il risultato.
 
-Il dato sembra plausibile.
+Il problema è nella sorgente: `subscriptions_current` contiene soltanto lo stato corrente degli abbonamenti e rimuove le sottoscrizioni cancellate dopo 90 giorni.
 
-Ma `subscriptions_current` contiene solo lo stato corrente degli abbonamenti.
+La query è corretta. Il modello mentale del dato è sbagliato.
 
-Le sottoscrizioni cancellate vengono rimosse dalla tabella dopo 90 giorni.
+Un controllo ortogonale ricostruisce la metrica usando eventi di cancellazione, snapshot mensili, fatturazione e confronto con il reporting Finance.
 
-La query è corretta.
+Il churn risulta 6,8%.
 
-La fonte non è adatta a una misura storica.
+Questo è il tipo di errore che l'AI non elimina, perché nasce **prima del codice**: nella scelta della rappresentazione del fenomeno.
 
-Un secondo agente che legge la stessa tabella potrebbe confermare il 4,1%.
+### Una verification stack a quattro livelli
 
-Un controllo ortogonale usa invece:
+Per analisi importanti è utile distinguere quattro famiglie di controllo.
 
-- eventi di cancellazione;
-- snapshot mensili;
-- fatturazione;
-- confronto con il report Finance.
+#### 1. Controlli deterministici
 
-Il churn ricostruito risulta 6,8%.
+Verificano proprietà che dovrebbero essere vere senza interpretazione:
 
-Il problema non era il codice.
-
-Era il modello mentale del dato.
-
-## Verification stack
-
-Per analisi importanti possiamo pensare a quattro livelli.
-
-### 1. Controlli deterministici
-
-- unique;
-- not null;
-- range;
+- `unique`;
+- `not null`;
+- range ammessi;
 - referential integrity;
 - row count;
 - reconciliation;
 - freshness.
 
-### 2. Controlli statistici
+Sono candidati naturali all'automazione.
+
+#### 2. Controlli statistici
+
+Verificano se il comportamento del dato è compatibile con ciò che ci aspettiamo:
 
 - distribuzioni;
 - drift;
 - anomalie;
 - intervalli attesi;
-- benchmark storico.
+- benchmark storico;
+- stabilità per segmento.
 
-### 3. Controlli semantici
+#### 3. Controlli semantici
+
+Verificano che stiamo misurando davvero il fenomeno che crediamo di misurare:
 
 - grain;
-- definizione metrica;
+- definizione della metrica;
 - denominatore;
 - popolazione;
 - finestra temporale;
-- inclusioni/esclusioni.
+- inclusioni ed esclusioni;
+- significato delle date e degli stati.
 
-### 4. Controlli decisionali
+#### 4. Controlli decisionali
+
+Verificano se l'evidenza è sufficiente per l'azione proposta:
 
 - l'effetto è materialmente rilevante?
 - l'incertezza è compatibile con la decisione?
-- il risultato è causale o descrittivo?
+- stiamo descrivendo o sostenendo una relazione causale?
 - esiste una spiegazione alternativa credibile?
+- la decisione è reversibile se l'ipotesi si rivela sbagliata?
 
-I primi controlli possono essere fortemente automatizzati.
+I primi livelli possono essere automatizzati molto. Gli ultimi richiedono più contesto e giudizio.
 
-Gli ultimi richiedono molto più giudizio.
+### Quando gli output diventano troppi: campionare il rischio
 
-## Campionare invece di leggere tutto
+Con sistemi agentici non è realistico leggere tutto con la stessa profondità.
 
-Quando gli agenti producono molti output, la review può usare campionamento intelligente.
-
-Non leggiamo 500 query.
-
-Possiamo selezionare:
+La review può concentrarsi su:
 
 - output ad alto impatto;
-- casi con bassa confidence;
 - risultati molto diversi dalla baseline;
-- segmenti rari;
-- query con molti join;
-- casi che modificano dati o sistemi;
-- output scelti casualmente per audit.
+- casi rari o fuori distribuzione;
+- analisi con molti join o trasformazioni;
+- output che modificano dati o sistemi;
+- casi in cui gli agenti sono in disaccordo;
+- un campione casuale, utile per intercettare failure mode non previsti.
 
-Questa logica assomiglia al quality control in produzione.
+La logica è simile al quality control: non serve ispezionare ogni vite con lo stesso metodo, ma il processo deve rendere probabile l'individuazione dei difetti importanti.
 
-## Red team interno
+### Usare un agente come critico
 
-Un pattern molto utile è assegnare a un agente il compito di contestare il risultato.
+Un pattern utile è separare chi produce la risposta da chi ha il mandato di contestarla.
 
-Non:
+Invece di chiedere:
 
 > “Verifica questa analisi.”
 
-ma:
+possiamo chiedere:
 
-> “Assumi che questa conclusione sia sbagliata. Trova tre modi plausibili in cui potremmo esserci ingannati e proponi test per distinguerli.”
+> “Assumi che questa conclusione sia sbagliata. Trova tre modi plausibili in cui potremmo esserci ingannati e proponi test che distinguano le alternative.”
 
-Il risultato non diventa automaticamente vero perché nessun controesempio emerge.
+Il fatto che un critic agent non trovi errori non rende automaticamente vera la conclusione. Ma costringe il processo a cercare evidenza contraria invece di accumulare soltanto conferme.
 
-Ma il processo riduce il rischio di confirmation bias.
+### La profondità della review deve seguire il rischio
 
-## Quando serve ancora la review manuale
+La review umana approfondita diventa particolarmente importante quando:
 
-La review umana approfondita resta particolarmente importante quando:
-
-- l'azione è irreversibile;
+- l'azione è difficile da invertire;
 - l'impatto finanziario è elevato;
 - sono coinvolte persone;
-- ci sono implicazioni normative;
+- esistono implicazioni normative;
 - il sistema opera fuori distribuzione;
 - gli agenti sono in disaccordo;
-- l'evidenza è nuova o sorprendente;
-- la spiegazione dipende da molte assunzioni.
+- il risultato è nuovo o sorprendente;
+- la conclusione dipende da molte assunzioni.
 
-La documentazione Microsoft sugli agenti raccomanda di mantenere human-in-the-loop per azioni consequenziali e di definire escalation chiare; la profondità della governance dovrebbe crescere con il rischio dell'agente.
+Le linee guida Microsoft sugli agenti insistono su human oversight, escalation e governance proporzionata al rischio.
 
 Fonti:
 - https://learn.microsoft.com/en-us/agents/center-of-excellence/responsible-ai
 - https://learn.microsoft.com/en-us/agents/center-of-excellence/govern-agents-risk
 
-## La regola pratica
-
 > **Non verificare tutto allo stesso modo. Verifica in proporzione a rischio, novità, impatto e incertezza.**
 
-Il professionista AI-native non sostituisce il lavoro manuale con la fiducia cieca.
-
-Sostituisce il controllo riga-per-riga con un sistema di evidenze, test, campionamento, audit ed escalation.
+Il professionista AI-native non sostituisce il lavoro manuale con la fiducia cieca. Sostituisce il controllo riga-per-riga con un sistema di evidenze, test, campionamento, audit ed escalation.
