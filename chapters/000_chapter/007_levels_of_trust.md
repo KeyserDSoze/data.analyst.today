@@ -1,30 +1,39 @@
 ## 0.6 Livelli di fiducia: non tutti gli output AI meritano lo stesso trattamento
-Uno degli errori più comuni nell'uso dell'AI è trattare tutti gli output come se avessero lo stesso grado di affidabilità.
 
-Non è così.
+Uno degli errori più comuni nell'uso dell'AI è applicare lo stesso livello di fiducia e di review a qualsiasi output.
 
 Una bozza di email interna e una raccomandazione che modifica un prezzo non hanno lo stesso profilo di rischio.
 
 Una query esplorativa e una query che alimenta il reporting finanziario non richiedono lo stesso livello di verifica.
 
-Un brainstorming di ipotesi e una decisione causale non sono equivalenti.
+Un brainstorming di ipotesi e una conclusione causale non sono equivalenti.
 
-## Fiducia come funzione del contesto
+La domanda corretta non è quindi:
 
-Possiamo pensare la fiducia richiesta come funzione di almeno quattro dimensioni:
+> “Quanto mi fido dell'AI?”
 
-- **impatto** dell'errore;
-- **reversibilità** dell'azione;
-- **incertezza** dell'output;
-- **osservabilità** degli effetti.
+È:
 
-Più cresce l'impatto e diminuisce la reversibilità, più dobbiamo alzare il livello di controllo.
+> **“Quanta fiducia devo richiedere a questo output, dato l'uso che ne farò?”**
 
-## Un modello operativo a quattro livelli
+### La fiducia dipende dall'uso, non soltanto dal modello
 
-### Livello 1 — Draft
+Possiamo ragionare almeno su quattro dimensioni:
 
-L'AI produce una bozza o un supporto creativo.
+- **impatto** — quanto costa sbagliare?
+- **reversibilità** — quanto è semplice annullare l'azione?
+- **incertezza** — quanto è fragile l'evidenza?
+- **osservabilità** — quanto rapidamente ci accorgeremmo dell'errore?
+
+A queste si possono aggiungere contesto normativo, sensibilità dei dati e portata dell'azione.
+
+Il punto è che lo stesso sistema può essere perfettamente accettabile in un contesto e inadeguato in un altro.
+
+### Un modello operativo a quattro livelli
+
+#### Livello 1 — Draft
+
+L'AI produce una bozza che una persona può correggere facilmente.
 
 Esempi:
 
@@ -33,90 +42,102 @@ Esempi:
 - elenco di ipotesi;
 - documentazione iniziale.
 
-Qui la review può essere leggera.
+Il costo dell'errore è basso e la reversibilità alta. La review può essere leggera.
 
-### Livello 2 — Assisted execution
+#### Livello 2 — Assisted execution
 
-L'AI esegue attività operative ma entro confini chiari.
+L'AI esegue attività operative entro confini chiari.
 
 Esempi:
 
-- generazione di SQL su metriche certificate;
+- generazione SQL su metriche certificate;
 - data profiling;
 - test di qualità;
-- produzione di grafici.
+- produzione di grafici;
+- classificazione preliminare di anomalie.
 
-Servono controlli automatici e campionamento.
+Qui servono controlli automatici, tracciabilità e campionamento.
 
-### Livello 3 — Decision support
+#### Livello 3 — Decision support
 
-L'AI influenza decisioni importanti ma non agisce direttamente.
+L'output influenza decisioni importanti, anche se una persona mantiene l'ultima parola.
 
 Esempi:
 
 - forecast per budgeting;
 - ranking clienti per retention;
 - analisi pricing;
-- identificazione dei driver di churn.
+- identificazione dei driver di churn;
+- prioritizzazione di interventi operativi.
 
-Qui servono review umana, alternative explanation, validazione e accountability chiara.
+Qui diventano centrali review umana, validazione, spiegazioni alternative, analisi dell'incertezza e accountability chiara.
 
-### Livello 4 — Consequential action
+#### Livello 4 — Consequential action
 
-L'AI può agire direttamente su sistemi, persone o denaro.
+Il sistema può agire direttamente su persone, denaro o sistemi critici.
 
 Esempi:
 
 - modificare prezzi;
-- bloccare transazioni;
 - allocare budget;
+- bloccare transazioni;
 - cancellare account;
-- modificare configurazioni di produzione.
+- cambiare configurazioni di produzione.
 
-Qui l'autonomia deve essere molto più controllata, con approval, logging, rollback e stop conditions.
+Qui servono limiti di autorità, logging, approval, rollback, stop condition e controlli indipendenti molto più forti.
 
-## Caso realistico: stesso modello, uso diverso
+Questi livelli non sono una certificazione formale. Sono un modo semplice per impedire che una demo convincente venga trattata come un sistema pronto per qualsiasi conseguenza.
+
+### Caso simulato/composito: stesso score, tre rischi diversi
 
 Un modello stima la probabilità che un cliente abbandoni.
 
-Se viene usato per ordinare una lista che un account manager esamina manualmente, il rischio è relativamente limitato.
+**Uso A.** Lo score ordina una lista che un account manager esamina manualmente.
 
-Se lo stesso score viene usato per concedere automaticamente uno sconto del 30%, il rischio economico aumenta.
+Un falso positivo costa principalmente tempo. Il modello è un supporto alla prioritizzazione.
 
-Se viene usato per negare automaticamente un servizio, il profilo cambia ancora.
+**Uso B.** Lo stesso score concede automaticamente uno sconto del 30%.
 
-Lo stesso output tecnico può richiedere livelli di governance completamente diversi in base all'uso.
+Ora un errore produce un costo economico diretto e può insegnare ai clienti comportamenti indesiderati.
 
-## La fiducia deve essere guadagnata
+**Uso C.** Lo score viene usato per negare automaticamente un servizio.
 
-Un sistema AI non dovrebbe passare direttamente da demo a piena autonomia.
+Il profilo di rischio cambia ancora: entrano in gioco impatto sulle persone, policy, possibili discriminazioni e requisiti di governance molto più forti.
 
-Possiamo costruire una progressione:
+La tecnologia è la stessa. Cambia la decisione collegata all'output.
 
-1. shadow mode;
-2. confronto con decisioni umane;
-3. autonomia su casi semplici;
-4. escalation sui casi ambigui;
-5. espansione graduale del perimetro.
+> **Non esiste un livello di fiducia “del modello” separato dal contesto in cui quel modello viene usato.**
 
-Questa logica permette di osservare failure mode prima di concedere autorità maggiore.
+### L'autonomia si guadagna gradualmente
 
-Microsoft propone esplicitamente di governare gli agenti per livelli di rischio, con controlli più intensi per agenti che possono incidere su persone, denaro o processi critici.
+Un sistema AI non dovrebbe passare direttamente da prototipo a piena autonomia soltanto perché una demo funziona.
+
+Una progressione più prudente può essere:
+
+1. **offline evaluation** — test su casi storici e scenari noti;
+2. **shadow mode** — il sistema produce output senza agire;
+3. **confronto con decisioni umane** — misuriamo accordi, disaccordi e failure mode;
+4. **autonomia su casi semplici** — perimetro limitato e reversibile;
+5. **escalation sui casi ambigui** — il sistema sa quando non procedere;
+6. **espansione graduale** — l'autorità cresce soltanto dopo evidenza operativa sufficiente.
+
+Questa progressione crea una storia di affidabilità osservata, invece di sostituirla con una promessa.
+
+Microsoft propone esplicitamente una governance degli agenti proporzionata al rischio e all'impatto delle azioni che possono compiere.
 
 Fonte:
 - https://learn.microsoft.com/en-us/agents/center-of-excellence/govern-agents-risk
 
-## Fiducia non significa certezza
+### Fiducia non significa certezza
 
 Anche un sistema molto ben validato può sbagliare.
 
-Il punto non è eliminare ogni rischio.
-
-È sapere:
+Il punto non è promettere rischio zero. È sapere:
 
 - quale rischio stiamo accettando;
-- perché;
-- con quali controlli;
-- con quale piano di recovery.
+- perché è accettabile;
+- quali segnali ci avviseranno di un problema;
+- chi interviene;
+- come recuperiamo o limitiamo il danno.
 
 > **La fiducia professionale non è credere che il sistema non sbaglierà. È sapere come ci accorgeremo che sta sbagliando e cosa faremo dopo.**
