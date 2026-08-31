@@ -11,6 +11,7 @@ Il corpo principale del manoscritto comprende oggi i **Capitoli 0–19** ed è e
 ```text
 data.analyst.today/
 ├── README.md
+├── EDITORIAL_AUDIT.md
 ├── requirements.txt
 ├── book.yml
 ├── chapters/
@@ -21,7 +22,8 @@ data.analyst.today/
 │   └── 019_chapter/
 ├── scripts/
 │   ├── build.py
-│   └── lint_book.py
+│   ├── lint_book.py
+│   └── normalize_sources.py
 └── build/
     ├── data-analyst-today.md
     ├── data-analyst-today.docx
@@ -62,6 +64,7 @@ Questo permette di lavorare su una sezione alla volta senza trasformare il manos
 - I prefissi dei file devono essere univoci e contigui all'interno di ogni capitolo.
 - Il primo heading del capitolo usa `#`.
 - Le sezioni interne usano `##`, `###`, ecc.
+- Il file introduttivo può contenere una sezione `X.0` e, quando editorialmente utile, anche la prima sezione numerata `X.1`; il lint ricava quindi la sequenza effettiva dal contenuto del capitolo invece di assumere rigidamente che `002_*.md` sia sempre `X.1`.
 - Citazioni e fonti vengono inserite direttamente nel Markdown.
 - Il testo sorgente rimane sempre in Markdown; DOCX e PDF sono artefatti generati.
 - Non modificare manualmente i file dentro `build/`: vengono ricreati dallo script.
@@ -106,18 +109,22 @@ pip install -r requirements.txt
 Prima della build:
 
 ```bash
+python scripts/normalize_sources.py --check
 python scripts/lint_book.py
 ```
+
+`normalize_sources.py --check` impedisce di reintrodurre heading numerati interni come H1 e alcune vecchie grafie ASCII (`e'`, `piu'`, `puo'`, ecc.) nel testo italiano.
 
 Il lint controlla, tra le altre cose:
 
 - continuità delle cartelle dei capitoli;
 - prefissi duplicati o mancanti;
-- corrispondenza tra prefisso file e numero della sezione;
+- corrispondenza tra ordine dei file e numero delle sezioni;
 - heading interni scritti accidentalmente come H1;
 - file vuoti;
 - placeholder editoriali `TODO`, `FIXME` o `TBD`;
 - link contenenti `utm_source=chatgpt.com`;
+- presenza di notazione matematica ancora da tipografare;
 - conteggio indicativo di parole e pagine.
 
 Per trasformare anche i warning editoriali in errori:
@@ -154,6 +161,18 @@ build/data-analyst-today.pdf
 
 Il Markdown aggregato è utile anche per controllare esattamente quale testo è entrato nella build.
 
+## Dimensione misurata del manoscritto
+
+L'audit automatico del 31 agosto 2026 ha misurato:
+
+- **20 capitoli** (`0–19`);
+- **321 file Markdown**;
+- circa **166.160 parole**;
+- **119 URL esterni distinti**;
+- una build PDF tecnica corrente di **745 pagine**.
+
+Le 745 pagine non sono ancora il page count editoriale definitivo: font, formule, tabelle, indice e impaginazione finale potranno modificarlo. Dimostrano però che il progetto ha già superato ampiamente l'obiettivo iniziale di un libro da 400+ pagine.
+
 ## Filosofia del progetto
 
 Il libro distingue continuamente tre livelli:
@@ -166,13 +185,15 @@ L'AI rende il primo livello sempre più economico. Per questo il libro dedica pa
 
 ## Stato editoriale
 
-Il manoscritto principale è completo nei Capitoli 0–19. La fase corrente riguarda:
+Il manoscritto principale è completo nei Capitoli 0–19. La pipeline CI verifica ora normalizzazione delle sorgenti, struttura, lint, build Markdown/DOCX/PDF e page count del PDF.
+
+La fase corrente riguarda soprattutto:
 
 - revisione di coerenza e riduzione delle ripetizioni;
-- normalizzazione delle convenzioni Markdown;
-- verifica delle fonti e della distinzione tra casi documentati e simulati;
-- controllo della build DOCX/PDF;
-- valutazione della lunghezza effettiva e dell'impaginazione;
+- verifica puntuale delle fonti e della distinzione tra casi documentati e simulati;
+- tipografia delle formule matematiche;
+- revisione visiva di DOCX/PDF, tabelle e blocchi di codice;
+- front matter, indice e apparati editoriali;
 - preparazione della prima release stabile.
 
 ## Licenza
