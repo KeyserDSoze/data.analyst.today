@@ -1,0 +1,61 @@
+name: Book CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint manuscript
+        run: python scripts/lint_book.py
+
+      - name: Build book
+        run: python scripts/build.py
+
+      - name: Inspect outputs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from pypdf import PdfReader
+
+          pdf = Path("build/data-analyst-today.pdf")
+          docx = Path("build/data-analyst-today.docx")
+          md = Path("build/data-analyst-today.md")
+
+          pages = len(PdfReader(str(pdf)).pages)
+          print(f"PDF pages: {pages}")
+          print(f"PDF size: {pdf.stat().st_size:,} bytes")
+          print(f"DOCX size: {docx.stat().st_size:,} bytes")
+          print(f"Markdown size: {md.stat().st_size:,} bytes")
+          PY
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-analyst-today-build
+          path: |
+            build/data-analyst-today.md
+            build/data-analyst-today.docx
+            build/data-analyst-today.pdf
+          if-no-files-found: error
