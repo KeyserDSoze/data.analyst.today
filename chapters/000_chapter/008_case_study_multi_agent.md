@@ -1,168 +1,120 @@
 ## 0.7 Caso end-to-end: dodici agenti, un analista, una decisione
-Consideriamo una società SaaS B2B, **NovaSuite**, con circa €95 milioni di ARR.
+
+**Caso simulato/composito.** Consideriamo una società SaaS B2B, **NovaSuite**, con circa €95 milioni di ARR.
 
 Un lunedì mattina il CEO riceve un alert:
 
-> “Il net revenue retention enterprise è sceso dal 112% al 104%.”
+> “Il Net Revenue Retention enterprise è sceso dal 112% al 104%.”
 
-È un segnale grave.
+Otto punti percentuali sono abbastanza per richiedere attenzione immediata. Ma non abbastanza per dire, da soli, che cosa sia successo.
 
-Il responsabile analytics dispone di una squadra di agenti specializzati.
+Il responsabile analytics dispone di una squadra di agenti specializzati. Il vantaggio non sta nel chiedere a dodici agenti la stessa domanda. Sta nel dare a ciascuno un ruolo diverso nella costruzione dell'evidenza.
 
-## Fase 1 — Delega
+### Fase 1 — Decomporre il problema
 
 L'analista assegna compiti distinti.
 
-### Agent 1 — Metric definition
+| Agente | Mandato | Risultato iniziale |
+|---|---|---|
+| Metric definition | recuperare la definizione certificata di NRR | stessa base clienti, nuovi loghi esclusi |
+| Data health | controllare freshness, completeness e schema | nessuna anomalia evidente |
+| Reconciliation | confrontare ARR con Finance | differenza 0,4%, entro tolleranza |
+| Segmentation | localizzare il delta | calo concentrato nell'enterprise europeo |
+| Product usage | cercare cambiamenti di comportamento | uso di una feature premium in diminuzione |
+| Support | analizzare ticket e temi | ticket performance in aumento |
+| Pricing | ricostruire variazioni di listino | alcuni rinnovi europei hanno prezzi più alti |
+| Release history | ricostruire i cambiamenti tecnici | release backend sei settimane prima |
+| NRR decomposition | separare churn, contraction ed expansion | contraction è il contributo maggiore |
+| Causal critic | contestare le prime spiegazioni | pricing e feature exposure sono confusi |
+| Counterfactual search | cercare gruppi meno esposti | cluster e account con esposizione diversa |
+| Executive draft | preparare una prima sintesi | propone di sospendere il nuovo listino |
 
-Recupera la definizione certificata di NRR e conferma:
+La decomposizione del NRR è particolarmente utile:
 
-- popolazione: clienti enterprise attivi all'inizio del periodo;
-- numerator: ARR finale della stessa base clienti;
-- include expansion e contraction;
-- include churn;
-- esclude nuovi loghi.
+- churn: -2,1 punti percentuali;
+- contraction: -4,7 punti;
+- minore expansion: -1,2 punti.
 
-### Agent 2 — Data health
+Il problema dominante non è quindi “più clienti che se ne vanno”. È che clienti esistenti stanno riducendo il valore del contratto.
 
-Controlla freshness, completeness e schema.
+Già questo cambia la domanda investigativa.
 
-Tutto sembra regolare.
+### Fase 2 — Non confondere una sintesi elegante con una conclusione
 
-### Agent 3 — Reconciliation
-
-Confronta ARR aggregato con Finance.
-
-Trova una differenza dello 0,4%: entro la tolleranza abituale.
-
-### Agent 4 — Segmentation
-
-Mostra che quasi tutto il calo è concentrato nel segmento enterprise europeo.
-
-### Agent 5 — Product usage
-
-Trova una riduzione dell'utilizzo di una feature premium.
-
-### Agent 6 — Support
-
-Trova aumento dei ticket relativi a performance.
-
-### Agent 7 — Pricing
-
-Nota che alcuni rinnovi europei hanno ricevuto un aumento di listino.
-
-### Agent 8 — Release history
-
-Trova una release backend avvenuta sei settimane prima.
-
-### Agent 9 — Churn decomposition
-
-Scompone il delta NRR:
-
-- churn: -2,1 pp;
-- contraction: -4,7 pp;
-- expansion: -1,2 pp.
-
-Il problema principale è quindi contraction, non churn.
-
-### Agent 10 — Causal critic
-
-Contesta l'ipotesi pricing:
-
-> “Gli account con aumento prezzo coincidono in gran parte con account grandi che hanno anche maggiore esposizione alla feature premium.”
-
-### Agent 11 — Counterfactual search
-
-Cerca gruppi comparabili con e senza esposizione alla release.
-
-### Agent 12 — Executive writer
-
-Produce una prima sintesi:
+L'agent incaricato dell'executive draft produce:
 
 > “La riduzione NRR è probabilmente causata dall'aumento di prezzo europeo. Raccomandiamo di sospendere il nuovo listino.”
 
-## Fase 2 — Il momento in cui serve il timoniere
+La frase è plausibile. È anche prematura.
 
-L'output dell'Agent 12 è elegante e plausibile.
+Il responsabile analytics non la inoltra. Fa tre domande.
 
-Ma il responsabile analytics non lo inoltra.
+**1. Il prezzo precede davvero il contraction?**
 
-Fa tre domande.
+Per diversi account, la riduzione di seat o moduli compare prima del rinnovo con il nuovo listino. Il pricing non può quindi spiegare l'intero fenomeno.
 
-### Domanda 1 — Il prezzo precede davvero il contraction?
+**2. Il calo di utilizzo è una causa o un sintomo?**
 
-Per molti account, il contraction avviene prima del rinnovo con nuovo listino.
+Una feature usata meno potrebbe essere diventata meno utile. Oppure potrebbe essere diventata più lenta o instabile.
 
-Quindi il pricing non può spiegare l'intero fenomeno.
+**3. Quale evento cambia per primo?**
 
-### Domanda 2 — L'utilizzo della feature è una causa o un sintomo?
-
-Il calo di usage potrebbe essere conseguenza di problemi di performance.
-
-### Domanda 3 — Quale evento cambia prima degli altri?
-
-La timeline mostra:
+La timeline ricostruita mostra:
 
 1. release backend;
-2. aumento della latenza per workload pesanti;
-3. calo utilizzo feature premium;
-4. aumento ticket;
-5. riduzione seat e moduli al rinnovo;
+2. aumento della latenza sui workload più pesanti;
+3. riduzione nell'uso della feature premium;
+4. aumento dei ticket performance;
+5. riduzione di seat e moduli al rinnovo;
 6. contraction ARR.
 
-Ora emerge una catena causale più plausibile.
+La catena non dimostra ancora causalità, ma rende la spiegazione tecnica più coerente temporalmente dell'ipotesi pricing.
 
-## Fase 3 — Verifica indipendente
+### Fase 3 — Cercare controlli che non dipendano dalla stessa storia
 
-L'analista non accetta ancora la spiegazione.
+L'analista chiede verifiche ortogonali.
 
-Chiede controlli ortogonali.
+**Telemetria infrastrutturale.** La latenza p95 sui workload enterprise europei è aumentata del 38% dopo la release.
 
-### Controllo A — Telemetria infrastrutturale
+**Gruppo meno esposto.** I clienti enterprise statunitensi, serviti prevalentemente da un cluster diverso, non mostrano lo stesso aumento.
 
-Le metriche mostrano che la latenza p95 per il workload enterprise europeo è aumentata del 38% dopo la release.
+**Feature exposure.** Gli account che usano intensamente la feature colpita mostrano contraction molto più elevato.
 
-### Controllo B — Gruppo meno esposto
+**Account senza nuovo listino.** Anche clienti che non hanno ancora ricevuto l'aumento di prezzo mostrano calo di usage.
 
-I clienti enterprise americani, serviti da un cluster diverso, non mostrano lo stesso aumento.
+L'ultima evidenza è particolarmente importante: indebolisce una spiegazione che sembrava convincente perché separa il fenomeno operativo dalla variazione di prezzo.
 
-### Controllo C — Feature exposure
+### Fase 4 — Calibrare il linguaggio alla forza dell'evidenza
 
-Gli account con uso intensivo della feature colpita hanno contraction molto più elevato.
+A questo punto l'analista non dice:
 
-### Controllo D — Account non rinnovati
+> “Abbiamo dimostrato che la release ha causato il calo di NRR.”
 
-Anche clienti che non hanno ancora ricevuto il nuovo listino mostrano calo di usage.
+L'evidenza osservazionale non giustifica una certezza così forte.
 
-Questo indebolisce ulteriormente l'ipotesi pricing come driver principale.
+Formula invece la conclusione così:
 
-## Fase 4 — Gli agenti non decidono il livello di certezza
+> “La principale ipotesi supportata dai dati è che la release backend abbia degradato le performance per workload enterprise europei, riducendo l'adozione della feature premium e contribuendo alla contraction al rinnovo. Il pricing può avere amplificato il fenomeno in alcuni account, ma non ne spiega la sequenza temporale principale.”
 
-A questo punto l'evidenza è forte, ma non perfetta.
+È meno spettacolare della prima risposta automatica.
 
-L'analista formula la conclusione così:
+È molto più utile per decidere.
 
-> “La principale ipotesi supportata dai dati è che la release backend abbia degradato le performance per workload enterprise europei, riducendo l'adozione della feature premium e aumentando contraction al rinnovo. Il pricing può avere contribuito in alcuni account, ma non spiega temporalmente il fenomeno principale.”
+### Fase 5 — Scegliere un'azione proporzionata all'incertezza
 
-Questa formulazione è più lunga della raccomandazione automatica.
-
-Ed è migliore.
-
-## Fase 5 — Decisione proporzionata
-
-Il team non effettua immediatamente un rollback globale.
+Il team non effettua immediatamente un rollback globale e non annulla il listino.
 
 Decide di:
 
 - mitigare la configurazione sui cluster europei;
+- sospendere rollout aggiuntivi;
 - monitorare latenza e usage per 72 ore;
 - contattare gli account più colpiti;
-- sospendere temporaneamente rollout aggiuntivi;
-- mantenere il pricing invariato finché l'effetto non viene isolato meglio.
+- mantenere invariato il pricing finché il suo contributo non viene isolato meglio.
 
-La decisione è reversibile e mirata.
+La decisione è mirata, osservabile e in buona parte reversibile. Produce inoltre nuove evidenze: se la mitigazione migliora latenza e usage nei segmenti esposti, l'ipotesi tecnica guadagna forza.
 
-## Cosa ha fatto davvero l'analista?
+### Che cosa ha fatto davvero l'analista?
 
 Non ha scritto personalmente tutte le query.
 
@@ -172,35 +124,35 @@ Non ha letto manualmente migliaia di ticket.
 
 Non ha preparato la prima bozza del memo.
 
-Ha fatto qualcosa di più importante:
+Ha però:
 
-- ha definito la domanda;
-- ha assegnato ruoli;
-- ha separato esplorazione e decisione;
-- ha individuato conflitti;
-- ha chiesto controlli indipendenti;
-- ha ragionato sulla temporalità;
-- ha distinto correlazione e causalità;
-- ha calibrato la conclusione;
-- ha scelto un'azione proporzionata all'incertezza.
+- definito il fenomeno da misurare;
+- scomposto il problema in mandati diversi;
+- separato produzione, critica e decisione;
+- individuato un conflitto tra spiegazioni;
+- chiesto evidenze indipendenti;
+- ragionato sulla sequenza temporale;
+- distinto correlazione, plausibilità e causalità;
+- calibrato il linguaggio all'incertezza;
+- scelto un'azione proporzionata al rischio.
 
 Gli agenti hanno svolto gran parte dell'esecuzione.
 
-L'analista ha governato il sistema di evidenze.
+L'analista ha governato il **sistema di evidenze**.
 
-## Il contrasto
+### Il contrasto che conta
 
 Immaginiamo due risposte al CEO.
 
-Prima risposta:
+Prima:
 
 > “L'AI dice che è il pricing.”
 
-Seconda risposta:
+Seconda:
 
-> “Il pricing è emerso come prima ipotesi, ma non regge completamente alla verifica temporale. Abbiamo evidenza più forte su una degradazione backend che precede il calo di utilizzo e la contraction. Abbiamo verificato su telemetria e gruppi meno esposti. Propongo una mitigazione mirata e un monitoraggio di 72 ore prima di modificare il listino.”
+> “Il pricing è emerso come prima ipotesi, ma non regge completamente alla verifica temporale. Abbiamo evidenza più forte su una degradazione backend che precede il calo di utilizzo e la contraction. Il pattern compare nella telemetria e nei segmenti più esposti, mentre account senza nuovo listino mostrano comunque il calo di usage. Propongo una mitigazione mirata e 72 ore di monitoraggio prima di modificare il pricing.”
 
-Entrambe possono essere state prodotte usando la stessa tecnologia.
+Entrambe le risposte possono essere state prodotte con la stessa tecnologia.
 
 Solo una dimostra leadership analitica.
 
