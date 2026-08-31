@@ -1,98 +1,77 @@
-## 2.2 Parti dalla decisione, non dalla dashboard
+## 2.2 Specificare la decisione prima di progettare l'output
 
-Molte richieste analitiche vengono formulate in termini di output:
+Molte richieste arrivano già nella forma di un deliverable:
 
-- "Mi fai una dashboard?"
-- "Mi serve un report settimanale."
-- "Vorrei vedere questi KPI."
-- "Puoi fare un grafico per regione?"
+- “Mi fai una dashboard?”
+- “Mi serve un report settimanale.”
+- “Vorrei vedere questi KPI.”
+- “Puoi fare un grafico per regione?”
 
-L'output, però, non è ancora il bisogno.
+Il deliverable può essere appropriato. Ma non è ancora il requisito fondamentale.
 
-Una dashboard è utile solo se migliora una decisione, un controllo o un'azione. Se non sappiamo quale decisione dovrebbe supportare, rischiamo di costruire un'interfaccia elegante che nessuno usa davvero.
+Prima dobbiamo capire **quale decisione, controllo o comportamento dovrebbe migliorare** grazie a quell'output.
 
-### La domanda più importante
+### La decision specification
 
-Prima di costruire qualsiasi artefatto analitico chiedi:
+Per il brief è utile annotare cinque elementi.
 
-> **Quale decisione dovrebbe diventare più facile o migliore grazie a questa analisi?**
+**Decisione.** Che cosa deve essere scelto, modificato o monitorato?
 
-Questa domanda separa immediatamente tre casi diversi.
+**Owner.** Chi ha l'autorità di agire?
 
-### Caso A - Monitoraggio
+**Alternative.** Quali opzioni sono realmente disponibili?
 
-La decisione è ricorrente e operativa.
+**Timing.** Quando deve essere presa la decisione e con quale frequenza si ripete?
 
-Esempio:
+**Conseguenze dell'errore.** Che cosa costa agire troppo presto, troppo tardi o nella direzione sbagliata?
 
-> Ogni mattina il responsabile logistico deve capire quali ordini rischiano di non essere consegnati in tempo.
+Queste informazioni cambiano direttamente il disegno dell'analisi.
 
-Qui una dashboard aggiornata frequentemente può essere appropriata.
+### Tre decisioni, tre prodotti diversi
 
-### Caso B - Diagnosi
+**Monitoraggio operativo.**
 
-Esiste un problema e vogliamo comprenderne le cause plausibili.
+Ogni mattina il responsabile logistico deve decidere quali spedizioni richiedono intervento. Qui possono servire dati freschi, alert e un'interfaccia ricorrente.
 
-Esempio:
+**Diagnosi ad hoc.**
 
-> Il tasso di conversione è sceso del 12% e dobbiamo capire dove si concentra il calo.
+La conversione è scesa del 12% e il product team deve capire quale parte del funnel investigare. Una EDA mirata e un memo possono essere più utili di una dashboard permanente.
 
-Qui potrebbe essere più utile un'analisi esplorativa ad hoc che una nuova dashboard permanente.
+**Scelta tra alternative.**
 
-### Caso C - Scelta
+Il team commerciale deve decidere tra sconto, spedizione gratuita e nessun intervento. Servono scenari, impatto economico, guardrail e incertezza.
 
-Dobbiamo selezionare un'alternativa.
+Lo stesso database può alimentare tutti e tre i casi. Il prodotto analitico cambia perché cambia la decisione.
 
-Esempio:
+### La domanda che smaschera i report senza uso
 
-> Dobbiamo decidere se aumentare lo sconto, investire nella spedizione gratuita oppure lasciare invariata l'offerta.
+Prova a completare:
 
-Qui servono scenari, stime di impatto, costi, rischi e incertezza.
+> **“Se scoprissimo che ________, il decision owner potrebbe decidere di ________.”**
 
-### La decisione determina l'analisi
+Se nessun risultato plausibile porta a una scelta diversa, il lavoro può avere comunque valore informativo, ma non dovremmo presentarlo come decision support senza chiarire il processo che lo userà.
 
-Se la decisione è diversa, cambiano anche:
+### Decisione e soglia d'azione
 
-- dati richiesti;
-- frequenza di aggiornamento;
-- metriche;
-- livello di precisione;
-- metodo statistico;
-- visualizzazione;
-- tolleranza all'errore;
-- destinatario;
-- formato dell'output.
+Quando possibile, il brief dovrebbe anticipare anche che cosa renderebbe un risultato abbastanza importante da modificare una scelta.
 
-Una dashboard giornaliera e un'analisi causale possono partire dallo stesso database ma sono prodotti analitici profondamente diversi.
+Per esempio:
 
-### Decision owner
+> “Se il nuovo processo riduce il tempo di evasione di almeno il 10% senza aumentare gli errori oltre 0,5 punti percentuali, valuteremo il rollout.”
 
-Ogni analisi importante dovrebbe avere, quando possibile, un **decision owner**: la persona o il gruppo che può effettivamente agire sul risultato.
+Non sempre una soglia può essere definita prima dell'analisi. Ma provare a farlo evita che, dopo aver visto il risultato, si sposti arbitrariamente il criterio con cui lo giudichiamo.
 
-Se nessuno possiede la decisione, l'analisi rischia di diventare informazione senza conseguenze.
+Il **Capitolo 15** entrerà molto più in profondità su soglie, expected value, trade-off e qualità della decisione. Qui la funzione della decision specification è più semplice: **impedire che l'analisi venga progettata senza sapere come verrà usata**.
 
-L'analista dovrebbe sapere:
+### Campo del brief
 
-- chi decide;
-- quando decide;
-- quali alternative ha;
-- quali vincoli deve rispettare;
-- quali informazioni considera affidabili;
-- quanto costa sbagliare;
-- quale risultato cambierebbe realmente la sua scelta.
+```text
+Decisione:
+Decision owner:
+Alternative disponibili:
+Deadline/frequenza:
+Costo principale dell'errore:
+Soglia o criterio d'azione, se definibile:
+```
 
-### Una prova semplice
-
-Completa questa frase:
-
-> "Se scoprissimo che ________, allora potremmo decidere di ________."
-
-Se non riesci a completarla, probabilmente la richiesta non è ancora abbastanza definita.
-
-## Dal reporting alla decision intelligence
-
-Il valore crescente dell'analista non consiste nel produrre più grafici, ma nel collegare chiaramente:
-
-**evidenza -> scelta -> conseguenza attesa**.
-
-Questo è il punto in cui l'analisi smette di essere solo reporting e diventa supporto decisionale.
+> **Prima di scegliere il formato dell'output, specifica il comportamento che quell'output dovrebbe rendere più informato.**
