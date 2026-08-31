@@ -1,122 +1,190 @@
 ## 2.11 L'Analytical Brief: il contratto prima dell'analisi
 
-Prima di aprire un notebook o una dashboard, un analista dovrebbe essere in grado di riassumere il lavoro da svolgere in una pagina.
+A questo punto possiamo riunire le scelte delle sezioni precedenti in un unico documento.
 
-Questo documento può essere chiamato **Analytical Brief**.
+Un **Analytical Brief** è una specifica breve che descrive che cosa stiamo cercando di capire, perché conta, quale evidenza serve e quando il lavoro sarà sufficientemente completo.
 
-Non è burocrazia. È un modo per evitare settimane di lavoro su una domanda non condivisa.
+Non è un project charter da dieci pagine.
 
-Un Analytical Brief efficace contiene almeno:
+Per molte analisi basta una pagina.
 
-### 1. Decisione
+La sua funzione è creare allineamento **prima** che l'esecuzione renda costoso cambiare direzione.
 
-Quale decisione dovrà essere presa?
+### I campi essenziali
+
+#### 1. Problema di business
+
+Quale risultato, rischio o opportunità ha generato la richiesta?
+
+> La repeat purchase rate dei nuovi clienti sembra essersi deteriorata.
+
+#### 2. Decisione
+
+Quale scelta deve diventare più informata?
+
+> Decidere se intervenire su acquisizione, post-purchase experience o campagne di riattivazione.
+
+Annotare anche owner, alternative, deadline e costo principale dell'errore.
+
+#### 3. Domanda analitica primaria
+
+Deve essere abbastanza specifica da guidare dati e metodo.
+
+> Quali segmenti e quali cambiamenti osservabili spiegano maggiormente il calo della repeat purchase rate a 90 giorni rispetto alle coorti comparabili?
+
+#### 4. Tipo di domanda e pretesa massima
+
+> Diagnostica. L'analisi genererà e restringerà ipotesi; non attribuirà automaticamente causalità agli eventuali driver osservati.
+
+Questa riga impedisce che il deliverable venga giudicato secondo una promessa metodologica diversa da quella concordata.
+
+#### 5. Metriche
+
+Specificare:
+
+- outcome primaria;
+- driver principali;
+- guardrail, se rilevanti;
+- formula e popolazione;
+- target o soglie decisionali note.
+
+#### 6. Scope
+
+Definire:
+
+- popolazione eleggibile;
+- esclusioni;
+- unità di analisi;
+- periodo;
+- data/time field;
+- maturazione;
+- fuori scope.
+
+#### 7. Baseline
+
+Con quale riferimento giudicheremo il cambiamento e perché è comparabile?
+
+#### 8. Segmentazioni previste
+
+Quali gruppi potrebbero cambiare la spiegazione o la decisione?
+
+#### 9. Ipotesi prioritarie
+
+Non una lista infinita, ma le spiegazioni principali e l'evidenza che le rafforzerebbe o indebolirebbe.
+
+#### 10. Requisiti dati
+
+Quali dati sono required, useful o proxy? Quali gap conosciamo già?
+
+#### 11. Metodo iniziale
+
+Qual è il percorso analitico minimo che può rispondere alla domanda?
+
+Per esempio:
+
+1. data sanity check;
+2. ricostruzione outcome;
+3. confronto con baseline;
+4. decomposizione e segmentazione;
+5. test delle ipotesi prioritarie;
+6. quantificazione dell'impatto economico.
+
+Non serve pre-specificare ogni query. Serve impedire che il metodo venga scelto soltanto dopo aver visto il risultato che vogliamo spiegare.
+
+#### 12. Limiti e rischi noti
+
+Quali problemi potrebbero rendere l'analisi meno affidabile?
+
+- tracking cambiato;
+- piccolo campione;
+- identità cliente instabile;
+- popolazioni non comparabili;
+- proxy imperfetti;
+- dati ancora immaturi.
+
+#### 13. Output
+
+Che cosa serve davvero?
+
+- memo decisionale;
+- notebook riproducibile;
+- dataset;
+- dashboard;
+- modello;
+- esperimento proposto.
+
+L'output deriva dalla decisione, non il contrario.
+
+#### 14. Stop rule
+
+Quando l'evidenza sarà sufficiente per consegnare?
 
 Esempio:
 
-> Decidere se intervenire sul nuovo onboarding e, in caso affermativo, quale fase deve essere prioritaria.
+> “Concludiamo la prima fase quando abbiamo validato la metrica, localizzato almeno l'80% del delta osservato e testato le tre ipotesi prioritarie, oppure quando emerge un limite dati che impedisce di distinguerle.”
 
-### 2. Problema di business
+La soglia non deve essere sempre numerica, ma dovrebbe impedire l'analisi infinita.
 
-Quale fenomeno ha motivato la richiesta?
+#### 15. Criterio di successo
 
-> La retention a 30 giorni dei clienti acquisiti negli ultimi sei mesi è diminuita.
+Non:
 
-### 3. Domanda analitica primaria
+> “Dashboard consegnata.”
 
-> Quali segmenti e quali fasi del percorso cliente spiegano maggiormente il calo della retention a 30 giorni rispetto alle coorti precedenti?
+Meglio:
 
-### 4. Domande secondarie
+> “Il decision owner dispone di evidenza sufficiente per scegliere se intervenire e sa quali incertezze rimangono.”
 
-- Il calo riguarda tutti i canali?
-- È concentrato in specifici piani?
-- È cambiato il comportamento nei primi sette giorni?
-- Ci sono differenze tra versioni dell'onboarding?
-
-### 5. Metriche
-
-Definire esplicitamente:
-
-- metrica principale;
-- formula;
-- denominatore;
-- finestra temporale;
-- eventuali guardrail metrics.
-
-### 6. Popolazione
-
-Chi viene incluso e chi escluso?
-
-### 7. Periodo di osservazione
-
-Quale intervallo temporale analizziamo e perché?
-
-### 8. Baseline
-
-Con cosa confrontiamo il risultato?
-
-### 9. Segmentazioni previste
-
-Quali dimensioni sono teoricamente rilevanti?
-
-### 10. Ipotesi iniziali
-
-Quali spiegazioni plausibili vogliamo testare?
-
-### 11. Dati necessari
-
-Quali fonti, tabelle e campi servono?
-
-### 12. Limiti noti
-
-Quali informazioni mancano? Quali bias sono prevedibili?
-
-### 13. Output
-
-L'output finale è una dashboard? Un memo? Un notebook? Una raccomandazione? Un modello?
-
-### 14. Criterio di successo
-
-Come capiremo che l'analisi è stata utile?
-
-Non basta dire "dashboard consegnata".
-
-Un criterio migliore potrebbe essere:
-
-> Il team prodotto dispone di evidenza sufficiente per decidere se modificare l'onboarding e quale fase prioritizzare.
-
-### Un template riutilizzabile
+### Template riutilizzabile
 
 ```text
-Decisione:
-
 Problema di business:
 
-Domanda analitica primaria:
+Decisione:
+Decision owner:
+Alternative:
+Deadline/frequenza:
+Costo principale dell'errore:
 
+Domanda analitica primaria:
+Tipo di domanda / pretesa massima:
 Domande secondarie:
 
-Metriche:
+Outcome metric:
+Driver metrics:
+Guardrails:
+Target/soglia, se nota:
 
 Popolazione:
-
-Periodo:
+Esclusioni:
+Unità di analisi:
+Periodo / campo temporale:
+Maturazione:
+Fuori scope:
 
 Baseline:
+Segmentazioni previste:
 
-Segmentazioni:
+Ipotesi prioritarie:
 
-Ipotesi:
+Dati required:
+Dati useful/proxy:
+Gap noti:
 
-Dati necessari:
-
-Limiti:
+Metodo iniziale:
+Limiti/rischi:
 
 Output:
-
+Stop rule:
 Criterio di successo:
 ```
 
-La funzione dell'Analytical Brief è creare allineamento prima dell'esecuzione.
+### Il brief è vivo, ma non invisibilmente mutevole
 
-In un ambiente in cui AI, SQL generator e strumenti self-service possono produrre output quasi immediatamente, questo documento diventa ancora più prezioso: rallenta di pochi minuti l'inizio del lavoro e può evitare giorni di analisi sbagliata.
+Nuove informazioni possono richiedere una modifica del piano. È normale.
+
+La disciplina consiste nel **aggiornare esplicitamente il brief** quando cambiano domanda, metrica, scope o livello di evidenza richiesto, invece di lasciare che l'analisi evolva senza che stakeholder e analyst se ne accorgano.
+
+In un ambiente in cui AI e strumenti self-service possono produrre output quasi immediatamente, il brief è ancora più prezioso: introduce pochi minuti di attrito nel punto in cui l'attrito costa meno.
+
+> **Un buon brief non rallenta l'analisi. Rende più difficile andare velocemente nella direzione sbagliata.**
