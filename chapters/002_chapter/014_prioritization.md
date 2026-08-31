@@ -1,52 +1,74 @@
-## 2.13 Prioritizzare le analisi: non tutto merita la stessa profondità
+## 2.13 Prioritizzare le analisi: non tutte le domande meritano la stessa profondità
 
-Un analista può ricevere molte più domande di quante ne possa affrontare bene. La capacità di prioritizzare è quindi parte del lavoro analitico, non un'attività amministrativa separata.
+Un team analytics può ricevere molte più domande di quante ne possa affrontare bene.
 
-Una richiesta può essere importante ma non urgente. Un'altra può essere urgente ma avere un impatto decisionale minimo. Una terza può richiedere settimane di lavoro pur avendo una probabilità molto bassa di cambiare una decisione.
+La capacità di prioritizzare è quindi parte del metodo analitico, non soltanto della gestione del backlog.
 
-Un modo semplice per ragionare è valutare almeno quattro dimensioni:
+Una richiesta può essere urgente ma irrilevante. Un'altra può essere economicamente importante ma già ben compresa. Una terza può contenere grande incertezza ma nessuna decisione imminente.
 
-1. **Impatto potenziale**: quanto può cambiare il risultato economico, operativo o strategico?
-2. **Urgenza decisionale**: entro quando deve essere presa la decisione?
-3. **Incertezza attuale**: quanto poco sappiamo oggi sul problema?
-4. **Costo dell'analisi**: tempo, dati, complessità, dipendenze e manutenzione.
+### Quattro dimensioni utili
 
-La priorità non dipende da una singola dimensione. Dipende dall'interazione tra queste.
+Per ordinare le richieste possiamo ragionare almeno su:
 
-Una possibile euristica è:
+1. **Impatto decisionale** — quanto può cambiare un risultato economico, operativo o strategico?
+2. **Urgenza** — quando deve essere presa la decisione?
+3. **Incertezza riducibile** — quanto poco sappiamo oggi e quanto l'analisi può davvero migliorare la situazione?
+4. **Costo** — tempo, dati, dipendenze, complessità e manutenzione richiesti.
 
-> **Priorità analitica ≈ Impatto × Incertezza × Urgenza / Costo**
+Non serve trasformare questi elementi in una formula pseudo-scientifica. Una scorecard qualitativa è spesso sufficiente.
 
-Non è una formula matematica da applicare in modo meccanico. È un modello mentale.
+| Richiesta | Impatto | Urgenza | Incertezza riducibile | Costo | Priorità |
+|---|---:|---:|---:|---:|---:|
+| churn enterprise +20% | alto | alta | alta | medio | alta |
+| redesign grafico report stabile | basso | bassa | bassa | basso | bassa |
+| forecast capacità Q4 | alto | media | media | alto | media/alta |
 
-### Un esempio
-
-Supponiamo di avere tre richieste:
-
-- analizzare una lieve variazione settimanale di una metrica secondaria;
-- capire perché il churn dei clienti enterprise è aumentato del 20%;
-- costruire una nuova dashboard estetica per un report già esistente.
-
-Anche se la terza richiesta può provenire da uno stakeholder senior, la seconda ha probabilmente un valore decisionale maggiore.
+Il valore della tabella è rendere discutibile la priorità in termini di decisione, non di seniority del requester.
 
 ### La trappola del richiedente più rumoroso
 
-In molte organizzazioni la priorità reale viene determinata da chi insiste di più.
+In molte organizzazioni il backlog viene ordinato implicitamente da chi insiste di più o occupa la posizione più senior.
 
-L'analista maturo prova invece a ricondurre ogni richiesta alla domanda:
+L'analista può riportare la conversazione a una domanda più utile:
 
-> **Quale decisione migliorerà se investiamo tempo in questa analisi?**
+> **“Quale decisione migliorerà se investiamo capacità qui invece che altrove?”**
 
-Questo criterio diventa ancora più importante nell'era dell'AI. Se produrre analisi diventa più economico, aumenta il rischio di dedicare capacità a problemi irrilevanti semplicemente perché è facile generare output.
+Questo non elimina la politica organizzativa. Ma rende visibile il costo opportunità.
 
-### Prioritizzare significa anche dire no
+### Versione minima prima della versione completa
 
-Dire no a un'analisi non significa rifiutare il business. Può significare:
+Prioritizzare non significa soltanto dire sì o no.
 
-- proporre una versione più piccola;
-- usare una proxy metric;
-- rimandare un approfondimento;
-- automatizzare un controllo semplice;
-- spiegare che il costo dell'analisi supera il valore atteso.
+Possiamo ridurre il costo iniziale con:
 
-Il lavoro analitico efficace non massimizza il numero di analisi prodotte. Massimizza il valore delle decisioni che riesce a migliorare.
+- un sanity check di 30 minuti;
+- un memo con una sola decomposizione;
+- un campione;
+- una metrica proxy;
+- un'analisi offline prima di una dashboard;
+- una fase 1 diagnostica prima di un modello.
+
+La versione minima serve a capire se esiste abbastanza segnale da giustificare un investimento maggiore.
+
+### Quando dire no
+
+Una richiesta può essere deprioritizzata quando:
+
+- nessun risultato plausibile cambierebbe una decisione;
+- il costo dell'analisi supera l'impatto ragionevole;
+- manca un owner disposto ad agire;
+- la domanda richiede dati che non esistono e non c'è piano per raccoglierli;
+- un prodotto analitico già esistente risponde abbastanza bene;
+- un controllo semplice elimina già l'incertezza rilevante.
+
+Dire no in questi casi significa proteggere capacità analitica per problemi più importanti.
+
+### AI e abbondanza di output
+
+Quando query, grafici e sintesi diventano più economici, può aumentare il numero di richieste che sembrano “facili”.
+
+Ma una query da trenta secondi può creare ore di interpretazione, review, manutenzione e aspettative future.
+
+Per questo il costo marginale dell'esecuzione non coincide con il **costo totale del prodotto analitico**.
+
+> **Il team analytics non dovrebbe massimizzare il numero di domande a cui risponde. Dovrebbe massimizzare il valore delle incertezze che riesce a ridurre.**
