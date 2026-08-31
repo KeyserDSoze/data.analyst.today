@@ -12,6 +12,9 @@ PREFIX_RE = re.compile(r"^(\d+)")
 SECTION_RE = re.compile(r"^#{1,6}\s+(\d+)\.(\d+)\b")
 PLACEHOLDER_RE = re.compile(r"\b(?:TODO|FIXME|TBD)\b", re.IGNORECASE)
 WORD_RE = re.compile(r"\b[\wÀ-ÖØ-öø-ÿ’'-]+\b", re.UNICODE)
+URL_RE = re.compile(r"https?://[^\s)>]+")
+DISPLAY_MATH_RE = re.compile(r"\\\[(.*?)\\\]", re.DOTALL)
+LATEX_COMMAND_RE = re.compile(r"\\(?:frac|sqrt|sum|prod|int|alpha|beta|sigma|mu|theta|hat|bar)\b")
 
 
 def prefix(path: Path) -> int:
@@ -40,6 +43,8 @@ def main() -> int:
     total_words = 0
     total_chars = 0
     total_files = 0
+    external_urls: set[str] = set()
+    math_files: list[Path] = []
 
     chapter_dirs = sorted(
         [p for p in CHAPTERS_DIR.glob("*_chapter") if p.is_dir()],
@@ -78,6 +83,10 @@ def main() -> int:
             total_files += 1
             total_chars += len(text)
             total_words += len(WORD_RE.findall(text))
+            external_urls.update(URL_RE.findall(text))
+
+            if DISPLAY_MATH_RE.search(text) or LATEX_COMMAND_RE.search(text):
+                math_files.append(path)
 
             if not text.strip():
                 errors.append(f"{path}: file vuoto.")
@@ -129,10 +138,19 @@ def main() -> int:
     print(f"- file Markdown: {total_files}")
     print(f"- parole stimate: {total_words:,}".replace(",", "."))
     print(f"- caratteri: {total_chars:,}".replace(",", "."))
+    print(f"- URL esterni distinti: {len(external_urls)}")
+    print(f"- file con notazione matematica/LaTeX: {len(math_files)}")
     print(
         f"- pagine indicative: {approx_pages_300:.0f} a 300 parole/pagina; "
         f"{approx_pages_250:.0f} a 250 parole/pagina"
     )
+
+    if math_files:
+        warnings.append(
+            "Notazione matematica presente in "
+            f"{len(math_files)} file: la build corrente la conserva come testo, "
+            "ma una release tipografica richiede un renderer di formule o una normalizzazione editoriale."
+        )
 
     if warnings:
         print(f"\nWARNING ({len(warnings)}):")
