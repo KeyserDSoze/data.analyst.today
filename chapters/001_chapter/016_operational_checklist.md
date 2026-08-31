@@ -2,73 +2,84 @@
 
 Davanti a una nuova richiesta, l'analista può usare una sequenza semplice per evitare di saltare direttamente all'esecuzione.
 
+Non è una procedura burocratica. È un controllo contro le omissioni più costose.
+
 ### 1.15.1 Decisione
 
-- Quale decisione deve supportare questa analisi?
-- Chi prenderà la decisione?
+- Quale decisione o incertezza deve supportare questa analisi?
+- Chi userà il risultato?
 - Entro quando?
-- Quale errore sarebbe più costoso: un falso allarme o un problema non rilevato?
+- Quanto è reversibile la decisione?
+- Quale errore sarebbe più costoso: agire inutilmente o non agire quando serviva?
 
 ### 1.15.2 Domanda
 
 - Qual è la domanda analitica esatta?
-- È descrittiva, diagnostica, predittiva o causale?
-- Quali ipotesi stiamo implicitamente facendo?
+- È descrittiva, diagnostica, predittiva, causale o decisionale?
+- Quali ipotesi stiamo facendo già nella formulazione?
+- Quale risultato potrebbe smentire la nostra prima intuizione?
 
 ### 1.15.3 Metrica
 
 - Come definiamo il fenomeno?
-- Qual è il numeratore?
-- Qual è il denominatore?
+- Quali sono numeratore e denominatore, se esistono?
+- Qual è la popolazione?
 - Qual è la granularità temporale?
 - Quali eventi sono inclusi o esclusi?
+- La definizione è stabile nel tempo?
 
 ### 1.15.4 Dati
 
 - Quali sorgenti servono?
 - Chi le produce?
-- Quanto sono aggiornate?
+- Quanto sono aggiornate e complete?
 - Quali trasformazioni hanno subito?
 - Esistono missing value, duplicati, ritardi, cambi di schema o cambi di definizione?
+- Quale parte del fenomeno non è osservata direttamente?
 
 ### 1.15.5 Confronto
 
 - Qual è la baseline corretta?
 - Dobbiamo controllare stagionalità o trend?
 - Quali segmenti devono essere confrontati?
-- La popolazione è comparabile tra i periodi?
+- La popolazione è comparabile tra periodi o gruppi?
+- Un cambiamento di mix può spiegare il risultato aggregato?
 
 ### 1.15.6 Metodo
 
-- È sufficiente una tabella o serve statistica inferenziale?
-- Serve un modello?
-- Serve un esperimento?
-- Stiamo cercando associazioni o effetti causali?
+- Basta una decomposizione o serve inferenza statistica?
+- Serve un modello predittivo?
+- Serve un esperimento o un disegno causale?
+- Quali assunzioni introduce il metodo?
+- Esiste un approccio più semplice che risponde già alla domanda?
 
 ### 1.15.7 Verifica
 
-- Il risultato è robusto rispetto a definizioni alternative?
+- I numeri riconciliano con fonti indipendenti?
+- Il risultato è robusto rispetto a segmentazioni o definizioni ragionevoli?
 - Esistono spiegazioni concorrenti?
-- I numeri tornano con altre fonti?
 - Possiamo riprodurre l'analisi?
+- Quali controlli cercherebbero un errore da un'angolazione diversa?
 
 ### 1.15.8 Comunicazione
 
 - Qual è il messaggio principale?
-- Cosa sappiamo?
-- Cosa non sappiamo?
+- Che cosa osserviamo direttamente?
+- Che cosa stiamo interpretando?
+- Che cosa non sappiamo?
 - Quali assunzioni influenzano la conclusione?
-- Quale azione suggerisce l'evidenza?
+- Quale decisione suggerisce l'evidenza, e con quale livello di fiducia?
 
 ### 1.15.9 Misurazione dopo l'azione
 
 - Come sapremo se la decisione ha funzionato?
 - Quale metrica controlleremo?
 - Per quanto tempo?
+- Quali guardrail servono?
 - Quale risultato ci farebbe cambiare strategia?
 
-Questa checklist non è una procedura rigida. È un dispositivo mentale. Alcune analisi richiederanno pochi minuti, altre settimane. Ma la struttura rimane utile perché costringe l'analista a rendere esplicite decisioni che altrimenti resterebbero implicite.
+La checklist può richiedere due minuti o diventare un documento di progetto. La sua funzione è sempre la stessa: rendere esplicite le scelte che, se lasciate implicite, possono produrre analisi tecnicamente impeccabili e decisionalmente inutili.
 
 ### Formula del capitolo
 
-**Decisione → Domanda → Definizione → Dati → Metodo → Evidenza → Interpretazione → Azione → Misurazione**
+**Problema → Domanda → Dati → Metodo → Evidenza → Interpretazione → Decisione → Azione → Misurazione**
