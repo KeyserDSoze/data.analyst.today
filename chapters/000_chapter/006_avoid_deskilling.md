@@ -1,77 +1,75 @@
 ## 0.5 Evitare il deskilling: usare l'AI senza perdere la capacità di pensare
-L'AI può farci diventare più capaci.
 
-Può anche farci diventare più fragili.
+L'AI può renderci più capaci.
 
-Se deleghiamo progressivamente ogni passaggio senza mantenere comprensione dei principi, rischiamo il **deskilling**: perdita delle competenze necessarie per capire, correggere e governare il sistema che utilizziamo.
+Può anche renderci più fragili.
 
-Non è un argomento nostalgico.
+Se deleghiamo progressivamente ogni passaggio senza mantenere comprensione dei principi, rischiamo il **deskilling**: perdere proprio le competenze che ci servono per riconoscere, correggere e governare gli errori del sistema che utilizziamo.
 
-È un problema operativo.
+Non è nostalgia per il lavoro manuale.
 
-## Il rischio invisibile
+È un problema di resilienza professionale.
 
-Immaginiamo un analyst junior che usa l'AI per ogni attività:
+### Produttività apparente, dipendenza reale
 
-- scrive SQL;
-- interpreta errori;
-- sceglie statistiche;
-- seleziona grafici;
-- costruisce modelli;
-- scrive conclusioni.
+Immaginiamo un analyst junior che usa l'AI per quasi tutto:
 
-Dopo un anno può produrre molto più output di un analyst di generazioni precedenti.
+- scrivere SQL;
+- interpretare errori;
+- scegliere statistiche;
+- selezionare grafici;
+- costruire modelli;
+- formulare conclusioni.
 
-Ma cosa succede quando:
+Può produrre molto più output di un analyst di qualche anno prima.
 
-- il join è semanticamente sbagliato?
-- la query ritorna un risultato plausibile ma duplicato?
-- il modello ha leakage?
-- l'intervallo di confidenza è interpretato male?
-- un agente confonde correlazione e causalità?
-- la documentazione generata contiene una definizione KPI inventata?
+Ma la domanda decisiva è che cosa succede quando l'output è plausibile e sbagliato.
 
-Se la persona non possiede abbastanza modello mentale per riconoscere l'errore, la produttività apparente nasconde dipendenza.
+Riconosce un join many-to-many che duplica la revenue?
 
-## Non dobbiamo conservare tutte le abilità allo stesso livello
+Si accorge che un modello usa una variabile disponibile soltanto dopo l'evento che dovrebbe prevedere?
 
-Non significa che dobbiamo continuare a fare tutto manualmente.
+Capisce che un intervallo di confidenza è stato interpretato male?
 
-Alcune competenze possono diventare meno centrali.
+Nota che una spiegazione causale nasce soltanto da una correlazione?
 
-Memorizzare la sintassi esatta di ogni funzione SQL può valere meno.
+Se non possiede un modello mentale sufficiente per porre queste domande, la velocità nasconde dipendenza.
 
-Ricordare ogni parametro di una libreria può valere meno.
+### Non tutte le competenze devono restare uguali
 
-Scrivere boilerplate da zero può valere meno.
+Evitare il deskilling non significa continuare a fare tutto manualmente.
 
-Ma altre competenze diventano ancora più importanti:
+Alcune abilità possono perdere valore relativo:
 
-- grain;
-- cardinalità;
+- ricordare la sintassi esatta di ogni funzione;
+- memorizzare tutti i parametri di una libreria;
+- scrivere boilerplate da zero;
+- ricostruire a mano attività meccaniche che un sistema svolge bene e in modo verificabile.
+
+Altre diventano più importanti proprio perché l'esecuzione è più facile:
+
+- grain e cardinalità;
 - semantica delle metriche;
-- probabilità;
+- probabilità e incertezza;
 - causalità;
-- validazione;
-- design sperimentale;
 - temporalità;
+- design sperimentale;
+- validazione;
 - business understanding;
-- capacità di leggere codice e query;
-- capacità di diagnosticare un risultato assurdo.
+- capacità di leggere query e codice;
+- capacità di diagnosticare un risultato assurdo o semplicemente sospetto.
 
 L'obiettivo non è sapere tutto a memoria.
 
 È **possedere abbastanza fondamenta da poter giudicare ciò che viene delegato**.
 
-## Caso realistico: il senior che non scrive più SQL
+### Caso simulato/composito: la senior che non scrive più SQL
 
-Una responsabile analytics coordina un team e usa agenti per generare quasi tutte le query.
+Una responsabile analytics coordina un team e usa agenti per generare quasi tutte le query operative.
 
 Non scrive SQL da mesi.
 
-Durante un'analisi pricing, un agente produce una tabella che mostra margine medio per categoria.
-
-Il risultato indica che una categoria a basso prezzo ha il margine percentuale più alto.
+Durante un'analisi pricing, un agente produce una tabella che mostra il margine medio per categoria. Il risultato indica che una categoria a basso prezzo ha il margine percentuale più alto.
 
 La manager nota però che il margine assoluto non riconcilia con Finance.
 
@@ -84,69 +82,64 @@ Ma aveva mantenuto la capacità di:
 - leggere SQL;
 - ragionare sul grain;
 - riconoscere una reconciliation impossibile;
-- formulare un test.
+- formulare un test;
+- spiegare perché il risultato non era affidabile.
 
 Questa è la differenza tra delega e deskilling.
 
-## Il modello “manual enough to understand”
+### “Manual enough to understand”
 
-Per ogni competenza importante dovremmo arrivare almeno al punto in cui possiamo:
+Per una competenza importante non è necessario eseguire ogni volta tutto a mano. Dovremmo però conservare almeno la capacità di:
 
 1. spiegare il principio;
-2. riconoscere un output plausibile ma sbagliato;
+2. riconoscere errori tipici;
 3. formulare un controllo;
 4. leggere l'implementazione generata;
 5. intervenire quando il sistema fallisce.
 
-Non serve essere i migliori programmatori del team.
+Non serve diventare i migliori programmatori, statistici o data engineer del team.
 
 Serve evitare di diventare incapaci di distinguere un sistema sano da uno rotto.
 
-## Pratica deliberata
+### Usare l'AI anche per allenare il giudizio
 
-Un modo concreto per evitare deskilling è mantenere esercizi senza AI.
+L'AI non deve essere soltanto un esecutore. Può diventare uno sparring partner.
+
+Possiamo chiederle, per esempio:
+
+- “Fammi domande per verificare se ho capito questo modello.”
+- “Non darmi la soluzione: indicami dove il mio ragionamento è debole.”
+- “Proponi un controesempio alla mia conclusione.”
+- “Fai code review, ma lascia a me la correzione.”
+- “Quale assunzione sto dando per scontata?”
+- “Quale risultato dovrei aspettarmi prima di eseguire il calcolo?”
+
+La stessa tecnologia che può sostituire passivamente un'attività può anche rendere l'apprendimento più attivo.
+
+### Mantenere una quota di pratica deliberata
+
+Per le competenze fondamentali è utile conservare momenti in cui l'AI non fornisce immediatamente la soluzione.
 
 Per esempio:
 
-- una volta a settimana scrivere una query complessa manualmente;
-- spiegare una regressione senza assistente;
-- ricostruire a mano una metrica critica;
-- fare code review senza chiedere prima all'AI;
+- formulare ipotesi prima di chiederne altre all'agente;
 - stimare un ordine di grandezza prima di vedere il risultato;
-- formulare tre ipotesi prima di chiedere all'agente di generarne altre.
+- ricostruire periodicamente una metrica critica;
+- fare una prima code review senza assistenza;
+- spiegare un concetto statistico con parole proprie.
 
-Non perché il lavoro debba essere sempre eseguito così.
+Non perché il lavoro quotidiano debba tornare manuale, ma perché una competenza mai esercitata tende a deteriorarsi.
 
-Ma perché una competenza non esercitata tende a deteriorarsi.
+Il Capitolo 19 tornerà sul tema dal punto di vista della carriera e dell'apprendimento nel lungo periodo. Qui ci basta fissare il principio operativo:
 
-## L'AI come sparring partner, non soltanto come esecutore
+> **possiamo delegare la produzione, ma dobbiamo preservare le competenze che ci permettono di accorgerci quando la produzione sta andando nella direzione sbagliata.**
 
-L'AI può anche ridurre il deskilling se viene usata bene.
-
-Possiamo chiederle:
-
-- “fammi domande per verificare che abbia capito questo modello”;
-- “non darmi la soluzione: indicami dove il mio ragionamento è debole”;
-- “proponi un controesempio”;
-- “fammi una code review ma lascia a me la correzione”;
-- “quale assunzione sto dando per scontata?”
-
-In questo modo l'AI non sostituisce il pensiero.
-
-Lo stressa.
-
-## Il test definitivo
-
-Dovremmo preoccuparci quando non siamo più in grado di rispondere a una domanda semplice:
+Il test più semplice resta una domanda:
 
 > “Perché pensi che questo risultato sia corretto?”
 
-Se la risposta è:
+Se l'unica risposta disponibile è:
 
 > “Perché l'AI lo ha prodotto.”
 
 abbiamo ceduto il timone.
-
-Se invece possiamo spiegare dati, metodo, controlli, limiti e alternative, l'AI ci sta amplificando senza renderci dipendenti.
-
-> **Non dobbiamo competere con l'AI sulla velocità di esecuzione. Dobbiamo mantenere le competenze che ci permettono di riconoscere quando l'esecuzione sta andando nella direzione sbagliata.**
