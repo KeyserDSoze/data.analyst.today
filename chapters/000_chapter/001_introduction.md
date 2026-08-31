@@ -1,5 +1,7 @@
 # Capitolo 0 — Al timone
 
+> **Nota editoriale sui casi del libro.** In queste pagine useremo due categorie diverse. Un **caso reale documentato** riguarda un'organizzazione, un evento o una pratica realmente descritti da una fonte pubblica attendibile: quando è rilevante, la fonte viene indicata nel testo. Un **caso simulato o composito** è invece costruito a fini didattici, spesso combinando dinamiche plausibili osservabili nel lavoro reale; nomi aziendali, numeri e circostanze possono essere inventati. I casi con aziende fittizie devono essere letti come simulati/compositi, non come cronaca di eventi realmente accaduti. Questa distinzione ci permette di raccontare esempi concreti senza confondere evidenza documentata e ricostruzione pedagogica.
+
 ## L'AI può fare il lavoro. La responsabilità resta tua.
 
 Per gran parte della storia dell'analisi dati, essere bravi significava anche saper eseguire personalmente molte attività.
