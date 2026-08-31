@@ -1,84 +1,60 @@
-## 1.16 Lavorare con l'AI senza perdere rigore
+## 1.16 Dove entra l'AI nel metodo analitico
 
-L'AI generativa può ridurre drasticamente il tempo necessario per molte attività dell'analista. Il rischio è confondere velocità con affidabilità.
+Dopo il Capitolo 0 non serve un secondo manifesto sull'uso responsabile dell'AI.
 
-Un metodo utile consiste nel trattare l'AI come un collaboratore molto veloce che richiede supervisione.
+Ci serve soltanto collocarla nel processo appena costruito.
 
-### 1.16.1 Usare l'AI per generare, non per decretare
+La catena del capitolo è:
 
-L'AI è particolarmente utile per:
+**Problema → Domanda → Dati → Metodo → Evidenza → Interpretazione → Decisione → Azione → Misurazione**
 
-- proporre ipotesi;
-- generare una prima query SQL;
-- scrivere boilerplate Python;
-- suggerire controlli di qualità;
-- spiegare codice esistente;
-- creare una prima bozza di documentazione;
-- proporre visualizzazioni;
-- elencare possibili interpretazioni alternative.
+L'AI può contribuire in quasi ogni passaggio.
 
-È molto meno sicuro usarla come autorità finale sulla correttezza di una metrica, di una causalità o di una decisione di business.
+Può aiutare a:
 
-### 1.16.2 Separare generazione e verifica
+- trasformare una richiesta vaga in possibili domande;
+- esplorare uno schema dati;
+- generare query e trasformazioni;
+- proporre controlli di qualità;
+- suggerire segmentazioni o ipotesi;
+- spiegare metodi statistici;
+- produrre codice;
+- cercare controesempi;
+- sintetizzare risultati;
+- preparare una prima bozza di comunicazione.
 
-Un workflow robusto distingue due momenti:
+Ma il ruolo dell'AI cambia in base al passaggio.
 
-1. **Generazione**: produrre rapidamente candidate query, ipotesi, trasformazioni o spiegazioni.
-2. **Verifica**: controllare dati, logica, assunzioni, output e coerenza con il dominio.
+### All'inizio: ampliare le possibilità
 
-La stessa AI può aiutare nella verifica, ma non dovrebbe essere l'unico livello di controllo.
+Nelle fasi di framing ed esplorazione l'AI è utile soprattutto per generare alternative.
 
-### 1.16.3 Chiedere sempre cosa è stato assunto
+Può proporre domande che non avevamo considerato, metriche possibili, dati mancanti o ipotesi concorrenti.
 
-Dopo aver ottenuto una risposta, è utile chiedere:
+Qui il rischio principale è accettare troppo presto la prima formulazione convincente.
 
-- quali assunzioni sono state fatte;
-- quali colonne o filtri sono stati usati;
-- quali alternative sono state scartate;
-- quali condizioni renderebbero la conclusione falsa;
-- quali verifiche indipendenti effettuare.
+### Nel mezzo: accelerare l'esecuzione
 
-Questo trasforma il dialogo con l'AI da semplice produzione di output a processo di controllo.
+Durante preparazione, query, analisi e modellazione può ridurre molto il lavoro meccanico.
 
-### 1.16.4 Validare con risultati noti
+Qui il rischio principale è confondere codice plausibile con implementazione corretta o utilizzare senza accorgersene una semantica sbagliata.
 
-Se l'AI genera SQL o una misura, bisogna confrontare l'output con casi semplici di cui conosciamo il risultato.
+### Alla fine: aiutare a comunicare, non a decretare
 
-Esempio: prima di fidarsi del “fatturato mensile”, verificare manualmente pochi ordini, un singolo giorno o una singola regione.
+Nella fase di sintesi può trasformare risultati tecnici in una bozza più leggibile, confrontare scenari o suggerire come spiegare un limite.
 
-### 1.16.5 Rendere la semantica esplicita
+Qui il rischio principale è che la fluidità del testo renda più forte una conclusione di quanto l'evidenza permetta.
 
-La qualità dell'AI migliora quando il contesto è chiaro: nomi coerenti, descrizioni, relazioni, definizioni delle metriche e istruzioni di business riducono l'ambiguità.
+### Una regola unica
 
-Microsoft raccomanda esplicitamente di preparare dati, modelli semantici e utenti prima di usare Copilot in Power BI. La documentazione segnala che modelli poco curati e prompt vaghi possono produrre output di bassa qualità, inaccurati o fuorvianti, e che i modelli sottostanti non sono garantiti deterministici né sempre corretti.
+Per tutto il processo useremo una disciplina semplice:
 
-### 1.16.6 Mantenere una traccia riproducibile
+> **Usa l'AI per ampliare ciò che puoi esplorare e produrre. Usa evidenza, controlli e giudizio per restringere ciò che sei disposto a credere e consegnare.**
 
-Un'analisi AI-assisted dovrebbe lasciare traccia di:
+Il **Capitolo 0 — Al timone** descrive ownership, verifica, stop condition e livelli di autonomia.
 
-- domanda iniziale;
-- definizioni usate;
-- query finali;
-- trasformazioni;
-- dataset e versioni;
-- assunzioni;
-- controlli effettuati;
-- decisioni prese.
+Il **Capitolo 14 — AI-assisted analytics** entrerà nei workflow operativi e tecnici.
 
-L'obiettivo è fare in modo che il risultato possa essere riesaminato anche senza la conversazione originale con l'assistente.
+Nel resto dei capitoli, invece, l'AI comparirà dove è utile senza diventare ogni volta il centro del discorso.
 
-### 1.16.7 Applicare proporzionalità al rischio
-
-Non tutte le analisi richiedono lo stesso livello di controllo. Una query esplorativa interna può tollerare maggiore approssimazione di una decisione che influenza prezzi, credito, personale o investimenti rilevanti.
-
-Il NIST AI Risk Management Framework e il relativo profilo per l'AI generativa propongono un approccio basato sul rischio: governance, misurazione, gestione e monitoraggio dovrebbero essere proporzionati al contesto d'uso e alle conseguenze potenziali.
-
-### Regola operativa
-
-> Usa l'AI per ampliare la capacità di esplorare. Usa metodo, dati e verifica per restringere ciò che sei disposto a credere.
-
-### Riferimenti
-
-- Microsoft Learn, *Use Copilot with semantic models in Power BI*: https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
-- Microsoft Learn, *Copilot in Power BI: Integration Overview and Benefits*: https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-integration
-- NIST, *Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile*: https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
+Questa scelta è intenzionale: il libro parla di analisi nell'era dell'AI, non di AI al posto dell'analisi.
