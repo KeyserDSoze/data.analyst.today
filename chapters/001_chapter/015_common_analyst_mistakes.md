@@ -1,52 +1,73 @@
 ## 1.14 Gli errori tipici dell'analista
 
-Molti errori analitici non nascono da una formula sbagliata. Nascono prima, nella definizione del problema, nella scelta dei dati o nell'interpretazione.
+Molti errori analitici non nascono da una formula sbagliata.
+
+Nascono prima: nella definizione del problema, nella scelta della rappresentazione o nel salto tra evidenza e conclusione.
 
 ### 1.14.1 Partire dallo strumento
 
-Aprire Power BI, Excel o un notebook prima di chiarire la domanda porta facilmente a produrre output senza una decisione associata.
+Aprire Power BI, Excel, SQL o un notebook prima di chiarire la domanda porta facilmente a produrre output senza un problema ben definito.
 
-### 1.14.2 Confondere disponibilità del dato e rilevanza del dato
+**Correzione:** formulare prima decisione e domanda.
 
-Il fatto che un campo sia presente nel database non significa che sia utile. Al contrario, informazioni importanti possono non essere disponibili e richiedere nuove raccolte o proxy.
+### 1.14.2 Confondere disponibilità e rilevanza
 
-### 1.14.3 Accettare le metriche come se fossero naturali
+Il fatto che una colonna esista non significa che rappresenti il fenomeno che ci interessa. Al contrario, informazioni importanti possono non essere raccolte affatto.
 
-Ogni metrica incorpora definizioni. Un “cliente attivo” può significare login negli ultimi 30 giorni, acquisto negli ultimi 90, contratto non scaduto o altro ancora.
+**Correzione:** partire dal concetto e poi cercare dati o proxy adatti.
+
+### 1.14.3 Trattare le metriche come fatti naturali
+
+“Cliente attivo”, “revenue”, “retention” e “conversione” incorporano definizioni.
+
+**Correzione:** rendere espliciti popolazione, numeratore, denominatore, tempo e inclusioni.
 
 ### 1.14.4 Cercare subito la causa
 
-Un pattern può essere reale senza che la prima spiegazione sia corretta. Correlazione temporale, segmentazione e plausibilità non bastano da sole a dimostrare causalità.
+Dopo aver trovato un pattern è naturale costruire una storia. È anche il momento in cui confondenti, selezione e causalità inversa possono ingannarci.
 
-### 1.14.5 Guardare solo le medie
+**Correzione:** separare osservazione, ipotesi e affermazione causale.
 
-Le medie possono nascondere distribuzioni, code, sottogruppi e fenomeni di composizione. Una media stabile può coesistere con cambiamenti profondi nei segmenti.
+### 1.14.5 Guardare soltanto la media
 
-### 1.14.6 Cambiare il denominatore senza accorgersene
+Una media stabile può nascondere segmenti che si muovono in direzioni opposte, code che peggiorano o cambiamenti nel mix.
 
-Molti KPI sono rapporti. Se cambia la popolazione di riferimento, il valore può cambiare anche senza un cambiamento sostanziale nel comportamento individuale.
+**Correzione:** osservare distribuzioni e segmentazione prima di concludere.
 
-### 1.14.7 Ignorare la qualità e il lineage del dato
+### 1.14.6 Cambiare denominatore senza accorgersene
 
-Una tabella “pronta” può contenere deduplicazioni, filtri, join o trasformazioni di cui l'analista non conosce la logica. Comprendere da dove arriva il dato è parte dell'analisi.
+Molti KPI sono rapporti. Se cambia la popolazione di riferimento, il valore può cambiare anche quando il comportamento dei singoli non è cambiato.
+
+**Correzione:** controllare la comparabilità delle popolazioni tra periodi e segmenti.
+
+### 1.14.7 Ignorare lineage e trasformazioni
+
+Una tabella “pronta” può contenere filtri, deduplicazioni, join e regole che modificano il significato del dato.
+
+**Correzione:** sapere da dove arriva almeno ogni metrica critica e quali trasformazioni la rendono possibile.
 
 ### 1.14.8 Fermarsi al grafico
 
-Un grafico interessante non è ancora un insight. Bisogna collegare il pattern a una domanda, un'ipotesi e una possibile azione.
+Un pattern interessante non è automaticamente un insight.
+
+**Correzione:** chiedere quale ipotesi modifica, quale incertezza riduce e quale decisione potrebbe influenzare.
 
 ### 1.14.9 Nascondere l'incertezza
 
-Presentare una stima come se fosse certa può rendere il messaggio più semplice, ma peggiora la qualità decisionale. È meglio comunicare intervalli, limiti e assunzioni rilevanti.
+Una conclusione più netta può sembrare più autorevole ma essere meno utile.
+
+**Correzione:** comunicare la forza dell'evidenza, i limiti e le condizioni che cambierebbero la conclusione.
 
 ### 1.14.10 Usare l'AI come autorità
 
-L'AI è un acceleratore, non una fonte di verità. Il NIST AI Risk Management Framework sottolinea la necessità di gestire i rischi dei sistemi generativi lungo il loro ciclo di vita, inclusi valutazione, monitoraggio e controllo. Anche la documentazione Microsoft per Copilot in Power BI raccomanda agli utenti di valutare criticamente gli output e ricorda che risposte scorrette possono produrre decisioni e azioni scorrette.
+Un output generato bene può essere semanticamente o metodologicamente sbagliato.
+
+Il Capitolo 0 ha definito la regola di responsabilità; il Capitolo 14 entrerà nei controlli tecnici.
+
+Qui basta il promemoria:
+
+**Correzione:** usare l'AI per ampliare esplorazione ed execution, non per sostituire ownership e verifica.
 
 ### Regola operativa
 
-> L'errore più pericoloso non è quello evidente. È quello che produce un risultato plausibile, ben presentato e perfettamente coerente con una domanda formulata male.
-
-### Riferimenti
-
-- NIST, *Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile*: https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
-- Microsoft Learn, *Use Copilot with semantic models in Power BI*: https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
+> **L'errore più pericoloso non è quello evidentemente assurdo. È quello plausibile, ben presentato e perfettamente coerente con una domanda formulata male.**
