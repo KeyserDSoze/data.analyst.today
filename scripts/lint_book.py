@@ -16,7 +16,7 @@ URL_RE = re.compile(r"https?://[^\s)>]+")
 DISPLAY_MATH_RE = re.compile(r"\\\[(.*?)\\\]", re.DOTALL)
 LATEX_COMMAND_RE = re.compile(r"\\(?:frac|sqrt|sum|prod|int|alpha|beta|sigma|mu|theta|hat|bar)\b")
 ASCII_ACCENT_RE = re.compile(
-    r"\b(?:e'|piu'|puo'|cosi'|perche'|gia'|pero'|qualita'|attivita'|realta'|probabilita'|modalita'|unita'|societa')\b",
+    r"(?<!\w)(?:e'|piu'|puo'|cosi'|perche'|gia'|pero'|qualita'|attivita'|realta'|probabilita'|modalita'|unita'|societa')(?!\w)",
     re.IGNORECASE,
 )
 
@@ -31,6 +31,11 @@ def first_nonempty_line(text: str) -> str:
         if line.strip():
             return line.strip()
     return ""
+
+
+def numbered_sections(text: str, chapter_num: int) -> list[int]:
+    pattern = re.compile(rf"^#{{2,6}}\s+{chapter_num}\.(\d+)\b", re.MULTILINE)
+    return [int(value) for value in pattern.findall(text)]
 
 
 def main() -> int:
@@ -83,6 +88,19 @@ def main() -> int:
                 f"{chapter_dir}: sequenza file {prefixes}, attesa {expected_prefixes}."
             )
 
+        intro_text = files[0].read_text(encoding="utf-8")
+        intro_sections = numbered_sections(intro_text, chapter_num)
+        if intro_sections:
+            expected_intro = list(range(1, max(intro_sections) + 1))
+            if intro_sections != expected_intro:
+                errors.append(
+                    f"{files[0]}: sezioni numerate nell'introduzione {intro_sections}, "
+                    f"attese {expected_intro}."
+                )
+            first_external_section = max(intro_sections) + 1
+        else:
+            first_external_section = 1
+
         for index, path in enumerate(files):
             text = path.read_text(encoding="utf-8")
             total_files += 1
@@ -122,7 +140,7 @@ def main() -> int:
 
             heading_chapter = int(section_match.group(1))
             heading_section = int(section_match.group(2))
-            expected_section = prefix(path) - 1
+            expected_section = first_external_section + prefix(path) - 2
 
             if heading_chapter != chapter_num:
                 errors.append(
@@ -130,7 +148,7 @@ def main() -> int:
                 )
             if heading_section != expected_section:
                 errors.append(
-                    f"{path}: sezione {heading_section}, ma il prefisso file implica {expected_section}."
+                    f"{path}: sezione {heading_section}, ma l'ordine del capitolo implica {expected_section}."
                 )
             if first.startswith("# "):
                 warnings.append(
