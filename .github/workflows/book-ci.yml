@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Check normalized sources
+        run: python scripts/normalize_sources.py --check
+
       - name: Lint manuscript
         run: python scripts/lint_book.py
 
