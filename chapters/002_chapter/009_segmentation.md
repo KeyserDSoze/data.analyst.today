@@ -1,68 +1,84 @@
-## 2.8 Segmentare prima di concludere
+## 2.8 Segmentazioni previste: dove ci aspettiamo eterogeneità utile
 
-Le medie aggregate sono utili, ma possono nascondere differenze decisive.
+Le medie aggregate possono nascondere fenomeni decisivi.
 
-Se il fatturato totale è stabile, questo non significa che tutti i clienti si stiano comportando nello stesso modo. Potremmo avere crescita nei clienti enterprise e forte contrazione nei piccoli clienti. Potremmo avere un mercato geografico in espansione e un altro in deterioramento. Potremmo avere un prodotto che compensa il calo di un altro.
+Ma il Capitolo 6 sarà il luogo in cui studieremo davvero segmentazione, coorti, funnel, retention e churn. Nel brief ci interessa una domanda precedente:
 
-La segmentazione serve a decomporre un fenomeno aggregato in popolazioni più omogenee e analiticamente interpretabili.
+> **Quali dimensioni vale la pena preparare prima dell'analisi perché potrebbero cambiare la spiegazione o l'azione?**
 
-Segmentazioni frequenti includono:
+### Segmentare con una ragione
+
+Dimensioni frequenti includono:
 
 - area geografica;
 - canale di acquisizione;
 - prodotto o categoria;
-- fascia di prezzo;
+- piano commerciale;
 - anzianità del cliente;
-- comportamento d'acquisto;
+- fascia di valore;
 - dimensione aziendale;
 - dispositivo;
-- piano commerciale;
 - coorte temporale.
 
-### Segmentazione non significa tagliare il dataset a caso
+Non devono entrare tutte nel brief.
 
-Una buona segmentazione dovrebbe avere almeno una ragione teorica o decisionale.
+Una segmentazione merita priorità quando esiste una ragione per credere che:
 
-Se analizziamo il churn, segmentare per colore preferito del cliente probabilmente non serve. Segmentare per anzianità, frequenza d'uso, tipo di contratto o livello di servizio potrebbe invece essere molto informativo.
+1. il fenomeno possa comportarsi diversamente nel gruppo;
+2. il dato sia sufficientemente affidabile;
+3. una differenza porterebbe a una spiegazione o a un'azione diversa.
 
-La domanda da porsi è:
+Segmentare per una variabile disponibile ma irrilevante aggiunge rumore, non informazione.
 
-> **Quale caratteristica potrebbe modificare il comportamento che stiamo studiando o cambiare la decisione che prenderemmo?**
+### Pre-specificata ed esplorativa
 
-### Il rischio delle segmentazioni eccessive
+È utile distinguere due momenti.
 
-Più segmentiamo, più aumenta la probabilità di trovare differenze casuali.
+**Segmentazioni pre-specificate**
 
-Su un dataset grande possiamo creare centinaia di combinazioni e identificare quasi inevitabilmente qualche segmento apparentemente anomalo. Questo non significa che l'effetto sia reale o utile.
+Sono motivate prima di vedere il risultato.
 
-Per questo la segmentazione deve essere guidata da ipotesi, dimensione del campione e rilevanza operativa.
+Esempio: se un nuovo checkout è stato rilasciato soltanto su mobile, `device` è una segmentazione ovvia da prevedere nel brief.
 
-### Segmentazione e paradosso di Simpson
+**Segmentazioni esplorative**
 
-Un fenomeno particolarmente importante è il paradosso di Simpson: una relazione osservata nei dati aggregati può indebolirsi, scomparire o addirittura invertirsi quando i dati vengono separati in gruppi rilevanti.
+Emergono durante l'EDA perché osserviamo pattern inattesi.
 
-Questo ricorda all'analista che il livello di aggregazione non è innocente.
+Sono preziose, ma vanno trattate come scoperte da confermare, soprattutto se abbiamo esplorato moltissime combinazioni.
 
-### Segmentazione come strumento diagnostico
+Questa distinzione aiuta a evitare una forma di *data fishing*: cercare tra centinaia di tagli finché ne appare uno spettacolare e poi raccontarlo come se fosse stato atteso dall'inizio.
 
-Supponiamo che la retention complessiva sia passata dall'82% al 77%.
+### Caso simulato/composito: retention stabile, mix cambiato
 
-La prima domanda non dovrebbe essere soltanto "perché è scesa?" ma anche:
+La retention complessiva scende dall'82% al 77%.
 
-- è scesa in tutte le coorti?
-- solo nei nuovi clienti?
-- solo su un piano specifico?
-- solo in un determinato paese?
-- solo dopo una modifica del prodotto?
+Segmentando per canale scopriamo che la retention dentro ogni canale è quasi stabile. È invece aumentato molto il peso di un canale paid-social che storicamente ha retention inferiore.
 
-La segmentazione permette di restringere lo spazio delle ipotesi.
+La diagnosi cambia:
 
-### Segmentazione e azione
+- non abbiamo necessariamente un peggioramento dell'esperienza dentro i segmenti;
+- abbiamo un **mix di acquisizione diverso**.
 
-Una segmentazione è particolarmente utile quando produce una decisione diversa.
+La decisione potrebbe quindi spostarsi dal prodotto al marketing mix.
 
-Se due segmenti richiedono la stessa azione, separarli potrebbe non aggiungere valore. Se invece un segmento deve ricevere una campagna di retention e un altro no, la segmentazione diventa operativa.
+È un esempio del motivo per cui il livello di aggregazione conta e anticipa temi come il paradosso di Simpson, che approfondiremo nel Capitolo 4.
 
-Il principio è semplice:
+### Una segmentazione deve poter cambiare qualcosa
 
-> **Segmenta per capire meglio il fenomeno, ma soprattutto per decidere meglio.**
+Una buona domanda è:
+
+> **“Se questo segmento risultasse molto diverso, prenderemmo una decisione diversa?”**
+
+Se la risposta è no, il taglio può essere interessante ma probabilmente non è prioritario nel brief iniziale.
+
+### Campo del brief
+
+| Segmentazione | Perché potrebbe contare | Decisione che potrebbe cambiare | Priorità |
+|---|---|---|---|
+| device | rollout differente mobile/desktop | rollback mirato | alta |
+| acquisition channel | mix clienti differente | riallocazione budget | alta |
+| paese | policy e pricing diversi | intervento locale | media |
+
+Le segmentazioni esplorative potranno aggiungersi dopo, ma annotare quelle motivate prima dell'analisi rende il piano più disciplinato.
+
+> **Segmenta non perché puoi dividere il dataset, ma perché una differenza tra gruppi potrebbe cambiare ciò che credi o ciò che fai.**
