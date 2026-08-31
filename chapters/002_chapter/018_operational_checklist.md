@@ -1,71 +1,80 @@
-## 2.17 Checklist operativa: prima di iniziare un'analisi
+## 2.17 Pre-flight: il brief è pronto per l'esecuzione?
 
-Prima di aprire uno strumento, eseguire una query o chiedere aiuto a un sistema AI, è utile passare attraverso una checklist minima.
+Il Capitolo 1 contiene già una checklist generale per qualsiasi analisi. Qui serve un controllo più specifico: **prima di iniziare l'esecuzione, il nostro Analytical Brief contiene abbastanza informazioni da evitare interpretazioni incompatibili?**
 
-### Problema e decisione
+### Decisione
 
-- Qual è il problema di business?
-- Quale decisione deve essere presa?
-- Chi prende la decisione?
-- Qual è il costo di una decisione sbagliata?
-- Entro quando serve una risposta?
+- Il problema di business è espresso senza confonderlo con il deliverable?
+- La decisione è identificata?
+- Esiste un decision owner?
+- Le alternative disponibili sono note almeno a grandi linee?
+- Deadline o frequenza della decisione sono chiare?
+- Conosciamo il costo principale dell'errore?
 
-### Domanda analitica
+### Domanda
 
-- La domanda è descrittiva, diagnostica, predittiva, prescrittiva o causale?
-- Qual è la popolazione di interesse?
-- Qual è l'unità di analisi?
-- Qual è il periodo temporale corretto?
-- Quale baseline useremo?
+- Esiste una domanda analitica primaria?
+- Il tipo di domanda è dichiarato?
+- È chiaro quale livello di pretesa potrà sostenere l'analisi?
+- Le domande secondarie sono realmente subordinate alla primaria?
 
 ### Metriche
 
-- Qual è la metrica primaria?
-- Qual è il denominatore?
-- Esistono metriche di guardrail?
-- Le definizioni sono condivise con gli stakeholder?
-- Le metriche possono essere manipolate o interpretate in modi diversi?
+- Outcome primaria definita?
+- Popolazione, numeratore e denominatore sono espliciti quando servono?
+- Driver e guardrail hanno un ruolo chiaro?
+- Target o soglie decisionali sono documentati se esistono?
+- Metric owner o definizione autorevole sono identificati?
+
+### Scope
+
+- Popolazione ed esclusioni sono chiare?
+- Unità di analisi e grain richiesto sono coerenti?
+- Campo temporale e finestra di osservazione sono definiti?
+- Abbiamo considerato maturazione e data latency?
+- È esplicito ciò che resta fuori scope?
+
+### Confronto e segmentazione
+
+- La baseline risponde alla domanda corretta?
+- I periodi o gruppi sono comparabili?
+- Le segmentazioni prioritarie hanno una motivazione decisionale o teorica?
+- Distingueremo tagli pre-specificati da esplorazioni emerse dopo?
 
 ### Ipotesi
 
-- Quali spiegazioni sono plausibili prima di guardare i risultati?
-- Quali spiegazioni alternative dobbiamo escludere?
-- Quali variabili potrebbero confondere il confronto?
+- Le spiegazioni principali sono esplicite?
+- Per ciascuna sappiamo quale evidenza la rafforzerebbe o indebolirebbe?
+- Esiste almeno una spiegazione alternativa alla narrativa iniziale dello stakeholder?
+- Abbiamo incluso possibili problemi di misurazione tra le ipotesi quando plausibili?
 
 ### Dati
 
-- Quali fonti servono?
-- Qual è la granularità?
-- Il dato copre tutta la popolazione rilevante?
-- Esistono missing value, duplicati, ritardi o cambiamenti di tracking?
-- La metrica può essere ricostruita in modo ripetibile?
+- I dati required sono distinti da useful e proxy?
+- Sappiamo quali fonti esistono davvero?
+- Grain, storico, freshness e owner sono noti per le fonti critiche?
+- I gap sono documentati con una strategia di mitigazione?
 
-### Metodo
+### Piano e sufficienza
 
-- Qual è il metodo più semplice capace di rispondere alla domanda?
-- Serve davvero un modello complesso?
-- Serve statistica inferenziale?
-- Serve un esperimento?
-- Quale livello di precisione è sufficiente?
+- Il metodo iniziale è il più semplice capace di rispondere alla domanda?
+- Conosciamo i controlli minimi da eseguire prima di concludere?
+- Esiste una stop rule?
+- Abbiamo previsto che l'esito possa essere inconcludente?
+- È chiaro quale informazione aggiuntiva avrebbe più valore se il primo ciclo non bastasse?
 
 ### Output
 
-- Quale decisione potrebbe cambiare?
-- Come comunicheremo l'incertezza?
-- Quali limiti devono essere esplicitati?
-- Quale azione suggeriremmo se l'ipotesi fosse confermata?
-- Cosa faremmo se fosse smentita?
+- Il formato deriva dalla decisione e non dalla richiesta iniziale?
+- Il criterio di successo descrive utilità decisionale e non solo consegna tecnica?
+- Se il brief cambia durante il lavoro, sappiamo chi deve essere riallineato?
 
-### AI
+### L'AI non richiede una checklist separata
 
-Se usiamo l'AI:
+Le regole di supervisione e verifica sono già nel Capitolo 0 e i workflow tecnici arriveranno nel Capitolo 14.
 
-- stiamo fornendo definizioni e contesto sufficienti?
-- possiamo verificare query, formule e codice generati?
-- l'AI sta distinguendo fatti, inferenze e ipotesi?
-- abbiamo controllato che non stia inventando colonne, metriche o regole di business?
-- stiamo delegando l'esecuzione o anche il giudizio?
+Per questo nel brief l'AI non è una fase speciale. Se viene usata, deve rispettare le stesse definizioni, lo stesso scope, le stesse evidenze e gli stessi limiti del resto dell'analisi.
 
-Questa checklist non deve trasformarsi in burocrazia. Deve diventare un'abitudine mentale.
+Una query generata automaticamente non può estendere da sola la popolazione. Un agente non può cambiare la metrica primaria perché ne trova una più comoda. Se il piano cambia, cambia il brief.
 
-Con esperienza molte domande verranno poste quasi automaticamente. Ma saltarle completamente è uno dei modi più semplici per costruire un'analisi tecnicamente corretta e decisionalmente inutile.
+> **Il pre-flight non verifica che conosciamo già la risposta. Verifica che sappiamo che cosa significherà cercarla bene.**
