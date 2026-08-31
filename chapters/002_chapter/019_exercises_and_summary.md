@@ -1,157 +1,253 @@
-## 2.18 Sintesi ed esercizi del capitolo
+## 2.18 Sintesi ed esercizi
 
-Il Capitolo 2 ha introdotto il passaggio fondamentale che precede quasi ogni analisi di qualità: trasformare una richiesta di business in un problema analitico ben definito.
+Il Capitolo 2 ha trasformato la mentalità analitica del Capitolo 1 in un oggetto operativo: l'**Analytical Brief**.
 
-Il flusso completo può essere sintetizzato così:
+Il brief collega una richiesta di business a una specifica sufficientemente precisa da guidare dati, metodo ed esecuzione senza anticipare artificialmente la risposta.
 
-> **Problema di business → Decisione → Stakeholder → Domanda analitica → Metriche → Baseline → Ipotesi → Dati → Metodo → Evidenza → Comunicazione → Azione**
+Il percorso del capitolo è:
 
-Questa sequenza non deve essere interpretata in modo rigido. Nella pratica è iterativa: nuove informazioni possono costringerci a ridefinire metriche, scope o ipotesi.
+**Problema → Decisione → Stakeholder → Domanda → Metriche → Ipotesi → Scope → Baseline → Segmentazioni → Dati → Piano → Priorità → Stop rule**
+
+Non sostituisce la catena analitica completa del Capitolo 1. È la parte che dobbiamo progettare **prima** di eseguirla.
 
 ### Idee chiave
 
-- una richiesta non è automaticamente una domanda analitica;
-- bisogna partire dalla decisione che si vuole migliorare;
-- metriche e KPI devono essere definiti semanticamente prima di essere calcolati;
-- baseline e denominatori determinano il significato di un confronto;
-- segmentare non significa solo dividere i dati, ma cercare eterogeneità utile;
-- domande descrittive, diagnostiche, predittive e causali richiedono metodi diversi;
-- la qualità dell'analisi dipende anche dalla qualità del processo di misurazione;
-- non tutte le analisi meritano la stessa profondità;
-- un risultato inconcludente può essere professionalmente corretto;
-- bisogna sapere quando fermarsi;
-- l'AI può accelerare esecuzione e generazione di ipotesi, ma non sostituisce la definizione del problema e il controllo dell'evidenza.
+- Una richiesta descrive spesso un sintomo o un deliverable, non ancora il problema analitico.
+- La decisione determina profondità, timing e formato dell'analisi.
+- Requester, decision owner, domain expert, data owner ed end user possono essere persone diverse.
+- Le metriche nel brief devono avere un ruolo: outcome, driver, guardrail o soglia.
+- Le ipotesi sono spiegazioni candidate; una buona ipotesi include anche ciò che potrebbe indebolirla.
+- Scope significa popolazione, unità di analisi, tempo, esclusioni e fuori-scope.
+- Una baseline rende il numero interpretabile, ma non è automaticamente un controfattuale causale.
+- Le segmentazioni prioritarie devono poter cambiare spiegazione o azione.
+- I dati required, useful e proxy non sono la stessa cosa.
+- Un gap di misurazione scoperto prima dell'analisi è un risultato utile.
+- Prioritizzazione e Value of Information aiutano a decidere quanto investire nell'analisi.
+- Una stop rule protegge sia dalla superficialità sia dall'analisi infinita.
+- “Inconcludente” è un possibile esito professionale, non una risposta da nascondere.
 
----
-
-### Esercizio 1 — Trasformare una richiesta vaga
+### Esercizio 1 — Costruire un brief da una richiesta vaga
 
 Richiesta:
 
-> "Vorrei capire meglio i nostri clienti."
+> “Vorrei capire meglio i nostri clienti.”
 
-Costruisci un Analytical Brief rispondendo almeno a:
+Costruisci tre Analytical Brief diversi a partire dalla stessa frase:
 
-1. Quali decisioni potrebbero nascondersi dietro questa richiesta?
-2. Chi potrebbero essere i decision owner?
-3. Quali metriche useresti in tre scenari diversi?
-4. Quali baseline useresti?
-5. Quali dati servirebbero?
-6. Quali output sarebbero utili?
+1. uno per decidere come allocare budget marketing;
+2. uno per ridurre churn;
+3. uno per progettare un dashboard operativo per customer success.
 
----
+Per ciascuno specifica almeno:
 
-### Esercizio 2 — Vendite in calo
+- problema;
+- decision owner;
+- domanda primaria;
+- tipo di domanda;
+- outcome;
+- scope;
+- baseline;
+- dati required;
+- output;
+- stop rule.
 
-Il CFO afferma:
+Confronta quanto cambia il piano pur partendo dalla stessa richiesta.
 
-> "Il fatturato è sceso del 12%. Dobbiamo capire perché."
+### Esercizio 2 — Decision specification
 
-Prima di analizzare i dati, prepara:
+Il CFO dice:
 
-- almeno 10 domande di chiarimento;
-- una decomposizione del fatturato in driver;
-- almeno 8 ipotesi plausibili;
-- i segmenti che analizzeresti;
-- la baseline corretta;
-- i dati necessari.
+> “Il fatturato è sceso del 12%. Dobbiamo capire perché.”
 
-Bonus: costruisci un hypothesis tree.
+Prima di pensare ai dati, scrivi:
 
----
+- decisione da supportare;
+- alternative realistiche;
+- deadline;
+- costo di un falso allarme;
+- costo di non vedere un problema reale;
+- risultato che sarebbe abbastanza materialmente importante da cambiare la scelta.
 
-### Esercizio 3 — Metriche ambigue
+Poi formula la domanda analitica.
 
-Definisci in modo rigoroso le seguenti metriche:
+### Esercizio 3 — Metric contract
 
-- cliente attivo;
+Scegli una delle seguenti metriche:
+
 - churn rate;
 - conversion rate;
-- fatturato mensile;
-- average order value;
-- repeat purchase rate.
+- repeat purchase rate;
+- margine per ordine;
+- cliente attivo.
 
-Per ognuna specifica:
+Compila:
 
-- numeratore;
-- denominatore;
-- finestra temporale;
-- popolazione;
-- casi limite;
-- possibili interpretazioni alternative.
+```text
+Ruolo nel brief:
+Definizione business:
+Formula:
+Popolazione:
+Numeratore/denominatore:
+Unità/grain:
+Finestra temporale:
+Esclusioni:
+Fonte/owner:
+Baseline/target:
+Guardrail:
+Casi in cui non andrebbe usata:
+```
 
----
+### Esercizio 4 — Hypothesis register
 
-### Esercizio 4 — Descrittivo o causale?
+La conversione mobile è diminuita dell'11%.
 
-Classifica ciascuna domanda:
+Genera almeno otto spiegazioni candidate, includendo obbligatoriamente:
 
-1. Quanto è aumentato il churn?
-2. Quali clienti hanno maggiore probabilità di abbandonare?
-3. Perché il churn è aumentato?
-4. L'aumento del prezzo ha causato il churn?
-5. Cosa succederebbe al margine se riducessimo il prezzo del 5%?
+- una spiegazione di prodotto;
+- una di marketing mix;
+- una di disponibilità/catalogo;
+- una di misurazione/tracking.
 
-Spiega quale tipo di evidenza servirebbe per rispondere in modo credibile.
+Per ogni ipotesi annota:
 
----
-
-### Esercizio 5 — Quando fermarsi
-
-Immagina di avere già scoperto che il calo delle vendite proviene al 85% da due categorie prodotto e che entrambe hanno avuto stock-out ripetuti nello stesso periodo.
-
-Quali analisi aggiuntive faresti prima di concludere?
-
-Quali invece non faresti?
-
-Definisci una stop rule esplicita.
-
----
-
-### Esercizio 6 — Analisi inconcludente
-
-Hai confrontato la retention di due onboarding flow. Il flow B sembra migliore di 3 punti percentuali, ma il campione è piccolo e l'intervallo di confidenza è ampio.
-
-Scrivi tre versioni della conclusione:
-
-1. una versione scorretta e troppo sicura;
-2. una versione tecnicamente corretta;
-3. una versione executive che comunichi l'incertezza senza risultare evasiva.
-
----
-
-### Esercizio 7 — AI come copilota
-
-Usa un sistema AI per generare 15 possibili cause di una riduzione del conversion rate.
-
-Poi valuta ogni ipotesi secondo:
-
-- plausibilità;
-- osservabilità;
+- evidenza attesa se vera;
+- evidenza che la indebolirebbe;
 - dato necessario;
-- confondenti;
-- test possibile;
-- costo dell'analisi.
+- costo di verifica;
+- priorità.
 
-L'obiettivo non è accettare le ipotesi prodotte dall'AI, ma usarle come materiale grezzo da sottoporre a giudizio analitico.
+### Esercizio 5 — Scope e maturazione
 
----
+Devi misurare repeat purchase a 90 giorni.
+
+Il dataset contiene clienti acquisiti fino a ieri.
+
+Definisci:
+
+- popolazione eleggibile;
+- periodo di acquisizione utilizzabile;
+- unità di analisi;
+- evento che conta come secondo acquisto;
+- trattamento di cancellazioni e resi;
+- campo temporale;
+- data a cui il dataset può considerarsi maturo.
+
+Spiega come cambierebbe la metrica se includessi clienti non ancora osservabili per 90 giorni.
+
+### Esercizio 6 — Baseline sbagliata
+
+Un retailer comunica che gennaio è cresciuto del 14% rispetto a dicembre.
+
+Elenca almeno quattro motivi per cui questo confronto potrebbe essere poco informativo.
+
+Poi proponi:
+
+- una baseline stagionale;
+- una baseline rispetto al piano;
+- un confronto operativo;
+- un confronto che sarebbe necessario per sostenere una pretesa causale più forte.
+
+### Esercizio 7 — Data requirements e gap
+
+La domanda è:
+
+> “Il nuovo onboarding riduce il churn?”
+
+Elenca i dati che vorresti avere, classificandoli come:
+
+- required;
+- useful;
+- proxy.
+
+Poi immagina che non esista un campo affidabile che indichi quale onboarding abbia visto il cliente.
+
+Scrivi come cambieresti:
+
+- domanda;
+- livello di pretesa;
+- dati da raccogliere in futuro;
+- eventuale esperimento successivo.
+
+### Esercizio 8 — Priorità e Value of Information
+
+Hai quattro richieste:
+
+- anomalia su una metrica secondaria senza decisioni collegate;
+- churn enterprise +20% prima del rinnovo annuale;
+- forecast di capacità per un'espansione irreversibile;
+- richiesta estetica di redesign di un report già utilizzabile.
+
+Costruisci una scorecard con:
+
+- impatto;
+- urgenza;
+- incertezza riducibile;
+- costo analitico.
+
+Poi indica quale prima analisi minima eseguiresti per ciascuna richiesta prima di impegnare altro tempo.
+
+### Esercizio 9 — Stop rule
+
+Hai scoperto che l'85% del calo delle vendite proviene da due categorie che hanno avuto stock-out ripetuti.
+
+Definisci:
+
+- controlli minimi prima di concludere;
+- analisi che faresti ancora;
+- analisi che non faresti;
+- una stop rule esplicita;
+- una condizione che ti obbligherebbe invece a riaprire lo scope.
+
+### Esercizio 10 — Conclusione inconcludente
+
+Due onboarding flow differiscono di 3 punti percentuali nella retention osservata, ma il campione è piccolo e l'incertezza ampia.
+
+Scrivi:
+
+1. una conclusione troppo sicura;
+2. una conclusione tecnicamente corretta;
+3. una conclusione executive;
+4. il prossimo dato o test con maggiore Value of Information.
+
+### Esercizio 11 — AI come supporto al brief
+
+Usa un sistema AI per generare possibili ipotesi, dati richiesti e controlli per un calo del conversion rate.
+
+Non chiedergli di “risolvere il problema”.
+
+Confronta il suo output con il tuo brief e annota:
+
+- quali ipotesi nuove sono utili;
+- quali ignorano il contesto del dominio;
+- quali dati suggeriti non esistono;
+- quali definizioni ha assunto senza dichiararle;
+- quali elementi meritano davvero di essere aggiunti al piano.
+
+L'obiettivo è usare l'AI come generatore di alternative, non come owner del brief.
 
 ## Domande di autovalutazione
 
-Alla fine del capitolo dovresti essere in grado di rispondere con sicurezza a queste domande:
+Alla fine del capitolo dovresti saper rispondere a queste domande:
 
-- So distinguere una richiesta da una domanda analitica?
-- Riesco a identificare la decisione dietro una dashboard o un report?
-- So definire una metrica in modo non ambiguo?
-- So scegliere una baseline sensata?
-- So costruire un hypothesis tree?
-- So distinguere descrizione, previsione e causalità?
-- So definire i requisiti dati prima di iniziare a interrogare il database?
-- So dire quando un'analisi è sufficiente?
-- So comunicare un risultato inconcludente?
-- So usare l'AI come supporto senza delegarle il giudizio?
+1. So distinguere problema di business, decisione e domanda analitica?
+2. So identificare chi chiede, chi decide, chi conosce il dominio e chi possiede la metrica?
+3. So assegnare un ruolo alle metriche nel brief?
+4. So costruire un registro delle ipotesi che includa evidenza contraria?
+5. So definire scope, popolazione, unità e maturazione?
+6. So scegliere una baseline coerente con la domanda?
+7. So distinguere segmentazioni pre-specificate ed esplorative?
+8. So trasformare esigenze informative in dati required, useful e proxy?
+9. So decidere quanto approfondire usando priorità e Value of Information?
+10. So definire una stop rule?
+11. So consegnare in modo utile un risultato inconcludente?
+12. So produrre un Analytical Brief di una pagina prima di aprire il tool?
 
-Se alcune risposte sono ancora incerte, non è un problema: questi concetti torneranno più volte nei capitoli successivi, applicati a dataset, SQL, statistica, visualizzazione e architettura.
+## Chiusura
 
-Nel prossimo capitolo inizieremo a studiare **la materia prima dell'analista: il dato**. Vedremo come leggere tabelle e dataset, come ragionare sulla granularità, come riconoscere problemi di qualità e come capire se una struttura dati è davvero adatta alla domanda che vogliamo porre.
+Un buon brief non garantisce una buona analisi.
+
+Ma rende molto più visibili le condizioni che una buona analisi dovrà rispettare.
+
+Nel prossimo capitolo entreremo nella materia prima del lavoro: il dato. A quel punto la domanda non sarà più soltanto “quali informazioni ci servono?”, ma:
+
+> **“Le fonti che abbiamo rappresentano davvero ciò che il brief presume, e con quale qualità?”**
