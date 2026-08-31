@@ -1,197 +1,96 @@
 ## 1.2 Cosa non è cambiato
 
-Se cambiano gli strumenti ma resta stabile il nucleo del lavoro, qual è esattamente questo nucleo?
+Se il modo di eseguire l'analisi cambia rapidamente, che cosa rimane stabile?
 
-Possiamo partire da una frase molto comune:
+Prendiamo una frase comune:
 
-> "Le vendite stanno diminuendo."
+> “Le vendite stanno diminuendo.”
 
-Sembra una richiesta semplice. In realtà non è ancora un problema analitico completo.
+Non è ancora una domanda analitica completa.
 
-Prima di aprire Excel, scrivere una query SQL, avviare un notebook Python, costruire una pagina Power BI o interrogare un assistente AI, dobbiamo chiarire il significato della frase.
+Prima di aprire un foglio, scrivere SQL o interrogare un assistente AI dobbiamo chiarire almeno:
 
-Che cosa intendiamo per "vendite"?
+- che cosa significa “vendite”;
+- rispetto a quale baseline stiamo osservando il calo;
+- quale popolazione e quale periodo contano;
+- quale decisione deve essere presa;
+- quali spiegazioni sarebbero compatibili con l'evidenza.
 
-Fatturato lordo? Fatturato netto? Numero di ordini? Unità vendute? Margine? Ricavi contabilizzati?
+La tecnologia può accelerare il lavoro che segue. Non può rendere irrilevanti queste scelte.
 
-Che cosa significa "stanno diminuendo"?
+### L'analisi comincia dal problema
 
-Rispetto alla settimana precedente? Al mese precedente? Allo stesso periodo dell'anno scorso? Al budget? Alla previsione? A un gruppo di controllo? A una tendenza storica?
-
-E soprattutto: **quale decisione deve essere presa dopo l'analisi?**
-
-Se la risposta deve servire al direttore commerciale, potremmo voler capire quali territori o clienti stanno contribuendo al calo. Se deve servire al marketing, potremmo concentrarci sul traffico, sulla conversione o sul costo di acquisizione. Se deve servire alla supply chain, potremmo verificare stock-out, ritardi o disponibilità dei prodotti. Se deve servire al management, potrebbe essere necessario distinguere tra diminuzione dei volumi, variazioni di prezzo, mix di prodotto e marginalità.
-
-La stessa frase iniziale può quindi generare analisi molto diverse.
-
-### L'analisi comincia dalla definizione del problema
-
-Questa è una delle idee più importanti dell'intero libro:
+Questa è una delle tesi fondamentali del libro:
 
 > **L'analisi dei dati non comincia dai dati. Comincia dal problema.**
 
-I dati diventano utili soltanto rispetto a una domanda.
+Un dataset può avere milioni di righe, ma senza una domanda non sappiamo ancora quale informazione sia rilevante, quale livello di qualità sia necessario o quale metodo abbia senso applicare.
 
-Un dataset può contenere milioni di righe e centinaia di colonne, ma senza una domanda non esiste ancora una direzione analitica. Possiamo esplorarlo, visualizzarlo e descriverlo, ma non sappiamo ancora quale evidenza sia rilevante.
-
-È per questo che framework sviluppati molto prima degli attuali sistemi generativi iniziano dalla comprensione del business. Nella metodologia CRISP-DM la prima fase è esplicitamente la **Business Understanding**: chiarire obiettivi, situazione, vincoli e criteri di successo prima di investire risorse nell'analisi.[^ibm-business]
-
-Questo principio non è diventato meno importante con l'AI. È diventato più importante, perché oggi possiamo produrre risposte molto più rapidamente.
-
-Una risposta veloce a una domanda mal formulata rimane una cattiva risposta.
-
-### Dalla frase vaga alla domanda analitica
-
-Prendiamo ancora il caso delle vendite.
-
-La frase:
-
-> "Le vendite stanno diminuendo."
-
-può essere trasformata progressivamente in una domanda analitica più precisa:
-
-> "Il fatturato netto mensile dell'ultimo trimestre è inferiore rispetto allo stesso trimestre dell'anno precedente?"
-
-Poi possiamo renderla ancora più utile:
-
-> "Quali categorie di prodotto, aree geografiche e segmenti di clientela spiegano maggiormente la variazione del fatturato netto rispetto allo stesso periodo dell'anno precedente?"
-
-E poi collegarla a una decisione:
-
-> "Quali componenti del calo sono abbastanza grandi e controllabili da giustificare un intervento commerciale nel prossimo trimestre?"
-
-Notiamo il cambiamento.
-
-La prima formulazione descrive un'impressione.
-
-La seconda introduce una metrica e un confronto.
-
-La terza cerca i driver.
-
-La quarta collega l'analisi all'azione.
-
-Il lavoro dell'analista è spesso proprio questo: **trasformare una richiesta vaga in una sequenza di domande verificabili**.
+Framework sviluppati molto prima dell'AI generativa formalizzano lo stesso principio. In CRISP-DM la prima fase è la **Business Understanding**: chiarire obiettivi, vincoli e criteri di successo prima di investire nelle fasi tecniche.[^ibm-business]
 
 ### Le definizioni vengono prima dei calcoli
 
-Supponiamo che ci venga chiesto di calcolare il fatturato.
+Concetti come revenue, cliente attivo, churn, conversione o margine non sono semplici nomi di colonne.
 
-Potrebbe sembrare sufficiente una query come:
+Sono definizioni.
 
-```sql
-SELECT SUM(price * quantity) AS revenue
-FROM order_lines;
-```
+Un calcolo può essere sintatticamente corretto e semanticamente sbagliato. Possiamo sommare la colonna giusta nel periodo sbagliato, usare un denominatore non comparabile o trattare come “cliente” un'entità diversa da quella rilevante per la decisione.
 
-Tecnicamente la query è plausibile.
+Per questo la semantica non è un'aggiunta alla tecnica. Viene prima.
 
-Ma prima di considerarla corretta dobbiamo sapere:
+### Il dato è una rappresentazione, non la realtà
 
-- `price` include o esclude l'IVA?
-- Lo sconto è già incorporato?
-- Gli ordini annullati sono presenti nella tabella?
-- I resi vengono sottratti?
-- La spedizione fa parte del fatturato?
-- Quale valuta viene utilizzata?
-- La data dell'ordine coincide con la data di competenza?
-- Una riga rappresenta sempre un prodotto acquistato oppure può rappresentare anche un omaggio?
+I dati sono prodotti da sistemi e processi.
 
-Questi non sono problemi di sintassi SQL.
+Qualcuno decide che cosa registrare. Un'applicazione decide quando creare un evento. Una pipeline filtra, deduplica o trasforma. Alcune osservazioni mancano. Alcune definizioni cambiano nel tempo.
 
-Sono problemi di **semantica**.
+La fase di **Data Understanding** di CRISP-DM include proprio l'esame del contenuto e della qualità dei dati prima della modellazione.[^ibm-data-understanding]
 
-Un sistema AI può scrivere perfettamente la query sbagliata se riceve una definizione incompleta della metrica.
+La domanda non è soltanto:
 
-La qualità di un'analisi dipende quindi dalla qualità delle definizioni che stanno sotto ai numeri.
-
-### La granularità non è cambiata
-
-Un altro problema fondamentale rimane la granularità, cioè il livello al quale ogni riga rappresenta il fenomeno osservato.
-
-Una tabella può avere una riga per ordine, una riga per articolo dell'ordine, una riga per cliente al mese o una riga per evento sul sito.
-
-Confondere questi livelli può produrre errori enormi.
-
-Immaginiamo una tabella `orders` con una riga per ordine e una tabella `order_lines` con più righe per ogni ordine. Se uniamo le due tabelle e poi sommiamo una colonna di valore già presente a livello di ordine, potremmo duplicare il fatturato tante volte quante sono le righe dell'ordine.
-
-Il codice può essere sintatticamente perfetto.
-
-Il risultato può essere numericamente preciso.
-
-Eppure la risposta può essere completamente sbagliata.
-
-Capire il **grain** del dato rimane quindi una competenza essenziale indipendentemente dallo strumento utilizzato.
-
-### Correlazione, causalità e spiegazione
-
-Anche un altro problema classico rimane intatto: osservare una relazione non significa averne spiegato la causa.
-
-Supponiamo di scoprire che i clienti che contattano più spesso l'assistenza hanno un tasso di abbandono superiore.
-
-Potremmo concludere:
-
-> "Contattare l'assistenza aumenta il churn."
-
-Ma potrebbe essere vero l'opposto: i clienti con problemi sono più propensi a contattare l'assistenza **e** più propensi ad abbandonare.
-
-Il contatto con il supporto potrebbe essere semplicemente un indicatore di un problema sottostante.
-
-La distinzione tra associazione e causalità non viene risolta da un grafico più bello, da un modello più sofisticato o da un LLM più grande.
-
-Richiede ragionamento, disegno dell'analisi, conoscenza del processo reale e, in alcuni casi, sperimentazione.
-
-### La qualità del dato rimane una responsabilità analitica
-
-Una delle tentazioni dell'automazione è considerare il dataset come una rappresentazione neutrale della realtà.
-
-Non lo è.
-
-I dati sono il risultato di processi.
-
-Qualcuno ha deciso cosa registrare. Un sistema ha scelto quando registrarlo. Un'applicazione ha imposto determinate categorie. Una pipeline ha trasformato i valori. Alcune osservazioni possono mancare. Alcune possono essere duplicate. Alcune definizioni possono essere cambiate nel tempo.
-
-Per questo la fase di Data Understanding di CRISP-DM include esplicitamente l'esame dei dati disponibili e della loro qualità prima della preparazione e della modellazione.[^ibm-data-understanding]
-
-La domanda corretta non è soltanto:
-
-> "Che cosa dice il dataset?"
+> “Che cosa dice il dataset?”
 
 ma anche:
 
-> "Come è stato prodotto questo dataset e quali parti della realtà non riesce a rappresentare?"
+> **“Come è stato prodotto, e quale parte del fenomeno non riesce a rappresentare?”**
+
+### Il confronto determina il significato
+
+Dire che una metrica è alta, bassa, cresciuta o diminuita implica sempre una baseline.
+
+Mese precedente, anno precedente, forecast, budget, gruppo di controllo e trend storico possono raccontare storie diverse.
+
+Scegliere il confronto non è un dettaglio di visualizzazione. È parte della domanda.
+
+### Un pattern non è ancora una causa
+
+Due fenomeni possono muoversi insieme senza che uno produca l'altro.
+
+Confondenti, selezione, causalità inversa e cambiamenti simultanei possono generare pattern molto convincenti.
+
+Strumenti più potenti possono trovare più associazioni. Non eliminano il bisogno di chiedere quale meccanismo potrebbe averle prodotte.
+
+La causalità avrà un capitolo dedicato. Qui fissiamo soltanto la disciplina di base: **non trasformare una relazione osservata in una spiegazione più forte di quanto il disegno dell'analisi consenta.**
+
+### L'incertezza rimane
+
+Dati incompleti, campioni, errori di misurazione, modelli e futuro introducono incertezza.
+
+Una risposta professionale non deve sempre essere certa. Deve essere chiara su ciò che sappiamo, ciò che non sappiamo e su quanto questa differenza conta per la decisione.
 
 ### La decisione rimane il punto di arrivo
 
-Un'analisi tecnicamente impeccabile può comunque avere poco valore se non influenza alcuna decisione.
+Un'analisi può essere descrittiva, esplorativa o conoscitiva e non generare immediatamente un'azione. Ma dovrebbe comunque ridurre un'incertezza rilevante.
 
-Questo non significa che ogni analisi debba produrre immediatamente un'azione. Alcune analisi hanno funzione esplorativa, descrittiva o conoscitiva. Ma anche in quei casi dovrebbe essere chiaro quale incertezza stiamo cercando di ridurre.
+Il lavoro analitico produce valore quando collega il fenomeno osservato a una scelta migliore e, quando possibile, misura ciò che accade dopo la scelta.
 
-Possiamo rappresentare il lavoro analitico con una catena:
-
-**Problema -> Domanda -> Dati -> Metodo -> Evidenza -> Interpretazione -> Decisione -> Azione -> Misurazione**
-
-Ogni anello può fallire.
-
-Un problema può essere definito male.
-Una domanda può essere troppo vaga.
-I dati possono essere incompleti.
-Il metodo può essere inappropriato.
-L'evidenza può essere interpretata in modo eccessivo.
-La decisione può ignorare costi e vincoli.
-L'azione può essere eseguita male.
-La misurazione successiva può non dirci se l'intervento ha funzionato.
-
-Questa catena sarà il filo conduttore del libro.
-
-### Il principio fondamentale
-
-Alla fine, ciò che non è cambiato può essere espresso in una frase:
+Le sezioni successive entreranno in dettaglio su questi elementi. Per ora possiamo riassumere ciò che non è cambiato con una frase:
 
 > **Un analista non viene pagato per produrre numeri. Viene pagato per ridurre l'incertezza in modo sufficientemente affidabile da migliorare una decisione.**
 
-Gli strumenti possono cambiare radicalmente.
+Gli strumenti cambiano radicalmente.
 
-La responsabilità analitica rimane.
+Questa responsabilità molto meno.
 
 ---
 
