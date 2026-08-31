@@ -1,107 +1,119 @@
 ## 0.8 Manifesto dell'analista AI-native
-Il resto di questo libro insegnerà statistica, SQL, modeling, causalità, forecasting, architettura, strumenti, comunicazione e AI-assisted analytics.
 
-Ma prima di tutto questo serve un patto professionale.
+Il resto del libro entrerà in statistica, SQL, modeling, causalità, forecasting, architettura, strumenti, comunicazione e AI-assisted analytics.
 
-L'AI può cambiare il modo in cui lavoriamo.
+Prima, però, serve un patto professionale.
 
-Non deve cambiare il fatto che qualcuno deve capire cosa sta succedendo.
+L'AI può cambiare profondamente **come** lavoriamo. Non cambia il fatto che qualcuno debba capire che cosa sta succedendo e assumersi la responsabilità di ciò che viene consegnato.
 
-## 1. Comando io l'obiettivo
+### 1. Comando io l'obiettivo
 
-Non chiedo all'AI semplicemente di “analizzare i dati”.
+Non chiedo semplicemente all'AI di “analizzare i dati”.
 
-Definisco:
+Definisco prima:
 
 - la decisione;
 - la domanda;
 - il perimetro;
 - la popolazione;
+- le metriche;
 - il livello di evidenza richiesto.
 
-## 2. Delego l'esecuzione, non la responsabilità
+Se l'obiettivo è ambiguo, un'esecuzione velocissima produce soltanto ambiguità più velocemente.
 
-Posso delegare:
+### 2. Delego l'esecuzione, non la responsabilità
 
-- codice;
-- query;
-- ricerca;
-- sintesi;
-- grafici;
-- documentazione;
-- test;
-- esplorazione.
+Posso delegare codice, query, ricerca, grafici, documentazione, esplorazione e prime bozze.
+
+Posso delegare persino parte dei controlli.
 
 Non delego la responsabilità di capire ciò che consegno.
 
-## 3. Chiedo evidenza, non soltanto risposte
+Ogni processo importante deve avere un owner capace di spiegare che cosa è successo, quali dati sono stati usati, quali controlli sono passati, che cosa può andare storto e come fermare o correggere il sistema.
 
-Una conclusione importante deve essere accompagnata da elementi verificabili:
+### 3. Chiedo evidenza, non soltanto risposte
 
-- dati;
-- fonti;
-- query;
+Una conclusione importante deve poter essere ispezionata.
+
+Cerco:
+
+- dati e fonti;
+- query e trasformazioni;
 - definizioni;
 - test;
 - assunzioni;
 - alternative;
 - limiti.
 
-## 4. Un output plausibile non è un output corretto
+Un output plausibile non è automaticamente un output corretto. Gli errori più pericolosi sono spesso quelli che sembrano ragionevoli.
 
-Gli errori più pericolosi non sono sempre assurdi.
+### 4. Progetto la verifica
 
-Sono quelli che sembrano ragionevoli.
+Non rifaccio manualmente tutto il lavoro dell'AI.
 
-Per questo verifico soprattutto:
-
-- grain;
-- join;
-- metriche;
-- temporalità;
-- denominatori;
-- popolazioni;
-- leakage;
-- causalità.
-
-## 5. Progetto controlli, non micromanagement
-
-Non rifaccio manualmente ogni lavoro dell'AI.
-
-Costruisco:
+Costruisco controlli proporzionati al rischio:
 
 - test deterministici;
 - reconciliation;
 - controlli statistici;
 - review semantiche;
-- sampling;
-- red-team;
+- campionamento;
+- critic/red-team;
 - audit;
 - escalation.
 
-## 6. Non tutti gli agenti hanno la stessa autorità
+E verifico soprattutto ciò che può rompere il significato del risultato: grain, join, metriche, denominatori, popolazioni, temporalità, leakage e causalità.
+
+### 5. Se una storia mi convince troppo in fretta, cerco come potrebbe essere sbagliata
+
+La conferma non è verifica.
+
+Se io e l'AI arriviamo subito alla stessa conclusione, cerco comunque:
+
+- spiegazioni alternative;
+- segmenti contrari;
+- controlli indipendenti;
+- dati che potrebbero falsificare l'ipotesi;
+- failure mode che renderebbero il risultato plausibile ma errato.
+
+Il compito dell'analisi non è costruire la storia più elegante. È ridurre lo spazio delle spiegazioni incompatibili con l'evidenza.
+
+### 6. L'autonomia cresce con i controlli, non con l'entusiasmo
 
 Un agente che genera una bozza e un agente che può spostare denaro non sono la stessa cosa.
 
-L'autonomia cresce soltanto insieme a:
+Più una decisione è costosa, irreversibile o impattante su persone e sistemi, più devono crescere:
 
 - affidabilità dimostrata;
 - osservabilità;
-- reversibilità;
-- controlli;
-- accountability.
+- limiti di autorità;
+- approval;
+- logging;
+- rollback;
+- stop condition.
 
-## 7. Un buon agente sa anche fermarsi
+Un buon agente deve poter dire “non lo so”, chiedere review e fermarsi.
 
-Non considero “non lo so” un fallimento quando l'evidenza non basta.
+### 7. Proteggo le competenze che mi permettono di governare
 
-Definisco stop conditions.
+Non devo memorizzare ogni funzione o scrivere ogni riga a mano.
 
-Definisco escalation.
+Devo però comprendere abbastanza bene i fondamentali da riconoscere quando qualcosa non torna.
 
-Mantengo la possibilità di interrompere il sistema.
+Proteggo soprattutto capacità in:
 
-## 8. Non confondo velocità con produttività
+- analytical thinking;
+- business understanding;
+- data semantics;
+- statistica e incertezza;
+- causalità;
+- validazione;
+- lettura di codice e query;
+- comunicazione dei limiti.
+
+L'AI deve amplificare il giudizio, non atrofizzarlo.
+
+### 8. Misuro la produttività con la qualità, non con il volume
 
 Produrre cento analisi non vale più che produrne dieci se le prime non meritano fiducia.
 
@@ -109,70 +121,28 @@ La metrica reale è:
 
 > **output utile e affidabile per unità di tempo.**
 
-## 9. Proteggo le competenze che mi permettono di governare
+Quando l'esecuzione costa meno, diventano più preziose semantica, verifica, priorità e decisione.
 
-Non devo memorizzare ogni funzione.
+### Accountability e oversight non sono un'invenzione di questo libro
 
-Ma devo comprendere abbastanza bene i fondamentali da poter riconoscere quando qualcosa non torna.
-
-Mantengo capacità in:
-
-- analytical thinking;
-- business understanding;
-- data semantics;
-- statistica;
-- causalità;
-- validazione;
-- lettura di codice e query;
-- comunicazione dell'incertezza.
-
-## 10. Se l'AI e io siamo d'accordo, cerco comunque come potremmo sbagliarci
-
-La conferma non è verifica.
-
-Cerco:
-
-- spiegazioni alternative;
-- segmenti contrari;
-- controlli indipendenti;
-- failure mode;
-- dati che potrebbero falsificare la mia ipotesi.
-
-## 11. Più una decisione conta, più alzo la soglia
-
-Un grafico interno e una decisione che incide su persone, soldi o sistemi critici richiedono livelli diversi di evidenza.
-
-La verifica deve essere proporzionata al rischio.
-
-## 12. Mantengo un owner umano
-
-Ogni processo importante deve avere qualcuno che possa rispondere:
-
-- cosa è successo?
-- perché?
-- quali dati sono stati usati?
-- quali controlli sono passati?
-- cosa può andare storto?
-- come fermiamo o correggiamo il sistema?
-
-Microsoft, nelle sue linee guida più recenti sugli agenti, insiste proprio su accountability, named owner, human oversight, audit logging e governance proporzionata al rischio. Il NIST AI RMF per Generative AI colloca gestione, misurazione e valutazione del rischio lungo l'intero ciclo di vita dei sistemi AI.
+Le linee guida Microsoft sugli agenti insistono su accountability, owner identificabili, human oversight, audit logging e governance proporzionata al rischio. Il NIST AI RMF e il profilo dedicato alla Generative AI collocano identificazione, misurazione e gestione del rischio lungo il ciclo di vita dei sistemi AI.
 
 Fonti:
 - https://learn.microsoft.com/en-us/agents/center-of-excellence/responsible-ai
 - https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility-ai-agent
 - https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
 
-## La frase da ricordare
+## La regola da portare nel resto del libro
 
-Possiamo riassumere tutto il capitolo in una regola.
+Possiamo riassumere tutto il capitolo così:
 
 > **Puoi delegare all'AI l'esecuzione. Puoi delegare l'esplorazione. Puoi delegare la prima bozza. Puoi delegare persino parte della verifica. Non puoi delegare la responsabilità di capire ciò che stai consegnando.**
 
 Essere al timone non significa fare tutto.
 
-Significa sapere dove stiamo andando, cosa sta facendo il sistema, quali segnali osservare, quando correggere la rotta e quando fermarsi.
+Significa sapere dove stiamo andando, che cosa sta facendo il sistema, quali segnali osservare, quando chiedere più evidenza, quando correggere la rotta e quando fermarsi.
 
-Questo è il modo in cui useremo l'AI nel resto del libro.
+Nel resto del libro useremo l'AI in questo modo.
 
 Non come oracolo.
 
