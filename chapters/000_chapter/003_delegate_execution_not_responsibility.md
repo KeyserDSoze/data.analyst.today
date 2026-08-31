@@ -1,127 +1,136 @@
 ## 0.2 Delegare l'esecuzione, non la responsabilità
+
 L'AI rende possibile separare due cose che per molto tempo sono state quasi inseparabili:
 
 - **fare materialmente il lavoro**;
-- **essere responsabili del lavoro**.
+- **rispondere professionalmente del lavoro**.
 
-Un analista può non scrivere personalmente una query e rimanere pienamente responsabile del numero che quella query produce.
+Questa separazione non è un dettaglio organizzativo. È una delle competenze centrali del lavoro AI-native.
 
-Può non costruire a mano un modello e restare responsabile del modo in cui quel modello viene usato.
+Un analista può non scrivere personalmente una query e restare responsabile del numero che quella query produce. Può non addestrare a mano un modello e restare responsabile di come quel modello viene usato. Può non preparare la prima bozza di una presentazione e restare responsabile del messaggio consegnato al management.
 
-Può non preparare personalmente una presentazione e restare responsabile del messaggio consegnato al management.
+La domanda non è quindi “chi ha premuto i tasti?”.
 
-Questa distinzione è fondamentale.
+La domanda è:
 
-## Il falso dilemma: “o faccio tutto io o non controllo nulla”
+> **chi è in grado di spiegare, difendere, fermare e correggere il processo?**
 
-Quando si parla di AI, emergono spesso due estremi.
+### Il falso dilemma
 
-### Estremo 1 — Rifiutare la delega
+Quando si parla di AI emergono spesso due estremi.
+
+Il primo è rifiutare la delega:
 
 > “Se non scrivo io il codice, non mi fido.”
 
-È una posizione destinata a diventare sempre meno sostenibile. Se l'AI può accelerare attività meccaniche, rifiutarla per principio significa rinunciare a capacità utile.
+È una posizione che spreca una capacità utile. Se una parte dell'esecuzione può essere accelerata senza perdere controllo, non esiste un merito professionale nel farla più lentamente per principio.
 
-### Estremo 2 — Delegare anche il giudizio
+Il secondo estremo è delegare anche il giudizio:
 
 > “Se il modello l'ha detto, sarà giusto.”
 
-Questo è ancora più pericoloso.
+Questo è più pericoloso, perché trasforma uno strumento di amplificazione in un sostituto della responsabilità.
 
-La posizione professionale sta nel mezzo:
+La posizione professionale sta altrove:
 
-> **delegare ciò che può essere delegato, mantenendo controllo sulle assunzioni e sulla qualità dell'evidenza.**
+> **delegare ciò che può essere delegato, mantenendo ownership su obiettivo, assunzioni, evidenze, controlli e decisione.**
 
-## Caso realistico: il report del lunedì
+### Caso simulato/composito: il report del lunedì
 
 Un'azienda B2B automatizza il weekly business review.
 
 Ogni lunedì un agente:
 
 1. estrae i KPI;
-2. confronta con forecast e anno precedente;
+2. confronta i risultati con forecast e anno precedente;
 3. identifica anomalie;
-4. genera tre spiegazioni principali;
-5. produce una slide con raccomandazioni.
+4. genera possibili spiegazioni;
+5. prepara una slide con raccomandazioni.
 
-Per otto settimane funziona bene.
+Per otto settimane il processo funziona bene.
 
-Alla nona, l'agente segnala:
+Alla nona, il report mostra:
 
 - pipeline coverage: +22%;
 - expected bookings: +14%;
 - raccomandazione: aumentare il target del trimestre.
 
-Il VP Sales nota però qualcosa di strano: il numero di opportunità aperte non è cresciuto.
+Il VP Sales nota però un'incongruenza: il numero di opportunità aperte non è cresciuto.
 
-L'indagine scopre che una modifica CRM ha duplicato il valore di alcune opportunità multi-currency durante il consolidamento.
+L'indagine scopre che una modifica al CRM ha duplicato il valore di alcune opportunità multi-currency durante il consolidamento.
 
-Il sistema non aveva “inventato” nulla. Aveva letto correttamente un dato sbagliato.
+L'agente non aveva inventato un numero. Aveva letto correttamente un dato sbagliato e costruito sopra di esso una raccomandazione coerente.
 
-Se il team avesse risposto:
+È un tipo di errore molto più insidioso dell'allucinazione evidente: **input plausibile, elaborazione plausibile, conclusione plausibile, decisione sbagliata**.
 
-> “Il report è automatico.”
+Il fatto che il report fosse automatico non riduce la necessità di un owner. La aumenta.
 
-avrebbe dimostrato di aver confuso automazione con responsabilità.
+### Ogni output importante deve avere un owner
 
-## Accountability significa avere un owner
+L'owner non deve eseguire personalmente ogni passaggio. Deve sapere abbastanza da governarlo.
 
-Ogni output importante dovrebbe avere un proprietario umano o organizzativo chiaro.
+Per un processo analitico rilevante dovrebbe poter rispondere almeno a queste domande:
 
-Non serve che quella persona faccia tutto.
+- da quali sistemi arriva il dato?
+- quale definizione delle metriche viene usata?
+- quali trasformazioni sono critiche?
+- quali controlli devono passare?
+- quali failure mode conosciamo?
+- che cosa succede quando i controlli falliscono?
+- chi può fermare o correggere il processo?
 
-Serve che sappia:
+Un workflow senza owner è un processo nel quale l'errore può circolare senza che nessuno abbia l'obbligo di comprenderlo.
 
-- quali sistemi contribuiscono all'output;
-- quali metriche sono usate;
-- quali controlli vengono eseguiti;
-- quali failure mode sono noti;
-- come si effettua rollback;
-- chi viene coinvolto quando qualcosa non torna.
+### “Show me the evidence”
 
-## Il principio “show me the evidence”
+Una conclusione importante non dovrebbe terminare con una frase. Dovrebbe essere accompagnata da un percorso verificabile.
 
-Quando un agente produce una conclusione importante, l'analista dovrebbe poter chiedere:
+Se un agente dice:
 
-> “Mostrami l'evidenza.”
+> “La Francia è il principale driver del calo.”
 
-Non una spiegazione narrativa generata dopo il fatto, ma elementi verificabili:
+l'analista deve poter vedere la decomposizione del delta.
 
-- query;
-- filtri;
+Se dice:
+
+> “La campagna ha causato un aumento delle vendite.”
+
+deve essere possibile ricostruire il disegno causale e capire quali alternative sono state escluse.
+
+Se dice:
+
+> “Il modello è migliorato.”
+
+servono baseline, split, metriche e risultati fuori campione.
+
+Le evidenze possono includere:
+
+- query e trasformazioni;
+- filtri e popolazioni;
+- definizioni metriche;
 - sorgenti;
-- conteggi;
-- controlli;
-- grafici;
-- confronti alternativi;
-- risultati di test.
+- conteggi e reconciliation;
+- test;
+- grafici diagnostici;
+- ipotesi alternative;
+- limiti conosciuti.
 
-Un agente che dice “la Francia è il driver” dovrebbe essere in grado di mostrare come il delta è stato decomposto.
+Questo non significa mostrare tutto a tutti. Significa rendere il risultato **ispezionabile**.
 
-Un agente che dice “questa campagna ha causato un aumento” dovrebbe esplicitare il design causale, non solo una correlazione.
-
-Un agente che dice “il modello è migliorato” dovrebbe mostrare split, baseline e metriche.
-
-## La responsabilità non può essere automatizzata via disclaimer
+### Un disclaimer non crea accountability
 
 Scrivere sotto un report:
 
-> “Output generato dall'AI, verificare prima dell'uso.”
+> “Output generato dall'AI. Verificare prima dell'uso.”
 
-non risolve il problema se il report viene poi usato davvero per prendere decisioni.
+può essere utile per comunicare la natura dell'output, ma non sostituisce un processo di review se il report viene davvero usato per prendere decisioni.
 
-Il disclaimer è utile per comunicare limiti, ma non sostituisce un processo di review.
+L'accountability non si delega a una nota a piè di pagina.
 
-## Una regola semplice
+### La regola di proporzionalità
 
-Più un'azione è:
+Più un'azione è costosa, irreversibile, visibile esternamente o impattante su persone, denaro e compliance, più l'owner deve richiedere evidenze forti e approvazioni esplicite.
 
-- costosa;
-- difficile da invertire;
-- impattante su persone;
-- legalmente o finanziariamente rilevante;
-- visibile esternamente;
+Nei task a basso rischio la review può essere leggera. Nei processi critici deve diventare parte del design.
 
-più la delega deve essere accompagnata da controlli e approvazione umana.
-
-**La capacità dell'AI modifica chi esegue il lavoro. Non cancella la necessità di sapere chi ne risponde.**
+> **La capacità dell'AI modifica chi esegue il lavoro. Non cancella la necessità di sapere chi ne risponde.**
