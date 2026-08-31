@@ -43,17 +43,17 @@ La CI costruisce automaticamente Markdown aggregato, DOCX e PDF a ogni modifica 
 
 ### Ultima build validata
 
-Dopo la revisione editoriale di Capitoli 0–1:
+Dopo la revisione editoriale dei Capitoli 0–2:
 
 - **20 capitoli**;
 - **321 file Markdown**;
-- **165.293 parole stimate**;
-- **1.185.307 caratteri**;
-- **118 URL esterni distinti**;
-- **737 pagine PDF**;
+- **168.185 parole stimate**;
+- **1.205.797 caratteri**;
+- **116 URL esterni distinti**;
+- **745 pagine PDF**;
 - build Markdown, DOCX e PDF completata con successo.
 
-La riduzione da 745 a 737 pagine è dovuta soprattutto alla rimozione di ridondanze nei primi capitoli, non a un impoverimento del contenuto.
+Il numero di pagine non è una metrica editoriale da massimizzare. Può salire o scendere durante la revisione: alcuni passaggi vengono compressi perché ridondanti, altri vengono resi più chiari con esempi, tabelle e casi operativi più forti.
 
 ### Da completare prima della release tipografica
 
@@ -179,8 +179,9 @@ Obiettivo della revisione:
 | Capitolo | Stato editoriale | Nota |
 |---|---|---|
 | 0 — Al timone | **Revisionato** | Ridisegnato come manifesto operativo: orchestrazione, accountability, verification by design, stop condition, deskilling, trust levels, caso multi-agent, manifesto finale. |
-| 1 — Tutto è cambiato. Il problema è rimasto lo stesso | **Revisionato** | Eliminata la duplicazione con Ch. 0; fissata una sola catena analitica canonica; cinque tipi di domanda; caso vendite riscritto e marcato simulato/composito; rimandi a Ch. 2/8/9/11/12/13/14/18/19. |
-| 2–19 | **Da revisionare** | Procedere in ordine, controllando anche sovrapposizioni inter-capitolo. |
+| 1 — Tutto è cambiato. Il problema è rimasto lo stesso | **Revisionato** | Eliminata la duplicazione con Ch. 0; fissata una sola catena analitica canonica; cinque tipi di domanda; caso vendite riscritto e marcato simulato/composito; rimandi ai capitoli specialistici. |
+| 2 — Dal problema di business al problema analitico | **Revisionato** | Il capitolo converge ora su un unico deliverable: l'Analytical Brief. Decision specification, stakeholder map, metric roles, hypothesis register, scope, baseline, segmentation plan, data requirements, Value of Information e stop rule sono campi coerenti dello stesso piano. Caso Velora Home riscritto e marcato simulato/composito. |
+| 3–19 | **Da revisionare** | Procedere in ordine, controllando anche sovrapposizioni inter-capitolo. |
 
 ## 8. Sovrapposizioni concettuali da governare
 
@@ -200,15 +201,15 @@ Regola: non rispiegare integralmente il manifesto del Capitolo 0 nei capitoli su
 
 Ruolo:
 
-- **1:** mentalità di base e tipi di domanda;
-- **2:** trasformare formalmente una richiesta in un analytical brief operativo, con metriche, ipotesi, scope, dati, priorità e stop rule.
+- **1:** mentalità di base, cinque tipi di domanda e catena analitica canonica;
+- **2:** trasformare formalmente la richiesta in un Analytical Brief operativo.
 
 ### Capitolo 2 / 15 — decisione
 
 Ruolo:
 
-- **2:** progettare l'analisi prima di eseguirla;
-- **15:** trasformare evidenza e incertezza in raccomandazione e decisione.
+- **2:** specificare decision owner, alternative, soglie note e profondità dell'analisi prima di eseguirla;
+- **15:** trasformare evidenza e incertezza in raccomandazione, expected value e decisione.
 
 ### Capitolo 3 / 11 / 12 / 18 — qualità, semantica, governance
 
@@ -233,7 +234,7 @@ Non usare il numero di capitoli come proxy della lunghezza.
 
 La misura corrente viene dalla pipeline reale.
 
-Dopo i primi due capitoli revisionati il PDF è ancora di **737 pagine**, quindi la revisione può continuare a tagliare ripetizioni senza alcun rischio rispetto all'obiettivo minimo di 400+ pagine.
+Dopo i primi tre capitoli revisionati il PDF è di **745 pagine**, quindi la revisione può continuare liberamente a tagliare ripetizioni o ad ampliare casi che aumentano la comprensione senza alcun rischio rispetto all'obiettivo minimo di 400+ pagine.
 
 L'obiettivo non è preservare un numero massimo di pagine. È massimizzare **densità di valore per pagina**.
 
@@ -279,4 +280,4 @@ Poi controllo manuale di:
 
 Il contenuto principale del libro è strutturalmente completo.
 
-La revisione editoriale è iniziata e i **Capitoli 0 e 1 sono ora revisionati**. Il lavoro non consiste più nell'aggiungere volume, ma nel trasformare un manoscritto molto ricco in un libro più compatto, coerente, verificabile e leggibile senza perdere profondità.
+La revisione editoriale ha completato i **Capitoli 0, 1 e 2**. Il lavoro successivo continua dal Capitolo 3, con particolare attenzione a non duplicare ciò che i Capitoli 11, 12 e 18 tratteranno a livello di data modeling, architettura e governance.
