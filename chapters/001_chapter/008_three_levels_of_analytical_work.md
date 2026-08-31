@@ -1,119 +1,90 @@
 ## 1.7 I tre livelli del lavoro analitico
 
-Per orientarci nell'era dell'AI è utile distinguere tre livelli del lavoro di un Data Analyst. Non sono ruoli separati: spesso la stessa persona si muove continuamente tra tutti e tre.
+Per orientarci nel resto del libro useremo un modello semplice a tre livelli.
+
+Non sono tre ruoli separati e non sono una classificazione universale della professione. Sono tre tipi di lavoro tra i quali un analista si muove continuamente.
 
 ### Livello 1 — Execution
 
-È il livello dell'esecuzione tecnica.
+È l'esecuzione tecnica necessaria a produrre un artefatto o un calcolo.
 
-Comprende attività come:
+Comprende, per esempio:
 
-- scrivere query SQL;
-- creare formule Excel;
-- produrre misure DAX;
+- scrivere query;
+- creare formule;
 - pulire e trasformare dati;
-- creare grafici;
-- costruire tabelle pivot;
-- preparare script Python;
+- costruire grafici;
+- preparare script;
 - esportare report;
-- documentare codice e trasformazioni.
+- documentare trasformazioni.
 
-Sono competenze importanti perché permettono di lavorare in autonomia e di verificare ciò che producono gli strumenti automatici.
+Queste competenze restano importanti perché permettono autonomia e verifica.
 
-Ma sono anche le attività sulle quali l'AI sta esercitando la pressione maggiore.
+Ma sono anche le attività sulle quali l'automazione esercita la pressione maggiore.
 
-Una quota crescente di execution può essere generata, suggerita o automatizzata.
-
-Questo non significa che non bisogna più imparare SQL o Python. Significa che il valore non deriva soltanto dalla capacità di digitare la sintassi a memoria.
-
-Un analista deve sapere abbastanza SQL da comprendere una `JOIN` sbagliata, abbastanza Python da leggere uno script generato e abbastanza statistica da riconoscere un metodo improprio.
+Il valore di conoscere SQL, Python o un foglio elettronico non sta soltanto nella velocità con cui ricordiamo la sintassi. Sta nella capacità di capire l'implementazione, modificarla e riconoscere quando è sbagliata.
 
 ### Livello 2 — Analysis
 
-È il livello nel quale i dati vengono trasformati in evidenza.
+È il livello in cui i dati vengono trasformati in evidenza.
 
 Comprende:
 
-- scegliere metriche appropriate;
-- decidere il livello di aggregazione;
-- segmentare una popolazione;
-- costruire confronti corretti;
+- scegliere metriche e popolazioni;
+- decidere il grain;
+- costruire confronti;
+- segmentare;
 - esplorare distribuzioni;
-- distinguere trend da rumore;
-- riconoscere anomalie;
+- distinguere trend e rumore;
 - formulare e testare ipotesi;
-- valutare possibili bias;
+- valutare bias e confondenti;
 - interpretare risultati statistici;
-- distinguere correlazione e causalità;
-- stimare l'incertezza.
+- quantificare l'incertezza.
 
-Qui l'AI può diventare un ottimo copilota.
+Qui non basta che un calcolo sia corretto.
 
-Può proporre segmentazioni, suggerire test, generare codice, evidenziare pattern e spiegare risultati.
-
-Ma l'analista deve decidere se quelle proposte hanno senso nel contesto specifico.
+Deve essere anche **adatto alla domanda**.
 
 ### Livello 3 — Decision Intelligence
 
-Il terzo livello riguarda il collegamento tra analisi e decisione.
+Con questo termine indicheremo il lavoro che collega l'evidenza a una scelta.
 
 Le domande diventano:
 
 - quale problema vale la pena affrontare?
 - quanto vale economicamente risolverlo?
 - quale evidenza sarebbe sufficiente per cambiare decisione?
-- quali alternative esistono?
+- quali alternative abbiamo?
 - quali rischi comportano?
-- quali variabili non stiamo osservando?
-- cosa dovremmo fare se il risultato fosse diverso da quello atteso?
-- come misureremo l'effetto della decisione?
+- quale azione è reversibile?
+- come misureremo l'effetto dopo l'intervento?
 
-A questo livello il Data Analyst si avvicina alla strategia, al product thinking, all'economia e alla decision science.
+A questo livello statistica e dati incontrano vincoli operativi, economia e strategia.
 
-### Un esempio completo
+### Un esempio: churn dal 4% al 6%
 
-Immaginiamo che il churn sia aumentato dal 4% al 6%.
+**Execution.** Calcoliamo correttamente il churn mensile e costruiamo il grafico.
 
-**Execution:** scriviamo la query che calcola il churn mensile e costruiamo il grafico.
+**Analysis.** Scopriamo che l'aumento è concentrato nei clienti acquisiti da un canale specifico e soprattutto nei primi 60 giorni.
 
-**Analysis:** scopriamo che l'aumento è concentrato nei clienti acquisiti tramite un particolare canale e che emerge soprattutto nei primi 60 giorni dalla registrazione.
+**Decision Intelligence.** Stimiamo la dimensione economica del problema, identifichiamo interventi possibili e progettiamo un test per capire se un onboarding diverso riduca il churn in modo sufficiente da giustificarne il costo.
 
-**Decision Intelligence:** stimiamo il valore economico del fenomeno, confrontiamo il costo di possibili interventi e proponiamo un esperimento per capire se un onboarding differente riduca il churn.
+Il grafico è necessario.
 
-Il grafico è stato necessario.
+Ma il valore non è il grafico.
 
-Ma il valore non era il grafico.
+### Dove si sposta il valore
 
-### Come cambia il profilo professionale
+Possiamo sintetizzare la trasformazione tecnologica così:
 
-Possiamo sintetizzare l'evoluzione con una frase:
+> **L'automazione agisce soprattutto sull'execution; il vantaggio professionale cresce quando sappiamo trasformare execution in analysis e analysis in decisione.**
 
-> **L'AI tende ad automatizzare dal basso verso l'alto, mentre il valore professionale tende a spostarsi verso l'alto.**
+Questo non significa saltare il livello tecnico.
 
-Il livello di execution non scompare, ma viene accelerato.
+Se non comprendiamo abbastanza bene l'execution, non possiamo verificarla. Se non sappiamo fare analysis, produciamo calcoli senza evidenza. Se non comprendiamo la decisione, produciamo evidenza che nessuno sa usare.
 
-Il livello di analysis diventa più produttivo, ma richiede verifica.
+Il libro svilupperà tutti e tre i livelli.
 
-Il livello decisionale diventa sempre più importante perché qualcuno deve stabilire che cosa chiedere, quali assunzioni accettare e quali azioni intraprendere.
+Gli strumenti verranno studiati quando servono, ma sempre dentro questa gerarchia:
 
-Questo libro svilupperà tutti e tre i livelli.
-
-Impareremo gli strumenti perché servono.
-
-Ma li studieremo sempre all'interno di un problema analitico.
-
-Non impareremo SQL per sapere SQL.
-
-Impareremo SQL per interrogare correttamente i dati.
-
-Non impareremo Power BI per costruire dashboard.
-
-Impareremo visualizzazione e modellazione per rendere utilizzabile un sistema di metriche.
-
-Non impareremo Python semplicemente per programmare.
-
-Lo useremo quando è lo strumento appropriato per esplorare, automatizzare, modellare o verificare.
-
-E non studieremo l'AI come un pulsante magico.
-
-La studieremo come un nuovo strato dell'architettura analitica che può aumentare enormemente la capacità dell'analista, a condizione che l'analista sappia cosa sta facendo.
+**eseguire correttamente → interpretare correttamente → decidere meglio.**
