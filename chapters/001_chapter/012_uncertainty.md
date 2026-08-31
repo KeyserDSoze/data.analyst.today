@@ -2,177 +2,150 @@
 
 Una cattiva cultura dei dati tende a premiare risposte nette.
 
-"Qual è il numero?"
+> “Qual è il numero?”
 
-"Qual è la previsione?"
+> “Qual è la previsione?”
 
-"Qual è la causa?"
+> “Qual è la causa?”
 
-"Quale opzione dobbiamo scegliere?"
+> “Quale opzione dobbiamo scegliere?”
 
-Il problema è che molte domande reali non hanno una risposta perfettamente certa.
+Molte domande reali, però, non hanno una risposta perfettamente certa.
 
-L'analista professionale non elimina artificialmente l'incertezza. La misura, la rende visibile e la incorpora nel processo decisionale.
+L'analista professionale non elimina artificialmente l'incertezza. Cerca di capire **da dove viene, quanto conta e che cosa cambia nella decisione**.
 
 ### Da dove nasce l'incertezza
 
-L'incertezza può entrare nell'analisi in molti punti differenti.
+Può entrare nell'analisi in punti molto diversi.
 
-**Misurazione.** Un sensore, un questionario, un sistema di tracking o una classificazione possono produrre valori imperfetti.
+**Misurazione.** Tracking, sensori, survey e classificazioni possono essere imperfetti.
 
-**Campionamento.** Osserviamo spesso una parte della popolazione e cerchiamo di generalizzare.
+**Campionamento.** Osserviamo una parte della popolazione e vogliamo generalizzare.
 
-**Dati mancanti.** Alcuni eventi non vengono registrati oppure vengono registrati soltanto per determinati soggetti.
+**Dati mancanti.** Alcuni eventi non vengono registrati o mancano in modo non casuale.
 
-**Definizioni.** Una metrica può rappresentare soltanto approssimativamente il concetto che ci interessa.
+**Definizione.** Una metrica è spesso un proxy imperfetto del concetto che ci interessa.
 
-**Modello.** Ogni modello statistico semplifica la realtà e introduce assunzioni.
+**Modello.** Ogni modello semplifica la realtà e incorpora assunzioni.
 
-**Futuro.** Previsioni e forecast riguardano eventi che non sono ancora avvenuti.
+**Futuro.** Forecast e probabilità riguardano eventi che non sono ancora avvenuti.
 
-**Comportamento umano.** Clienti, concorrenti e organizzazioni modificano il proprio comportamento.
+**Comportamento.** Clienti, concorrenti e organizzazioni reagiscono e cambiano.
 
-**Causalità.** Nei dati osservazionali possono esistere spiegazioni alternative non completamente eliminabili.
+**Causalità.** Nei dati osservazionali possono restare spiegazioni alternative.
+
+Trattare tutte queste fonti come un unico “margine di errore” rischia di nascondere il problema vero.
 
 ### Precisione apparente
 
-Una dashboard può mostrare un valore come:
+Una dashboard può mostrare:
 
-`Revenue forecast: € 4,382,741`
+`Revenue forecast: €4,382,741`
 
-La presenza di molte cifre trasmette precisione. Non necessariamente trasmette accuratezza.
+Le cifre trasmettono precisione numerica. Non necessariamente conoscenza accurata del futuro.
 
-Una previsione più corretta potrebbe essere:
+Per una decisione potrebbe essere più informativo comunicare:
 
-> previsione centrale: 4,38 milioni di euro; intervallo plausibile: 3,9–4,9 milioni.
+> previsione centrale: €4,38M; intervallo plausibile: €3,9–4,9M.
 
-L'intervallo è meno rassicurante, ma contiene più informazione utile.
+Il range è meno rassicurante, ma rende visibile un'informazione che il singolo numero nasconde.
 
-### Intervalli, distribuzioni e scenari
+### Non esiste un solo modo di rappresentare l'incertezza
 
-Quando l'incertezza è rilevante, un singolo numero può essere insufficiente.
-
-Possiamo comunicare:
+A seconda del problema possiamo usare:
 
 - intervalli di confidenza;
 - intervalli di previsione;
 - distribuzioni di probabilità;
-- scenari best/base/worst case;
+- scenari;
 - sensitivity analysis;
-- range basati su assunzioni differenti.
+- range costruiti su assunzioni alternative.
 
-La scelta dipende dal problema.
+Questi strumenti non sono decorazioni statistiche. Servono quando aiutano a distinguere decisioni robuste da decisioni che funzionano soltanto in uno scenario molto specifico.
 
-Non useremo questi strumenti come decorazioni statistiche. Li utilizzeremo quando aiutano a prendere decisioni migliori.
+### Significatività statistica e rilevanza pratica
 
-### Significatività statistica e significatività pratica
+Immaginiamo che un esperimento con milioni di utenti mostri un aumento del conversion rate dal 10,000% al 10,015%.
 
-Immaginiamo che un esperimento con milioni di utenti mostri che un nuovo pulsante aumenta il conversion rate dal 10,000% al 10,015%.
+La differenza può essere statisticamente molto convincente e, allo stesso tempo, economicamente irrilevante.
 
-Con un campione enorme la differenza potrebbe risultare statisticamente significativa.
+Dipende dal volume, dal valore di ogni conversione, dal costo di implementazione e dagli effetti collaterali.
 
-Ma è economicamente importante?
+Il contrario è possibile: un effetto economicamente grande può essere stimato con troppa incertezza perché il campione è piccolo.
 
-Dipende dal volume, dal costo dell'implementazione, dagli effetti secondari e dal valore economico di ogni conversione.
-
-Il contrario è altrettanto importante.
-
-Un effetto economicamente rilevante può non raggiungere la soglia statistica desiderata perché il campione è troppo piccolo.
-
-L'analista deve tenere separati almeno tre concetti:
+Dobbiamo quindi tenere separati almeno tre elementi:
 
 1. **dimensione dell'effetto**;
 2. **incertezza sulla stima**;
 3. **rilevanza decisionale dell'effetto**.
 
-### Probabilità e decisioni
+Il Capitolo 5 entrerà nel dettaglio statistico. Qui ci interessa la separazione concettuale.
 
-Le decisioni aziendali vengono spesso prese prima che l'incertezza scompaia.
+### La soglia dipende dal costo dell'errore
 
-Supponiamo di stimare una probabilità del 60% che una nuova iniziativa produca un beneficio.
+Supponiamo di stimare una probabilità del 60% che un'iniziativa produca un beneficio.
 
 È sufficiente per procedere?
 
-Non possiamo rispondere senza conoscere costi e conseguenze.
+La percentuale, da sola, non risponde.
 
-Se il costo del test è minimo e il potenziale beneficio è enorme, una probabilità del 60% potrebbe essere più che sufficiente.
+Se un piccolo test costa poco ed è reversibile, il 60% può essere sufficiente. Se una decisione è difficile da invertire e può produrre un danno enorme, richiederemo evidenza molto più forte.
 
-Se un errore può mettere a rischio l'azienda, potremmo richiedere evidenza molto più forte.
-
-Per questo la decisione non dipende soltanto dalla probabilità che un'ipotesi sia vera. Dipende anche dalla funzione di costo degli errori.
-
-### Due tipi di errore
-
-In molti problemi possiamo commettere almeno due errori opposti:
+Ogni decisione contiene almeno due errori possibili:
 
 - agire quando non avremmo dovuto;
 - non agire quando avremmo dovuto.
 
 In fraud detection, per esempio, un falso positivo può bloccare un cliente legittimo, mentre un falso negativo lascia passare una frode.
 
-In una campagna commerciale, contattare un cliente che non avrebbe acquistato può essere poco costoso; non contattare un cliente ad alto valore può essere molto più costoso.
+La soglia corretta dipende dall'asimmetria tra questi costi.
 
-La soglia decisionale dovrebbe riflettere questa asimmetria.
+### L'incertezza di misurazione viene prima dell'inferenza
 
-### L'incertezza di misurazione esiste prima della statistica
+NIST tratta l'incertezza come parte integrante della scienza della misurazione: modelli, osservazioni e distribuzioni servono a descrivere ciò che possiamo conoscere da misure imperfette.
 
-NIST tratta l'incertezza come parte integrante della scienza della misurazione: probabilità, distribuzioni, modelli di misura e osservazioni sono strumenti per esprimere e interpretare ciò che possiamo conoscere da misurazioni imperfette.
+Fonte:
+- https://www.nist.gov/publications/concepts-principles-and-methods-assessment-measurement-uncertainty
 
-Questo principio è utile anche nel business analytics.
+Il principio è utile anche nel business analytics.
 
-Prima di discutere sofisticati intervalli statistici dovremmo chiederci se la variabile stessa è misurata correttamente.
+Un intervallo statistico strettissimo attorno a una metrica mal definita non rende la metrica più vera.
 
-Un intervallo di confidenza molto stretto attorno a una metrica mal definita non rende la metrica più utile.
+Prima di quantificare l'incertezza campionaria dobbiamo chiederci se stiamo misurando il fenomeno giusto.
 
-### L'AI e la falsa sicurezza
+### Comunicare l'incertezza senza diventare vaghi
 
-I sistemi generativi tendono a produrre risposte linguisticamente fluide. La fluidità può essere facilmente scambiata per certezza epistemica.
+Dire soltanto “non siamo sicuri” è poco utile.
 
-Una spiegazione può sembrare convincente senza essere ben supportata.
-
-Per questo, quando utilizziamo l'AI nell'analisi, dovremmo chiederle esplicitamente di distinguere:
-
-- fatti osservati;
-- calcoli;
-- assunzioni;
-- ipotesi;
-- interpretazioni;
-- informazioni mancanti;
-- possibili spiegazioni alternative.
-
-E poi dobbiamo verificare questi elementi.
-
-### Comunicare bene l'incertezza
-
-Dire semplicemente "non siamo sicuri" è poco utile.
-
-Una comunicazione migliore specifica:
+Una comunicazione professionale specifica:
 
 - che cosa sappiamo;
 - quanto è robusta l'evidenza;
 - che cosa non sappiamo;
 - perché non lo sappiamo;
-- quali conseguenze produce questa incertezza;
-- quale informazione aggiuntiva ridurrebbe maggiormente l'incertezza.
+- quale decisione è sensibile a questa incertezza;
+- quale informazione aggiuntiva la ridurrebbe maggiormente.
 
-Esempio:
+Per esempio:
 
-> I dati indicano un calo della conversione del 6–9% nel segmento mobile dopo la modifica del checkout. Il pattern è consistente per quattro settimane, ma nello stesso periodo è cambiato anche il mix delle campagne marketing. Non possiamo quindi attribuire interamente il calo al checkout. Un test controllato permetterebbe di separare i due effetti.
+> “I dati indicano un calo della conversione del 6–9% nel segmento mobile dopo la modifica del checkout. Il pattern è stabile per quattro settimane, ma nello stesso periodo è cambiato anche il mix delle campagne marketing. Non possiamo attribuire interamente il calo al checkout. Un test controllato permetterebbe di separare meglio i due effetti.”
 
-Questa frase è meno spettacolare di una conclusione assoluta.
+Questa frase non nasconde l'incertezza e non la usa come alibi per non concludere nulla.
 
-È però molto più utile per decidere.
+La rende utilizzabile.
 
-### Il principio operativo
+### AI e sicurezza linguistica
 
-Nel resto del libro adotteremo questa regola:
+Un sistema generativo può esprimere con grande fluidità anche una spiegazione fragile.
+
+La forma linguistica non è una misura dell'incertezza epistemica.
+
+Per questo, quando l'AI partecipa all'analisi, è utile separare esplicitamente fatti osservati, calcoli, assunzioni, ipotesi, interpretazioni e informazioni mancanti. Il metodo di supervisione è stato introdotto nel Capitolo 0 e verrà approfondito nel Capitolo 14.
+
+Il principio che ci serve qui è più generale:
 
 > **L'incertezza deve essere ridotta quando possibile, quantificata quando utile e dichiarata quando non può essere eliminata.**
 
-Nascondere l'incertezza non rende l'analisi più forte.
+Nasconderla non rende l'analisi più forte.
 
-La rende semplicemente più fragile.
-
-### Fonte di approfondimento
-
-- NIST, *Concepts, Principles, and Methods for the Assessment of Measurement Uncertainty*: https://www.nist.gov/publications/concepts-principles-and-methods-assessment-measurement-uncertainty
+La rende più fragile.
