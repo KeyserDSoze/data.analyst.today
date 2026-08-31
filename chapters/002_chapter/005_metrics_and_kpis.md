@@ -1,120 +1,109 @@
-## 2.4 Metriche e KPI: misurare ciò che conta davvero
+## 2.4 Metriche e KPI nel brief: outcome, driver, guardrail e soglia
 
-Una metrica è una quantificazione. Un KPI è una metrica collegata esplicitamente a un obiettivo e usata per valutare performance o avanzamento rispetto a un target.
+Il Capitolo 1 ha già fissato il principio semantico: una metrica viene definita, non semplicemente trovata.
 
-Questa distinzione è importante perché un'organizzazione può avere centinaia di metriche, ma solo poche dovrebbero guidare decisioni strategiche.
+Nel brief ci serve un passaggio ulteriore: **assegnare a ogni metrica un ruolo nell'analisi**.
 
-Microsoft descrive un KPI come una misura che valuta il valore corrente di una metrica rispetto a un target definito. In pratica, un KPI ha almeno tre elementi:
+Se raccogliamo venti KPI senza sapere che funzione abbiano, stiamo compilando un catalogo. Un piano analitico efficace distingue invece almeno quattro categorie.
 
-- una misura corrente;
-- un obiettivo o target;
-- una logica con cui interpretare distanza e stato.
+### Outcome metric
 
-### Una metrica senza contesto può ingannare
+È il risultato principale che vogliamo comprendere, prevedere o modificare.
 
-Supponiamo che il fatturato sia aumentato del 10%.
+Esempi:
 
-È positivo?
+- retention a 90 giorni;
+- margine per ordine;
+- tempo di consegna;
+- conversion rate;
+- forecast error.
 
-Non necessariamente.
+Nel brief dovrebbe esserci, quando possibile, una metrica primaria chiaramente identificata.
 
-Se nello stesso periodo:
+### Driver metrics
 
-- i prezzi sono aumentati del 15%;
-- il margine è diminuito;
-- il numero di clienti attivi è crollato;
-- il costo di acquisizione è raddoppiato;
-- il budget prevedeva +25%;
+Sono variabili o componenti che aiutano a decomporre l'outcome.
 
-quel +10% assume un significato completamente diverso.
+Se il margine per ordine è sceso, possibili driver possono essere:
 
-### Definire la metrica prima di calcolarla
+- prezzo medio;
+- sconto;
+- costo prodotto;
+- costo di fulfillment;
+- mix categorie;
+- tasso di reso.
 
-Per ogni metrica importante, scrivi una **metric contract** minima:
-
-- nome;
-- definizione business;
-- formula;
-- unità;
-- granularità;
-- popolazione inclusa;
-- esclusioni;
-- finestra temporale;
-- fonte dati;
-- owner;
-- frequenza di aggiornamento;
-- target o baseline, se presenti.
-
-Esempio:
-
-**Conversion Rate**
-
-> Percentuale di sessioni e-commerce che generano almeno un ordine confermato entro la stessa sessione, escludendo traffico interno, bot e ordini di test.
-
-Formula:
-
-`sessioni con ordine confermato / sessioni valide`
-
-Già questa definizione genera domande: una sessione può contenere più ordini? L'ordine deve essere pagato? Come riconosciamo i bot? Quale timezone utilizziamo?
-
-La qualità dell'analisi dipende dalla risposta a queste domande più di quanto dipenda dal colore del grafico.
-
-### Leading e lagging indicators
-
-Un'altra distinzione utile è tra indicatori **lagging** e **leading**.
-
-I lagging indicator descrivono risultati già avvenuti:
-
-- fatturato;
-- churn;
-- margine;
-- reclami chiusi;
-- ordini consegnati.
-
-I leading indicator cercano invece di anticipare risultati futuri:
-
-- richieste demo;
-- utilizzo del prodotto;
-- tempo al primo valore;
-- stockout previsti;
-- qualità dei lead;
-- engagement precoce.
-
-Un buon sistema di misurazione tende a combinare entrambi. I lagging indicator dicono dove siamo arrivati; i leading indicator possono suggerire dove stiamo andando.
-
-### KPI non significa "numero importante"
-
-Un KPI dovrebbe essere collegato a una responsabilità e a una decisione.
-
-Se una metrica cambia e nessuno sa cosa fare in risposta, forse è una metrica informativa, non un vero KPI operativo.
+Un driver non è automaticamente una causa. È una componente o un segnale utile alla diagnosi.
 
 ### Guardrail metrics
 
-Ottimizzare una sola metrica può produrre effetti indesiderati.
+Servono a impedire che un miglioramento della metrica primaria nasconda un danno altrove.
 
-Esempio: aumentare il tasso di conversione con sconti aggressivi può ridurre il margine. Ridurre il tempo medio di gestione dei ticket può peggiorare la soddisfazione dei clienti.
+Se vogliamo aumentare conversione con una promozione, potremmo monitorare:
 
-Per questo, accanto alla metrica obiettivo, conviene definire **guardrail metrics** che non devono deteriorarsi oltre una certa soglia.
+- margine per ordine;
+- tasso di reso;
+- cancellazioni;
+- customer satisfaction.
 
-Esempio:
+Ottimizzare una sola metrica è pericoloso soprattutto quando diventa un obiettivo operativo.
 
-- obiettivo: aumentare conversion rate;
-- guardrail: margine per ordine;
-- guardrail: tasso di reso;
-- guardrail: customer satisfaction.
+### Target e soglie decisionali
 
-### Domande da fare prima di accettare un KPI
+Un KPI acquista maggiore valore decisionale quando è collegato a un riferimento: target, budget, SLA, range atteso o soglia di intervento.
 
-1. Quale obiettivo rappresenta?
-2. Chi può influenzarlo?
-3. Qual è il target?
-4. Qual è la baseline?
-5. Con quale frequenza cambia in modo significativo?
-6. Può essere manipolato senza ottenere il vero risultato desiderato?
-7. Quali metriche di guardia servono?
-8. Quale decisione cambia quando supera una soglia?
+La documentazione Microsoft sui KPI nei modelli tabulari, per esempio, descrive KPI costruiti attorno a una misura di base, un valore target e uno stato. È una convenzione implementativa specifica, ma rende bene una distinzione generale: **una metrica descrive; un KPI viene usato per giudicare una performance rispetto a un riferimento**.
 
-## Riferimenti
-
-- Microsoft Learn, *Create key performance indicator (KPI) visualizations*: https://learn.microsoft.com/en-us/power-bi/visuals/power-bi-visualization-kpi
+Fonti:
 - Microsoft Learn, *Key Performance Indicators in tabular models*: https://learn.microsoft.com/en-us/analysis-services/tabular-models/kpis-ssas-tabular
+- Microsoft Learn, *Create key performance indicator (KPI) visualizations*: https://learn.microsoft.com/en-us/power-bi/visuals/power-bi-visualization-kpi
+
+### Una metric contract minima
+
+Nel brief non serve replicare tutta la documentazione del semantic layer. Serve però una definizione sufficiente a impedire ambiguità durante l'analisi.
+
+Per la metrica primaria annotiamo almeno:
+
+```text
+Nome:
+Ruolo: outcome / driver / guardrail
+Definizione business:
+Formula:
+Unità/grain:
+Popolazione eleggibile:
+Numeratore/denominatore, se applicabili:
+Finestra temporale:
+Esclusioni principali:
+Fonte/metric owner:
+Baseline o target:
+Soglia decisionale, se nota:
+```
+
+### Esempio: conversion rate
+
+> Percentuale di sessioni e-commerce valide che generano almeno un ordine confermato nella stessa sessione, escludendo traffico interno, bot e ordini di test.
+
+Formula:
+
+`sessioni con almeno un ordine confermato / sessioni valide`
+
+Questa sola riga apre domande importanti:
+
+- una sessione con due ordini conta una o due volte?
+- “confermato” significa creato, pagato o non cancellato?
+- come riconosciamo bot e traffico interno?
+- la sessione può attraversare la mezzanotte?
+
+Definire la metrica nel brief non risolve automaticamente questi dettagli. Li rende visibili **prima** che due analisti li implementino in modi incompatibili.
+
+### KPI utili soltanto se collegati a una risposta
+
+Una domanda pratica è:
+
+> **“Se questa metrica supera o scende sotto una certa condizione, chi dovrebbe fare che cosa?”**
+
+Se nessuno sa rispondere, può essere comunque una metrica diagnostica o informativa. Ma forse non è un KPI operativo.
+
+Il Capitolo 15 approfondirà le soglie decisionali. Qui ci basta collegare ogni metrica critica al ruolo che svolge nel brief.
+
+> **Non scegliere le metriche perché sono disponibili. Sceglile perché ciascuna riduce un'incertezza specifica o protegge la decisione da un effetto collaterale.**
