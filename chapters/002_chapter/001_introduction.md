@@ -1,53 +1,69 @@
-# Capitolo 2 - Dal problema di business al problema analitico
+# Capitolo 2 — Dal problema di business al problema analitico
 
-> Una buona analisi non comincia dai dati. Comincia da una decisione che deve essere presa e dall'incertezza che impedisce di prenderla bene.
+> **Una buona analisi non comincia dalla prima query. Comincia da un accordo esplicito su quale decisione stiamo cercando di migliorare e su quale evidenza potrebbe farci cambiare idea.**
 
-Nel capitolo precedente abbiamo stabilito una tesi fondamentale: gli strumenti cambiano, ma il nucleo del lavoro analitico rimane sorprendentemente stabile. In questo capitolo trasformiamo quella tesi in un metodo operativo.
+Il Capitolo 1 ha costruito il modello mentale generale del lavoro analitico. Abbiamo distinto problemi, domande, dati, metodi, evidenza e decisioni.
 
-Un Data Analyst riceve raramente domande perfette. Più spesso riceve richieste come:
+Questo capitolo fa un passo più operativo: trasforma quei concetti in una **specifica di lavoro**.
 
-- "Le vendite stanno andando male, capiamo perché."
-- "Ci serve una dashboard clienti."
-- "Vorremmo capire se il marketing funziona."
-- "Perché gli utenti abbandonano?"
-- "Quali prodotti dovremmo spingere?"
-- "Possiamo prevedere il prossimo trimestre?"
+Un Data Analyst riceve raramente domande già pronte per essere analizzate. Più spesso riceve richieste come:
 
-Queste frasi sono importanti, ma non sono ancora problemi analitici ben definiti. Sono segnali di un bisogno decisionale.
+- “Le vendite stanno andando male, capiamo perché.”
+- “Ci serve una dashboard clienti.”
+- “Vorremmo capire se il marketing funziona.”
+- “Perché gli utenti abbandonano?”
+- “Quali prodotti dovremmo spingere?”
+- “Possiamo prevedere il prossimo trimestre?”
 
-Il compito dell'analista è trasformarle in qualcosa che possa essere investigato con dati, misure e metodi appropriati.
+Sono segnali di un bisogno. Non sono ancora istruzioni analitiche sufficienti.
 
-Una formulazione utile del processo è:
+Tra la richiesta e l'esecuzione manca un passaggio di progettazione.
 
-**Contesto -> Decisione -> Domanda -> Definizioni -> Dati -> Metodo -> Evidenza -> Raccomandazione -> Azione -> Verifica**
+Lo chiameremo **Analytical Brief**.
 
-L'ordine conta. Se saltiamo direttamente ai dati rischiamo di ottimizzare la parte sbagliata del problema.
+## Il brief come contratto di lavoro
+
+Un buon brief non deve essere lungo. Deve rendere esplicite le scelte che, se lasciate implicite, rischiano di emergere soltanto dopo giorni di lavoro:
+
+- quale problema di business stiamo affrontando;
+- quale decisione deve essere presa;
+- chi possiede quella decisione;
+- qual è la domanda analitica primaria;
+- quale tipo di evidenza richiede;
+- come definiamo la metrica principale;
+- quale popolazione e quale periodo osserviamo;
+- qual è la baseline;
+- quali ipotesi meritano priorità;
+- quali dati sono necessari;
+- quali limiti conosciamo già;
+- quanto approfondimento vale la pena fare;
+- quando l'analisi sarà sufficientemente completa.
+
+In altre parole, questo capitolo non aggiunge una seconda catena analitica a quella del Capitolo 1. Prende la catena già fissata e la trasforma in un **piano prima dell'esecuzione**.
 
 ## Business Understanding prima della tecnica
 
-La logica non è nuova. Il framework CRISP-DM colloca il *Business Understanding* prima del *Data Understanding*: prima si chiariscono obiettivi e requisiti, poi si entra nei dati. Questo principio resta valido anche quando SQL, Python e persino parte dell'esplorazione possono essere assistiti dall'AI.
+La logica è precedente all'AI. CRISP-DM colloca il *Business Understanding* prima del *Data Understanding*: prima si chiariscono obiettivi, requisiti e criteri di successo, poi si entra nei dati.
 
-L'AI accelera la produzione di query e analisi. Non può però sapere automaticamente quale decisione aziendale conta davvero, quale compromesso sia accettabile o quale definizione di successo sia corretta per l'organizzazione.
+Fonte:
+- IBM, *Business Understanding Overview*: https://www.ibm.com/docs/en/spss-modeler/saas?topic=understanding-business-overview
+
+L'AI rende questo ordine ancora più importante. Se generare una query o una prima analisi richiede pochi secondi, diventa molto facile iniziare a eseguire prima di avere concordato che cosa significhi una risposta utile.
+
+Il problema non è la velocità.
+
+È **accelerare prima di avere scelto la direzione**.
 
 ## Obiettivo del capitolo
 
-Alla fine di questo capitolo dovresti essere in grado di prendere una richiesta vaga e produrre un vero **analytical brief** contenente almeno:
+Alla fine dovresti essere in grado di prendere una richiesta vaga e produrre un brief di una pagina che un business stakeholder, un analyst e un data engineer possano leggere senza interpretazioni incompatibili.
 
-1. problema di business;
-2. decisione da supportare;
-3. stakeholder e destinatari;
-4. domanda analitica principale;
-5. sotto-domande;
-6. metriche e definizioni;
-7. popolazione e granularità;
-8. periodo temporale;
-9. ipotesi iniziali;
-10. dati necessari;
-11. limiti e rischi;
-12. criterio con cui l'analisi verrà considerata utile.
+Le sezioni successive costruiranno quel documento un pezzo alla volta:
 
-Questo documento, anche se breve, è spesso più importante della prima query SQL.
+**problema → decisione → stakeholder → metriche → ipotesi → scope → baseline → segmentazioni → requisiti dati → piano → priorità → stop rule**.
 
-## Riferimenti
+Alla fine riuniremo tutto in un caso completo.
 
-- IBM, *CRISP-DM / Business Understanding*: https://www.ibm.com/docs/en/spss-modeler/saas?topic=understanding-business-overview
+Il deliverable più importante del capitolo non è una dashboard.
+
+È una domanda abbastanza ben progettata da meritare una dashboard, una query, un esperimento o qualunque altro metodo risulti necessario.
