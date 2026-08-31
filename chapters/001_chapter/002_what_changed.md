@@ -1,115 +1,111 @@
 ## 1.1 Cosa è cambiato davvero
 
-Per capire il ruolo del Data Analyst nell'era dell'intelligenza artificiale bisogna distinguere due cose che spesso vengono confuse: **il lavoro analitico** e **il modo in cui quel lavoro viene eseguito**.
+Per capire il ruolo del Data Analyst nell'era dell'AI bisogna separare due livelli:
 
-Il primo cambia lentamente. Il secondo cambia molto velocemente.
+- **il lavoro analitico** — definire problemi, scegliere evidenze, interpretare risultati, supportare decisioni;
+- **il modo in cui quel lavoro viene eseguito** — strumenti, interfacce, linguaggi, automazioni e infrastruttura.
 
-Per anni una parte significativa del valore tecnico di un analista è derivata dalla capacità di svolgere attività che richiedevano conoscenze operative specifiche: scrivere query SQL, costruire formule, preparare dataset, creare modelli di calcolo, programmare trasformazioni, realizzare visualizzazioni, configurare dashboard e conoscere le peculiarità di un determinato ambiente software.
+Il primo cambia lentamente.
 
-Queste capacità restano importanti. Ma il loro valore relativo sta cambiando, perché il costo necessario per produrre una prima versione di molti artefatti tecnici si sta abbassando rapidamente.
+Il secondo cambia molto velocemente.
 
-### Dalla sintassi all'intento
+Per anni una parte significativa del vantaggio tecnico di un analista è derivata dalla capacità di eseguire attività che richiedevano conoscenze operative specifiche: SQL, formule, DAX, trasformazioni, scripting, dashboard, configurazioni di strumenti.
 
-Per molto tempo l'interazione con un sistema informatico è stata dominata dalla sintassi. Per ottenere un risultato bisognava conoscere il linguaggio richiesto dallo strumento.
+Queste competenze restano importanti. Ma cambia il loro ruolo, perché il costo di produrre una prima versione di molti artefatti tecnici si sta abbassando.
 
-Per interrogare un database serviva SQL. Per automatizzare un'analisi serviva un linguaggio come Python o R. Per costruire determinati calcoli in Power BI bisognava conoscere DAX. Per trasformare dati in un foglio elettronico era necessario padroneggiare formule, tabelle pivot, Power Query o macro.
+### 1. Dalla sintassi all'intento
 
-L'intelligenza artificiale generativa introduce una nuova interfaccia: **l'intento espresso in linguaggio naturale**.
+Per molto tempo l'interazione con i sistemi analitici è stata dominata dalla sintassi.
 
-Un analista può descrivere ciò che vuole ottenere e chiedere al sistema di proporre il codice necessario. Questo sposta parte del lavoro da "ricordare come si scrive" a "sapere cosa si vuole ottenere".
+Per interrogare un database serviva SQL. Per automatizzare un'analisi serviva Python o R. Per costruire determinate metriche in Power BI serviva DAX. Per trasformare un foglio elettronico bisognava conoscere formule, pivot, Power Query o macro.
 
-La differenza è sostanziale.
+L'AI generativa aggiunge un'altra interfaccia: **l'intento espresso in linguaggio naturale**.
 
-Un utente può chiedere:
+Un analista può chiedere:
 
-> "Calcola il fatturato mensile per categoria, confrontalo con lo stesso mese dell'anno precedente e segnala le categorie con una diminuzione superiore al 15%."
+> “Calcola il fatturato mensile per categoria, confrontalo con lo stesso mese dell'anno precedente e segnala le categorie con una diminuzione superiore al 15%.”
 
-Da questa richiesta un assistente può proporre una query SQL, uno script Python, una misura DAX o un flusso di trasformazione.
+Un sistema può trasformare la richiesta in SQL, Python, DAX o una sequenza di operazioni.
 
-Ma il fatto che il sistema sia in grado di tradurre l'intento in codice non significa che l'intento sia corretto.
+Questo sposta parte del lavoro da:
 
-La definizione di "fatturato" potrebbe essere ambigua. Potrebbero esserci ordini annullati o resi. La data corretta potrebbe essere quella dell'ordine, della spedizione o della contabilizzazione. Potrebbero esserci valute diverse. Il confronto anno su anno potrebbe essere alterato dalla stagionalità o da variazioni nel perimetro aziendale.
+> “Come si scrive?”
 
-L'AI può accelerare la traduzione dell'intento in esecuzione. Non elimina il bisogno di definire correttamente l'intento.
+verso:
 
-### Il costo marginale dell'analisi si abbassa
+> “Che cosa voglio ottenere, e come verifico che l'implementazione corrisponda davvero all'intento?”
 
-Quando produrre una query, un grafico o uno script richiede meno tempo, diventa economicamente possibile esplorare più ipotesi.
+Il cambiamento è reale. Ma non elimina l'ambiguità.
 
-Questo è uno dei benefici più importanti dell'AI per l'analista.
+Che cosa significa “fatturato”? Lordo o netto? Con resi? Quale data? Quale valuta? Il confronto è valido se il perimetro aziendale è cambiato?
 
-Prima un'ipotesi secondaria poteva non essere verificata perché richiedeva troppo lavoro tecnico. Oggi può essere testata in pochi minuti. È possibile generare rapidamente varianti di una query, controllare una metrica da angolazioni differenti, creare prototipi di visualizzazione o chiedere una spiegazione di un metodo statistico prima di applicarlo.
+L'AI riduce il costo della traduzione tra intento e codice. Non definisce automaticamente l'intento corretto.
 
-L'analista può quindi dedicare meno tempo ad alcune attività meccaniche e più tempo alla parte investigativa.
+### 2. Iterare costa meno
 
-Ma esiste il rovescio della medaglia.
+Se una query, un grafico o uno script richiedono meno tempo, possiamo esplorare più ipotesi.
 
-Se il costo marginale di un'analisi tende verso zero, anche il costo marginale di una **cattiva analisi** tende verso zero.
+Questo è uno dei cambiamenti più utili per l'analista.
 
-Possiamo produrre dieci grafici inutili invece di uno. Possiamo testare decine di correlazioni senza una teoria. Possiamo generare codice che sembra plausibile ma contiene un errore logico. Possiamo costruire una narrazione convincente a partire da dati che non supportano realmente la conclusione.
+Un'ipotesi secondaria che in passato avremmo ignorato per mancanza di tempo può essere controllata. Possiamo confrontare definizioni alternative, generare rapidamente sanity check, prototipare più visualizzazioni o testare una seconda decomposizione del problema.
 
-La capacità di generare output aumenta più velocemente della capacità umana di valutarli.
+Il vantaggio non è soltanto “fare prima”.
 
-Per questo la verifica diventa una competenza centrale.
+È poter costruire un processo più iterativo.
 
-### La separazione tra autore ed esecutore si riduce
+Ma l'abbondanza di output crea anche un nuovo vincolo: **la capacità di produrre alternative cresce più velocemente della capacità di valutarle tutte con la stessa profondità**.
 
-Tradizionalmente molte organizzazioni separavano nettamente i ruoli.
+Il Capitolo 0 ha affrontato questo problema dal punto di vista della supervisione. Qui ci basta registrare il cambiamento economico: quando l'esecuzione costa meno, diventano relativamente più preziosi priorità, semantica e verifica.
 
-Un business user formulava una richiesta. Un analista la traduceva in specifiche. Un data engineer preparava i dati. Un BI developer costruiva il report. Un altro team gestiva l'infrastruttura.
+### 3. I confini tra ruoli diventano più permeabili
 
-Queste separazioni non scompariranno nelle organizzazioni complesse, ma l'AI riduce il costo di attraversare i confini tra ruoli.
+In molte organizzazioni il lavoro era tradizionalmente suddiviso in passaggi molto netti:
 
-Un analista può produrre più facilmente codice. Un business user può interrogare direttamente un modello semantico. Un data engineer può generare documentazione. Un BI developer può chiedere spiegazioni statistiche. Un data scientist può creare rapidamente prototipi di dashboard.
+business request → analyst → data engineer → BI developer → report.
 
-Questo rende più importante una competenza trasversale: **capire l'intero sistema abbastanza bene da sapere cosa delegare e cosa controllare**.
+Le specializzazioni non scompaiono, soprattutto nei sistemi complessi. Ma diventa più economico attraversarne i confini.
 
-Il Data Analyst moderno non deve necessariamente diventare specialista profondo di ogni tecnologia. Deve però comprendere il percorso del dato, le assunzioni introdotte a ogni passaggio e le conseguenze delle proprie scelte.
+Un analista può generare codice più facilmente. Un business user può interrogare un modello semantico in linguaggio naturale. Un data engineer può produrre documentazione rapidamente. Un data scientist può prototipare una visualizzazione senza passare subito da un altro team.
 
-### La semantica diventa infrastruttura
+Questo aumenta il valore di una competenza trasversale: **capire abbastanza bene l'intero percorso da sapere quando procedere, quando verificare e quando coinvolgere uno specialista.**
 
-Uno degli sviluppi più interessanti dell'analytics moderno è che il significato dei dati viene sempre più formalizzato all'interno dell'infrastruttura.
+### 4. La semantica diventa infrastruttura
 
-Un tempo molte definizioni vivevano nella testa degli analisti o in documenti separati. Oggi metriche, relazioni, descrizioni e logiche di business vengono incorporate nei modelli semantici.
+Uno dei cambiamenti meno visibili ma più importanti è che il significato dei dati viene formalizzato sempre di più dentro i sistemi analitici.
 
-L'arrivo dell'AI rende questa formalizzazione ancora più importante. Microsoft, nella documentazione di Power BI, sottolinea che Copilot funziona meglio quando il modello è preparato con schemi mirati, descrizioni chiare, terminologia aziendale e istruzioni che riducono l'ambiguità.[^ms-ai-schema] La piattaforma permette perfino di configurare "verified answers", cioè risposte validate dagli autori del modello per determinate categorie di domande.[^ms-ai-faq]
+Metriche, relazioni, descrizioni, sinonimi e logiche di business possono vivere in semantic layer e modelli condivisi invece che soltanto nella testa degli analisti o in documenti separati.
 
-Questo ci dice qualcosa di importante: il problema non è soltanto dare all'AI accesso ai dati. Bisogna darle accesso al **significato corretto dei dati**.
+L'AI rende questa formalizzazione ancora più importante.
 
-### Il lavoro diventa più iterativo
+Microsoft, nella documentazione dedicata alla preparazione dei semantic model di Power BI per Copilot, raccomanda schemi mirati, terminologia aziendale, descrizioni e istruzioni che riducano l'ambiguità. La piattaforma prevede anche meccanismi per configurare risposte validate in aree specifiche.[^ms-ai-schema][^ms-ai-faq]
 
-L'analisi non è mai stata realmente un processo lineare, ma gli strumenti moderni rendono l'iterazione molto più veloce.
+È un caso reale documentato di una dinamica generale:
 
-Si può partire da una domanda, esplorare il dato, scoprire un'anomalia, tornare alla definizione della metrica, modificare la segmentazione, verificare una nuova ipotesi e produrre un secondo risultato in tempi molto brevi.
+> **quando l'interfaccia diventa più semplice, il modello semantico sottostante deve diventare più rigoroso.**
 
-Questa dinamica è coerente con metodologie come CRISP-DM, che distinguono business understanding, data understanding, data preparation, modeling, evaluation e deployment, senza presupporre che il percorso sia una semplice linea retta.[^ibm-crisp]
+Se l'utente non deve più conoscere il nome esatto della tabella o della misura, il sistema deve conoscere con maggiore precisione che cosa significano “revenue”, “cliente attivo” o “retention”.
 
-L'AI accelera soprattutto il passaggio da un'iterazione alla successiva.
+### Che cosa cambia, quindi, per l'analista?
 
-Non sostituisce la necessità di capire **perché** stiamo iterando.
+La competenza tecnica non scompare. Cambia la sua funzione.
 
-### Cosa cambia quindi per l'analista
+Studiamo SQL non soltanto per digitare una `JOIN`, ma per capire grain, cardinalità, aggregazioni e possibili duplicazioni.
 
-Il cambiamento fondamentale può essere riassunto così:
+Studiamo statistica non per calcolare ogni formula a mano, ma per sapere quale conclusione è giustificata dall'evidenza.
 
-**prima gran parte del vantaggio competitivo personale derivava dal saper eseguire; oggi cresce il valore del saper dirigere, verificare e integrare l'esecuzione.**
+Studiamo visualizzazione non per produrre più grafici, ma per riconoscere quali rappresentazioni chiariscono o distorcono un fenomeno.
 
-Questo non significa che la competenza tecnica perda importanza. Significa che cambia la sua funzione.
+Studiamo architettura non perché ogni analista debba amministrare un warehouse, ma perché raccolta, trasformazione e modellazione determinano ciò che possiamo osservare.
 
-Non impariamo SQL soltanto per essere più veloci di un sistema AI nello scrivere una `JOIN`. Lo impariamo perché dobbiamo capire la struttura di una query, riconoscere duplicazioni, controllare il livello di granularità, individuare errori nelle aggregazioni e verificare che il risultato corrisponda al problema.
+In breve:
 
-Non impariamo statistica perché dobbiamo calcolare manualmente ogni formula. La impariamo perché dobbiamo sapere quale conclusione è giustificata dall'evidenza.
+> **si riduce il premio per la pura esecuzione e aumenta il premio per il giudizio informato sull'esecuzione.**
 
-Non impariamo data visualization perché dobbiamo disegnare ogni grafico a mano. La impariamo perché dobbiamo riconoscere quando una rappresentazione distorce o chiarisce il fenomeno.
-
-Non impariamo architettura dati perché ogni analista debba amministrare un data warehouse. La impariamo perché il modo in cui il dato viene raccolto, trasformato e modellato influenza ciò che possiamo concludere.
-
-L'AI sta quindi comprimendo il valore della pura esecuzione e aumentando il valore del **giudizio informato**.
+La sezione successiva affronta l'altra metà della tesi: ciò che, nonostante tutti questi cambiamenti, è rimasto sorprendentemente stabile.
 
 ---
 
 ### Fonti
 
-[^ms-ai-schema]: Microsoft Learn, *Prepare your data for AI - AI data schemas*, aggiornato nel 2026. https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai-data-schema
+[^ms-ai-schema]: Microsoft Learn, *Prepare your data for AI - AI data schemas*. https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai-data-schema
 [^ms-ai-faq]: Microsoft Learn, *Frequently Asked Questions about Preparing Data for AI - Power BI*. https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai-faq
-[^ibm-crisp]: IBM, *Understanding and preparing data*, documentazione CRISP-DM / SPSS Modeler. https://www.ibm.com/docs/en/ws-and-kc?topic=modeler-understanding-preparing-data
