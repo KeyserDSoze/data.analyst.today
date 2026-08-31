@@ -1,6 +1,6 @@
 ## 12.13 Failure e recovery: progettare il giorno in cui qualcosa andra' storto
 
-Una pipeline affidabile non e' quella che non fallisce mai. E' quella che **fallisce in modo osservabile, recuperabile e senza corrompere il dato**.
+Una pipeline affidabile non è quella che non fallisce mai. È quella che **fallisce in modo osservabile, recuperabile e senza corrompere il dato**.
 
 ### Caso realistico: Helix Pharma
 
@@ -16,11 +16,11 @@ Ogni notte una pipeline:
 
 Alle 03:17 la pipeline si interrompe durante il caricamento del mercato brasiliano.
 
-Il problema non e' soltanto il fallimento.
+Il problema non è soltanto il fallimento.
 
-Il problema e' capire **cosa era gia' stato scritto**.
+Il problema è capire **cosa era già stato scritto**.
 
-Se il sistema non distingue tra task completati, parziali e non eseguiti, una ripartenza puo':
+Se il sistema non distingue tra task completati, parziali e non eseguiti, una ripartenza può:
 
 - duplicare dati;
 - saltare record;
@@ -31,7 +31,7 @@ Se il sistema non distingue tra task completati, parziali e non eseguiti, una ri
 
 Quando possibile, un passaggio dovrebbe essere atomico: o viene completato, oppure il risultato parziale non diventa visibile come prodotto valido.
 
-Non sempre e' possibile ottenere atomicita' perfetta. In alternativa servono checkpoint affidabili.
+Non sempre è possibile ottenere atomicita' perfetta. In alternativa servono checkpoint affidabili.
 
 Esempio:
 
@@ -47,15 +47,15 @@ In questo modo il sistema sa da dove riprendere.
 
 Non tutti gli errori meritano lo stesso retry.
 
-Un timeout di rete puo' risolversi al secondo tentativo.
+Un timeout di rete può risolversi al secondo tentativo.
 
 Uno schema incompatibile probabilmente no.
 
-Ritentare automaticamente 20 volte una breaking change non rende la pipeline piu' robusta. Ritarda solo la diagnosi.
+Ritentare automaticamente 20 volte una breaking change non rende la pipeline più robusta. Ritarda solo la diagnosi.
 
 ### Dead-letter e quarantena
 
-Quando pochi record sono anomali, puo' essere utile separare:
+Quando pochi record sono anomali, può essere utile separare:
 
 - dati validi che possono proseguire;
 - record problematici messi in quarantena.
@@ -72,7 +72,7 @@ Ma attenzione: la quarantena non deve trasformarsi in un buco nero ignorato.
 Bisogna monitorare:
 
 - quanti record entrano;
-- perche';
+- perché;
 - da quali sorgenti;
 - da quanto tempo non vengono risolti.
 
@@ -83,23 +83,23 @@ Anche nei sistemi dati sono utili due concetti operativi:
 - **RPO**: quanta perdita di dati temporale possiamo tollerare;
 - **RTO**: quanto tempo possiamo impiegare per ripristinare il servizio.
 
-Un dashboard settimanale puo' tollerare un RTO di alcune ore.
+Un dashboard settimanale può tollerare un RTO di alcune ore.
 
 Un sistema antifrode operativo probabilmente no.
 
 ### Il problema dei dati parziali
 
-Una delle situazioni peggiori e' quando il sistema non fallisce apertamente.
+Una delle situazioni peggiori è quando il sistema non fallisce apertamente.
 
 Supponiamo che arrivino 41 mercati su 42.
 
-Il job termina con successo perche' nessun errore tecnico si e' verificato.
+Il job termina con successo perché nessun errore tecnico si è verificato.
 
 Il fatturato globale viene pubblicato comunque.
 
-Tecnicamente la pipeline e' verde.
+Tecnicamente la pipeline è verde.
 
-Analiticamente il prodotto e' incompleto.
+Analiticamente il prodotto è incompleto.
 
 Per questo servono controlli di **completeness attesa**, non solo controlli di esecuzione.
 

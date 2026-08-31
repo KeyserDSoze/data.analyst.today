@@ -1,5 +1,4 @@
-# 0.6 Livelli di fiducia: non tutti gli output AI meritano lo stesso trattamento
-
+## 0.6 Livelli di fiducia: non tutti gli output AI meritano lo stesso trattamento
 Uno degli errori più comuni nell'uso dell'AI è trattare tutti gli output come se avessero lo stesso grado di affidabilità.
 
 Non è così.

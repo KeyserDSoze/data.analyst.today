@@ -1,5 +1,4 @@
-# 17.1 Caso end-to-end: “Le vendite stanno scendendo”
-
+## 17.1 Caso end-to-end: “Le vendite stanno scendendo”
 Una catena retail multicanale, **Orion Living**, chiude il mese con ricavi a -11,2% rispetto allo stesso mese dell'anno precedente.
 
 Il CEO chiede:

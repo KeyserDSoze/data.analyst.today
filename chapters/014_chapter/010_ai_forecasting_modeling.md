@@ -1,5 +1,4 @@
-# 14.9 AI per forecasting e modeling: generare modelli non significa validare previsioni
-
+## 14.9 AI per forecasting e modeling: generare modelli non significa validare previsioni
 L'AI può costruire in pochi minuti una pipeline che un tempo richiedeva ore: pulizia, feature engineering, split, training, metriche e grafici. Il rischio è confondere la velocità di costruzione con la qualità del modello.
 
 Supponiamo che un'azienda retail chieda:

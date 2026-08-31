@@ -1,5 +1,4 @@
-# 16.13 Accessibilità: una visualizzazione che non tutti possono leggere è una visualizzazione incompleta
-
+## 16.13 Accessibilità: una visualizzazione che non tutti possono leggere è una visualizzazione incompleta
 L'accessibilità non è un dettaglio grafico. È parte della qualità della comunicazione.
 
 Una dashboard può essere statisticamente corretta e comunque fallire se una parte del pubblico non riesce a distinguere categorie, leggere etichette o comprendere il messaggio senza affidarsi esclusivamente al colore.

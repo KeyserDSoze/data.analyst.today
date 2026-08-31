@@ -1,12 +1,12 @@
-## 6.1 Segmentazione: la media non e' il cliente
+## 6.1 Segmentazione: la media non è il cliente
 
 Segmentare significa dividere una popolazione in gruppi che abbiano senso rispetto alla domanda analitica.
 
-Il punto non e' creare piu' filtri. Il punto e' trovare gruppi nei quali il comportamento sia sufficientemente diverso da cambiare la diagnosi o la decisione.
+Il punto non è creare più filtri. Il punto è trovare gruppi nei quali il comportamento sia sufficientemente diverso da cambiare la diagnosi o la decisione.
 
-Immaginiamo un e-commerce europeo, Northstar Home, che vende articoli per la casa in cinque paesi. Nel trimestre appena chiuso il conversion rate complessivo e' sceso dal 3,9% al 3,5%.
+Immaginiamo un e-commerce europeo, Northstar Home, che vende articoli per la casa in cinque paesi. Nel trimestre appena chiuso il conversion rate complessivo è sceso dal 3,9% al 3,5%.
 
-La prima reazione del management e' semplice: "il sito converte peggio".
+La prima reazione del management è semplice: "il sito converte peggio".
 
 L'analista segmenta per dispositivo:
 
@@ -16,7 +16,7 @@ L'analista segmenta per dispositivo:
 | Mobile | 3,1% | 2,5% |
 | Tablet | 3,4% | 3,3% |
 
-Il problema e' quasi interamente mobile.
+Il problema è quasi interamente mobile.
 
 Poi segmenta il mobile per sorgente di traffico:
 
@@ -29,13 +29,13 @@ Poi segmenta il mobile per sorgente di traffico:
 
 La storia cambia di nuovo. Non abbiamo un generico problema mobile. Abbiamo soprattutto un problema sul traffico paid social mobile.
 
-A quel punto l'analista segmenta per paese e scopre che il deterioramento e' concentrato in Italia e Spagna, proprio dove nel trimestre e' stata lanciata una nuova landing page localizzata.
+A quel punto l'analista segmenta per paese e scopre che il deterioramento è concentrato in Italia e Spagna, proprio dove nel trimestre è stata lanciata una nuova landing page localizzata.
 
 Il KPI aggregato diceva "conversione in calo". La segmentazione ha trasformato una frase vaga in una pista investigativa concreta:
 
-> Il calo complessivo di conversione e' spiegato principalmente dal traffico paid social mobile in Italia e Spagna, dopo il lancio della nuova landing page.
+> Il calo complessivo di conversione è spiegato principalmente dal traffico paid social mobile in Italia e Spagna, dopo il lancio della nuova landing page.
 
-Questa formulazione non dimostra ancora causalita'. Ma e' gia' enormemente piu' utile.
+Questa formulazione non dimostra ancora causalita'. Ma è già enormemente più utile.
 
 ### Segmentare non significa tagliare all'infinito
 
@@ -45,7 +45,7 @@ Inoltre, segmenti troppo piccoli diventano instabili. Un conversion rate del 12%
 
 Per questo, una buona segmentazione parte da ipotesi plausibili e da dimensioni che hanno significato operativo.
 
-La domanda corretta non e':
+La domanda corretta non è:
 
 > Quali segmenti posso creare?
 

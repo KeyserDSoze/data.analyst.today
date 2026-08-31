@@ -1,5 +1,4 @@
-# 15.1 Finding, insight e spiegazione: non sono la stessa cosa
-
+## 15.1 Finding, insight e spiegazione: non sono la stessa cosa
 Uno degli errori più comuni nel lavoro analitico è chiamare *insight* qualsiasi numero non ovvio.
 
 Ma un finding può essere sorprendente senza essere utile, e una spiegazione può essere plausibile senza essere dimostrata.

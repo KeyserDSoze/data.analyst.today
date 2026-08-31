@@ -1,5 +1,4 @@
-# 16.9 Tabelle, small multiples e confronti complessi
-
+## 16.9 Tabelle, small multiples e confronti complessi
 Non tutto deve diventare un grafico.
 
 Quando l'obiettivo è leggere valori precisi, confrontare molte categorie o verificare dettagli, una tabella ben progettata può essere superiore a una visualizzazione più appariscente.

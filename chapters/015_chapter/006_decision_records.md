@@ -1,5 +1,4 @@
-# 15.5 Decision record: lasciare traccia di perché abbiamo deciso
-
+## 15.5 Decision record: lasciare traccia di perché abbiamo deciso
 Molte organizzazioni documentano bene i dati e male le decisioni.
 
 Dopo tre mesi ricordiamo cosa è stato fatto, ma non sempre perché.

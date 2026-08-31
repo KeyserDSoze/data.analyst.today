@@ -1,5 +1,4 @@
-# 14.8 AI e causalità: velocità di ipotesi, non scorciatoia verso la verità
-
+## 14.8 AI e causalità: velocità di ipotesi, non scorciatoia verso la verità
 L'AI è molto brava a trovare pattern, proporre spiegazioni e suggerire variabili da controllare. Questo la rende potentissima nell'analisi causale, ma anche pericolosa: può produrre una storia causale perfettamente plausibile partendo da dati che supportano solo un'associazione.
 
 Immaginiamo che un'azienda SaaS osservi:

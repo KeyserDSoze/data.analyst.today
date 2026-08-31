@@ -1,5 +1,4 @@
-# 17.2 Caso end-to-end: retention e churn senza confondere rischio e causa
-
+## 17.2 Caso end-to-end: retention e churn senza confondere rischio e causa
 Una piattaforma SaaS B2B, **NorthPeak**, vede il logo churn salire dal 2,8% al 4,1% trimestrale.
 
 Il Chief Customer Officer chiede:

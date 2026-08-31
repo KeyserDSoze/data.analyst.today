@@ -1,5 +1,4 @@
-# 0.8 Manifesto dell'analista AI-native
-
+## 0.8 Manifesto dell'analista AI-native
 Il resto di questo libro insegnerà statistica, SQL, modeling, causalità, forecasting, architettura, strumenti, comunicazione e AI-assisted analytics.
 
 Ma prima di tutto questo serve un patto professionale.

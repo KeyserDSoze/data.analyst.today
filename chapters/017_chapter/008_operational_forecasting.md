@@ -1,5 +1,4 @@
-# 17.7 Forecasting operativo: una previsione utile deve cambiare un'azione
-
+## 17.7 Forecasting operativo: una previsione utile deve cambiare un'azione
 Un forecast non è utile perché è accurato in astratto.
 
 È utile se migliora una decisione che deve essere presa prima che il futuro sia noto.

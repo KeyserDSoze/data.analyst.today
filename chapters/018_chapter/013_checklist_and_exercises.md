@@ -1,5 +1,4 @@
-# 18.12 Checklist ed esercizi
-
+## 18.12 Checklist ed esercizi
 ## Checklist: quando un'analisi sta diventando un prodotto analitico
 
 Prima di trasformare un'analisi ricorrente in sistema, chiediamoci:

@@ -1,5 +1,4 @@
-# 16.1 Visualizzazione esplorativa e visualizzazione esplicativa
-
+## 16.1 Visualizzazione esplorativa e visualizzazione esplicativa
 Non tutti i grafici hanno lo stesso scopo.
 
 Durante l'analisi usiamo visualizzazioni per **scoprire**.

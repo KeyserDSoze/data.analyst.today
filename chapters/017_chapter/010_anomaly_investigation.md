@@ -1,5 +1,4 @@
-# 17.9 Anomaly investigation: l'allarme non è la spiegazione
-
+## 17.9 Anomaly investigation: l'allarme non è la spiegazione
 Un sistema di anomaly detection può dirci che qualcosa è insolito.
 
 Non può, da solo, dirci perché sia successo.

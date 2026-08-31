@@ -1,5 +1,4 @@
-# 18.6 Automazione e CI/CD analitica
-
+## 18.6 Automazione e CI/CD analitica
 Quando un'analisi diventa ricorrente, la domanda non è più soltanto:
 
 > “Funziona oggi?”

@@ -1,5 +1,4 @@
-# 18.7 Una testing pyramid per analytics
-
+## 18.7 Una testing pyramid per analytics
 Un errore analitico può nascere a livelli diversi.
 
 Possiamo avere:

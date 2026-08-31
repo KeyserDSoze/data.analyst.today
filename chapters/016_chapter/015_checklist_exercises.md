@@ -1,5 +1,4 @@
-# 16.14 Checklist ed esercizi
-
+## 16.14 Checklist ed esercizi
 ## Checklist prima di consegnare una visualizzazione
 
 ### Domanda

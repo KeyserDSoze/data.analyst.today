@@ -1,5 +1,4 @@
-# 14.5 AI per documentazione e comunicazione: accelerare la traduzione senza alterare il significato
-
+## 14.5 AI per documentazione e comunicazione: accelerare la traduzione senza alterare il significato
 Una parte enorme del lavoro analitico non consiste nel calcolare numeri, ma nel renderli comprensibili, verificabili e riusabili.
 
 L'AI può aiutare molto in:

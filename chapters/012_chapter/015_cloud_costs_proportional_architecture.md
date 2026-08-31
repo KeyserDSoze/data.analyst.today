@@ -1,10 +1,10 @@
 ## 12.14 Costi cloud e architettura proporzionata: non tutto deve essere real time
 
-Una buona architettura non e' quella con piu' componenti. E' quella che soddisfa il requisito decisionale con il livello di complessita' e costo appropriato.
+Una buona architettura non è quella con più componenti. È quella che soddisfa il requisito decisionale con il livello di complessita' e costo appropriato.
 
 ### Caso realistico: BrightMart
 
-BrightMart e' un retailer regionale con 180 punti vendita.
+BrightMart è un retailer regionale con 180 punti vendita.
 
 Il management chiede una piattaforma "real time" per monitorare:
 
@@ -18,7 +18,7 @@ La prima proposta tecnica include streaming continuo, code di eventi, cluster al
 
 Costo stimato: circa 1,1 milioni di euro l'anno.
 
-Durante il discovery emerge pero' che:
+Durante il discovery emerge però che:
 
 - i direttori di negozio controllano le vendite ogni ora;
 - il pricing cambia una volta al giorno;
@@ -35,11 +35,11 @@ archivio storico -> object storage
 semantic model -> refresh differenziato per dominio
 ```
 
-Il costo scende drasticamente senza ridurre la qualita' delle decisioni.
+Il costo scende drasticamente senza ridurre la qualità delle decisioni.
 
 ### Freshness ha un prezzo
 
-In generale, ridurre la latenza richiede piu' infrastruttura, piu' osservabilita' e piu' complessita' operativa.
+In generale, ridurre la latenza richiede più infrastruttura, più osservabilita' e più complessita' operativa.
 
 Passare da:
 
@@ -47,7 +47,7 @@ Passare da:
 24 ore -> 1 ora
 ```
 
-puo' essere relativamente semplice.
+può essere relativamente semplice.
 
 Passare da:
 
@@ -55,9 +55,9 @@ Passare da:
 1 ora -> 1 secondo
 ```
 
-puo' cambiare completamente l'architettura.
+può cambiare completamente l'architettura.
 
-La domanda corretta non e':
+La domanda corretta non è:
 
 > possiamo farlo in real time?
 
@@ -67,7 +67,7 @@ ma:
 
 ### Costi invisibili
 
-Il costo cloud non e' solo compute.
+Il costo cloud non è solo compute.
 
 Comprende anche:
 
@@ -90,7 +90,7 @@ Refresh ogni 5 minuti.
 
 La dashboard viene consultata in media da 14 persone al giorno.
 
-Il problema non e' soltanto tecnico. E' economico.
+Il problema non è soltanto tecnico. È economico.
 
 Una possibile riprogettazione:
 
@@ -104,7 +104,7 @@ Una possibile riprogettazione:
 
 Un altro asse di costo riguarda la gestione.
 
-Una tecnologia open source puo' avere costo di licenza molto basso ma richiedere:
+Una tecnologia open source può avere costo di licenza molto basso ma richiedere:
 
 - infrastruttura;
 - patching;
@@ -112,7 +112,7 @@ Una tecnologia open source puo' avere costo di licenza molto basso ma richiedere
 - on-call;
 - capacity planning.
 
-Un servizio gestito puo' costare di piu' per unita' di compute ma ridurre molto il costo operativo.
+Un servizio gestito può costare di più per unità di compute ma ridurre molto il costo operativo.
 
 Non esiste una risposta universale.
 
@@ -124,11 +124,11 @@ Per confrontare architetture conviene pensare al **TCO**:
 TCO = infrastruttura + licenze + persone + manutenzione + incidenti + inefficienza + switching cost
 ```
 
-La formula non deve essere perfetta. Serve a ricordare che il prezzo del servizio cloud e' solo una parte della decisione.
+La formula non deve essere perfetta. Serve a ricordare che il prezzo del servizio cloud è solo una parte della decisione.
 
 ### Overengineering
 
-Un sintomo tipico di overengineering e' quando la soluzione e' piu sofisticata del problema.
+Un sintomo tipico di overengineering è quando la soluzione è piu sofisticata del problema.
 
 Esempio:
 
@@ -137,13 +137,13 @@ Esempio:
 - 5 utenti;
 - pipeline streaming distribuita multi-cluster.
 
-La tecnologia puo' essere eccellente e la scelta comunque sbagliata.
+La tecnologia può essere eccellente e la scelta comunque sbagliata.
 
 ### Underengineering
 
 Esiste anche l'errore opposto.
 
-Un foglio Excel condiviso manualmente puo' funzionare per 5 persone e fallire quando:
+Un foglio Excel condiviso manualmente può funzionare per 5 persone e fallire quando:
 
 - gli utenti diventano 200;
 - serve audit;
@@ -155,13 +155,13 @@ Un foglio Excel condiviso manualmente puo' funzionare per 5 persone e fallire qu
 
 Prima di introdurre un nuovo componente chiedere:
 
-1. qual e' il volume?
-2. qual e' la latenza necessaria?
+1. qual è il volume?
+2. qual è la latenza necessaria?
 3. quante persone lo useranno?
-4. qual e' il costo di un dato in ritardo?
-5. qual e' il costo di un sistema piu' complesso?
+4. qual è il costo di un dato in ritardo?
+5. qual è il costo di un sistema più complesso?
 6. quali competenze abbiamo davvero?
 7. quanto deve scalare nei prossimi 12-24 mesi?
-8. possiamo partire piu' semplici?
+8. possiamo partire più semplici?
 
 **La maturita' architetturale non si misura dal numero di tecnologie. Si misura dalla capacita' di scegliere la complessita' minima sufficiente.**

@@ -1,5 +1,4 @@
-# 14.6 Agentic workflows e human-in-the-loop: automatizzare il processo senza automatizzare l'errore
-
+## 14.6 Agentic workflows e human-in-the-loop: automatizzare il processo senza automatizzare l'errore
 Quando un assistente AI passa dalla singola risposta a una sequenza di azioni, entriamo nel territorio dei workflow agentici.
 
 Un agente può, in linea di principio:

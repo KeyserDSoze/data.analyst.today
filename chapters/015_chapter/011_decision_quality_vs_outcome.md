@@ -1,5 +1,4 @@
-# 15.10 Decision quality e outcome quality non sono la stessa cosa
-
+## 15.10 Decision quality e outcome quality non sono la stessa cosa
 Uno degli errori più comuni nel valutare le decisioni è giudicarle solo dal risultato finale.
 
 Se il risultato è buono, concludiamo che la decisione era buona.

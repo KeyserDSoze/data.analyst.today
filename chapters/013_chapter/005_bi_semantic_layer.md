@@ -1,5 +1,4 @@
-# 13.4 BI e semantic layer: quando il risultato deve diventare condiviso
-
+## 13.4 BI e semantic layer: quando il risultato deve diventare condiviso
 Una buona analisi può vivere in un notebook. Una buona metrica aziendale, invece, spesso deve vivere in un sistema condiviso.
 
 Gli strumenti di Business Intelligence entrano in gioco quando il problema non è più soltanto analizzare, ma distribuire una lettura coerente del business a molte persone.

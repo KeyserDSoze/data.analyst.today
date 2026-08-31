@@ -1,5 +1,4 @@
-# 18.1 Metriche certificate e ownership
-
+## 18.1 Metriche certificate e ownership
 Quando un'organizzazione cresce, il problema raramente è la mancanza di numeri.
 
 È l'eccesso di versioni dello stesso numero.

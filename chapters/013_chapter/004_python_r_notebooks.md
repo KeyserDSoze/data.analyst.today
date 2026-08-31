@@ -1,5 +1,4 @@
-# 13.3 Python, R e notebook: quando l'analisi diventa programmabile
-
+## 13.3 Python, R e notebook: quando l'analisi diventa programmabile
 Python e R diventano particolarmente utili quando l'analisi richiede più flessibilità di quella offerta da SQL o da un foglio di calcolo.
 
 Il vantaggio principale non è semplicemente «poter scrivere codice». È poter descrivere un processo analitico complesso in modo ripetibile, estendibile e verificabile.

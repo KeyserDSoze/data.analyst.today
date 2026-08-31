@@ -1,5 +1,4 @@
-# 13.8 Case study — Northstar Mobility: il problema non è scegliere un tool, ma progettare il flusso
-
+## 13.8 Case study — Northstar Mobility: il problema non è scegliere un tool, ma progettare il flusso
 Northstar Mobility gestisce servizi di mobilità urbana in 14 città europee.
 
 Il COO chiede un sistema per monitorare ogni mattina:

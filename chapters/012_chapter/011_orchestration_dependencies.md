@@ -1,14 +1,14 @@
-## 12.10 Orchestrazione e dipendenze: una pipeline e' un sistema, non una query
+## 12.10 Orchestrazione e dipendenze: una pipeline è un sistema, non una query
 
-Una trasformazione SQL puo' essere corretta e fallire comunque come prodotto dati se viene eseguita nel momento sbagliato, prima che una sorgente sia aggiornata o senza che un passaggio precedente sia terminato.
+Una trasformazione SQL può essere corretta e fallire comunque come prodotto dati se viene eseguita nel momento sbagliato, prima che una sorgente sia aggiornata o senza che un passaggio precedente sia terminato.
 
-Questa e' la funzione dell'**orchestrazione**: coordinare task, dipendenze, tempi, retry e fallimenti.
+Questa è la funzione dell'**orchestrazione**: coordinare task, dipendenze, tempi, retry e fallimenti.
 
 ### Caso realistico: Meridian Foods
 
 Meridian Foods aggiorna ogni mattina un dashboard commerciale alle 07:00.
 
-Il flusso e' composto da:
+Il flusso è composto da:
 
 1. estrazione ERP;
 2. caricamento ordini;
@@ -33,9 +33,9 @@ Poi una mattina l'ERP termina alle 05:05 per un rallentamento.
 
 Il job `orders load`, partito comunque alle 04:30, legge il file del giorno precedente.
 
-Il dashboard delle 07:00 e' tecnicamente "verde" ma contiene dati parzialmente vecchi.
+Il dashboard delle 07:00 è tecnicamente "verde" ma contiene dati parzialmente vecchi.
 
-### Scheduling non e' orchestrazione
+### Scheduling non è orchestrazione
 
 Un semplice calendario dice **quando provare a partire**.
 
@@ -49,7 +49,7 @@ Un orchestratore dovrebbe anche sapere:
 - come notificare il problema;
 - come riprendere senza duplicare dati.
 
-La differenza e' sostanziale.
+La differenza è sostanziale.
 
 ### DAG: pensare in dipendenze
 
@@ -65,7 +65,7 @@ Esempio:
 customers ----------------/
 ```
 
-Il vantaggio concettuale e' che il sistema non dice soltanto "esegui alle 05:00". Dice:
+Il vantaggio concettuale è che il sistema non dice soltanto "esegui alle 05:00". Dice:
 
 > esegui `revenue_model` solo quando `orders`, `returns` e `customers` sono completati correttamente.
 
@@ -73,9 +73,9 @@ Il vantaggio concettuale e' che il sistema non dice soltanto "esegui alle 05:00"
 
 Un task fallisce dopo aver scritto meta' dei dati. L'orchestratore lo ritenta automaticamente.
 
-Se il task usa un semplice `INSERT`, il secondo tentativo puo' duplicare la parte gia' scritta.
+Se il task usa un semplice `INSERT`, il secondo tentativo può duplicare la parte già scritta.
 
-Il retry, quindi, non e' sempre una soluzione innocua.
+Il retry, quindi, non è sempre una soluzione innocua.
 
 Serve progettare task:
 
@@ -87,7 +87,7 @@ Serve progettare task:
 
 ### Backfill
 
-Un'altra responsabilita' importante e' il **backfill**: ricalcolare periodi storici quando cambia una regola o quando un job precedente era errato.
+Un'altra responsabilita' importante è il **backfill**: ricalcolare periodi storici quando cambia una regola o quando un job precedente era errato.
 
 Supponiamo che il margine netto sia stato calcolato male per 45 giorni.
 
@@ -101,7 +101,7 @@ senza rompere il dato corrente e senza duplicazioni.
 
 ### Cosa deve capire un Data Analyst
 
-Quando un numero manca o cambia improvvisamente, la causa puo' non essere nella query finale.
+Quando un numero manca o cambia improvvisamente, la causa può non essere nella query finale.
 
 Può essere:
 
@@ -111,9 +111,9 @@ Può essere:
 - un backfill parziale;
 - una pipeline downstream partita troppo presto.
 
-Quindi una buona domanda non e' solo:
+Quindi una buona domanda non è solo:
 
-> La query e' giusta?
+> La query è giusta?
 
 ma anche:
 
@@ -132,4 +132,4 @@ Per ogni dataset critico documentare almeno:
 - ownership;
 - procedura di backfill.
 
-**Una pipeline affidabile non e' una collezione di script. E' una sequenza esplicita di dipendenze e garanzie.**
+**Una pipeline affidabile non è una collezione di script. È una sequenza esplicita di dipendenze e garanzie.**

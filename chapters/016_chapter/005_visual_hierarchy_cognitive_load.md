@@ -1,5 +1,4 @@
-# 16.4 Gerarchia visiva e cognitive load
-
+## 16.4 Gerarchia visiva e cognitive load
 Quando tutto sembra importante, niente lo è davvero.
 
 Una dashboard o una slide può contenere numeri corretti ma costringere il lettore a troppo lavoro cognitivo:

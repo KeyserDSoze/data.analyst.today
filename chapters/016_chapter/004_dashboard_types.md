@@ -1,5 +1,4 @@
-# 16.3 Dashboard operative, diagnostiche e decisionali
-
+## 16.3 Dashboard operative, diagnostiche e decisionali
 Non tutte le dashboard devono fare la stessa cosa.
 
 Uno degli errori più comuni è costruire una sola dashboard che prova contemporaneamente a:

@@ -1,5 +1,4 @@
-# 17.11 Caso finale: una decisione, molte tecniche
-
+## 17.11 Caso finale: una decisione, molte tecniche
 I problemi reali raramente arrivano etichettati come “regressione”, “A/B test”, “forecasting” o “causal inference”.
 
 Arrivano così:

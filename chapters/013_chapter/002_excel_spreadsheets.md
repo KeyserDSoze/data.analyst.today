@@ -1,5 +1,4 @@
-# 13.1 Excel e fogli di calcolo: il coltellino svizzero dell'analista
-
+## 13.1 Excel e fogli di calcolo: il coltellino svizzero dell'analista
 Excel è contemporaneamente uno degli strumenti più sottovalutati e più abusati dell'analytics.
 
 È sottovalutato quando viene liquidato come «strumento da non tecnici». È abusato quando diventa database, sistema di versionamento, motore ETL, applicazione operativa e repository unico per processi critici.

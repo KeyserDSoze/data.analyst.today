@@ -1,5 +1,4 @@
-# 15.7 Decision threshold: quando l'evidenza è sufficiente per agire
-
+## 15.7 Decision threshold: quando l'evidenza è sufficiente per agire
 Una delle domande più difficili nel lavoro analitico non è:
 
 > “Qual è la risposta?”

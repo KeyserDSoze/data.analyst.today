@@ -1,5 +1,4 @@
-# 0.3 Verificare senza rifare tutto a mano
-
+## 0.3 Verificare senza rifare tutto a mano
 Se per usare l'AI dobbiamo rifare manualmente ogni passaggio, abbiamo perso gran parte del vantaggio.
 
 Ma se non verifichiamo nulla, abbiamo perso il controllo.

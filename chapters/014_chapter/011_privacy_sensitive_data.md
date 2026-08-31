@@ -1,5 +1,4 @@
-# 14.10 Privacy e dati sensibili: non tutto ciò che l'AI può vedere deve essere mostrato all'AI
-
+## 14.10 Privacy e dati sensibili: non tutto ciò che l'AI può vedere deve essere mostrato all'AI
 L'AI-assisted analytics rende molto semplice copiare una tabella, un estratto di log o un dataset dentro un sistema generativo e chiedere: “trova qualcosa di interessante”. Questa facilità crea un nuovo rischio operativo: il dato può essere condiviso prima ancora che qualcuno si chieda se sia appropriato farlo.
 
 La prima domanda non è quindi:

@@ -1,5 +1,4 @@
-# 17.8 A/B test: quando il risultato “positivo” non basta
-
+## 17.8 A/B test: quando il risultato “positivo” non basta
 Un esperimento ben progettato non risponde soltanto alla domanda:
 
 > “La variante B ha performato meglio?”

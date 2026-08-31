@@ -1,5 +1,4 @@
-# 13.5 Cloud e scala: quando il laptop smette di essere il posto giusto
-
+## 13.5 Cloud e scala: quando il laptop smette di essere il posto giusto
 Il cloud non è automaticamente la risposta a ogni problema analitico. È utile quando permette di gestire scala, collaborazione, sicurezza, elasticità e integrazione meglio di un ambiente locale.
 
 ## 13.5.1 Il falso problema della scala

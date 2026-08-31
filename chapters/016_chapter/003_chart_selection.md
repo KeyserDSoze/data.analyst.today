@@ -1,5 +1,4 @@
-# 16.2 Scegliere il grafico in base alla domanda
-
+## 16.2 Scegliere il grafico in base alla domanda
 La scelta del grafico dovrebbe partire dalla relazione che vogliamo far vedere, non dalla libreria di visualizzazioni disponibile.
 
 Prima viene la domanda.

@@ -1,5 +1,4 @@
-# 14.7 Case study — Un'indagine revenue con AI: più veloce, ma soltanto dopo aver costruito i controlli
-
+## 14.7 Case study — Un'indagine revenue con AI: più veloce, ma soltanto dopo aver costruito i controlli
 Questa storia è simulata ma costruita per riflettere un workflow realistico in un'azienda digitale.
 
 ## Il contesto

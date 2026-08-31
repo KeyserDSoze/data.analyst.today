@@ -1,5 +1,4 @@
-# 15.6 Caso studio: un calo del margine che sembrava un problema di prezzo
-
+## 15.6 Caso studio: un calo del margine che sembrava un problema di prezzo
 Aurora Home, retailer omnicanale, vede il margine lordo trimestrale scendere dal 32,8% al 29,9%.
 
 La prima lettura del management è semplice:

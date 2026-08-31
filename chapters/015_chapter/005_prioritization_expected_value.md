@@ -1,5 +1,4 @@
-# 15.4 Prioritizzare: impatto atteso, confidenza e costo
-
+## 15.4 Prioritizzare: impatto atteso, confidenza e costo
 Quando un'analisi produce dieci possibili azioni, il problema successivo non è più capire i dati.
 
 È scegliere dove intervenire prima.

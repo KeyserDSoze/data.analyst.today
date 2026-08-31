@@ -1,5 +1,4 @@
-# 13.6 No-code e low-code: automatizzare senza trasformare tutto in software
-
+## 13.6 No-code e low-code: automatizzare senza trasformare tutto in software
 Gli strumenti no-code e low-code occupano una zona importante tra il foglio manuale e lo sviluppo software completo.
 
 Possono collegare sorgenti, applicare trasformazioni, schedulare flussi, inviare notifiche, aggiornare file e orchestrare piccoli processi senza richiedere un'applicazione custom.

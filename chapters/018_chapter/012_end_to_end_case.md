@@ -1,5 +1,4 @@
-# 18.11 Caso end-to-end: da dashboard artigianale a sistema analitico governato
-
+## 18.11 Caso end-to-end: da dashboard artigianale a sistema analitico governato
 Consideriamo **Helios Mobility**, azienda europea di micromobilità con circa 4,8 milioni di corse al mese.
 
 Ogni lunedì il management riceve un pacchetto con:

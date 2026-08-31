@@ -1,5 +1,4 @@
-# 14.14 Checklist operativa: usare l'AI senza perdere il controllo
-
+## 14.14 Checklist operativa: usare l'AI senza perdere il controllo
 Prima di consegnare un'analisi assistita dall'AI, l'analista dovrebbe riuscire a rispondere a queste domande.
 
 ## Problema

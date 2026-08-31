@@ -1,5 +1,4 @@
-# 0.5 Evitare il deskilling: usare l'AI senza perdere la capacità di pensare
-
+## 0.5 Evitare il deskilling: usare l'AI senza perdere la capacità di pensare
 L'AI può farci diventare più capaci.
 
 Può anche farci diventare più fragili.

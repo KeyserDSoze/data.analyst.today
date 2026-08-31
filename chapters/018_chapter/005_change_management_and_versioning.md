@@ -1,5 +1,4 @@
-# 18.4 Versionamento, change management e compatibilità
-
+## 18.4 Versionamento, change management e compatibilità
 Un sistema analitico maturo non deve soltanto funzionare oggi.
 
 Deve poter cambiare domani senza rendere invisibile ciò che è cambiato.

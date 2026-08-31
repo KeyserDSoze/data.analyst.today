@@ -1,5 +1,4 @@
-# 16.5 Comunicare l'incertezza senza indebolire il messaggio
-
+## 16.5 Comunicare l'incertezza senza indebolire il messaggio
 Uno degli errori più pericolosi nella comunicazione analitica è trasformare una stima incerta in un numero apparentemente certo.
 
 Questo succede perché l'incertezza è scomoda.

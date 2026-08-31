@@ -1,5 +1,4 @@
-# 17.5 Caso end-to-end: supply chain, stock-out e decisioni sotto vincoli
-
+## 17.5 Caso end-to-end: supply chain, stock-out e decisioni sotto vincoli
 Un produttore di componentistica, **Aster Components**, vede aumentare gli stock-out e contemporaneamente il capitale immobilizzato in inventario.
 
 Il COO chiede:

@@ -1,5 +1,4 @@
-# 19.8 Junior e senior nell'era AI
-
+## 19.8 Junior e senior nell'era AI
 L'AI non elimina la differenza tra junior e senior.
 
 La cambia.

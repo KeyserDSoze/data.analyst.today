@@ -1,5 +1,4 @@
-# 15.3 Decidere sotto incertezza: non serve sapere tutto
-
+## 15.3 Decidere sotto incertezza: non serve sapere tutto
 Le decisioni reali arrivano quasi sempre prima della certezza.
 
 Aspettare dati perfetti, causalità perfetta e forecast perfetti può essere razionale in alcuni contesti ad alto rischio. In molti altri significa semplicemente non decidere.

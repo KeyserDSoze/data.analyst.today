@@ -1,5 +1,4 @@
-# 0.2 Delegare l'esecuzione, non la responsabilità
-
+## 0.2 Delegare l'esecuzione, non la responsabilità
 L'AI rende possibile separare due cose che per molto tempo sono state quasi inseparabili:
 
 - **fare materialmente il lavoro**;

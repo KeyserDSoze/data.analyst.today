@@ -1,5 +1,4 @@
-# 19.1 Cosa diventa commodity e cosa aumenta di valore
-
+## 19.1 Cosa diventa commodity e cosa aumenta di valore
 L’AI tende a comprimere il valore economico delle attività che hanno tre caratteristiche:
 
 1. input relativamente chiari;

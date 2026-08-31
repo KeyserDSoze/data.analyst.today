@@ -1,5 +1,4 @@
-# 13.2 SQL: portare il calcolo vicino al dato
-
+## 13.2 SQL: portare il calcolo vicino al dato
 SQL è spesso il primo strumento che permette a un Data Analyst di smettere di dipendere da estrazioni manuali e iniziare a lavorare direttamente sulla base informativa dell'organizzazione.
 
 Ma anche qui il punto non è la sintassi.

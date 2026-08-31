@@ -1,5 +1,4 @@
-# 14.1 Prompting per analisti: trasformare una richiesta vaga in una specifica verificabile
-
+## 14.1 Prompting per analisti: trasformare una richiesta vaga in una specifica verificabile
 Un prompt analitico efficace non è una formula magica. È una specifica di lavoro.
 
 La differenza tra:

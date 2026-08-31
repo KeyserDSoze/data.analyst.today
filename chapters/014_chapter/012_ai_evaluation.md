@@ -1,5 +1,4 @@
-# 14.11 Valutare i sistemi AI: non basta dire “sembra funzionare”
-
+## 14.11 Valutare i sistemi AI: non basta dire “sembra funzionare”
 Quando un workflow analitico incorpora l'AI, serve una disciplina di evaluation simile a quella che useremmo per un modello, una pipeline o un esperimento.
 
 Un assistente che genera SQL può sembrare molto bravo durante una demo e fallire proprio sui casi che contano di più: join many-to-many, filtri temporali, metriche con definizioni ambigue, edge case di null e cancellazioni.

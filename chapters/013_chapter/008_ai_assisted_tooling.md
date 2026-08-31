@@ -1,5 +1,4 @@
-# 13.7 AI-assisted analytics: accelerare senza delegare il giudizio
-
+## 13.7 AI-assisted analytics: accelerare senza delegare il giudizio
 L'AI generativa sta trasformando quasi tutti gli strumenti dell'analista.
 
 Oggi può:

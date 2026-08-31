@@ -1,5 +1,4 @@
-# 18.3 Data products e self-service
-
+## 18.3 Data products e self-service
 Il self-service analytics viene spesso descritto come la possibilità per gli utenti business di interrogare autonomamente i dati.
 
 Ma questa definizione è incompleta.

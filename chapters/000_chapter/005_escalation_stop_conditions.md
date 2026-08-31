@@ -1,5 +1,4 @@
-# 0.4 Escalation e stop conditions: sapere quando l'AI deve fermarsi
-
+## 0.4 Escalation e stop conditions: sapere quando l'AI deve fermarsi
 Un sistema maturo non è quello che riesce sempre a continuare.
 
 È quello che sa anche quando **non deve continuare**.

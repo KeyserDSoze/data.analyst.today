@@ -1,5 +1,4 @@
-# 16.12 Caso studio: da dashboard confusa a decisione chiara
-
+## 16.12 Caso studio: da dashboard confusa a decisione chiara
 ## Il contesto
 
 BlueHarbor Foods è un'azienda alimentare omnicanale con circa €620 milioni di fatturato annuo.

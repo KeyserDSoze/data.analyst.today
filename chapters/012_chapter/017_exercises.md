@@ -32,7 +32,7 @@ Domande:
 
 ### Esercizio 3 — Breaking change silenzioso
 
-Un campo `delivery_time` mantiene lo stesso nome ma cambia unita' da minuti a secondi.
+Un campo `delivery_time` mantiene lo stesso nome ma cambia unità da minuti a secondi.
 
 Le pipeline non falliscono.
 
@@ -40,13 +40,13 @@ Il P95 dei tempi di consegna cresce di circa 60 volte.
 
 Domande:
 
-1. perche' uno schema test non basta?
+1. perché uno schema test non basta?
 2. quale data contract avrebbe potuto prevenire il problema?
 3. quale controllo di plausibilita' aggiungeresti?
 
 ### Esercizio 4 — Real time o no?
 
-Una societa' B2B produce circa 25.000 eventi al giorno.
+Una società B2B produce circa 25.000 eventi al giorno.
 
 Il CFO legge il report una volta al giorno alle 09:00.
 
@@ -82,7 +82,7 @@ Una pipeline incrementale ha caricato 730.000 righe prima di fallire.
 
 Il retry riparte dall'inizio e usa `INSERT` puro.
 
-Qual e' il rischio?
+Qual è il rischio?
 
 Proponi almeno due strategie per rendere il processo idempotente.
 
@@ -101,7 +101,7 @@ Poi confrontali con gli SLO di un report finanziario mensile.
 
 ### Esercizio 8 — Caso da architecture review
 
-Una societa' omnicanale ha:
+Una società omnicanale ha:
 
 - POS;
 - e-commerce;
@@ -140,11 +140,11 @@ Scopri che:
 
 Elenca le prime cinque azioni che valuteresti.
 
-### Esercizio 10 — La domanda piu' importante
+### Esercizio 10 — La domanda più importante
 
 Per un dataset che usi regolarmente, prova a rispondere senza consultare documentazione:
 
-> Da dove arriva, quali trasformazioni subisce, quando e' considerato completo, chi ne e' responsabile e cosa succede se il processo fallisce?
+> Da dove arriva, quali trasformazioni subisce, quando è considerato completo, chi ne è responsabile e cosa succede se il processo fallisce?
 
 Se non sai rispondere, hai appena identificato un rischio analitico reale.
 
@@ -161,6 +161,6 @@ Un Data Analyst moderno non deve progettare ogni pipeline, ma deve saper leggere
 - schema valido e significato valido;
 - disponibilita' tecnica e utilita' decisionale.
 
-L'architettura non e' lo sfondo dell'analisi.
+L'architettura non è lo sfondo dell'analisi.
 
-**E' la catena di assunzioni attraverso cui la realta' diventa un numero.**
+**È la catena di assunzioni attraverso cui la realtà diventa un numero.**

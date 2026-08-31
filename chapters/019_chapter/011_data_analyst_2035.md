@@ -1,5 +1,4 @@
-# 19.10 Un possibile profilo del Data Analyst del 2035
-
+## 19.10 Un possibile profilo del Data Analyst del 2035
 Fare previsioni sul lavoro a dieci anni è pericoloso.
 
 I tool cambiano troppo rapidamente.

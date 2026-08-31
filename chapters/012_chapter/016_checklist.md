@@ -1,6 +1,6 @@
 ## 12.15 Checklist operativa: leggere un'architettura come un Data Analyst
 
-Quando entri in un nuovo progetto dati, non serve diventare subito data engineer. Serve pero' costruire rapidamente una mappa mentale del sistema.
+Quando entri in un nuovo progetto dati, non serve diventare subito data engineer. Serve però costruire rapidamente una mappa mentale del sistema.
 
 Usa questa checklist.
 
@@ -8,7 +8,7 @@ Usa questa checklist.
 
 - quali sistemi producono i dati?
 - sono OLTP, file, API, eventi, SaaS?
-- qual e' la system of record per ogni entita'?
+- qual è la system of record per ogni entita'?
 - esistono copie o shadow source non ufficiali?
 
 ### 2. Acquisizione
@@ -30,19 +30,19 @@ Usa questa checklist.
 - quali sono le dipendenze?
 - cosa succede se un task upstream ritarda?
 - esistono retry, checkpoint e backfill?
-- il downstream viene bloccato quando il dato e' incompleto?
+- il downstream viene bloccato quando il dato è incompleto?
 
-### 5. Qualita' e affidabilita'
+### 5. Qualità e affidabilita'
 
 - esistono SLO di freshness e completeness?
 - chi riceve gli alert?
 - quali controlli sono automatici?
-- come viene misurata la qualita' del dato, non solo la riuscita dei job?
+- come viene misurata la qualità del dato, non solo la riuscita dei job?
 
 ### 6. Modello analitico
 
 - quali fact e dimension esistono?
-- qual e' il grain delle fact?
+- qual è il grain delle fact?
 - come viene gestita la storia?
 - esiste una semantic layer?
 - le metriche sono centralizzate o replicate nei dashboard?
@@ -63,14 +63,14 @@ Usa questa checklist.
 
 ### 9. Recovery
 
-- qual e' l'ultimo stato valido?
-- il processo e' idempotente?
+- qual è l'ultimo stato valido?
+- il processo è idempotente?
 - come viene eseguito un backfill?
 - cosa succede ai record in errore?
 
 ### 10. Costi
 
-- quali workload sono piu' costosi?
+- quali workload sono più costosi?
 - quali query scansiscono molti dati?
 - la freshness richiesta giustifica il costo?
 - esistono componenti sovradimensionati?
@@ -79,9 +79,9 @@ Usa questa checklist.
 
 Dopo aver raccolto queste informazioni, prova a descrivere il sistema in una frase:
 
-> I dati nascono in ___, vengono acquisiti tramite ___, trasformati in ___, pubblicati tramite ___, con una freshness di ___ e controlli di qualita' su ___.
+> I dati nascono in ___, vengono acquisiti tramite ___, trasformati in ___, pubblicati tramite ___, con una freshness di ___ e controlli di qualità su ___.
 
-Se non riesci a farlo, probabilmente la mappa del sistema non e' ancora abbastanza chiara.
+Se non riesci a farlo, probabilmente la mappa del sistema non è ancora abbastanza chiara.
 
 ### Il principio da portare via
 

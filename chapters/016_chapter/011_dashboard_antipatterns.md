@@ -1,5 +1,4 @@
-# 16.10 Dashboard anti-pattern: quando più informazione produce meno comprensione
-
+## 16.10 Dashboard anti-pattern: quando più informazione produce meno comprensione
 Una dashboard può essere tecnicamente completa e cognitivamente inutilizzabile.
 
 Il problema nasce spesso quando proviamo a soddisfare ogni stakeholder nello stesso schermo.

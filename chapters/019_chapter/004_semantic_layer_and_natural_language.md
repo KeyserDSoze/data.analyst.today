@@ -1,5 +1,4 @@
-# 19.3 Natural language analytics e semantic layer
-
+## 19.3 Natural language analytics e semantic layer
 Una delle promesse più visibili dell’AI applicata ai dati è semplice:
 
 > “Chiunque potrà fare domande ai dati in linguaggio naturale.”

@@ -1,5 +1,4 @@
-# 17.10 Finance e unit economics: quando crescere non significa migliorare
-
+## 17.10 Finance e unit economics: quando crescere non significa migliorare
 Le metriche aggregate di crescita possono nascondere un deterioramento economico.
 
 Revenue, GMV, utenti o transazioni possono aumentare mentre il valore creato per unità peggiora.

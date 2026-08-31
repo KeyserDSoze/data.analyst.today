@@ -1,5 +1,4 @@
-# 19.12 Conclusione — Non competere con la macchina. Diventa più difficile da sostituire.
-
+## 19.12 Conclusione — Non competere con la macchina. Diventa più difficile da sostituire.
 Il modo peggiore di prepararsi al futuro è provare a essere leggermente più veloci di un sistema che migliora ogni mese.
 
 Se il valore professionale è soltanto:

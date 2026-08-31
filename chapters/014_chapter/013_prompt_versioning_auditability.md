@@ -1,5 +1,4 @@
-# 14.12 Prompt, versioning e auditability: se cambia l'istruzione, cambia il sistema
-
+## 14.12 Prompt, versioning e auditability: se cambia l'istruzione, cambia il sistema
 Nei workflow AI il prompt non è solo testo. È parte della logica del sistema.
 
 Se cambiamo da:

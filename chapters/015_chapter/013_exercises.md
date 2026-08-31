@@ -1,5 +1,4 @@
-# 15.12 Esercizi
-
+## 15.12 Esercizi
 Gli esercizi di questo capitolo non chiedono soltanto di calcolare numeri. Chiedono di trasformare evidenze in decisioni.
 
 ## Esercizio 1 — Il finding che non basta

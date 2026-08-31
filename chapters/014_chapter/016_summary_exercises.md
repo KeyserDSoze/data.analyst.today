@@ -1,5 +1,4 @@
-# 14.15 Sintesi ed esercizi: dall'assistente al sistema sotto responsabilità
-
+## 14.15 Sintesi ed esercizi: dall'assistente al sistema sotto responsabilità
 L'AI-assisted analytics non è un singolo strumento. È un nuovo modo di organizzare il lavoro analitico.
 
 Possiamo usare l'AI per:

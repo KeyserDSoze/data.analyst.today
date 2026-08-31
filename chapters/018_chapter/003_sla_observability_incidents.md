@@ -1,5 +1,4 @@
-# 18.2 SLA, osservabilità e incident management
-
+## 18.2 SLA, osservabilità e incident management
 Un dataset può essere tecnicamente corretto e comunque inutilizzabile.
 
 Se arriva alle 14:00 ma il pricing meeting è alle 9:00, è troppo tardi.

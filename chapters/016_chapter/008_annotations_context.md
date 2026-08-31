@@ -1,5 +1,4 @@
-# 16.7 Annotazioni e contesto: aiutare il lettore a vedere ciò che conta
-
+## 16.7 Annotazioni e contesto: aiutare il lettore a vedere ciò che conta
 Un grafico non dovrebbe costringere chi lo legge a ricostruire mentalmente il contesto.
 
 Se una linea cambia direzione perché è stato lanciato un nuovo pricing, se un picco coincide con una campagna, se un calo deriva da un cambio di definizione o se una serie contiene un'interruzione metodologica, quel contesto deve essere visibile.

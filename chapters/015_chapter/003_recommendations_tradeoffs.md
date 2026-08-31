@@ -1,5 +1,4 @@
-# 15.2 Dall'insight alla raccomandazione: ogni scelta ha un costo
-
+## 15.2 Dall'insight alla raccomandazione: ogni scelta ha un costo
 Una raccomandazione analitica utile deve essere più precisa di:
 
 > “Dovremmo migliorare il funnel.”

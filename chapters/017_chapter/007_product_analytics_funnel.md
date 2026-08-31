@@ -1,5 +1,4 @@
-# 17.6 Product analytics e funnel: quando il problema non è dove gli utenti escono, ma perché
-
+## 17.6 Product analytics e funnel: quando il problema non è dove gli utenti escono, ma perché
 Un funnel è una delle rappresentazioni più semplici e utili dell'analisi prodotto.
 
 Visita → registrazione → onboarding → prima azione di valore → utilizzo ricorrente → pagamento.

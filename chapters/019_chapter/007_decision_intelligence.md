@@ -1,5 +1,4 @@
-# 19.6 Decision intelligence: dal dato alla qualità della decisione
-
+## 19.6 Decision intelligence: dal dato alla qualità della decisione
 Se una parte crescente dell'esecuzione tecnica può essere delegata a sistemi AI, il valore dell'analista tende a spostarsi ancora di più verso la qualità del processo decisionale.
 
 Questo significa che il futuro del Data Analyst non è semplicemente “fare analytics più velocemente”.

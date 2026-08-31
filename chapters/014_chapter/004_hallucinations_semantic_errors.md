@@ -1,5 +1,4 @@
-# 14.3 Hallucination e semantic errors: quando una risposta convincente è più pericolosa di un errore
-
+## 14.3 Hallucination e semantic errors: quando una risposta convincente è più pericolosa di un errore
 Un errore esplicito è spesso facile da gestire. Una risposta fluente, plausibile e sbagliata è molto più insidiosa.
 
 Nel lavoro analitico possiamo distinguere almeno quattro famiglie di errore generate o amplificate dall'AI.

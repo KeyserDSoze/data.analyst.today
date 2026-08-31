@@ -1,5 +1,4 @@
-# 19.4 I confini tra ruoli diventano più fluidi
-
+## 19.4 I confini tra ruoli diventano più fluidi
 Per anni le organizzazioni hanno distinto con etichette relativamente stabili:
 
 - Data Analyst;

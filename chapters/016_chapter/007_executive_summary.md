@@ -1,5 +1,4 @@
-# 16.6 Executive summary: arrivare al punto senza perdere il rigore
-
+## 16.6 Executive summary: arrivare al punto senza perdere il rigore
 Un executive summary non è un riassunto corto di tutto ciò che abbiamo fatto.
 
 È una struttura pensata per permettere a chi decide di capire rapidamente:

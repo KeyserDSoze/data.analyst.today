@@ -1,5 +1,4 @@
-# 18.5 Operating model: chi fa cosa quando l'analytics scala
-
+## 18.5 Operating model: chi fa cosa quando l'analytics scala
 Quando il numero di dashboard, pipeline, metriche e modelli cresce, la domanda organizzativa diventa inevitabile:
 
 > chi è responsabile di cosa?

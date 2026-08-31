@@ -1,5 +1,4 @@
-# 16.11 Comunicare in meeting: il grafico non parla da solo
-
+## 16.11 Comunicare in meeting: il grafico non parla da solo
 Una visualizzazione può essere ottima e venire comunque interpretata male se la comunicazione orale non è strutturata.
 
 Nel meeting il tempo è limitato, le persone hanno obiettivi diversi e l'attenzione è frammentata.

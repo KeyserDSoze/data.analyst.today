@@ -1,5 +1,4 @@
-# 19.9 Deskilling, apprendimento e manutenzione delle competenze
-
+## 19.9 Deskilling, apprendimento e manutenzione delle competenze
 Uno dei rischi più sottovalutati dell'AI è il **deskilling**.
 
 Quando uno strumento esegue correttamente una parte crescente del lavoro, una persona può perdere gradualmente la capacità di svolgere o valutare quel lavoro senza assistenza.

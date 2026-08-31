@@ -1,5 +1,4 @@
-# 18.8 Cost management: scalare senza perdere il controllo economico
-
+## 18.8 Cost management: scalare senza perdere il controllo economico
 Una piattaforma analitica può diventare tecnicamente più sofisticata e contemporaneamente economicamente peggiore.
 
 Query più frequenti, refresh più aggressivi, copie ridondanti, modelli sovradimensionati, notebook sempre accesi e pipeline streaming dove sarebbe sufficiente il batch possono far crescere i costi senza creare valore proporzionale.

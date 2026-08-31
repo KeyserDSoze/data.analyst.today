@@ -1,5 +1,4 @@
-# 17.12 Checklist ed esercizi: affrontare un caso end-to-end
-
+## 17.12 Checklist ed esercizi: affrontare un caso end-to-end
 Questo capitolo non va memorizzato come una collezione di ricette.
 
 L'obiettivo è allenare la capacità di costruire un percorso analitico quando il problema arriva incompleto, ambiguo e mescola più fenomeni.

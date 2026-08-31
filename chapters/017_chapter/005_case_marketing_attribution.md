@@ -1,5 +1,4 @@
-# 17.4 Caso end-to-end: marketing attribution e incrementalità
-
+## 17.4 Caso end-to-end: marketing attribution e incrementalità
 Un retailer omnicanale, **Helio Market**, investe 18 milioni di euro l'anno in advertising digitale.
 
 Il CMO chiede:

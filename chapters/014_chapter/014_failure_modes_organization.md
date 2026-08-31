@@ -1,5 +1,4 @@
-# 14.13 Failure modes organizzativi: quando il problema non è il modello
-
+## 14.13 Failure modes organizzativi: quando il problema non è il modello
 Molti fallimenti dell'AI in azienda non nascono da un modello incapace. Nascono da un sistema organizzativo che usa l'AI senza ownership, senza confini chiari o senza capire cosa è stato delegato.
 
 ## “L'ha fatto l'AI” non è una spiegazione professionale

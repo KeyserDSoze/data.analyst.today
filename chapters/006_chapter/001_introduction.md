@@ -12,9 +12,9 @@ Segmentazione, coorti, funnel, retention e churn non sono tecniche separate. Son
 
 > Dove, quando e per chi il comportamento cambia?
 
-La logica e' semplice. Un KPI aggregato descrive il sistema nel suo complesso. Una buona analisi cerca invece la struttura interna del fenomeno.
+La logica è semplice. Un KPI aggregato descrive il sistema nel suo complesso. Una buona analisi cerca invece la struttura interna del fenomeno.
 
-Per questo motivo, un'analisi utile raramente termina con "la conversione e' 4,8%". Continua con domande come:
+Per questo motivo, un'analisi utile raramente termina con "la conversione è 4,8%". Continua con domande come:
 
 - per quale canale?
 - per quale paese?
@@ -24,8 +24,8 @@ Per questo motivo, un'analisi utile raramente termina con "la conversione e' 4,8
 - dopo quale passaggio del funnel?
 - dopo quanti giorni dall'onboarding?
 
-Le coorti sono particolarmente potenti perche' separano gruppi che condividono un punto di partenza e permettono di seguirne il comportamento nel tempo. La documentazione moderna di analytics descrive proprio questo vantaggio: le medie aggregate possono nascondere differenze importanti tra gruppi di utenti, mentre le coorti rendono visibili i pattern temporali e comportamentali.[^1]
+Le coorti sono particolarmente potenti perché separano gruppi che condividono un punto di partenza e permettono di seguirne il comportamento nel tempo. La documentazione moderna di analytics descrive proprio questo vantaggio: le medie aggregate possono nascondere differenze importanti tra gruppi di utenti, mentre le coorti rendono visibili i pattern temporali e comportamentali.[^1]
 
-In questo capitolo useremo casi simulati ma realistici: un marketplace, un SaaS B2B, un'app mobile e un e-commerce. L'obiettivo non e' imparare una serie di formule isolate, ma capire come questi strumenti cambiano una decisione.
+In questo capitolo useremo casi simulati ma realistici: un marketplace, un SaaS B2B, un'app mobile e un e-commerce. L'obiettivo non è imparare una serie di formule isolate, ma capire come questi strumenti cambiano una decisione.
 
 [^1]: Mixpanel, "Cohort analysis in 2026", https://mixpanel.com/blog/cohort-analysis/

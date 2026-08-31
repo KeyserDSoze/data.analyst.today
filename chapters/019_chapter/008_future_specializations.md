@@ -1,5 +1,4 @@
-# 19.7 Le specializzazioni future: meno confini, più responsabilità
-
+## 19.7 Le specializzazioni future: meno confini, più responsabilità
 Nel prossimo decennio è probabile che i confini tra i ruoli dati diventino più fluidi.
 
 Non perché spariranno le specializzazioni, ma perché molti task tecnici potranno essere eseguiti o assistiti dall'AI. Questo rende più importante capire **quale tipo di problema** una persona sa governare.

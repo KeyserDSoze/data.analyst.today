@@ -1,5 +1,4 @@
-# 19.2 Dal singolo assistente ai team di agenti
-
+## 19.2 Dal singolo assistente ai team di agenti
 Il cambiamento più profondo potrebbe non essere che ogni analyst utilizzerà un chatbot più bravo.
 
 Potrebbe essere che una parte crescente del lavoro analitico venga svolta da **sistemi composti da più agenti con ruoli diversi**.

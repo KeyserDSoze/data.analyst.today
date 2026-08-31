@@ -1,5 +1,4 @@
-# 19.5 Come costruire una carriera resiliente
-
+## 19.5 Come costruire una carriera resiliente
 Se gli strumenti cambiano rapidamente, costruire una carriera soltanto attorno a una piattaforma specifica è fragile.
 
 Una strategia più robusta consiste nel costruire strati di competenza con velocità di obsolescenza diverse.

@@ -1,5 +1,4 @@
-# 18.9 Adoption: un prodotto analitico non ha successo perché esiste
-
+## 18.9 Adoption: un prodotto analitico non ha successo perché esiste
 Una dashboard può essere perfetta e non essere usata.
 
 Un modello può essere accurato e non cambiare alcuna decisione.

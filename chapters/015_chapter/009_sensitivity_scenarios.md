@@ -1,5 +1,4 @@
-# 15.8 Sensitivity analysis e scenario planning: quanto è fragile la decisione?
-
+## 15.8 Sensitivity analysis e scenario planning: quanto è fragile la decisione?
 Una raccomandazione può sembrare solida finché non tocchiamo una delle sue assunzioni.
 
 Per questo una buona analisi non dovrebbe limitarsi a produrre un punto stimato. Dovrebbe chiedersi:

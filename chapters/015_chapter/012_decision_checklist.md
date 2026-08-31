@@ -1,5 +1,4 @@
-# 15.11 Checklist: dall'analisi alla decisione
-
+## 15.11 Checklist: dall'analisi alla decisione
 Prima di chiudere un'analisi importante, possiamo usare una checklist semplice.
 
 ## Problema

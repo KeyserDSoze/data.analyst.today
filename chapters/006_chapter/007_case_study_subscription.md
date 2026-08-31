@@ -1,6 +1,6 @@
 ## 6.6 Caso studio: il churn che sembrava colpa del prezzo
 
-Asteria CRM e' un SaaS B2B europeo con circa 18.000 account paganti. Nel primo semestre aumenta il listino del piano Professional del 12%. Due mesi dopo, il churn mensile passa dal 2,7% al 3,6%.
+Asteria CRM è un SaaS B2B europeo con circa 18.000 account paganti. Nel primo semestre aumenta il listino del piano Professional del 12%. Due mesi dopo, il churn mensile passa dal 2,7% al 3,6%.
 
 La conclusione arriva rapidamente: l'aumento di prezzo sta facendo scappare i clienti.
 
@@ -14,7 +14,7 @@ L'analista non parte dalla correlazione temporale. Costruisce prima la segmentaz
 | Professional | 2,5% | 2,8% |
 | Enterprise | 1,1% | 1,2% |
 
-Il piano Professional, quello interessato dall'aumento di prezzo, peggiora pochissimo. Il vero deterioramento e' sullo Starter.
+Il piano Professional, quello interessato dall'aumento di prezzo, peggiora pochissimo. Il vero deterioramento è sullo Starter.
 
 ### Secondo taglio: coorte di acquisizione
 
@@ -60,9 +60,9 @@ La campagna prometteva "CRM operativo in cinque minuti" e portava utenti con asp
 
 ### Il risultato
 
-Il prezzo era una spiegazione intuitiva perche' l'aumento era visibile e temporalmente vicino al peggioramento. Ma la combinazione di segmentazione, coorti e funnel raccontava un'altra storia:
+Il prezzo era una spiegazione intuitiva perché l'aumento era visibile e temporalmente vicino al peggioramento. Ma la combinazione di segmentazione, coorti e funnel raccontava un'altra storia:
 
-> Il deterioramento del churn e' spiegato soprattutto dalle nuove coorti Starter acquisite tramite una campagna paid social con bassa activation iniziale. L'aumento di prezzo del Professional non appare, nei dati disponibili, il driver principale.
+> Il deterioramento del churn è spiegato soprattutto dalle nuove coorti Starter acquisite tramite una campagna paid social con bassa activation iniziale. L'aumento di prezzo del Professional non appare, nei dati disponibili, il driver principale.
 
 La decisione cambia.
 
@@ -80,8 +80,8 @@ Questo non dimostra da solo che ogni intervento sia causalmente responsabile del
 
 ### Il metodo dietro il caso
 
-Il percorso e' replicabile:
+Il percorso è replicabile:
 
 **KPI aggregato -> segmento -> coorte -> funnel -> ipotesi -> intervento -> nuova misurazione**
 
-Quando retention e churn cambiano, questo schema e' spesso piu' utile di qualsiasi dashboard piena di KPI non segmentati.
+Quando retention e churn cambiano, questo schema è spesso più utile di qualsiasi dashboard piena di KPI non segmentati.

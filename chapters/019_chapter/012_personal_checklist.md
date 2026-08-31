@@ -1,5 +1,4 @@
-# 19.11 Checklist personale: quanto sei pronto per il prossimo decennio?
-
+## 19.11 Checklist personale: quanto sei pronto per il prossimo decennio?
 Questa checklist non serve a misurare se conosci abbastanza tool.
 
 Serve a capire se stai costruendo un profilo professionale robusto.

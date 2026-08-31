@@ -1,10 +1,10 @@
 ## 12.11 SLA e SLO del dato: quando "aggiornato" deve diventare una garanzia
 
-Dire che un dataset e' "aggiornato ogni mattina" e' troppo vago per un sistema critico.
+Dire che un dataset è "aggiornato ogni mattina" è troppo vago per un sistema critico.
 
 Un'organizzazione matura trasforma aspettative implicite in **obiettivi misurabili**.
 
-In ambito dati, uno SLO puo' definire per esempio:
+In ambito dati, uno SLO può definire per esempio:
 
 - freshness;
 - completeness;
@@ -18,15 +18,15 @@ Solaria gestisce 2,6 milioni di contatori intelligenti.
 
 Il management riceve ogni mattina un report sui consumi del giorno precedente.
 
-Per mesi il requisito informale e':
+Per mesi il requisito informale è:
 
 > il report deve essere pronto entro le 08:00.
 
 Ma cosa significa esattamente?
 
-Alle 07:55 il dashboard e' disponibile, ma il 7% dei contatori non ha ancora inviato i dati.
+Alle 07:55 il dashboard è disponibile, ma il 7% dei contatori non ha ancora inviato i dati.
 
-Il sistema e' "disponibile", ma non e' completo.
+Il sistema è "disponibile", ma non è completo.
 
 Il team definisce allora tre SLO distinti:
 
@@ -36,11 +36,11 @@ completeness: almeno 99,2% dei meter attesi entro le 08:00
 availability: semantic model interrogabile nel 99,9% delle finestre previste
 ```
 
-Ora la qualita' operativa e' osservabile.
+Ora la qualità operativa è osservabile.
 
-### Freshness non e' completeness
+### Freshness non è completeness
 
-Un dataset puo' essere recente ma incompleto.
+Un dataset può essere recente ma incompleto.
 
 Può anche essere completo ma vecchio.
 
@@ -56,7 +56,7 @@ ultimo timestamp: 06:40
 completezza: 99,9%
 ```
 
-Quale e' migliore?
+Quale è migliore?
 
 Dipende dalla decisione.
 
@@ -69,19 +69,19 @@ In modo pratico:
 - **SLO**: obiettivo interno misurabile;
 - **SLA**: impegno formale verso un consumer, spesso con conseguenze organizzative o contrattuali.
 
-Non serve trasformare ogni tabella in un contratto legale. Serve pero' rendere esplicite le aspettative sui dataset critici.
+Non serve trasformare ogni tabella in un contratto legale. Serve però rendere esplicite le aspettative sui dataset critici.
 
 ### Caso: dashboard executive "verde"
 
-Un dashboard mostra un indicatore verde perché il refresh BI e' terminato alle 06:30.
+Un dashboard mostra un indicatore verde perché il refresh BI è terminato alle 06:30.
 
 Ma la tabella ordini upstream ha ricevuto solo l'82% dei file giornalieri.
 
-Il refresh tecnico e' riuscito.
+Il refresh tecnico è riuscito.
 
 Il prodotto dati, invece, non ha rispettato la garanzia di completezza.
 
-Questo e' uno degli errori piu' comuni nelle organizzazioni immature:
+Questo è uno degli errori più comuni nelle organizzazioni immature:
 
 **monitorare il job invece del significato del dato.**
 
@@ -95,14 +95,14 @@ Per un dataset importante si possono misurare:
 | Completeness | righe ricevute / righe attese |
 | Validity | % record che rispettano regole di dominio |
 | Uniqueness | duplicati su chiavi critiche |
-| Availability | % finestre in cui il dataset e' interrogabile |
+| Availability | % finestre in cui il dataset è interrogabile |
 | Recovery | tempo medio per tornare a uno stato affidabile |
 
 ### Error budget
 
-Il concetto di error budget puo' essere utile anche nei sistemi dati.
+Il concetto di error budget può essere utile anche nei sistemi dati.
 
-Se l'obiettivo e' 99,9% di disponibilita', una certa quota di failure e' implicitamente tollerata.
+Se l'obiettivo è 99,9% di disponibilita', una certa quota di failure è implicitamente tollerata.
 
 Questo aiuta a evitare due estremi:
 
@@ -114,10 +114,10 @@ Questo aiuta a evitare due estremi:
 Quando usa un dataset critico dovrebbe sapere almeno:
 
 1. quando dovrebbe essere pronto;
-2. quanto puo' essere incompleto;
-3. quale ritardo e' accettabile;
+2. quanto può essere incompleto;
+3. quale ritardo è accettabile;
 4. chi possiede il problema se lo SLO fallisce;
-5. se il dashboard segnala davvero la qualita' del dato o solo il completamento del refresh.
+5. se il dashboard segnala davvero la qualità del dato o solo il completamento del refresh.
 
 ### Metodo operativo
 
@@ -134,4 +134,4 @@ alerting
 recovery procedure
 ```
 
-**Un dataset affidabile non e' quello che di solito funziona. E' quello per cui sappiamo cosa significa funzionare.**
+**Un dataset affidabile non è quello che di solito funziona. È quello per cui sappiamo cosa significa funzionare.**

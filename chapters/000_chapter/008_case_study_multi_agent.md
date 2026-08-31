@@ -1,5 +1,4 @@
-# 0.7 Caso end-to-end: dodici agenti, un analista, una decisione
-
+## 0.7 Caso end-to-end: dodici agenti, un analista, una decisione
 Consideriamo una società SaaS B2B, **NovaSuite**, con circa €95 milioni di ARR.
 
 Un lunedì mattina il CEO riceve un alert:

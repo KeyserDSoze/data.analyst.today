@@ -1,5 +1,4 @@
-# 18.10 Governance per AI e agenti
-
+## 18.10 Governance per AI e agenti
 Quando un sistema analitico incorpora AI o agenti, la superficie di rischio cambia.
 
 Un processo tradizionale esegue una sequenza relativamente definita.

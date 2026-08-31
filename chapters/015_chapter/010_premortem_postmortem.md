@@ -1,5 +1,4 @@
-# 15.9 Pre-mortem e post-mortem: imparare prima e dopo la decisione
-
+## 15.9 Pre-mortem e post-mortem: imparare prima e dopo la decisione
 Le organizzazioni spesso analizzano gli errori solo dopo che qualcosa è andato storto.
 
 Ma una parte del valore analitico consiste nel cercare i failure mode **prima** di impegnarsi.

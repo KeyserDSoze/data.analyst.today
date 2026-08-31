@@ -1,5 +1,4 @@
-# 14.2 Generare SQL e Python con l'AI: velocità enorme, responsabilità invariata
-
+## 14.2 Generare SQL e Python con l'AI: velocità enorme, responsabilità invariata
 La generazione di codice è probabilmente uno degli usi più immediati dell'AI per un Data Analyst.
 
 Una richiesta come:

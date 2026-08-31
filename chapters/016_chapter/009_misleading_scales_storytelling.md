@@ -1,5 +1,4 @@
-# 16.8 Storytelling senza manipolazione: assi, scale e framing
-
+## 16.8 Storytelling senza manipolazione: assi, scale e framing
 Ogni visualizzazione seleziona una prospettiva.
 
 La scelta della scala, del periodo, del denominatore e del confronto modifica ciò che appare importante.

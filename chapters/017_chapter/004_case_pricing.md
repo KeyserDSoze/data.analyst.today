@@ -1,5 +1,4 @@
-# 17.3 Caso end-to-end: pricing, elasticità e margine
-
+## 17.3 Caso end-to-end: pricing, elasticità e margine
 Un e-commerce di elettronica, **Vectora**, considera un aumento medio dei prezzi del 6% per recuperare margine.
 
 La domanda del CFO è:

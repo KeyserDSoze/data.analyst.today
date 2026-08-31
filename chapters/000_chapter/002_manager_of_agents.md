@@ -1,5 +1,4 @@
-# 0.1 Diventare manager di N agenti
-
+## 0.1 Diventare manager di N agenti
 Il salto più importante non è passare da Excel a Python, da SQL a un LLM o da un notebook a un agente.
 
 Il salto è passare da **esecutore di task** a **orchestratore di capacità**.

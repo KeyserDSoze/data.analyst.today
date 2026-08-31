@@ -1,5 +1,4 @@
-# 14.4 AI per EDA e debugging: un moltiplicatore di domande, non un sostituto dell'indagine
-
+## 14.4 AI per EDA e debugging: un moltiplicatore di domande, non un sostituto dell'indagine
 L'AI può essere molto utile nell'Exploratory Data Analysis perché riduce il costo di formulare, implementare e testare rapidamente nuove domande.
 
 Può suggerire:
