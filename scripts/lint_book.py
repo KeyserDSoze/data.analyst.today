@@ -35,7 +35,9 @@ def first_nonempty_line(text: str) -> str:
 
 def numbered_sections(text: str, chapter_num: int) -> list[int]:
     pattern = re.compile(rf"^#{{2,6}}\s+{chapter_num}\.(\d+)\b", re.MULTILINE)
-    return [int(value) for value in pattern.findall(text)]
+    # X.0 is allowed as an introductory/preparatory section and does not
+    # advance the normal X.1, X.2, ... sequence used by subsequent files.
+    return [number for value in pattern.findall(text) if (number := int(value)) > 0]
 
 
 def main() -> int:
