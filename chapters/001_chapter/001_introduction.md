@@ -1,40 +1,62 @@
-# Capitolo 1 - Tutto è cambiato. Il problema è rimasto lo stesso
+# Capitolo 1 — Tutto è cambiato. Il problema è rimasto lo stesso
 
 > La tecnologia dell'analisi dati cambia continuamente. Il nucleo del lavoro analitico molto meno.
 
 ## Introduzione
 
-Negli ultimi trent'anni il lavoro sui dati ha cambiato interfaccia molte volte. Abbiamo visto il foglio elettronico diventare uno strumento universale, i database relazionali entrare nel lavoro quotidiano, la business intelligence portare dashboard e reporting self-service in azienda, Python e R rendere più accessibili analisi statistiche e automazione, il cloud separare sempre di più il calcolo dalla macchina locale e, infine, l'intelligenza artificiale generativa trasformare il linguaggio naturale in una nuova interfaccia verso dati, codice e modelli.
+Negli ultimi trent'anni il lavoro sui dati ha cambiato interfaccia molte volte. Il foglio elettronico è diventato uno strumento universale, i database relazionali sono entrati nel lavoro quotidiano, la business intelligence ha portato dashboard e reporting self-service, Python e R hanno reso più accessibili automazione e analisi statistiche, il cloud ha separato sempre di più calcolo e macchina locale e l'AI generativa ha trasformato il linguaggio naturale in una nuova interfaccia verso dati, codice e modelli.
 
-A prima vista potrebbe sembrare che ogni nuova ondata tecnologica cancelli la precedente e riscriva il mestiere del Data Analyst. In realtà cambia soprattutto **il costo dell'esecuzione**. Operazioni che un tempo richiedevano ore di lavoro, sintassi specifica e numerosi passaggi manuali possono oggi essere accelerate o parzialmente automatizzate. Una query SQL può essere proposta da un assistente AI. Uno script Python può essere generato a partire da una descrizione. Una dashboard può essere abbozzata da una richiesta in linguaggio naturale. Un modello semantico può essere interrogato senza che l'utente conosca la struttura sottostante.
+A ogni ondata tecnologica sembra che il mestiere del Data Analyst debba essere riscritto da zero.
 
-Questa accelerazione è reale, ma non coincide con l'automazione dell'analisi nel suo significato più profondo.
+Eppure, quando un'organizzazione pone una domanda reale — “perché il churn è aumentato?”, “questa campagna ha funzionato?”, “possiamo alzare i prezzi?”, “dove stiamo perdendo margine?” — la difficoltà centrale rimane sorprendentemente stabile.
 
-Una query corretta non rende corretta una domanda sbagliata. Un dashboard elegante non rende utile una metrica irrilevante. Un modello sofisticato non elimina un bias nei dati. Una correlazione forte non dimostra automaticamente una relazione causale. E un sistema AI capace di produrre codice, grafici e spiegazioni in pochi secondi non può, da solo, garantire che il problema sia stato definito correttamente, che i dati rappresentino davvero il fenomeno che vogliamo studiare o che la conclusione sia adeguata alla decisione da prendere.
+Prima di scegliere uno strumento bisogna capire:
 
-È significativo che anche gli strumenti analitici più moderni stiano tornando a enfatizzare concetti antichi: contesto, semantica, qualità del dato e definizioni condivise. La documentazione Microsoft per Copilot in Power BI, per esempio, avverte esplicitamente che un modello semantico non preparato può produrre risposte di bassa qualità, inaccurate o persino fuorvianti. Per migliorare gli output vengono raccomandati schema semplificato, terminologia aziendale, istruzioni contestuali e risposte verificate.[^ms-copilot-semantic] In altre parole: più l'interfaccia diventa intelligente, più diventa importante dare significato ai dati.
+- quale decisione deve essere presa;
+- che cosa significa esattamente la domanda;
+- quali dati rappresentano il fenomeno;
+- quali definizioni e confronti sono legittimi;
+- quale metodo è adeguato;
+- quanto è forte l'evidenza;
+- quali conclusioni possiamo sostenere senza andare oltre i dati.
 
-Il fenomeno non è nuovo. Molto prima dell'AI generativa, metodologie come CRISP-DM iniziavano il processo analitico dalla **Business Understanding**, seguita dalla comprensione dei dati, dalla preparazione, dalla modellazione, dalla valutazione e dal deployment.[^ibm-crisp] Il principio sottostante è semplice: prima di scegliere il metodo o lo strumento bisogna capire quale problema si sta cercando di risolvere.
+Una query corretta non salva una domanda sbagliata. Un dashboard elegante non rende utile una metrica irrilevante. Un modello sofisticato non corregge automaticamente un bias nei dati. Una correlazione forte non dimostra una relazione causale.
 
-Questo libro parte da qui.
+Il Capitolo 0 ha fissato il principio con cui useremo l'AI: possiamo delegare molta esecuzione, non la responsabilità di capire ciò che consegniamo. Qui facciamo un passo precedente e più generale: **che cosa significa, esattamente, fare analisi?**
 
-Non costruiremo la figura del Data Analyst come una lista di software da imparare. Excel, SQL, Python, Power BI, notebook, data warehouse, lakehouse, servizi cloud e sistemi AI saranno tutti importanti, ma verranno collocati nel loro ruolo corretto: **strumenti all'interno di un processo decisionale**.
+### Prima il problema, poi il metodo
 
-La domanda centrale non sarà quindi:
+L'idea non nasce con l'AI. Metodologie come CRISP-DM iniziano dalla **Business Understanding**, seguita dalla comprensione dei dati, dalla preparazione, dalla modellazione e dalla valutazione.[^ibm-crisp]
 
-> "Quale tecnologia devo imparare?"
+Il principio è semplice: il metodo non può essere scelto correttamente prima di avere capito il problema che dovrebbe risolvere.
+
+Anche gli strumenti più moderni stanno rendendo esplicita la stessa dipendenza dal contesto. La documentazione Microsoft per Copilot in Power BI, per esempio, sottolinea che la qualità delle risposte dipende dalla preparazione del modello semantico, dalla terminologia di business e dalle definizioni disponibili.[^ms-copilot-semantic]
+
+È un segnale importante: **più diventa facile interrogare i dati, più deve essere rigoroso il significato che assegniamo loro.**
+
+### Il filo conduttore del libro
+
+Non costruiremo quindi la figura del Data Analyst come una lista di software da imparare.
+
+Excel, SQL, Python, BI, notebook, warehouse, lakehouse, cloud e AI saranno importanti, ma verranno trattati per quello che sono: strumenti all'interno di un processo analitico e decisionale.
+
+La domanda centrale del libro non sarà:
+
+> “Quale tecnologia devo imparare?”
 
 ma:
 
-> "Come si passa da un problema reale a una conclusione affidabile e a una decisione migliore, scegliendo ogni volta gli strumenti più adatti?"
+> **“Come si passa da un problema reale a una conclusione affidabile e a una decisione migliore, scegliendo ogni volta dati, metodo e strumenti adeguati?”**
 
-Questa distinzione diventerà ancora più importante nell'era dell'AI. Se la sintassi costa sempre meno, aumentano di valore la formulazione del problema, la conoscenza del dominio, il controllo delle assunzioni, la semantica delle metriche, la capacità di verificare gli output e il giudizio con cui si interpreta l'evidenza.
+Questo capitolo costruisce le fondamenta di quella risposta: problema, rappresentazione dei dati, metriche, evidenza, causalità, incertezza e decisione.
 
-Il punto di partenza del nostro percorso sarà quindi il **ragionamento analitico**.
+Il punto di partenza non è un tool.
+
+È il **ragionamento analitico**.
 
 ---
 
 ### Fonti
 
-[^ms-copilot-semantic]: Microsoft Learn, *Use Copilot with Semantic Models in Power BI* e documentazione *Prepare your data for AI*, 2026. https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
+[^ms-copilot-semantic]: Microsoft Learn, *Use Copilot with Semantic Models in Power BI* e documentazione sulla preparazione dei dati per l'AI. https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
 [^ibm-crisp]: IBM, documentazione CRISP-DM / SPSS Modeler, *Understanding and preparing data*. https://www.ibm.com/docs/en/ws-and-kc?topic=modeler-understanding-preparing-data
