@@ -1,74 +1,85 @@
 ## 1.3 Il vero lavoro dell'analista
 
-La parte visibile del lavoro di un Data Analyst è spesso la meno importante.
+La parte più visibile del lavoro di un Data Analyst è spesso la meno importante.
 
-Una dashboard è visibile. Una query SQL è visibile. Un notebook è visibile. Una presentazione con grafici è visibile. Ma prima di ciascuno di questi output esiste una serie di decisioni che determinano se l'analisi sarà utile oppure no.
+Una dashboard è visibile. Una query SQL è visibile. Un notebook è visibile. Una presentazione è visibile.
 
-Un analista deve decidere quali domande meritano una risposta, quali metriche rappresentano davvero il fenomeno, quali confronti sono legittimi, quali dati sono affidabili, quali assunzioni sono implicite e quale livello di incertezza è accettabile.
+Molto meno visibili sono le decisioni che determinano se quegli output abbiano valore:
 
-Il lavoro reale può essere descritto come una catena:
+- quale domanda merita una risposta;
+- quale fenomeno stiamo davvero cercando di misurare;
+- quale metrica lo rappresenta abbastanza bene;
+- quale confronto è legittimo;
+- quali dati sono affidabili;
+- quali assunzioni stiamo introducendo;
+- quale metodo è sufficiente;
+- quale livello di incertezza è accettabile;
+- quale evidenza cambierebbe una decisione.
 
-**Problema di business -> domanda analitica -> dati -> metodo -> evidenza -> interpretazione -> decisione -> azione -> misurazione dell'effetto**
+Queste scelte sono il lavoro analitico.
 
-Questa catena è più importante dello strumento utilizzato in ogni singolo passaggio.
+Il resto è implementazione necessaria.
 
-### Dalla richiesta alla decisione
+### L'output non è il prodotto finale
 
-Consideriamo una richiesta comune:
+Se definiamo il lavoro in base all'artefatto, rischiamo di confondere il mezzo con il fine.
 
-> "Voglio capire perché le vendite sono scese."
+Un analyst può consegnare:
 
-La risposta ingenua è aprire i dati e cercare un grafico che mostri la diminuzione.
+- una tabella;
+- un dashboard;
+- una query;
+- un modello;
+- un forecast;
+- un memo;
+- una raccomandazione.
 
-La risposta analitica è scomporre la richiesta.
+Ma nessuno di questi oggetti è utile in modo automatico.
 
-Prima domanda: **che cosa significa vendite?**
+Una tabella diventa utile se chiarisce una domanda. Un forecast diventa utile se supporta una scelta di capacità o budget. Un dashboard diventa utile se aiuta qualcuno a rilevare un cambiamento e reagire. Una raccomandazione diventa utile se l'evidenza che la sostiene è abbastanza forte rispetto al costo dell'errore.
 
-Potrebbe significare:
+Il prodotto finale dell'analisi è quindi meglio descritto come **una riduzione dell'incertezza utilizzabile da qualcuno**.
 
-- fatturato lordo;
-- fatturato netto;
-- numero di ordini;
-- quantità vendute;
-- margine;
-- valore medio dell'ordine;
-- ricavi ricorrenti;
-- vendite contabilizzate o semplicemente ordinate.
+### Il lavoro invisibile
 
-Seconda domanda: **rispetto a cosa stanno scendendo?**
+Due analisti possono produrre lo stesso grafico finale e avere svolto lavori molto diversi.
 
-Confrontare luglio con giugno può essere fuorviante se il business è stagionale. Confrontare luglio con luglio dell'anno precedente può essere migliore, ma potrebbe essere distorto da una promozione eccezionale avvenuta l'anno prima.
+Il primo ha preso una tabella già pronta, scelto una visualizzazione e riportato il trend.
 
-Terza domanda: **dove avviene la diminuzione?**
+Il secondo ha verificato la definizione della metrica, controllato un cambio di schema, escluso una duplicazione da join, scelto una baseline stagionale, segmentato il fenomeno e verificato che il pattern non dipendesse da un cambiamento nel mix dei clienti.
 
-Per prodotto? Area geografica? Canale? Tipologia di cliente? Cohort? Fascia di prezzo?
+Il grafico può sembrare identico.
 
-Quarta domanda: **quale decisione deve essere presa?**
+La qualità dell'evidenza no.
 
-Se il management non può agire sul fattore identificato, quell'analisi potrebbe avere un valore descrittivo ma poco valore operativo.
+Questa differenza è una delle ragioni per cui il lavoro analitico è difficile da valutare soltanto osservando il deliverable.
 
-L'obiettivo dell'analista non è quindi "trovare qualcosa di interessante". È ridurre l'incertezza attorno a una decisione.
+### Business understanding e data understanding
 
-### Il Business Understanding viene prima del dato
+CRISP-DM formalizza due passaggi che nel lavoro reale tendono a intrecciarsi continuamente:
 
-Questa idea non nasce con l'AI. È presente nei framework di analytics da decenni. Nel processo CRISP-DM, ad esempio, la fase iniziale è il *Business Understanding*: comprendere gli obiettivi dell'organizzazione, chiarire cosa si vuole ottenere e tradurre il problema in un piano analitico prima di investire risorse nelle fasi successive.
+1. capire il problema e gli obiettivi di business;
+2. capire i dati disponibili e i loro limiti.
 
-La documentazione IBM dedicata a CRISP-DM sottolinea esplicitamente che comprendere le ragioni di business del progetto aiuta ad allineare le persone coinvolte prima di utilizzare tempo e risorse sull'analisi.
+IBM descrive la fase di *Business Understanding* come il momento in cui obiettivi e requisiti vengono tradotti in un problema analitico, mentre la fase di *Data Understanding* riguarda raccolta iniziale, esplorazione e valutazione della qualità del dato.
 
-Fonte: https://www.ibm.com/docs/en/spss-modeler/saas?topic=understanding-business-overview
+Fonti:
+- https://www.ibm.com/docs/en/spss-modeler/saas?topic=understanding-business-overview
+- https://www.ibm.com/docs/en/spss-modeler/saas?topic=understanding-data-overview
 
-Subito dopo arriva il *Data Understanding*: raccogliere i dati, esplorarli, valutarne la qualità e identificare problemi che potrebbero compromettere le fasi successive.
+La distinzione è utile perché impedisce due errori opposti:
 
-Fonte: https://www.ibm.com/docs/en/spss-modeler/saas?topic=understanding-data-overview
+- costruire un'analisi tecnicamente impeccabile che non risponde a una decisione reale;
+- formulare una domanda interessante senza verificare se i dati possano rappresentarla in modo credibile.
 
-Queste due fasi sono ancora più importanti oggi. L'AI può accelerare enormemente il lavoro successivo, ma se l'obiettivo o i dati sono sbagliati accelera nella direzione sbagliata.
+### Una definizione di lavoro
 
-### L'analista come riduttore di incertezza
+Useremo quindi questa definizione lungo tutto il libro:
 
-Una definizione utile per tutto il libro sarà questa:
+> **Un Data Analyst utilizza dati, metodi quantitativi, conoscenza del dominio e strumenti tecnologici per ridurre l'incertezza attorno a decisioni reali.**
 
-> **Un Data Analyst è una persona che utilizza dati, metodi quantitativi, conoscenza del dominio e strumenti tecnologici per ridurre l'incertezza attorno a una decisione.**
+La definizione è volutamente indipendente da Excel, SQL, Python, Power BI o AI.
 
-Questa definizione è volutamente indipendente da Excel, SQL, Python, Power BI o qualunque altro prodotto.
+Gli strumenti determinano come possiamo lavorare.
 
-Gli strumenti cambiano. Il problema professionale resta.
+Non determinano perché il lavoro abbia valore.
