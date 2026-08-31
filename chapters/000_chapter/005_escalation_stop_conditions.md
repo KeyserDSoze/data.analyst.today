@@ -1,135 +1,127 @@
-## 0.4 Escalation e stop conditions: sapere quando l'AI deve fermarsi
+## 0.4 Escalation e stop condition: sapere quando l'AI deve fermarsi
+
 Un sistema maturo non è quello che riesce sempre a continuare.
 
 È quello che sa anche quando **non deve continuare**.
 
-Gli agenti sono potenti proprio perché possono concatenare azioni: leggere dati, generare codice, eseguire query, modificare file, chiamare API, aprire ticket, inviare messaggi, proporre decisioni.
+Gli agenti sono potenti perché possono concatenare azioni: leggere dati, generare codice, eseguire query, modificare file, chiamare API, aprire ticket, inviare messaggi e, in alcuni casi, intervenire direttamente su processi operativi.
 
-Ma ogni catena autonoma introduce una domanda di governance:
+Ogni passo aggiuntivo rende però più importante una domanda:
 
-> **In quali condizioni l'agente può procedere da solo, e in quali deve fermarsi?**
+> **In quali condizioni l'agente può procedere da solo, e in quali deve fermarsi o chiedere review?**
 
-## Stop condition prima del problema
+### La stop condition si decide prima dell'incidente
 
-La stop condition non dovrebbe essere inventata durante l'incidente.
+Una stop condition inventata mentre il sistema sta già fallendo è un rimedio tardivo.
 
-Va definita prima.
+I limiti utili vengono definiti prima.
 
-Esempi:
+Per esempio:
 
 - se il costo stimato supera una soglia, fermati;
 - se una query modifica dati di produzione, richiedi approvazione;
-- se due agenti producono conclusioni incompatibili, escalation;
-- se il confidence score scende sotto una soglia, non emettere raccomandazioni;
+- se due analisi producono conclusioni incompatibili, fai escalation;
+- se mancano i dati minimi richiesti, non completare la raccomandazione;
 - se manca una metrica certificata, non sostituirla con una definizione improvvisata;
-- se il dato è stale oltre lo SLA, blocca la decisione;
-- se un'azione coinvolge clienti o denaro, human approval obbligatoria;
-- se l'agente supera N iterazioni senza convergere, termina il loop.
+- se freshness o completeness non rispettano lo SLA, blocca il processo;
+- se un'azione coinvolge clienti, denaro o sistemi critici, richiedi approvazione umana;
+- se il loop supera un numero massimo di iterazioni senza convergere, termina;
+- se un controllo obbligatorio fallisce, non tentare di “aggirarlo” con una nuova spiegazione.
 
-Microsoft, nelle linee guida recenti sul rischio agentico, raccomanda esplicitamente meccanismi affidabili per mettere in pausa o interrompere gli agenti, limiti su loop, step e costi, approvazione umana per azioni ad alto impatto e least privilege sugli strumenti disponibili.
+Le linee guida Microsoft sul rischio agentico raccomandano meccanismi di pausa e interruzione, limiti su loop e costi, least privilege e approvazione umana per azioni ad alto impatto.
 
 Fonti:
 - https://learn.microsoft.com/en-us/security/zero-trust/sfi/manage-agentic-risk
 - https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility-ai-agent
 
-## Caso realistico: l'agente che continua a ottimizzare
+### Caso simulato/composito: l'agente che continua a ottimizzare
 
-Un team growth costruisce un agente che ottimizza automaticamente il budget pubblicitario.
+Un team growth costruisce un agente che rialloca automaticamente il budget pubblicitario.
 
-Ogni ora:
+Ogni ora il sistema:
 
 1. legge conversioni e CAC;
 2. identifica campagne inefficienti;
-3. sposta budget verso le campagne migliori;
-4. rivaluta dopo un'ora.
+3. sposta budget verso quelle apparentemente migliori;
+4. rivaluta il risultato un'ora dopo.
 
-Durante una mattina, il tracking iOS perde parte degli eventi di conversione.
+Una mattina il tracking iOS perde parte degli eventi di conversione.
 
-L'agente interpreta il calo come peggioramento reale.
+L'agente interpreta il calo come peggioramento reale e riduce il budget iOS.
 
-Riduce il budget iOS.
+L'ora successiva osserva ancora meno conversioni. In parte perché il tracking continua a essere incompleto, in parte perché ora c'è anche meno traffico.
 
-L'ora successiva vede ancora meno conversioni, perché ora c'è anche meno traffico.
+Il sistema legge il nuovo dato come conferma e riduce ancora il budget.
 
-Riduce ancora.
+Si crea un feedback loop:
 
-Il sistema ha creato un feedback loop:
-
-**measurement error → action → nuovo dato → conferma apparente → azione più forte**
+**errore di misurazione → azione → nuovo dato → conferma apparente → azione più forte**
 
 Dopo sei iterazioni, il budget iOS è sceso del 70%.
 
-Non mancava intelligenza.
+Il problema non è che l'agente non sapesse ottimizzare.
 
-Mancava una stop condition.
+Il problema è che nessuno aveva definito quando l'ottimizzazione doveva diventare sospetta.
 
-Un sistema migliore avrebbe richiesto:
+Un sistema più robusto avrebbe richiesto:
 
 - freshness e completeness del tracking;
-- confronto con fonti indipendenti;
+- confronto con una fonte indipendente;
 - limite massimo alla variazione oraria;
 - approval sopra una soglia di budget;
-- stop automatico in caso di drift anomalo.
+- stop automatico in presenza di drift anomalo o telemetria incompleta.
 
-## Escalation non significa fallimento
+### Escalation non significa fallimento
+
+Un sistema professionale non deve essere costretto a produrre sempre una risposta.
+
+Può avere almeno tre esiti legittimi:
+
+1. **proceed** — evidenza sufficiente e azione entro il mandato;
+2. **review** — serve giudizio umano o un controllo aggiuntivo;
+3. **stop** — le condizioni minime non sono soddisfatte.
 
 Quando un agente dice:
 
 > “Non posso concludere in modo affidabile con le informazioni disponibili.”
 
-non sta fallendo.
+può stare eseguendo correttamente il proprio mandato.
 
-Sta eseguendo correttamente il proprio mandato.
+L'errore è progettare sistemi nei quali l'unico output ammesso sia una risposta assertiva.
 
-Un sistema pericoloso è quello che deve sempre dare una risposta.
+### Una matrice di autorità
 
-Un sistema professionale può produrre tre esiti:
+La quantità di autonomia dovrebbe cambiare con il tipo di attività.
 
-1. **proceed** — evidenza sufficiente, azione entro autorità;
-2. **review** — serve giudizio umano;
-3. **stop** — condizioni minime non soddisfatte.
-
-## Authority matrix
-
-Per ogni agente possiamo definire una matrice semplice.
-
-| Tipo di attività | Autonomia | Review |
+| Tipo di attività | Autonomia indicativa | Review |
 |---|---|---|
-| generare una bozza SQL | alta | campionamento |
+| generare una bozza SQL | alta | campionamento e test |
 | leggere metriche certificate | alta | controlli automatici |
-| pubblicare un dashboard interno | media | review owner |
-| cambiare definizione KPI | bassa | approvazione governance |
+| pubblicare un dashboard interno | media | review dell'owner |
+| cambiare definizione di un KPI | bassa | approvazione di governance |
 | modificare prezzi | molto bassa | approvazione business |
-| bloccare clienti | molto bassa | review umana obbligatoria |
-| trasferire denaro | minima | controlli forti e segregazione |
+| bloccare clienti o servizi | molto bassa | review umana obbligatoria |
+| trasferire denaro | minima | controlli forti e segregazione dei compiti |
 
-Questa matrice rende concreta una regola fondamentale:
+La tabella non è una policy universale. Serve a rendere concreta la regola:
 
-> **L'autonomia deve essere proporzionata alla reversibilità e all'impatto dell'azione.**
+> **L'autonomia deve essere proporzionata all'impatto, alla reversibilità e alla capacità di rilevare rapidamente un errore.**
 
-## Il diritto di interrompere
+### Essere al timone significa poter interrompere
 
-Essere al timone significa anche mantenere la capacità di:
+Governare un agente significa mantenere la capacità di:
 
-- vedere cosa sta facendo l'agente;
+- vedere che cosa sta facendo;
+- sapere con quali strumenti e permessi;
 - interromperlo;
 - revocare accessi;
-- annullare o compensare azioni;
+- annullare o compensare azioni quando possibile;
 - ricostruire ciò che è successo.
 
-Se un sistema autonomo non può essere osservato, fermato o auditato, non è realmente sotto controllo.
+Se un sistema autonomo non può essere osservato, fermato o auditato, il suo comportamento non è realmente sotto controllo.
 
-## Il paradosso dell'autonomia
+Da qui un paradosso importante:
 
-Più autonomia concediamo, più dobbiamo investire in:
+> **più autonomia concediamo, più dobbiamo investire nei meccanismi che rendono quell'autonomia governabile.**
 
-- confini;
-- audit;
-- rollback;
-- escalation;
-- osservabilità;
-- controlli indipendenti.
-
-L'autonomia non elimina la governance.
-
-La rende più importante.
+L'autonomia non elimina la governance. La rende più importante.
