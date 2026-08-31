@@ -1,8 +1,10 @@
 # data.analyst.today
 
-Un libro open source, costruito capitolo per capitolo, sull'analisi dati nell'era dell'AI.
+Un libro open source sull'analisi dati nell'era dell'AI.
 
-L'obiettivo non è insegnare una collezione di tool. Il progetto parte dal ragionamento analitico: capire il problema, definire le metriche, verificare i dati, scegliere il metodo, usare lo strumento giusto e trasformare l'analisi in decisioni. SQL, Excel, Python, Power BI, cloud e AI sono strumenti dentro questo processo.
+L'obiettivo non è insegnare una collezione di tool. Il progetto parte dal ragionamento analitico: capire il problema, definire le metriche, verificare i dati, scegliere il metodo, usare lo strumento giusto e trasformare l'analisi in decisioni. SQL, Excel, Python, BI, cloud e AI sono strumenti dentro questo processo.
+
+Il corpo principale del manoscritto comprende oggi i **Capitoli 0–19** ed è entrato nella fase di revisione editoriale, tecnica e di impaginazione.
 
 ## Struttura del repository
 
@@ -12,34 +14,66 @@ data.analyst.today/
 ├── requirements.txt
 ├── book.yml
 ├── chapters/
+│   ├── 000_chapter/        # Al timone
 │   ├── 001_chapter/
-│   │   ├── 001_introduction.md
-│   │   ├── 002_what_changed.md
-│   │   └── 003_what_did_not_change.md
 │   ├── 002_chapter/
-│   │   └── ...
-│   └── ...
+│   ├── ...
+│   └── 019_chapter/
 ├── scripts/
-│   └── build.py
+│   ├── build.py
+│   └── lint_book.py
 └── build/
     ├── data-analyst-today.md
     ├── data-analyst-today.docx
     └── data-analyst-today.pdf
 ```
 
-Ogni capitolo ha una cartella numerata. Dentro la cartella, ogni sezione o paragrafo importante è un file Markdown separato. L'ordine è determinato dai prefissi numerici dei nomi di cartella e file.
+Ogni capitolo ha una cartella numerata. Dentro la cartella, ogni sezione importante è un file Markdown separato. L'ordine è determinato dai prefissi numerici delle cartelle e dei file.
 
-Questo ci permette di lavorare su un paragrafo alla volta senza dover modificare un unico file enorme da centinaia di pagine.
+Questo permette di lavorare su una sezione alla volta senza trasformare il manoscritto in un unico file enorme.
+
+## Indice attuale
+
+0. **Al timone** — lavorare con l'AI senza delegare la responsabilità.
+1. **Tutto è cambiato. Il problema è rimasto lo stesso** — mentalità analitica nell'era AI.
+2. **Dal problema di business al problema analitico** — analytical brief, metriche, ipotesi e priorità.
+3. **Capire i dati prima di analizzarli** — grain, chiavi, qualità, lineage e contratti.
+4. **Statistica descrittiva ed EDA** — distribuzioni, dispersione, correlazioni, trend e anomalie.
+5. **Probabilità e incertezza** — campionamento, intervalli, test e A/B testing fundamentals.
+6. **Segmentazione, coorti, funnel, retention e churn**.
+7. **Serie temporali, anomalie e forecasting**.
+8. **Causalità, confondenti e ragionamento controfattuale**.
+9. **Experimentation e A/B testing nel mondo reale**.
+10. **Regressione e modelli predittivi per Data Analyst**.
+11. **SQL, trasformazione del dato e data modeling per l'analisi**.
+12. **Data architecture per Data Analyst**.
+13. **Scegliere lo strumento giusto senza diventarne dipendenti**.
+14. **AI-assisted analytics: accelerare senza perdere rigore**.
+15. **Dall'analisi all'insight e alla decisione**.
+16. **Data storytelling, dashboard ed executive communication**.
+17. **Casi end-to-end di Data Analysis**.
+18. **Costruire un sistema analitico che scala**.
+19. **Il Data Analyst nel 2026–2035**.
 
 ## Convenzioni editoriali
 
-- Cartelle dei capitoli: `001_chapter`, `002_chapter`, `003_chapter`, ...
+- Cartelle dei capitoli: `000_chapter`, `001_chapter`, `002_chapter`, ...
 - File delle sezioni: `001_nome.md`, `002_nome.md`, `003_nome.md`, ...
+- I prefissi dei file devono essere univoci e contigui all'interno di ogni capitolo.
 - Il primo heading del capitolo usa `#`.
 - Le sezioni interne usano `##`, `###`, ecc.
 - Citazioni e fonti vengono inserite direttamente nel Markdown.
 - Il testo sorgente rimane sempre in Markdown; DOCX e PDF sono artefatti generati.
 - Non modificare manualmente i file dentro `build/`: vengono ricreati dallo script.
+
+### Casi reali e casi simulati
+
+Il libro distingue esplicitamente:
+
+- **caso reale documentato**: organizzazione, evento o pratica sostenuti da una fonte pubblica attendibile;
+- **caso simulato/composito**: scenario costruito a fini didattici, con nomi, numeri o circostanze che possono essere inventati.
+
+I casi con aziende fittizie devono essere interpretati come simulati/compositi. La distinzione serve a non confondere evidenza documentata e ricostruzione pedagogica.
 
 ## Installazione
 
@@ -67,6 +101,31 @@ Poi installa le dipendenze:
 pip install -r requirements.txt
 ```
 
+## Controllare il manoscritto
+
+Prima della build:
+
+```bash
+python scripts/lint_book.py
+```
+
+Il lint controlla, tra le altre cose:
+
+- continuità delle cartelle dei capitoli;
+- prefissi duplicati o mancanti;
+- corrispondenza tra prefisso file e numero della sezione;
+- heading interni scritti accidentalmente come H1;
+- file vuoti;
+- placeholder editoriali `TODO`, `FIXME` o `TBD`;
+- link contenenti `utm_source=chatgpt.com`;
+- conteggio indicativo di parole e pagine.
+
+Per trasformare anche i warning editoriali in errori:
+
+```bash
+python scripts/lint_book.py --strict
+```
+
 ## Costruire il libro
 
 Dalla root del repository:
@@ -78,17 +137,14 @@ python scripts/build.py
 Lo script:
 
 1. trova tutte le cartelle `chapters/*_chapter`;
-2. le ordina numericamente;
-3. ordina i file `.md` dentro ogni capitolo;
+2. le ordina numericamente con un tie-break deterministico;
+3. ordina le sezioni;
 4. crea un unico Markdown completo;
-5. genera il file Word `.docx`;
-6. genera il file PDF `.pdf`.
+5. interpreta heading, liste, citazioni, codice e tabelle Markdown;
+6. genera il file Word `.docx`;
+7. genera il file PDF `.pdf`.
 
-Gli output vengono scritti in `build/`.
-
-## Output
-
-Dopo il build troverai:
+Gli output vengono scritti in `build/`:
 
 ```text
 build/data-analyst-today.md
@@ -97,26 +153,6 @@ build/data-analyst-today.pdf
 ```
 
 Il Markdown aggregato è utile anche per controllare esattamente quale testo è entrato nella build.
-
-## Aggiungere un nuovo capitolo
-
-Esempio:
-
-```text
-chapters/002_chapter/
-├── 001_introduction.md
-├── 002_business_question.md
-├── 003_metrics.md
-└── 004_case_study.md
-```
-
-Poi basta rilanciare:
-
-```bash
-python scripts/build.py
-```
-
-Non è necessario modificare lo script.
 
 ## Filosofia del progetto
 
@@ -128,30 +164,16 @@ Il libro distingue continuamente tre livelli:
 
 L'AI rende il primo livello sempre più economico. Per questo il libro dedica particolare attenzione ai livelli due e tre, senza rinunciare alla conoscenza tecnica necessaria per dirigere e verificare strumenti, automazioni e agenti AI.
 
-## Roadmap editoriale
+## Stato editoriale
 
-Il progetto è pensato per crescere fino a un libro di almeno 400 pagine, con capitoli dedicati a:
+Il manoscritto principale è completo nei Capitoli 0–19. La fase corrente riguarda:
 
-- mentalità analitica e problem framing;
-- metriche e KPI;
-- data quality;
-- SQL ed esplorazione dei dati;
-- statistica e probabilità applicate;
-- EDA;
-- analisi di funnel, coorti, retention e churn;
-- sperimentazione e A/B testing;
-- causalità;
-- forecasting e serie temporali;
-- data visualization e storytelling;
-- Excel, Python e BI come strumenti di analisi;
-- modellazione dati e semantic layer;
-- data warehouse, lake e lakehouse;
-- cloud analytics e modern data stack;
-- automazione e pipeline;
-- AI-assisted analytics;
-- verifica e auditing degli output AI;
-- architettura analytics;
-- case study end-to-end.
+- revisione di coerenza e riduzione delle ripetizioni;
+- normalizzazione delle convenzioni Markdown;
+- verifica delle fonti e della distinzione tra casi documentati e simulati;
+- controllo della build DOCX/PDF;
+- valutazione della lunghezza effettiva e dell'impaginazione;
+- preparazione della prima release stabile.
 
 ## Licenza
 
