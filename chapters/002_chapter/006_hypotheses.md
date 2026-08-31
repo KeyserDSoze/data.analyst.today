@@ -1,46 +1,44 @@
-## 2.5 Ipotesi: analizzare senza vagare
+## 2.5 Ipotesi: trasformare curiosità in piste verificabili
 
-Una buona analisi esplorativa non significa guardare tutto indiscriminatamente. Significa esplorare con curiosità, ma anche con struttura.
+Una buona analisi esplorativa non significa guardare tutto indiscriminatamente.
 
-Le ipotesi aiutano a trasformare un problema ampio in piste verificabili.
+Le ipotesi aiutano a trasformare un problema ampio in **spiegazioni candidate che competono tra loro**.
 
-Supponiamo che la conversione e-commerce sia diminuita.
+Supponiamo che la conversione e-commerce sia diminuita. Possibili ipotesi sono:
 
-Possibili ipotesi:
-
-- il traffico è aumentato ma è di qualità inferiore;
+- il traffico è aumentato ma con intento più basso;
 - una modifica al checkout ha aumentato l'abbandono;
 - il mix di dispositivi si è spostato verso mobile;
-- alcuni prodotti ad alta conversione sono meno disponibili;
-- i prezzi sono cresciuti rispetto ai competitor;
-- una campagna ha portato utenti con intento più basso;
-- il tracking è cambiato e il calo è almeno in parte artificiale.
+- prodotti ad alta conversione sono meno disponibili;
+- una campagna ha portato utenti meno qualificati;
+- prezzi o condizioni di spedizione sono cambiati;
+- il tracking è cambiato e parte del calo è artificiale.
 
-Queste ipotesi non sono conclusioni. Sono **spiegazioni candidate**.
+Queste frasi non sono conclusioni. Sono un **portafoglio iniziale di spiegazioni da mettere alla prova**.
 
-### Ipotesi descrittive, diagnostiche e causali
+### Separare livello descrittivo e spiegazione
 
-Possiamo distinguere almeno tre livelli.
+È utile distinguere:
 
-**Ipotesi descrittiva**
+**Osservazione**
 
-> Il calo si concentra sul traffico mobile.
+> “Il calo è concentrato sul mobile.”
 
 **Ipotesi diagnostica**
 
-> Il calo mobile coincide con un aumento dell'abbandono nel passaggio pagamento.
+> “Il calo mobile deriva soprattutto da un aumento dell'abbandono nel passaggio di pagamento.”
 
 **Ipotesi causale**
 
-> La nuova interfaccia di pagamento ha causato parte del calo di conversione mobile.
+> “La nuova interfaccia di pagamento ha provocato parte del calo mobile.”
 
-Ogni livello richiede evidenza più forte del precedente. Il fatto che due eventi coincidano temporalmente non dimostra causalità.
+Ogni passaggio aggiunge una pretesa più forte.
+
+Il brief può contenere ipotesi causali, ma deve evitare di trattarle come già dimostrate. I Capitoli 8 e 9 discuteranno quale evidenza serve per sostenere realmente affermazioni controfattuali.
 
 ### Hypothesis tree
 
-Un modo pratico per strutturare il problema è costruire un albero di ipotesi.
-
-Esempio semplificato:
+Un albero di ipotesi aiuta a scomporre un outcome in componenti e spiegazioni.
 
 **Il fatturato è diminuito**
 
@@ -51,65 +49,53 @@ Esempio semplificato:
 - È diminuito il valore medio dell'ordine?
   - prezzi più bassi?
   - mix prodotti diverso?
-  - maggiori sconti?
-- Sono aumentati resi/cancellazioni?
-- È cambiata la contabilizzazione del fatturato?
+  - sconti maggiori?
+- Sono aumentati resi o cancellazioni?
+- È cambiata la contabilizzazione della metrica?
 
-Questa decomposizione collega una metrica finale ai suoi driver possibili.
+L'albero non deve essere perfettamente completo. Deve rendere visibile la struttura della diagnosi e impedirci di saltare subito alla storia che preferiamo.
 
-### MECE come aspirazione, non religione
+Il principio MECE — *Mutually Exclusive, Collectively Exhaustive* — può essere utile come aspirazione: ridurre sovrapposizioni e verificare che non manchi un intero ramo importante. Nel mondo reale le cause possono interagire e le categorie non saranno sempre perfettamente indipendenti.
 
-Nel problem solving viene spesso usato il principio MECE: categorie *Mutually Exclusive, Collectively Exhaustive*, cioè non sovrapposte e complessivamente complete.
+### Una buona ipotesi anticipa anche come potrebbe fallire
 
-Nella realtà dei dati non sempre riusciremo a costruire categorie perfettamente MECE. Tuttavia il principio è utile perché costringe a chiedersi:
+Per ogni ipotesi importante chiediamo:
 
-- sto contando due volte lo stesso fenomeno?
-- sto dimenticando una categoria importante?
-- le mie spiegazioni si sovrappongono?
+- quale osservazione la renderebbe più credibile?
+- quale osservazione la indebolirebbe?
+- quale spiegazione alternativa produrrebbe lo stesso pattern?
+- quale dato serve per distinguerle?
 
-### Cosa rende buona un'ipotesi analitica
+Questo passaggio è più utile di una semplice lista di “possibili cause”.
 
-Una buona ipotesi è:
+### Il registro delle ipotesi
 
-- specifica;
-- falsificabile almeno in linea di principio;
-- collegata a dati osservabili;
-- rilevante per la decisione;
-- distinta da una semplice descrizione;
-- formulata prima di conoscere troppo bene il risultato, quando possibile.
+Nel brief possiamo usare una tabella semplice:
 
-### L'AI come generatore di ipotesi
+| Ipotesi | Evidenza attesa se vera | Evidenza che la indebolisce | Dato necessario | Costo verifica | Priorità |
+|---|---|---|---|---:|---:|
+| Checkout mobile | drop dopo step pagamento sugli esposti | stesso calo sui non esposti | eventi funnel + release | basso | alta |
+| Mix canali | calo concentrato nei nuovi canali | conversione cala dentro ogni canale | attribution + sessioni | medio | media |
+| Stock-out | categorie colpite spiegano il delta | disponibilità stabile | inventory + catalogo | basso | alta |
 
-L'AI è molto utile per ampliare rapidamente lo spazio delle spiegazioni candidate.
+Il valore della tabella non è assegnare punteggi scientifici alla plausibilità. È rendere esplicito **che cosa andremo a cercare e perché**.
 
-Possiamo fornirle:
+### Prioritizzare prima di esplorare tutto
 
-- descrizione del business;
-- schema dati;
-- metriche;
-- anomalie osservate;
-- vincoli noti;
+Un'ipotesi merita maggiore attenzione quando combina:
 
-e chiedere di proporre possibili driver, controlli e segmentazioni.
+- impatto potenziale elevato;
+- plausibilità coerente con il dominio;
+- dati disponibili;
+- basso costo di falsificazione;
+- rilevanza per una decisione concreta.
 
-Ma una lista plausibile non è evidenza. L'AI può suggerire ipotesi che suonano convincenti ma sono incompatibili con il processo reale.
+Un controllo da dieci minuti che può eliminare un intero ramo dell'albero vale spesso più di un modello sofisticato applicato a una spiegazione marginale.
 
-Il ruolo dell'analista è quindi:
+### Il ruolo dell'AI
 
-**generare -> prioritizzare -> verificare -> scartare o approfondire**.
+L'AI può essere molto utile per ampliare lo spazio iniziale delle ipotesi e cercare controargomenti. Il Capitolo 0 ha già fissato la regola: generazione non significa evidenza.
 
-### Prioritizzare le ipotesi
+Nel brief il contributo utile dell'AI è quindi produrre **candidate da sottoporre a un registro di verifica**, non una classifica da accettare come verità.
 
-Non tutte meritano lo stesso tempo. Una semplice matrice può aiutare:
-
-| Ipotesi | Impatto potenziale | Plausibilità | Dati disponibili | Costo di verifica | Priorità |
-|---|---:|---:|---:|---:|---:|
-| H1 | Alto | Alta | Buoni | Basso | Alta |
-| H2 | Alto | Media | Parziali | Medio | Media |
-| H3 | Basso | Alta | Buoni | Basso | Bassa |
-
-Lo scopo non è attribuire numeri perfetti. È evitare di spendere tre giorni su una spiegazione irrilevante quando un controllo semplice potrebbe eliminare metà dello spazio delle ipotesi.
-
-## Principio operativo
-
-**Non chiederti soltanto "che cosa vedo nei dati?". Chiediti "quali spiegazioni competono tra loro, e quale evidenza le renderebbe più o meno credibili?"**
+> **Non chiederti soltanto che cosa vedi nei dati. Chiediti quali spiegazioni competono e quale osservazione permetterebbe di distinguerle.**
