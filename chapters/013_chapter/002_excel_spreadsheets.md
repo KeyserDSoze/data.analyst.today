@@ -1,109 +1,167 @@
-## 13.1 Excel e fogli di calcolo: il coltellino svizzero dell'analista
-Excel è contemporaneamente uno degli strumenti più sottovalutati e più abusati dell'analytics.
+## 13.1 Spreadsheet: eccellenti per pensare, pericolosi come infrastruttura invisibile
 
-È sottovalutato quando viene liquidato come «strumento da non tecnici». È abusato quando diventa database, sistema di versionamento, motore ETL, applicazione operativa e repository unico per processi critici.
+Un foglio di calcolo è uno degli strumenti più potenti dell'analista perché combina in un'unica superficie:
 
-La domanda utile non è «Excel sì o no?». È: **per quale parte del problema Excel è lo strumento giusto?**
+- dati;
+- formule;
+- scenari;
+- controlli manuali;
+- tabelle pivot;
+- grafici;
+- annotazioni;
+- interazione immediata con stakeholder.
 
-## 13.1.1 Dove Excel è fortissimo
+Questa stessa flessibilità è anche il suo rischio.
 
-Excel è particolarmente efficace quando servono:
+Un workbook può passare gradualmente da:
 
-- esplorazione rapida;
-- calcoli trasparenti;
-- scenari what-if;
-- analisi finanziarie;
-- pivot table;
-- confronto manuale con stakeholder;
-- prototipazione di metriche;
-- piccoli dataset;
-- output che devono essere modificabili da utenti business.
+> strumento per capire un problema
 
-La sua forza è l'immediatezza. Un manager può vedere la formula, cambiare un'ipotesi e osservare il risultato.
+ad
 
-## 13.1.2 Caso realistico: pricing in 90 minuti
+> sistema operativo critico che nessuno ha progettato come sistema.
 
-Una catena retail deve decidere se aumentare del 3% il prezzo di 240 SKU prima di una riunione con il procurement.
+La domanda non è quindi “Excel sì o no?”.
 
-I dati sono già estratti:
+È:
 
-- prezzo attuale;
-- costo unitario;
-- volumi degli ultimi 12 mesi;
+> **Quale responsabilità stiamo affidando al foglio?**
+
+### Dove un foglio è difficile da battere
+
+È particolarmente efficace quando il lavoro è:
+
+- esplorativo;
+- piccolo o moderato per scala;
+- fortemente interattivo;
+- dominato da scenari e assunzioni;
+- facilmente verificabile visivamente;
+- destinato a stakeholder che devono modificare input;
+- temporaneo o prototipale.
+
+### Caso simulato/composito — pricing in 90 minuti
+
+Una catena retail deve decidere se aumentare il prezzo di 240 SKU prima di un incontro con procurement.
+
+Ha già un dataset curato con:
+
+- prezzo;
+- costo;
+- volume;
 - margine;
-- elasticità stimata per categoria;
-- prezzo medio dei competitor.
+- elasticità stimata;
+- prezzo competitor.
 
-Il problema richiede scenari, non una pipeline produttiva.
+Il problema è confrontare rapidamente tre scenari e discutere le ipotesi con persone business.
 
-Un foglio con tre scenari di elasticità, una tabella dati e controlli di margine può essere costruito e verificato molto più rapidamente di una soluzione più sofisticata.
+Un foglio controllato, con celle input separate, formule protette e reconciliation sul margine totale, può essere la scelta più trasparente.
 
-L'errore sarebbe trasformare un problema decisionale urgente in un progetto ingegneristico.
+Costruire una pipeline produttiva prima del meeting non aumenterebbe il rigore della decisione. Ritarderebbe soltanto l'apprendimento.
 
-## 13.1.3 Dove Excel inizia a diventare pericoloso
+### Il problema non è il limite di righe: è non sapere di avere superato il contesto ideale
 
-I segnali di allarme sono:
+Ogni strumento ha limiti tecnici e operativi.
 
-- file da centinaia di MB;
-- decine di copie via email;
-- macro non documentate;
-- formule diverse tra fogli simili;
-- lookup su tabelle esterne non controllate;
-- aggiornamenti manuali ricorrenti;
-- dati sensibili scaricati localmente;
-- KPI aziendali calcolati in file personali;
-- dipendenza da una singola persona.
+Microsoft documenta per un worksheet Excel un massimo di **1.048.576 righe e 16.384 colonne**.[^excel-limits]
 
-### Caso realistico: il margine che cambia quando cambia il proprietario del file
+Ma un processo può diventare inadeguato molto prima di arrivare al limite tecnico.
 
-Finance e Sales usano due copie dello stesso workbook.
+Segnali più importanti sono:
 
-Il file Finance tratta i resi nel mese della restituzione. Il file Sales li attribuisce al mese originale dell'ordine. Entrambi calcolano «gross margin».
+- copie del file non controllate;
+- formule sovrascritte manualmente;
+- passaggi copy-paste ricorrenti;
+- macro conosciute da una sola persona;
+- dati sensibili locali;
+- più fonti collegate con logica fragile;
+- impossibilità di rieseguire il processo da zero;
+- KPI ufficiali che dipendono dal workbook;
+- utenti downstream che trattano l'output come servizio.
 
-Il risultato del Q2 differisce di 1,7 milioni di euro.
+### Caso reale documentato — Public Health England, 2020
 
-Non è un errore di Excel. È un problema di definizione, governance e duplicazione della logica.
+Nell'ottobre 2020 Public Health England comunicò che un problema tecnico nel processo di caricamento aveva escluso **15.841 casi positivi COVID-19** dalle statistiche giornaliere e ritardato il loro trasferimento al contact tracing.[^phe-statement]
 
-## 13.1.4 Power Query cambia il confine
+La dichiarazione ufficiale parla di un problema tecnico nel data-load process. La stampa tecnica e generalista dell'epoca ricondusse il failure mode all'uso di template Excel e ai limiti del formato impiegato.[^guardian-phe-excel]
 
-Con Power Query, Excel può collegarsi a sorgenti, applicare trasformazioni ripetibili e aggiornare un processo senza ricostruirlo manualmente.
+Il punto didattico non è “Excel è pericoloso”.
 
-Questo sposta il foglio da semplice calcolatore verso un ambiente di preparazione dati leggero.
+È l'opposto:
 
-Ma non elimina la domanda di fondo: quando le trasformazioni diventano condivise, critiche e ricorrenti, la logica dovrebbe probabilmente spostarsi più vicino alla piattaforma dati centrale.
+> **un componente adatto a un certo volume e a un certo rischio può diventare un single point of failure quando il processo cresce senza una nuova design review.**
 
-## 13.1.5 Python dentro Excel: i confini si stanno fondendo
+Il problema professionale è riconoscere il momento in cui una soluzione locale è diventata infrastruttura.
 
-Microsoft oggi permette di eseguire Python direttamente in Excel. Il codice viene scritto nelle celle, l'esecuzione avviene nel cloud Microsoft e il risultato viene restituito al workbook. Sono disponibili librerie come pandas, NumPy, Matplotlib e statsmodels.
+### Power Query sposta il confine, non lo elimina
 
-Questo è un esempio importante dell'evoluzione degli strumenti: le categorie stanno convergendo. Il futuro non è necessariamente «Excel oppure Python», ma ambienti che combinano interfacce familiari con capacità analitiche più avanzate.
+Power Query rende trasformazioni e connessioni più ripetibili rispetto al copy-paste.
 
-La disponibilità di Python in Excel non cambia però la regola: mettere Python in un workbook non rende automaticamente il processo riproducibile, governato o adatto alla produzione.
+Può essere ottimo per:
 
-## 13.1.6 Quando scegliere Excel
+- acquisire file ricorrenti;
+- applicare trasformazioni leggibili;
+- ridurre passaggi manuali;
+- aggiornare scenari e reporting leggero.
 
-Excel è una buona scelta quando:
+Ma se la stessa logica deve alimentare 30 report e viene considerata una definizione aziendale, il problema non è più soltanto aggiornare bene il workbook.
 
-- la scala è moderata;
-- il problema richiede forte interazione umana;
-- il risultato deve essere spiegabile a stakeholder non tecnici;
-- il ciclo è esplorativo o prototipale;
-- l'automazione completa non ha ancora un ritorno economico chiaro.
+Probabilmente quella logica merita un layer condiviso.
 
-## 13.1.7 Quando uscire da Excel
+### Python in Excel: le categorie si stanno fondendo
 
-È tempo di migrare quando il file diventa:
+Microsoft supporta oggi l'esecuzione di Python in Excel e l'uso di librerie analitiche nell'ambiente del workbook.[^python-excel]
 
-- un processo aziendale critico;
-- una fonte ufficiale di KPI;
-- un collo di bottiglia operativo;
-- un rischio di sicurezza;
-- un sistema di integrazione tra molte sorgenti;
-- un oggetto troppo complesso da testare e versionare.
+Questa convergenza è utile perché mostra una cosa importante:
 
-> **Un foglio di calcolo è eccellente per pensare. Diventa rischioso quando gli chiediamo di comportarsi come un sistema informativo.**
+**il nome del tool dice sempre meno sul livello di maturità del processo.**
 
-### Fonti
+Un workbook può usare Python e restare un prototipo fragile.
 
-- Microsoft Support, *Introduction to Python in Excel*: https://support.microsoft.com/en-us/excel/python/introduction-to-python-in-excel
-- Microsoft Support, *Open-source libraries and Python in Excel*: https://support.microsoft.com/en-us/excel/python/open-source-libraries-and-python-in-excel
+Un semplice foglio può invece essere ben controllato, documentato e proporzionato a una decisione una tantum.
+
+### Spreadsheet risk ladder
+
+Possiamo pensare a quattro livelli.
+
+**Livello 1 — scratchpad**  
+Calcoli temporanei, esplorazione, nessun consumer downstream.
+
+**Livello 2 — decision workbook**  
+Scenario o analisi condivisa, input controllati, reconciliation e owner chiaro.
+
+**Livello 3 — recurring analytical process**  
+Refresh ricorrente, più fonti, output distribuito. Servono automazione, QA e maggiore tracciabilità.
+
+**Livello 4 — hidden production system**  
+Altri processi dipendono dal file, impatto economico elevato, failure operativi. A questo punto serve una design review esplicita.
+
+### Campo del Tooling Decision Record
+
+Se scegliamo uno spreadsheet, il TDR dovrebbe dichiarare:
+
+```text
+purpose:
+source data:
+expected max scale:
+manual steps:
+critical formulas / controls:
+owners:
+consumers:
+versioning / storage:
+sensitive data policy:
+reconciliation:
+exit condition:
+```
+
+Esempio di exit condition:
+
+> Migrare la trasformazione in SQL quando il report diventa settimanale, supera tre sorgenti o viene utilizzato come input automatico da altri processi.
+
+### Regola operativa
+
+> **Un foglio di calcolo è eccellente come superficie di ragionamento. Quando diventa un'infrastruttura, deve essere gestito come tale oppure sostituito da qualcosa progettato per quella responsabilità.**
+
+[^excel-limits]: Microsoft Support, *Excel specifications and limits*, https://support.microsoft.com/en-us/excel/excel-specifications-and-limits
+[^phe-statement]: Public Health England, *PHE statement on delayed reporting of COVID-19 cases*, https://www.gov.uk/government/news/phe-statement-on-delayed-reporting-of-covid-19-cases
+[^guardian-phe-excel]: The Guardian, *Covid: how Excel may have caused loss of 16,000 test results in England*, https://www.theguardian.com/politics/2020/oct/05/how-excel-may-have-caused-loss-of-16000-covid-tests-in-england
+[^python-excel]: Microsoft Support, *Introduction to Python in Excel*, https://support.microsoft.com/en-us/excel/python/introduction-to-python-in-excel
