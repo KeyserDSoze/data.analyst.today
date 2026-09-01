@@ -1,124 +1,241 @@
-## 9.12 Case study - Dal test al rollout: il checkout che migliorava la conversione ma aumentava i problemi a valle
+## 9.12 Caso simulato/composito — Dal test al rollout: quando la conversione vince e lo ship perde
 
-Una piattaforma e-commerce internazionale, che chiameremo **Northstar Retail**, gestisce circa 28 milioni di sessioni al mese in Europa. Il team Checkout propone di rendere preselezionata l'opzione di consegna più veloce quando disponibile.
+**Northstar Retail** è una piattaforma e-commerce immaginaria con circa 28 milioni di sessioni mensili in Europa.
 
-L'ipotesi di prodotto è semplice: meno scelta visibile e una proposta più chiara dovrebbero ridurre l'attrito e aumentare la conversione.
+Il team Checkout propone una modifica semplice:
 
-### Disegno iniziale
+> preselezionare la consegna più veloce quando disponibile.
 
-La randomizzazione avviene a livello utente. Il test coinvolge il 20% del traffico eleggibile.
+L'ipotesi è che meno scelta visibile riduca frizione e aumenti gli ordini completati.
 
-Metrica primaria:
+La richiesta iniziale è:
 
-- completed orders per eligible user.
+> “Mettiamola al 20%, guardiamo conversion per una settimana e, se sale, ship.”
 
-Guardrail:
+L'analista trasforma invece la richiesta in un **Experiment Contract**.
 
-- cancellation rate entro 24 ore;
-- customer support contacts per order;
-- refund rate;
-- delivery complaint rate;
-- margine netto per ordine.
+### 1. Decisione
 
-Prima del lancio viene fissato un MDE di +0,20 punti percentuali sulla conversione, perché effetti più piccoli non giustificherebbero costi di implementazione, customer support aggiuntivo e rischio reputazionale.
+La decisione non è:
 
-### Prima settimana
+> “La conversione sale?”
 
-I primi dati sembrano eccellenti:
+È:
 
-| metrica | controllo | trattamento | differenza |
+> **“Possiamo rendere default la consegna veloce aumentando il valore netto per utente senza creare un livello inaccettabile di cancellazioni, reclami o costi di supporto?”**
+
+### 2. Popolazione e randomizzazione
+
+- unità: `stable_user_id`;
+- eligibility: utenti con almeno due delivery option disponibili;
+- allocation: 50/50 dentro il 20% di traffico attivato al test;
+- persistent bucketing tra sessioni;
+- analisi primaria intent-to-treat sulla popolazione eleggibile randomizzata.
+
+Questo evita che utenti che non arrivano al checkout vengano esclusi in modo differenziale dopo l'assignment.
+
+### 3. Metric Contract
+
+**Primary/OEC**
+
+- contribution margin per eligible user a D2.
+
+**Diagnostic**
+
+- checkout conversion;
+- AOV;
+- premium-delivery selection;
+- checkout duration.
+
+**Guardrail**
+
+- cancellation D1;
+- refund;
+- delivery complaints;
+- support contacts/order;
+- payment errors.
+
+**Data-quality**
+
+- SRM;
+- eligibility rate;
+- exposure/render rate;
+- event completeness.
+
+Il team decide prima che un peggioramento superiore a `+0,30 pp` sulle cancellazioni D1 blocchi lo ship anche con primary positiva.
+
+### 4. MDE e durata
+
+Il team stabilisce che un beneficio inferiore alla soglia economica concordata non compensa:
+
+- sviluppo;
+- support load;
+- rischio reputazionale;
+- complessità del rollout.
+
+Il traffic plan richiede circa due cicli settimanali e il team impone comunque:
+
+- minimum duration: 14 giorni;
+- outcome maturity: 48 ore dopo l'ultimo enrollment;
+- final read dopo maturazione completa.
+
+### 5. Giorni 1–7: il risultato che invita al peeking
+
+| Metrica | Control | Treatment | Delta |
 |---|---:|---:|---:|
-| conversion rate | 4,91% | 5,18% | +0,27 pp |
+| Checkout conversion | 4,91% | 5,18% | +0,27 pp |
 | AOV | 73,40 € | 74,10 € | +0,95% |
-| margine/order | 18,60 € | 18,94 € | +1,8% |
+| Margin/order | 18,60 € | 18,94 € | +1,8% |
 
-Il product manager propone il rollout al 100%.
+Il PM chiede rollout immediato.
 
-L'analista rifiuta di chiudere il test dopo sette giorni per tre motivi:
+Il test continua perché:
 
-1. il piano prevedeva almeno due cicli settimanali completi;
-2. i reclami di consegna maturano con ritardo;
-3. il controllo del Sample Ratio Mismatch deve essere completato prima dell'interpretazione.
+- il fixed-horizon contract non è completo;
+- cancellation/refund non sono maturi;
+- il test non ha coperto due settimane;
+- la decision metric è margin **per eligible user**, non margin/order isolato.
 
-### Seconda settimana: il quadro cambia
+### 6. Experiment health
 
-Dopo quattordici giorni:
+Prima dell'analisi finale:
 
-- conversion: +0,23 pp;
-- margine per order: +1,2%;
-- cancellation rate: +0,34 pp;
-- contatti al supporto per ordine: +7,6%;
-- complaint rate legato alla consegna: +11,8%.
+```text
+SRM: PASS
+assignment stability: PASS
+exposure rate A/B: compatibile
+payment telemetry: PASS
+late-event maturity: PASS
+```
 
-Il problema emerge dalle interviste al supporto: parte degli utenti non si rende conto di avere selezionato una consegna premium con sovrapprezzo. La conversione aumenta perché il checkout è più fluido, ma una parte del valore viene recuperata a valle sotto forma di cancellazioni, rimborsi e assistenza.
+Questa sezione è breve ma decisiva.
 
-### Segmentazione predefinita
+Se SRM avesse fallito, il meeting sul lift sarebbe stato sospeso.
 
-Il team aveva predefinito due segmenti:
+### 7. Giorni 8–14: i costi downstream maturano
 
-- clienti abituali;
-- nuovi clienti.
+Dopo due settimane e maturity:
 
-Tra i clienti abituali l'effetto è molto positivo e i guardrail restano stabili. Tra i nuovi clienti, invece, la conversion migliora di più ma aumentano nettamente cancellazioni e reclami.
+- checkout conversion: `+0,23 pp`;
+- cancellation D1: `+0,34 pp`;
+- support contacts/order: `+7,6%`;
+- delivery complaint: `+11,8%`;
+- primary contribution margin/eligible user: positivo, ma sotto la soglia di ship stabilita.
 
-La soluzione non è scegliere il segmento migliore dopo aver visto i dati. Il segmento era stato definito prima proprio perché il team sospettava differenze nella comprensione del checkout.
+Il guardrail cancellation supera inoltre il limite predefinito.
 
-### Iterazione 2
+**Decisione: NO-SHIP della variante originale.**
 
-Viene progettata una nuova variante:
+Non perché “il test è negativo”.
 
-- consegna veloce preselezionata solo per utenti ritornanti;
-- per i nuovi utenti viene aggiunto un testo esplicito sul sovrapprezzo;
-- il prezzo viene reso più prominente.
+Il test ha imparato qualcosa di più preciso:
 
-Il test riparte.
+> la preselezione riduce frizione, ma parte degli utenti non percepisce abbastanza chiaramente il sovrapprezzo.
 
-Dopo tre settimane:
+### 8. Segmento pre-specificato: new vs returning
 
-- conversion complessiva: +0,19 pp;
-- margine netto per eligible user: +3,4%;
-- cancellation rate: differenza trascurabile;
-- support contacts: +0,6%, non significativo;
-- complaint rate: stabile.
+Il team aveva dichiarato prima del test che nuovi e returning users potevano capire diversamente il default.
 
-### Rollout progressivo
+Il pattern diagnostico è:
 
-Il team non passa direttamente dal 20% al 100%.
+- returning: beneficio di conversione con guardrail quasi stabili;
+- nuovi: lift maggiore, ma più cancellazioni e reclami.
 
-Il rollout viene articolato in:
+Poiché il segmento era pre-specificato per una ragione di meccanismo, può guidare **l'iterazione successiva**.
 
-- 20%;
-- 50%;
-- 80%;
-- 100%.
+Non autorizza automaticamente un rollout selettivo senza un nuovo test coerente con la policy modificata.
 
-A ogni fase vengono monitorati i guardrail e le metriche operative per verificare che l'effetto non cambi quando il sistema raggiunge scala maggiore.
+### 9. Iterazione 2
 
-Questa cautela è importante perché alcune regressioni emergono solo con più carico, più varietà di utenti o più casi limite.
+Nuovo trattamento:
 
-### Un caso pubblico analogo: infrastruttura Microsoft
+- returning users: delivery veloce preselezionata;
+- new users: testo prezzo più esplicito e nessun default aggressivo;
+- surcharge reso visivamente prominente.
 
-Microsoft Experimentation Platform ha documentato l'uso di A/B test per modifiche infrastrutturali e backend. Nei test reali, il team ha rilevato effetti inattesi che metriche tecniche locali non avrebbero mostrato; per questo ha affiancato alle metriche backend anche guardrail di prodotto più ampi. Quando comparivano regressioni, l'esposizione poteva essere fermata rapidamente, correggendo e ripetendo il test prima del rollout.
+Nuovo Experiment Contract, nuova randomizzazione.
 
-La lezione è la stessa del caso Northstar Retail:
+Risultato dopo maturity:
 
-> **Un esperimento non termina quando troviamo un p-value favorevole. Termina quando abbiamo abbastanza evidenza per decidere come distribuire il cambiamento senza compromettere il sistema.**
+- contribution margin/eligible user: sopra la soglia di materialità;
+- cancellation guardrail: dentro il margin;
+- support contacts: nessuna regressione materialmente rilevante;
+- SRM e health checks: PASS.
 
-### Checklist della decisione finale
+Ora la variante diventa **ship candidate**.
 
-Prima del rollout l'analista deve poter rispondere a queste domande:
+### 10. Ship non significa 100%
 
-- l'assegnazione è rimasta valida?
-- esiste SRM?
-- la metrica primaria ha superato la soglia business rilevante?
-- i guardrail sono sani?
-- l'effetto è stabile nel tempo?
-- gli effetti per segmenti erano predefiniti o post-hoc?
-- esistono ritardi nella maturazione delle metriche?
-- l'effetto può cambiare a rollout completo?
-- abbiamo un piano di rollback?
-- sappiamo quali metriche monitorare dopo il lancio?
+Il rollout viene pianificato:
 
-### Fonte pubblica
+```text
+20% -> 50% -> 80% -> 100%
+```
 
-- Microsoft Experimentation Platform, *A/B Testing Infrastructure Changes at Microsoft ExP*, 2024.
+A ogni fase:
+
+- system health;
+- cancellation/refund;
+- support;
+- latency;
+- segment coverage;
+- payment/delivery partner failures.
+
+Esistono rollback threshold scritti prima del ramp.
+
+### 11. Caso reale documentato — Microsoft testa anche modifiche infrastrutturali
+
+Microsoft Experimentation Platform ha documentato l'uso di A/B test per rollout di cambi infrastrutturali. In una fase, metriche frontend mostrarono degradazioni severe dovute a piccoli aumenti di latenza backend amplificati da richieste sequenziali e CORS preflight; il team iterò sul design e ritestò prima di procedere. In altre iterazioni, feature flag e scorecard permisero rollback rapidi e scoperta di problemi di telemetria e chiamate ridondanti.[^ms-infra]
+
+La lezione è direttamente trasferibile:
+
+> **un test serve non soltanto a dare un voto a una variante, ma a scoprire come il cambiamento interagisce con il sistema prima di esporlo completamente.**
+
+### 12. Experiment Contract finale
+
+```text
+DECISION
+Ship solo se valore netto/eligible user supera la soglia
+senza violare cancellation/support guardrails.
+
+RANDOMIZATION
+stable user, persistent, ITT.
+
+METRICS
+OEC + guardrail + diagnostics + health.
+
+MATERIALITY
+Threshold deciso prima del test.
+
+DURATION
+2 weekly cycles + 48h maturity.
+
+HEALTH
+SRM/exposure/logging pass before effect analysis.
+
+ANALYSIS
+Fixed horizon; segment new/returning pre-specified.
+
+RESULT V1
+Conversion positiva, guardrail fallisce -> NO-SHIP / redesign.
+
+RESULT V2
+Primary sopra threshold, guardrail pass -> SHIP CANDIDATE.
+
+ROLLOUT
+Progressive ramp + rollback triggers.
+```
+
+### La lezione
+
+Un team inesperto avrebbe detto:
+
+> “V1 converte di più, ship.”
+
+Un team sperimentale maturo dice:
+
+> **“Il confronto è sano, la variante aumenta il comportamento locale ma fallisce una condizione di qualità; iteriamo il trattamento, rieseguiamo il test e solo allora passiamo a un rollout governato.”**
+
+Questa è la differenza tra A/B testing come statistica e experimentation come sistema decisionale.
+
+[^ms-infra]: Microsoft Research, *A/B Testing Infrastructure Changes at Microsoft ExP*: https://www.microsoft.com/en-us/research/articles/a-b-testing-infrastructure-changes-at-microsoft-exp
