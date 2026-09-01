@@ -43,14 +43,14 @@ La CI costruisce automaticamente Markdown aggregato, DOCX e PDF a ogni modifica 
 
 ### Ultima build validata
 
-Dopo la revisione editoriale dei Capitoli 0–6:
+Dopo la revisione editoriale dei Capitoli 0–7:
 
 - **20 capitoli**;
 - **321 file Markdown**;
-- **184.963 parole stimate**;
-- **1.332.216 caratteri**;
-- **127 URL esterni distinti**;
-- **816 pagine PDF**;
+- **189.667 parole stimate**;
+- **1.368.385 caratteri**;
+- **131 URL esterni distinti**;
+- **836 pagine PDF**;
 - build Markdown, DOCX e PDF completata con successo.
 
 Il numero di pagine non è una metrica editoriale da massimizzare. Può salire o scendere durante la revisione: alcuni passaggi vengono compressi perché ridondanti, altri vengono resi più chiari con esempi, tabelle, casi operativi e fonti reali più forti.
@@ -94,9 +94,9 @@ La struttura è valida e le sorgenti risultano normalizzate.
 
 Resta **un solo warning globale**:
 
-- notazione matematica/LaTeX presente in **14 file**, da gestire nella pipeline tipografica.
+- notazione matematica/LaTeX presente in **13 file**, da gestire nella pipeline tipografica.
 
-Il numero è sceso progressivamente da 25 a 14 durante la revisione: formule semplici sono state rese leggibili in notazione testuale quando il typesetting non aggiungeva valore; le formule che hanno reale funzione didattica restano invece in sorgente matematica.
+Il numero è sceso progressivamente da 25 a 13 durante la revisione: formule semplici sono state rese leggibili in notazione testuale quando il typesetting non aggiungeva valore; le formule che hanno reale funzione didattica restano invece in sorgente matematica.
 
 Per una release candidata:
 
@@ -159,6 +159,7 @@ Ogni caso reale importante deve avere:
 - Il Capitolo 4 usa NIST per EDA, scatter plot, time series, smoothing e box plot; include il quartetto di Anscombe e il caso Berkeley 1973 per composizione e Simpson's paradox.
 - Il Capitolo 5 usa NIST per distribuzioni, CLT e confidence intervals; AAPOR per sampling, margin of sampling error e fonti di errore nelle survey; ASA per l'interpretazione del p-value; include il **Literary Digest 1936** come caso reale documentato sul fallimento di una grande numerosità ottenuta con un meccanismo di selezione inadeguato.
 - Il Capitolo 6 usa Duolingo Q4/FY 2024 come caso reale documentato di engagement/retention, Canal+ per segmentazione comportamentale e retention, Microsoft Learn per cohort analysis, Google Analytics per funnel aperti/chiusi e sequenza degli step, Stripe per churn involontario/revenue recovery e NIST per survival, hazard e censoring.
+- Il Capitolo 7 usa NIST per time-series structure, autocorrelation, stationarity e change-point; Hyndman & Athanasopoulos per baseline, time-series cross-validation, MASE e prediction intervals. Include **Google Flu Trends** come caso reale documentato: il paper di Lazer et al. mostra sovrastima in 100 settimane su 108 nella finestra agosto 2011–settembre 2013, struttura temporale negli errori e performance migliore di benchmark/combinazioni che incorporavano dati CDC e stagionalità.
 
 ### Da fare prima della release
 
@@ -191,7 +192,8 @@ Obiettivo della revisione:
 | 4 — Statistica descrittiva ed Exploratory Data Analysis | **Revisionato** | Processo di controllo dell'interpretazione: centro → dispersione → code/forma → confronti/Simpson → relazioni → tempo → sensitivity → denominatori/comparabilità → caso MercatoHub. Deliverable: **EDA Evidence Map**. |
 | 5 — Probabilità, campionamento e incertezza | **Revisionato** | Rifondato come capitolo dell'incertezza. Distingue variabilità del processo e incertezza della stima; probabilità/condizionamento/dipendenza → distribuzioni/expected value/Bayes → sampling/sampling distribution/SE/CLT/CI → sample size → hypothesis test/p-value → Type I-II/power → materialità → multiple testing. Deliverable: **Uncertainty Brief**. Caso reale Literary Digest; ASA come riferimento centrale sul p-value. |
 | 6 — Segmentazione, coorti e lifecycle analysis | **Revisionato** | Segmento = chi; coorte = quando/a quale età; funnel = dove; activation/TTV = primo valore; retention/survival = persistenza e momento fragile; churn = perdita di relazione/valore e involuntary churn; reactivation = ritorno vs recupero duraturo; cohort value/LTV = economics; prediction distinta da causalità/actionability. Deliverable: **Lifecycle Diagnostic Map**. Casi reali Duolingo e Canal+; Stripe e NIST come riferimenti operativi. |
-| 7–19 | **Da revisionare** | Procedere in ordine, controllando anche sovrapposizioni inter-capitolo. |
+| 7 — Serie temporali, anomalie e forecasting | **Revisionato** | Rifondato attorno alla disciplina temporale: baseline comparabile → trend/stagionalità/calendar → lag/autocorrelazione → stazionarietà/decomposizione → anomaly triage → target/origin/horizon → baseline forecast → backtest `as-of` → MAE/RMSE/MAPE/MASE + business loss → prediction interval/coverage → drift/regime/override. Deliverable: **Temporal Decision Brief**. Caso reale Google Flu Trends; caso ElectroOne esplicitamente simulato/composito. |
+| 8–19 | **Da revisionare** | Procedere in ordine, controllando anche sovrapposizioni inter-capitolo. |
 
 ## 8. Sovrapposizioni concettuali da governare
 
@@ -266,11 +268,27 @@ Regola: il Capitolo 5 insegna a leggere l'evidenza; il 9 insegna a costruire un 
 
 Regola: in Ch. 6 una feature associata a retention o churn è un segnale/ipotesi; non diventa automaticamente una leva causale.
 
-### Capitolo 4 / 7 / 8 — tempo e causalità
+### Capitolo 4 / 7 / 8 — tempo, forecast e causalità
 
-- **4:** tempo come dimensione esplorativa e baseline descrittiva;
-- **7:** time-series structure, anomaly detection e forecasting;
-- **8:** identificazione causale e controfattuale.
+- **4:** tempo come dimensione esplorativa e confronto descrittivo;
+- **7:** dipendenza temporale, baseline, anomaly detection, forecast, backtest e regime change;
+- **8:** controfattuale e attribuzione causale.
+
+Regola: un'anomalia o un errore di forecast può indicare che il processo è cambiato, ma non identifica da solo la causa del cambiamento.
+
+### Capitolo 7 / 10 — forecasting vs predictive modeling generale
+
+- **7:** il tempo impone ordine, horizon, autocorrelazione, `as-of` validation, seasonal baselines e regime monitoring;
+- **10:** valutazione e deployment di modelli predittivi più generali, inclusi classification/regression, calibration, threshold, leakage e drift.
+
+Regola: non ripetere in Ch. 10 la disciplina specifica del backtest temporale; richiamarla quando il target è futuro o time-dependent.
+
+### Capitolo 7 / 15 — forecast vs decisione
+
+- **7:** produrre e validare una distribuzione di forecast credibile e collegarla a una funzione di errore/loss;
+- **15:** scegliere tra alternative con expected value, scenari, soglie, reversibilità e trade-off.
+
+Regola: il Temporal Decision Brief porta il forecast fino al punto in cui informa la decisione, ma non rispiega l'intero framework decisionale del Ch. 15.
 
 ### Capitolo 3 / 11 / 12 / 18 — qualità, semantica, governance
 
@@ -285,17 +303,17 @@ La sequenza resta coerente:
 
 **mentalità → domanda → dati → statistica → comportamento → tempo → causalità → esperimenti → modelli → SQL → architettura → strumenti → AI → decisione → comunicazione → casi completi → scala → futuro**.
 
-Nei primi sette capitoli il percorso operativo è ora esplicito:
+Nei primi otto capitoli il percorso operativo è ora esplicito:
 
-**Analytical Brief → Data Readiness Review → EDA Evidence Map → Uncertainty Brief → Lifecycle Diagnostic Map**.
+**Analytical Brief → Data Readiness Review → EDA Evidence Map → Uncertainty Brief → Lifecycle Diagnostic Map → Temporal Decision Brief**.
 
-Il Capitolo 6 trasforma segmenti, coorti, funnel, activation, retention, churn, survival, reactivation e LTV in un unico sistema di lettura del comportamento e del valore nel tempo, fermandosi intenzionalmente prima di attribuire causalità o costruire il modello predittivo.
+Il Capitolo 7 porta la lettura del tempo dall'osservazione alla previsione disciplinata: la serie viene definita, la baseline scelta, la dipendenza temporale resa esplicita, gli alert triaggiati, il forecast confrontato con benchmark semplici e validato `as-of`, l'errore tradotto in loss e l'incertezza verificata attraverso prediction intervals e coverage. Il capitolo si ferma prima dell'attribuzione causale, che appartiene al Capitolo 8.
 
 ## 10. Lunghezza
 
 La misura corrente viene dalla pipeline reale.
 
-Dopo i Capitoli 0–6 revisionati il PDF è di **816 pagine**. La revisione può quindi continuare liberamente a comprimere ripetizioni o ad ampliare esempi e casi che aumentano la comprensione senza alcun rischio rispetto all'obiettivo minimo di 400+ pagine.
+Dopo i Capitoli 0–7 revisionati il PDF è di **836 pagine**. La revisione può quindi continuare liberamente a comprimere ripetizioni o ad ampliare esempi e casi che aumentano la comprensione senza alcun rischio rispetto all'obiettivo minimo di 400+ pagine.
 
 L'obiettivo è massimizzare **densità di valore per pagina**, non il page count.
 
@@ -341,4 +359,4 @@ Poi controllo manuale di:
 
 Il contenuto principale del libro è strutturalmente completo.
 
-La revisione editoriale ha completato i **Capitoli 0–6**. Il lavoro successivo continua dal Capitolo 7, con il compito di separare chiaramente descrizione temporale, anomaly detection e forecasting, evitando sia di ripetere l'EDA del Capitolo 4 sia di trasformare una previsione in una spiegazione causale.
+La revisione editoriale ha completato i **Capitoli 0–7**. Il lavoro successivo continua dal Capitolo 8, con il compito di trasformare causalità e controfattuale da catalogo di metodi in un processo di identificazione: definire l'effetto, esplicitare il controfattuale, disegnare le assunzioni, scegliere il comparison group e dichiarare che cosa il design consente davvero di attribuire causalmente.
