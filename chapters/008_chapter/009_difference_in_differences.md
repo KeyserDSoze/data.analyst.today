@@ -1,51 +1,62 @@
-## 8.8 Difference-in-Differences: confrontare cambiamenti, non livelli
+## 8.8 Difference-in-Differences: usare un'altra traiettoria come controfattuale
 
-Quando un trattamento viene introdotto in un gruppo ma non in un altro, e abbiamo dati prima e dopo l'intervento, possiamo talvolta usare il metodo Difference-in-Differences, spesso abbreviato in DiD.
+La **Difference-in-Differences (DiD)** non confronta semplicemente due gruppi.
 
-L'idea è semplice:
+Confronta **come cambiano** due gruppi nel tempo.
 
-1. misurare il cambiamento nel gruppo trattato;
-2. misurare il cambiamento nel gruppo di confronto;
-3. sottrarre il secondo dal primo.
+L'idea è:
 
-In forma compatta:
+```text
+DiD = (Trattati_dopo - Trattati_prima)
+    - (Confronto_dopo - Confronto_prima)
+```
 
-`DiD = (Trattati_dopo - Trattati_prima) - (Controllo_dopo - Controllo_prima)`
+Il gruppo di confronto serve a stimare quale cambiamento avrebbero avuto i trattati **senza** l'intervento.
 
-### Caso - Nuovo layout in 25 negozi
-
-Una catena retail introduce un nuovo layout in 25 negozi del Nord Italia. Altri 25 negozi simili mantengono il layout precedente.
+### Caso simulato/composito — Nuovo layout in 25 negozi
 
 Revenue medio settimanale:
 
 | Gruppo | Prima | Dopo | Variazione |
 |---|---:|---:|---:|
 | Nuovo layout | 118.000 € | 129.000 € | +11.000 € |
-| Controllo | 121.000 € | 126.000 € | +5.000 € |
+| Confronto | 121.000 € | 126.000 € | +5.000 € |
 
-Il confronto prima/dopo nei negozi trattati suggerirebbe un effetto di +11.000 €.
+Il prima/dopo dei trattati suggerisce `+11.000 €`.
 
-Ma anche i negozi di controllo crescono di 5.000 €, forse per stagionalità, maggiore traffico o una campagna nazionale.
+Ma anche i negozi non trattati crescono di `+5.000 €`, forse per domanda generale o calendario.
 
-La stima DiD è quindi:
+La DiD è:
 
-`11.000 - 5.000 = 6.000 €`
+`+11.000 - +5.000 = +6.000 €`
 
-La lettura causale sarebbe: il nuovo layout ha aumentato il revenue settimanale di circa 6.000 € rispetto a ciò che sarebbe accaduto ai negozi trattati in assenza del cambiamento.
+La causal claim non deriva però dalla sottrazione.
 
-Ma questa interpretazione dipende da un'assunzione fondamentale.
+Deriva dall'assunzione che, senza nuovo layout, i negozi trattati avrebbero seguito una variazione comparabile a quella dei negozi di confronto.
 
-### Parallel trends
+### Parallel trends è il cuore del design
 
-L'ipotesi chiave è che, senza trattamento, il gruppo trattato avrebbe seguito nel tempo una dinamica simile al gruppo di controllo.
+L'assunzione fondamentale è spesso chiamata **parallel trends**.
 
-Non è necessario che i due gruppi abbiano lo stesso livello iniziale. Possono partire da revenue diversi. Ciò che conta è la plausibilità di trend paralleli in assenza dell'intervento.
+Non richiede che i gruppi partano dallo stesso livello.
 
-Per questo non basta avere un "prima" e un "dopo". È molto meglio osservare più periodi pre-trattamento e verificare se le traiettorie erano compatibili.
+Richiede che la traiettoria del gruppo di confronto sia un proxy credibile per la traiettoria controfattuale dei trattati.
 
-### Caso - La falsa vittoria del nuovo pricing
+La World Bank descrive proprio la DiD come confronto tra il cambiamento del gruppo trattato e quello del gruppo di confronto e sottolinea la centralità di questa assunzione.[^worldbank-did]
 
-Un SaaS introduce un nuovo pricing nel Regno Unito, ma non in Francia.
+### I pre-trend sono diagnostica, non prova
+
+Se abbiamo più periodi prima dell'intervento, possiamo verificare se le traiettorie storiche erano simili.
+
+Questo è molto utile.
+
+Ma:
+
+> **trend pre-trattamento paralleli non dimostrano che i trend controfattuali sarebbero rimasti paralleli dopo.**
+
+Sono evidenza a favore del design, non certificazione automatica.
+
+### Caso simulato/composito — Il pricing UK vs Francia
 
 MRR medio per account:
 
@@ -54,71 +65,105 @@ MRR medio per account:
 | Gen | 186 € | 181 € |
 | Feb | 191 € | 182 € |
 | Mar | 198 € | 183 € |
-| Apr - pricing | 211 € | 184 € |
+| Apr — pricing | 211 € | 184 € |
 | Mag | 222 € | 185 € |
 
-Un DiD semplice potrebbe attribuire gran parte dell'aumento UK al pricing.
+L'UK cresceva molto più rapidamente **già prima** del pricing.
 
-Ma guardando i mesi precedenti, l'UK aveva già una crescita molto più rapida della Francia prima dell'intervento.
+La Francia è quindi un controfattuale debole per la dinamica UK.
 
-L'assunzione di parallel trends è quindi poco credibile.
+Un coefficiente DiD può essere calcolato. Il design resta fragile.
 
-Il metodo produce un numero, ma il design non sostiene bene la conclusione causale.
+### Shock differenziali contemporanei
 
-### Shock differenziali
+La DiD non protegge da eventi che cambiano nello stesso periodo **solo** per il gruppo trattato.
 
-Anche con trend pre-trattamento simili, un altro evento può colpire solo il gruppo trattato nello stesso momento.
+Esempi:
 
-Nel caso retail, durante il rollout del nuovo layout potrebbe essere partita una campagna locale esclusiva nei negozi trattati. La DiD attribuirebbe al layout anche l'effetto della campagna.
+- campagna locale;
+- nuova concorrenza;
+- differenze di stock;
+- modifica del tracking;
+- cambio di sales team;
+- shock normativo aggiuntivo.
 
-Occorre quindi cercare:
+Se un'altra causa cambia insieme al trattamento, la stima può attribuire al trattamento anche quell'effetto.
 
-- campagne contemporanee;
-- cambi di assortimento;
-- variazioni di prezzo;
-- nuove aperture o chiusure concorrenti;
-- cambiamenti normativi;
-- problemi di supply chain;
-- differenze nella qualità del dato.
+### Composizione del gruppo
 
-### Event study e dinamica dell'effetto
+Un'altra minaccia sottovalutata è che la popolazione osservata cambi.
 
-Quando abbiamo molti periodi, è utile osservare l'evoluzione dell'effetto prima e dopo il trattamento.
+Supponiamo che dopo il pricing escano molti clienti piccoli dal gruppo UK. L'MRR medio per account può crescere anche perché la composizione si sposta verso account più grandi.
 
-Questo aiuta a capire:
+Quindi bisogna verificare:
 
-- se esistono pre-trend problematici;
-- se l'effetto appare immediatamente;
-- se cresce gradualmente;
-- se svanisce dopo qualche mese;
-- se anticipazioni del trattamento modificano il comportamento già prima dell'entrata in vigore.
+- unità che entrano/escono;
+- definizione della popolazione;
+- attrition differenziale;
+- eventuali cambi di mix.
 
-### Caso - Policy di smart working
+### Announcement e anticipation
 
-Una società introduce una policy di smart working più flessibile in una business unit e vuole misurare l'impatto sul turnover.
+Il “momento del trattamento” non è sempre la data formale.
 
-Guardando solo dodici mesi prima e dodici dopo, il turnover scende di 3 punti percentuali rispetto a una business unit di controllo.
+Se una policy viene annunciata tre mesi prima, clienti e manager possono reagire prima dell'entrata in vigore.
 
-L'event study mostra però che il calo era iniziato tre mesi prima dell'introduzione ufficiale, proprio quando era stata annunciata la nuova policy.
+Un event study può mostrare effetti anticipati. In quel caso dobbiamo ripensare la timeline, non semplicemente dichiarare che DiD “ha fallito”.
 
-Questo non significa necessariamente che la policy non funzioni. Significa che la data di trattamento effettiva potrebbe essere l'annuncio, non la data formale di entrata in vigore.
+### Event study: vedere la dinamica dell'effetto
 
-### DiD non è una scorciatoia automatica
+Con più periodi possiamo rappresentare coefficienti relativi al momento dell'intervento.
 
-È potente quando il confronto è credibile. È fragile quando viene applicata meccanicamente a due gruppi qualsiasi.
+Serve a investigare:
 
-Prima di usarla chiediamo:
+- pre-trend;
+- anticipazione;
+- effetto immediato o graduale;
+- persistenza;
+- decadimento.
 
-1. perché il gruppo trattato ha ricevuto l'intervento?
-2. il gruppo di controllo rappresenta un controfattuale plausibile?
-3. i trend prima dell'intervento sono comparabili?
-4. altri eventi hanno colpito i gruppi in modo differente?
-5. l'anticipazione dell'intervento è possibile?
-6. il trattamento avviene nello stesso momento per tutti o in momenti diversi?
+Ma anche qui il grafico non sostituisce l'identification argument.
 
-> **Difference-in-Differences non elimina la necessità di ragionare causalmente. La rende più esplicita.**
+### Staggered adoption: attenzione alle DiD meccaniche
 
-## Riferimenti
+Nel mondo reale unità diverse possono ricevere il trattamento in momenti differenti.
 
-- World Bank, *Impact Evaluation in Practice*, capitolo 7: Difference-in-Differences.
-- World Bank DIME Wiki, *Difference-in-Differences*: confronto dei cambiamenti tra gruppo trattato e gruppo di controllo e centralità dell'assunzione di equal/parallel trends.
+Per esempio un nuovo processo viene introdotto regione per regione.
+
+In questi casi una semplice regressione `unit fixed effects + time fixed effects` può diventare difficile da interpretare quando gli effetti cambiano nel tempo o tra coorti di trattamento.
+
+Per un Data Analyst il principio operativo è:
+
+> **se il rollout è staggered, non assumere che la DiD più semplice abbia automaticamente lo stesso significato della formula a due gruppi e due periodi.**
+
+Serve una strategia coerente con il timing del rollout e con l'estimand desiderato.
+
+### Causal checklist DiD
+
+```text
+Trattamento e data effettiva:
+Gruppo di confronto:
+Perché è un controfattuale plausibile?
+Periodi pre disponibili:
+Pre-trend compatibili?
+Anticipazione possibile?
+Shock differenziali?
+Composizione stabile?
+Treatment timing uguale o staggered?
+Outcome definito allo stesso modo nel tempo?
+Qual è l'estimand?
+```
+
+### Claim calibrato
+
+Debole:
+
+> “Dopo il rollout le vendite sono salite, quindi il rollout ha funzionato.”
+
+Più forte:
+
+> **“Rispetto a un gruppo con traiettoria pre-intervento comparabile, il gruppo trattato mostra un incremento differenziale di circa 6.000 € a settimana; l'interpretazione causale dipende da parallel trends e dall'assenza di shock differenziali rilevanti.”**
+
+> **Difference-in-Differences non trasforma il tempo in causalità. Usa una traiettoria osservata per rappresentare una traiettoria controfattuale, sotto assunzioni che devono essere difese.**
+
+[^worldbank-did]: World Bank e Inter-American Development Bank, *Impact Evaluation in Practice*, capitolo su Difference-in-Differences: https://www.worldbank.org/en/programs/sief-trust-fund/publication/impact-evaluation-in-practice
