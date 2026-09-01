@@ -1,84 +1,164 @@
-## 8.13 Effetti eterogenei: la media può nascondere chi beneficia davvero
+## 8.13 Effetti eterogenei: non basta sapere che “in media funziona”
 
-Un trattamento può avere un effetto medio positivo e contemporaneamente essere inutile o dannoso per alcuni segmenti.
+Il Capitolo 6 ha usato segmenti e coorti per localizzare **dove il comportamento differisce**.
 
-Questo problema è centrale nelle decisioni reali.
+Qui la domanda è più forte:
 
-### Caso realistico: programma di retention
+> **L'effetto causale dello stesso trattamento cambia tra popolazioni differenti?**
 
-Una piattaforma subscription testa una campagna di retention su clienti a rischio.
+Questa è causal heterogeneity, non semplice segmentazione descrittiva.
 
-Effetto medio sul churn a 60 giorni:
+### Caso simulato/composito — Campagna retention
 
-- controllo: **18,4%**;
-- trattamento: **15,9%**;
-- effetto medio: **-2,5 punti percentuali**.
+Un esperimento produce:
 
-La campagna sembra funzionare.
+- churn controllo: 18,4%;
+- churn trattamento: 15,9%;
+- effetto medio: `-2,5 pp`.
 
-Segmentando per anzianità cliente:
+La media è utile, ma può nascondere differenze operative.
 
-| Segmento | Effetto sul churn |
+Per tenure:
+
+| Segmento | Effetto stimato sul churn |
 |---|---:|
 | < 3 mesi | -0,3 pp |
-| 3-12 mesi | -3,8 pp |
+| 3–12 mesi | -3,8 pp |
 | > 12 mesi | -5,1 pp |
 
-Segmentando per valore cliente:
+Per valore cliente:
 
-| Segmento | Effetto sul churn |
+| Segmento | Effetto stimato |
 |---|---:|
-| basso valore | -0,7 pp |
-| medio valore | -2,9 pp |
-| alto valore | -6,4 pp |
+| basso | -0,7 pp |
+| medio | -2,9 pp |
+| alto | -6,4 pp |
 
-La domanda operativa cambia: non "la campagna funziona?", ma **per chi funziona abbastanza da giustificare il costo?**
+La domanda diventa:
 
-### ATE, ATT e CATE
+> “Per chi l'effetto è abbastanza grande da giustificare costo e capacità operativa?”
 
-In termini intuitivi:
+### ATE, ATT e CATE non sono sinonimi
 
-- **ATE**: effetto medio nella popolazione;
-- **ATT**: effetto medio sui trattati;
-- **CATE**: effetto medio condizionato a caratteristiche o segmenti.
+- **ATE:** effetto medio nella popolazione target;
+- **ATT:** effetto medio sulle unità trattate;
+- **CATE:** effetto medio condizionato a caratteristiche `X`.
 
-Il CATE è spesso molto vicino alla domanda che interessa davvero al business.
+Un CATE può essere più vicino alla decisione, ma è anche più difficile da stimare in modo stabile.
 
-### Attenzione alla pesca nei segmenti
+Dividere il campione riduce informazione e aumenta il rischio di trovare pattern casuali.
 
-Dopo un esperimento è facile esplorare decine di segmentazioni finché qualcosa appare interessante.
+### Heterogeneity richiede un effect contrast, non due retention rate separate
 
-Con 40 segmenti, alcune differenze apparenti emergeranno anche per puro caso.
+Errore comune:
 
-Quindi l'analisi degli effetti eterogenei deve distinguere:
+> “Il gruppo enterprise ha retention più alta, quindi il trattamento funziona meglio sugli enterprise.”
 
-- segmenti ipotizzati prima dell'analisi;
-- segmenti esplorativi;
+Per dire che l'effetto è diverso dobbiamo confrontare **l'effetto trattamento-controllo dentro i segmenti**, non i livelli assoluti dell'outcome.
+
+Esempio:
+
+| Segmento | Controllo | Trattamento | Effetto |
+|---|---:|---:|---:|
+| SMB | 70% | 73% | +3 pp |
+| Enterprise | 90% | 93% | +3 pp |
+
+Gli enterprise hanno retention maggiore, ma l'effetto stimato è identico.
+
+### Pre-specificato vs esplorativo
+
+Se analizziamo 50 segmenti dopo aver visto i risultati, qualcosa sembrerà eccezionale per caso.
+
+Distingui sempre:
+
+- heterogeneity ipotizzata prima del test;
+- analisi esplorativa post hoc;
 - risultati replicati;
-- risultati fragili su campioni piccoli.
+- pattern basati su piccoli denominatori.
 
-### Caso pricing
+Il Capitolo 5 ci ha già dato il linguaggio per multiple testing e incertezza. Qui lo applichiamo agli effetti causali.
 
-Un marketplace aumenta la commissione del 5% al 5,5%.
+### Segmenti troppo granulari
 
-Effetto medio sul numero di seller attivi: **-1,2%**.
+Un effetto di `-12 pp` su 38 clienti non va trattato come automaticamente più interessante di `-4 pp` su 8.000 clienti.
 
-Ma il dettaglio mostra:
+Servono:
 
-- seller enterprise: -0,1%;
-- seller mid-market: -0,8%;
-- seller piccoli con margine basso: -6,7%.
+- intervalli;
+- denominatori;
+- stabilità temporale;
+- plausibilità del meccanismo;
+- eventuale shrinkage/partial pooling quando appropriato;
+- replica.
 
-Una media apparentemente innocua nasconde una forte concentrazione dell'impatto.
+### Causal ML non elimina l'identificazione
 
-La decisione potrebbe diventare una struttura di pricing differenziata anziché un rollback totale.
+Causal forests, meta-learners e uplift models possono aiutare a trovare eterogeneità complessa.
 
-### Modelli complessi non eliminano il problema causale
+Ma se il trattamento è confuso in modo non identificato, l'algoritmo non trasforma magicamente l'associazione in causal effect.
 
-Tecniche di machine learning possono aiutare a stimare eterogeneità, ma non trasformano automaticamente dati osservazionali in evidenza causale.
+L'ordine resta:
 
-Prima serve un disegno credibile per l'effetto causale. Poi possiamo studiare come quell'effetto varia.
+**design credibile → effetto identificabile → eterogeneità**.
 
-### Regola pratica
+Non:
 
-> **L'effetto medio risponde a una domanda statistica. La decisione spesso richiede sapere dove l'effetto è grande, piccolo, nullo o negativo.**
+**algoritmo sofisticato → causalità**.
+
+### Dall'effetto al valore decisionale
+
+Supponiamo che una chiamata costi 40 €.
+
+Segmento A:
+
+- riduzione churn: 2 pp;
+- margine cliente: 80 €.
+
+Segmento B:
+
+- riduzione churn: 5 pp;
+- margine cliente: 2.000 €.
+
+Anche se il CATE è la metrica causale, la priorità finale richiede economia:
+
+`effect × valore dell'outcome - costo intervento`
+
+Questo ponte verrà sviluppato nel Capitolo 15.
+
+### Caso simulato/composito — Pricing seller
+
+Un marketplace aumenta la commissione.
+
+Effetto medio sui seller attivi: `-1,2%`.
+
+Per segmento:
+
+- enterprise: -0,1%;
+- mid-market: -0,8%;
+- piccoli seller a basso margine: -6,7%.
+
+La decisione può diventare pricing differenziato invece di rollback totale.
+
+Ma prima di farlo dobbiamo sapere se questi effetti sono:
+
+- sufficientemente precisi;
+- pre-specificati o scoperti post hoc;
+- replicabili;
+- economicamente rilevanti.
+
+### Heterogeneity card
+
+```text
+Estimand medio:
+Dimensioni di heterogeneity definite prima?
+Effetto per segmento, non solo outcome level:
+Denominatori:
+Intervalli / uncertainty:
+Multiple comparisons gestite?
+Pattern replicato?
+Meccanismo plausibile?
+Valore economico per segmento:
+Policy che cambierebbe:
+```
+
+> **La media dice se un intervento funziona nel complesso. L'eterogeneità serve a capire se la stessa policy debba davvero essere applicata a tutti.**
