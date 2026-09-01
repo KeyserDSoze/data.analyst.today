@@ -1,82 +1,163 @@
-## 16.8 Storytelling senza manipolazione: assi, scale e framing
+## 16.8 Storytelling senza manipolazione: il Visual Integrity Gate
+
 Ogni visualizzazione seleziona una prospettiva.
 
-La scelta della scala, del periodo, del denominatore e del confronto modifica ciò che appare importante.
+Periodo, scala, denominatore, ordine, colori e confronto influenzano ciò che appare importante.
 
-Per questo il data storytelling richiede una disciplina etica oltre che tecnica.
+La selezione è inevitabile. La manipolazione no.
 
-## Bar chart: lo zero conta
+Per questo, prima di promuovere un visual nella Decision Communication Pack, applichiamo un **Visual Integrity Gate**.
 
-Per i grafici a barre, la lunghezza della barra rappresenta direttamente la grandezza.
+## 1. La scala rappresenta onestamente la grandezza?
 
-Se l'asse parte da 95 invece che da 0, un passaggio da 98 a 100 può apparire enorme.
+Nei bar chart la lunghezza della barra codifica direttamente la magnitudine. Se la baseline viene troncata, il rapporto visivo tra le barre non corrisponde più al rapporto tra i valori.
 
-L'Office for National Statistics raccomanda che gli assi dei bar chart partano da zero proprio perché una base troncata altera visivamente le proporzioni.
+L'Office for National Statistics raccomanda di partire da zero per bar chart e altre forme in cui la lunghezza/area è l'encoding principale.
 
-Per line chart e scatter plot la situazione è diversa: un asse troncato può essere utile per rendere visibili variazioni piccole, purché la scala sia chiarissima e non induca una lettura sproporzionata.
-
-Fonte: https://service-manual.ons.gov.uk/data-visualisation/guidance/axes-and-gridlines
-
-## Caso realistico: “performance raddoppiata”
-
-Un team presenta due conversion rate:
+### Caso simulato/composito — “Performance quasi triplicata”
 
 - controllo: 4,8%;
 - nuova esperienza: 5,1%.
 
-Nel grafico l'asse verticale parte da 4,7%.
+Con asse da 4,7% a 5,2%, la barra nuova può sembrare molte volte più alta.
 
-La nuova barra sembra quasi tre volte più alta.
+Il delta reale è:
 
-Il titolo dice:
+- +0,3 punti percentuali;
+- circa +6,25% relativo.
 
-> Nuova esperienza nettamente superiore
+Per una decisione possiamo mostrare:
 
-Il numero è corretto.
+- due barre con zero baseline;
+- accanto, il delta `+0,3 pp`;
+- intervallo di incertezza se rilevante.
 
-La rappresentazione è fuorviante.
+Così rendiamo visibile la differenza senza falsificare la proporzione.
 
-La differenza assoluta è 0,3 punti percentuali; quella relativa è circa 6,25%.
+## 2. Truncation nei line chart: non sempre è sbagliata
 
-E prima ancora di parlare di rollout dobbiamo conoscere incertezza, costi e guardrail.
+Una linea non usa la lunghezza dalla baseline come encoding principale allo stesso modo di una barra.
 
-## Periodi scelti ad arte
+Un asse ristretto può quindi essere utile per leggere variazioni piccole.
 
-Anche la finestra temporale può manipolare.
+La disciplina richiesta è:
 
-Una campagna può sembrare eccezionale se confrontiamo la settimana di lancio con quella immediatamente precedente, ma ordinaria rispetto allo stesso periodo dell'anno precedente.
+- scala chiaramente visibile;
+- contesto sufficiente;
+- nessuna omissione di una baseline decision-critical;
+- evitare titoli che trasformano una piccola variazione in un evento enorme.
 
-Una metrica può sembrare in crescita scegliendo gennaio come punto iniziale e in calo scegliendo marzo.
+La regola non è “ogni asse deve partire da zero”. È **l'encoding non deve produrre un'impressione sproporzionata rispetto alla domanda**.
 
-Il principio è semplice:
+## 3. Period selection: il tempo può essere cherry-picked
 
-> il periodo deve essere scelto in funzione della domanda, non della storia che vogliamo raccontare.
+Una campagna può apparire eccezionale confrontando la settimana di lancio con una settimana debole immediatamente precedente e ordinaria rispetto a:
 
-## Dual axis: correlazioni costruite visivamente
+- stesso periodo anno precedente;
+- trend pre-campagna;
+- gruppo di controllo;
+- baseline stagionale.
 
-Due serie con scale indipendenti possono essere ridimensionate fino a sembrare quasi perfettamente correlate.
+Prima di scegliere la finestra chiediamo:
 
-L'ONS raccomanda di evitare i dual-axis chart perché sono difficili da interpretare e possono risultare fuorvianti.
+> “Quale confronto avremmo usato se il risultato fosse andato nella direzione opposta?”
 
-Se vogliamo confrontare due trend, spesso è meglio usare due grafici allineati oppure normalizzare entrambe le serie rispetto a una baseline esplicita.
+Se la risposta cambia, abbiamo un rischio di framing opportunistico.
 
-## Il framing del denominatore
+## 4. Dual axis: la correlazione può essere disegnata
 
-“Il 90% dei clienti è soddisfatto” può significare cose diverse se:
+Due serie con scale indipendenti possono essere ridimensionate fino a sovrapporsi quasi perfettamente.
 
-- ha risposto solo il 12% degli invitati;
-- il survey è stato mostrato soltanto agli utenti che hanno completato un acquisto;
-- sono stati esclusi i reclami aperti;
-- la definizione di soddisfatto include punteggi neutrali.
+Il lettore vede una relazione che dipende in parte dalla scelta delle scale.
 
-Lo storytelling non può correggere un denominatore sbagliato.
+Quando possibile preferiamo:
 
-## Il test della versione opposta
+- due grafici allineati;
+- indice rispetto a una baseline comune;
+- scatter plot se la domanda è la relazione;
+- coefficienti/statistiche se servono a quantificarla.
 
-Prima di pubblicare una visualizzazione importante, proviamo a chiederci:
+## 5. Area e volume: l'occhio può amplificare due volte
 
-> “Con gli stessi dati, potrei costruire un grafico apparentemente convincente che sostiene la conclusione opposta?”
+Se una quantità doppia viene rappresentata con un cerchio di raggio doppio, l'area diventa quattro volte maggiore.
 
-Se la risposta è sì, dobbiamo capire quale scelta di framing produce la differenza e renderla esplicita.
+Bubble chart, icone ridimensionate, mappe a simboli e visual 3D richiedono quindi cautela.
 
-**Un grafico persuasivo non è necessariamente un grafico informativo. Il nostro obiettivo è rendere l'evidenza leggibile senza deformarla.**
+Chiediamoci se il lettore deve confrontare **lunghezza, area o volume** e se l'encoding è proporzionale alla quantità dichiarata.
+
+## 6. Cumulative vs period: una curva che sale sempre può ingannare
+
+Revenue cumulativa, utenti cumulativi e ticket cumulativi tendono quasi necessariamente a crescere.
+
+Una curva crescente può quindi nascondere:
+
+- rallentamento del run rate;
+- peggioramento della crescita marginale;
+- deterioramento della qualità.
+
+Se la decisione riguarda il ritmo corrente, affianchiamo la misura di periodo o il delta marginale.
+
+## 7. Il denominatore può cambiare il significato più del numeratore
+
+> “Il 90% dei clienti è soddisfatto.”
+
+può essere formalmente corretto e sostanzialmente fuorviante se il survey response rate è 12% o se la popolazione eleggibile esclude proprio gli utenti con problemi.
+
+Un visual integrity check include quindi:
+
+- numeratore;
+- denominatore;
+- eligibility;
+- missing / non-response;
+- eventuale cambio di popolazione.
+
+## 8. Scale incoerenti tra small multiples
+
+Due regioni possono sembrare avere volatilità simile se ogni pannello usa una scala diversa.
+
+Quando l'obiettivo è confrontare magnitudini, usiamo scale coerenti. Se dobbiamo invece mostrare pattern interni con scale diverse, lo dichiariamo esplicitamente.
+
+## 9. Il test della versione opposta
+
+Proviamo a costruire, con gli stessi dati, la visualizzazione più convincente possibile per la conclusione opposta.
+
+Poi confrontiamo:
+
+- periodo;
+- baseline;
+- ordine;
+- scala;
+- denominatore;
+- segmentazione;
+- titolo.
+
+Le differenze rivelano le scelte di framing che governano la percezione.
+
+## 10. Il counterfactual visual test
+
+Un controllo ancora più forte:
+
+> **“Se questa evidenza non sostenesse la mia raccomandazione preferita, userei comunque la stessa forma e lo stesso titolo?”**
+
+Se no, dobbiamo motivare la scelta o ridisegnare.
+
+## Visual Integrity Gate
+
+Prima della pubblicazione:
+
+- [ ] scala coerente con l'encoding;
+- [ ] periodo scelto dalla domanda, non dal risultato;
+- [ ] baseline/target appropriati;
+- [ ] denominatore ed eligibility verificabili;
+- [ ] scale comparabili dove il confronto lo richiede;
+- [ ] nessuna area/3D che amplifichi indebitamente la magnitudine;
+- [ ] cumulativo distinto dal run rate quando necessario;
+- [ ] titolo non più forte dell'evidenza;
+- [ ] incertezza decision-critical visibile;
+- [ ] opposite-framing test superato.
+
+> **Il data storytelling non consiste nel trovare il framing più persuasivo. Consiste nel trovare il framing più informativo che continueremmo a difendere anche se il dato non sostenesse la nostra preferenza.**
+
+### Fonte
+
+- Office for National Statistics, *Axes and gridlines*: https://service-manual.ons.gov.uk/data-visualisation/guidance/axes-and-gridlines
