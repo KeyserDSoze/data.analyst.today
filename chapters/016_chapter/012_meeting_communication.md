@@ -1,94 +1,147 @@
-## 16.11 Comunicare in meeting: il grafico non parla da solo
-Una visualizzazione può essere ottima e venire comunque interpretata male se la comunicazione orale non è strutturata.
+## 16.11 Comunicare in meeting: guidare il ragionamento, non recitare le slide
 
-Nel meeting il tempo è limitato, le persone hanno obiettivi diversi e l'attenzione è frammentata.
+Una buona Decision Communication Pack può essere interpretata male se la comunicazione orale segue una struttura debole.
 
-Per questo l'analista deve saper guidare la lettura.
+Nel meeting il tempo è limitato, l'attenzione è intermittente e ogni stakeholder ascolta con incentivi diversi.
 
-## Una struttura semplice
+Per questo l'analista deve saper rispondere prima a quattro domande:
 
-Quando presentiamo un risultato importante possiamo usare questa sequenza:
+1. **Claim** — che cosa stiamo sostenendo?
+2. **Evidence** — perché lo sosteniamo?
+3. **Caveat** — che cosa potrebbe cambiare la conclusione?
+4. **Ask** — che cosa deve essere deciso oggi?
 
-1. **domanda** — cosa stavamo cercando di capire;
-2. **evidenza** — cosa mostrano i dati;
-3. **interpretazione** — cosa pensiamo significhi;
-4. **incertezza** — cosa non sappiamo ancora;
-5. **decisione** — quale scelta suggerisce l'analisi;
-6. **next step** — cosa misureremo dopo.
+## Answer first
 
-## Caso realistico: il meeting deragliato sul dettaglio
+Una presentazione analyst-first può iniziare con:
 
-Un analyst presenta un'analisi di pricing.
+> “Abbiamo estratto sei mesi di dati, poi segmentato 14 gruppi...”
 
-La prima slide mostra 14 segmenti, 6 metriche e una tabella di elasticità.
+Una presentazione decision-first può iniziare con:
 
-Dopo due minuti il meeting è già bloccato su una domanda marginale:
+> **“Raccomandiamo un pilot del nuovo pricing sul segmento Enterprise EU, non un rollout globale. Il valore centrale è positivo; il guardrail decision-critical è la renewal rate.”**
 
-> “Perché il segmento SMB Nord ha 1.482 clienti e non 1.500?”
+Il metodo non scompare. Viene spostato al livello in cui serve per valutare il claim.
 
-La discussione perde il punto centrale.
+## Caso simulato/composito — Il meeting deragliato sul numero marginale
 
-Il problema non è la domanda del manager.
+Un analyst presenta una decisione di pricing con 14 segmenti e una tabella di elasticità.
 
-È che la presentazione non ha stabilito una gerarchia.
+Dopo due minuti il meeting si blocca su:
 
-Una versione migliore comincia con:
+> “Perché SMB Nord ha 1.482 clienti e non 1.500?”
 
-> “La raccomandazione è testare un aumento del 3% sul segmento Enterprise EU. Il margine potenziale è circa €1,2M annui; il rischio principale è una riduzione della renewal rate superiore a 0,8 punti percentuali.”
+La domanda può essere legittima.
 
-Poi mostra l'evidenza necessaria per sostenere questa conclusione.
+Ma la presentazione non aveva chiarito se quella differenza fosse **decision-relevant**.
 
-## Anticipare le domande critiche
+Una risposta matura non difende il numero per principio:
 
-Prima del meeting chiediamoci:
+> “Verifico il conteggio. Quel segmento pesa il 2,1% della popolazione e non entra nel test proposto, quindi non cambia per ora la recommendation. Se il controllo mostra un problema di classificazione più ampio, fermiamo la decisione.”
+
+La risposta fa due cose:
+
+- accetta il controllo;
+- valuta immediatamente il suo impatto sul Decision Record.
+
+## Classificare le domande in tempo reale
+
+Durante il meeting una domanda può appartenere a quattro categorie.
+
+### A — Answer now
+
+La risposta è disponibile e materialmente utile.
+
+### B — Evidence / appendix
+
+Richiede dettaglio, ma non cambia il claim principale.
+
+> “Ho il breakdown in backup; lo apro.”
+
+### C — Claim-threatening
+
+Mette in discussione una definizione, un'assunzione o un dato centrale.
+
+> “Questo punto può cambiare la recommendation. La considero provisional finché non verifichiamo.”
+
+### D — Follow-up, non decision-blocking
+
+È interessante ma non necessaria per la scelta corrente.
+
+> “La prendiamo come follow-up; non è nella critical path della decisione di oggi.”
+
+Questa classificazione evita sia la difensività sia la dispersione.
+
+## Non difendere la slide: difendere la qualità della decisione
+
+Se emerge un errore, abbiamo tre possibili esiti:
+
+1. **local error, claim unchanged**;
+2. **material uncertainty, claim downgraded**;
+3. **core assumption broken, decision paused**.
+
+L'obiettivo professionale è identificare rapidamente quale dei tre casi stiamo vivendo.
+
+Non serve salvare la presentazione.
+
+Serve salvare la qualità del processo decisionale.
+
+## Rispondere “non lo so” in modo operativo
+
+Debole:
+
+> “Non lo so, devo controllare.”
+
+Meglio:
+
+> “Non ho quella risposta verificata. È importante perché potrebbe cambiare il costo stimato dell'opzione B. Posso verificare il dato finance e aggiornare il Decision Record prima dell'approvazione.”
+
+L'incertezza viene trasformata in:
+
+- impatto;
+- fonte da verificare;
+- owner;
+- conseguenza sulla decisione.
+
+## Anticipare le challenge
+
+Prima del meeting prepariamo un **challenge map**:
 
 - quale numero sarà contestato?
-- quale assunzione è più fragile?
-- quale stakeholder perde qualcosa dalla raccomandazione?
-- quale spiegazione alternativa potrebbe emergere?
-- quale dettaglio deve essere disponibile in backup?
+- qual è l'assunzione più fragile?
+- chi sostiene il costo della recommendation?
+- quale alternativa ha un champion forte?
+- quale caveat potrebbe bloccare la scelta?
+- quale dettaglio deve stare in appendix?
+- cosa faremo se emerge un dato nuovo durante il meeting?
 
-Questo non significa mettere tutto nella slide principale.
+## I primi trenta secondi
 
-Significa essere pronti.
+Il pubblico dovrebbe capire:
 
-## Non difendere il grafico: difendere il ragionamento
+- qual è la decisione;
+- qual è la recommendation;
+- qual è la ragione principale;
+- qual è il caveat più importante.
 
-Se qualcuno trova un errore o un limite, l'obiettivo non è proteggere la presentazione.
+Formula pratica:
 
-L'obiettivo è capire se cambia la decisione.
+> **“Dobbiamo decidere X. Raccomandiamo Y perché A e B. Il rischio che può cambiare la scelta è C. Oggi chiediamo D.”**
 
-Una risposta professionale può essere:
+Non ogni meeting deve essere così rigido, ma questa struttura impedisce di nascondere l'ask dietro l'analisi.
 
-> “Sì, quel segmento contiene una riclassificazione che non avevamo isolato. Rifaccio quel confronto. La conclusione principale per ora resta invariata perché quel gruppo pesa il 2,1% del totale.”
+## Meeting notes e Decision Record
 
-oppure:
+Dopo la discussione aggiorniamo:
 
-> “Questo punto cambia l'assunzione centrale. Non considero più la raccomandazione pronta per una decisione.”
+- scelta effettiva;
+- alternative scartate;
+- nuove assunzioni emerse;
+- owner;
+- guardrail;
+- follow-up;
+- data di review.
 
-## Il linguaggio dell'incertezza
+La comunicazione non termina quando finisce la slide. Deve tornare nel sistema di memoria decisionale del Capitolo 15.
 
-Evitiamo due estremi:
-
-- certezza artificiale: “succederà sicuramente”;
-- vaghezza inutile: “potrebbe essere qualsiasi cosa”.
-
-Meglio dire:
-
-- “l'evidenza è coerente con...”;
-- “la stima centrale è..., con un intervallo...”;
-- “questa conclusione è robusta a...”;
-- “il risultato dipende soprattutto da...”;
-- “non abbiamo ancora identificato causalmente...”.
-
-## La regola dei primi trenta secondi
-
-Chi ascolta dovrebbe capire rapidamente:
-
-- cosa è successo;
-- perché conta;
-- cosa proponiamo di fare.
-
-I dettagli vengono dopo.
-
-**Una buona comunicazione analitica non comprime il rigore. Ordina il rigore in modo che possa essere usato.**
+> **Una buona comunicazione orale non elimina le domande difficili. Fa sì che le domande difficili migliorino la decisione invece di far deragliare la conversazione.**
