@@ -1,81 +1,150 @@
-## 9.13 Sequential testing: guardare i risultati durante il test senza ingannarsi
+## 9.13 Sequential testing: progettare una decisione che può arrivare prima
 
-Nella pratica, quasi nessun team aspetta passivamente la fine di un esperimento senza guardare i risultati. Il problema è che osservare continuamente il p-value e fermarsi appena scende sotto 0,05 aumenta la probabilità di falsi positivi.
+La sezione 9.6 ha fissato il problema del peeking in un fixed-horizon test.
 
-Questo comportamento è noto come **peeking**: il team controlla i risultati ogni giorno, o ogni ora, e interrompe il test nel momento più favorevole.
+Qui affrontiamo il caso diverso:
 
-### Caso simulato — StreamNow
+> **vogliamo intenzionalmente poter prendere una decisione a più checkpoint intermedi.**
 
-StreamNow testa una nuova pagina di pricing.
+In questo caso non dobbiamo fingere di avere una singola analisi finale.
 
-Dopo 3 giorni:
+Dobbiamo progettare un **sequential experiment**.
 
-- control conversion: 6,2%
-- treatment conversion: 6,8%
-- p-value: 0,041
+### Il principio
 
-Il product manager propone di fermare immediatamente il test e lanciare la nuova pagina.
+Una procedura sequenziale definisce prima:
 
-Il team data decide invece di continuare secondo il piano prestabilito.
+- quando possiamo valutare i dati;
+- quali soglie valgono a ogni look;
+- come viene controllato il rischio di falso positivo;
+- quali regole consentono successo, futility o stop per danno.
 
-Dopo 14 giorni:
+Non esiste una sola metodologia sequenziale.
 
-- control conversion: 6,31%
-- treatment conversion: 6,38%
-- differenza: +0,07 punti percentuali
-- risultato non statisticamente significativo
+Possiamo incontrare, tra le altre:
 
-La vittoria iniziale era rumore.
+- group sequential designs;
+- alpha-spending approaches;
+- sempre-validi confidence sequences / evidence processes;
+- metodi bayesiani con decision threshold espliciti.
 
-### Perché succede
+Per il Data Analyst il punto non è scegliere un metodo per moda.
 
-Ogni volta che controlliamo il test e applichiamo una regola del tipo "fermati se p < 0,05", stiamo aggiungendo un'altra opportunità di fermarci su una fluttuazione casuale favorevole.
+È garantire coerenza tra **frequenza delle decisioni e inferenza**.
 
-Il problema non è guardare i dati in sé. Il problema è applicare una regola di decisione che non tiene conto dei controlli ripetuti.
+### Caso simulato/composito — Pricing page ad alto traffico
 
-### Due strategie corrette
+StreamNow testa una nuova pricing page.
 
-#### 1. Fixed horizon
+Il business vorrebbe una decisione il prima possibile perché ogni settimana di test ha costo opportunità elevato.
 
-Prima del test si definiscono:
+Piano fixed-horizon precedente:
 
-- durata;
-- sample size;
-- MDE;
-- metriche;
-- regola finale di decisione.
+```text
+14 giorni
+1 final read
+```
 
-Poi si analizza formalmente il risultato alla fine della finestra.
+Nuovo piano sequenziale:
 
-#### 2. Sequential testing
+```text
+checkpoint: D4, D7, D10, D14
+success boundary: definita dal metodo scelto
+futility: possibile solo dai checkpoint previsti
+safety: continuo e separato
+max duration: 14 giorni
+```
 
-Si usa una metodologia statistica progettata per consentire analisi intermedie controllando comunque l'errore di tipo I.
+Il team non dice più:
 
-Il concetto importante per un Data Analyst non è memorizzare tutte le formule, ma capire che:
+> “Abbiamo guardato al D4 e per fortuna era significativo.”
 
-> **se il processo decisionale cambia, deve cambiare anche il metodo statistico.**
+Dice:
 
-### Quando fermarsi prima per motivi di sicurezza
+> “D4 era un decision point previsto e la soglia usata è quella compatibile con il sequential design.”
 
-Esiste una differenza importante tra fermare un test perché il risultato business sembra positivo e fermarlo perché una guardrail metric indica un danno serio.
+### Sequential non significa decisione continua su ogni evento
 
-Se durante un esperimento emergono:
+Più frequente non significa necessariamente migliore.
 
-- crash rate molto più alto;
-- errori di pagamento;
-- perdita dati;
-- rischio sicurezza;
-- danni finanziari evidenti;
+Controllare ogni minuto può:
 
-il test può e deve essere fermato secondo regole operative prestabilite.
+- aumentare complessità;
+- rendere governance poco trasparente;
+- incoraggiare decisioni troppo reattive;
+- avere scarso valore se l'outcome matura lentamente.
 
-Questo non è p-hacking. È risk management.
+Se una metrica richiede sette giorni di maturity, un checkpoint ogni ora è semanticamente inutile.
 
-### Regola pratica
+### Efficacy, futility e safety
 
-Prima di iniziare un esperimento, il team dovrebbe scrivere esplicitamente:
+È utile distinguere tre ragioni di stop.
 
-- quando è consentito guardare i risultati;
-- quali criteri consentono uno stop anticipato;
-- quali metriche possono causare un rollback immediato;
-- quale metodo statistico supporta il processo scelto.
+**Efficacy**
+
+L'evidenza ha superato la soglia prevista per una decisione positiva.
+
+**Futility**
+
+Il design conclude che continuare difficilmente produrrà l'informazione decisionale desiderata secondo la regola stabilita.
+
+**Safety / harm**
+
+Un guardrail grave richiede intervento operativo.
+
+Safety può avere logica diversa e molto più rapida rispetto all'inferenza sulla primary.
+
+### Optional stopping deve essere parte del design
+
+La flessibilità è utile solo se documentata.
+
+Un team non dovrebbe scegliere dopo il fatto se interpretare il test come:
+
+- fixed horizon;
+- sequential;
+- “abbiamo aspettato finché l'effetto si è stabilizzato”.
+
+L'Experiment Contract deve fissare il regime prima del lancio.
+
+### Durata massima resta importante
+
+Anche un sequential design deve avere una domanda su:
+
+- maximum sample;
+- maximum duration;
+- practical stopping point.
+
+Se non raggiungiamo nessuna boundary entro la fine, il risultato può essere **inconclusive**.
+
+“Inconclusivo” è un esito legittimo.
+
+### Sequential e novelty
+
+Raggiungere una success boundary molto presto non risolve automaticamente i problemi di:
+
+- novelty;
+- learning;
+- weekend mix;
+- long-term outcome.
+
+Possiamo avere una regola statistica che autorizza una conclusione sul **short-term effect**, ma una decisione di ship può richiedere comunque una minimum exposure age o guardrail maturi.
+
+Il piano statistico e il piano decisionale devono essere compatibili.
+
+### Sequential contract
+
+```text
+Why sequential instead of fixed horizon?
+Maximum duration/sample:
+Checkpoint schedule:
+Method / boundary framework:
+Efficacy rule:
+Futility rule:
+Safety rule:
+Outcome maturity at each checkpoint:
+Minimum calendar/exposure duration:
+What happens if no boundary is crossed?
+Who authorizes the decision?
+```
+
+> **Sequential testing non è guardare più spesso. È progettare in anticipo una procedura in cui guardare più volte è parte della matematica e della governance.**
