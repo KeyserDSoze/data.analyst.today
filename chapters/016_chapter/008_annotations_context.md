@@ -1,99 +1,158 @@
-## 16.7 Annotazioni e contesto: aiutare il lettore a vedere ciò che conta
-Un grafico non dovrebbe costringere chi lo legge a ricostruire mentalmente il contesto.
+## 16.7 Annotazioni e Context Contract: rendere visibile ciò che i segni non contengono
 
-Se una linea cambia direzione perché è stato lanciato un nuovo pricing, se un picco coincide con una campagna, se un calo deriva da un cambio di definizione o se una serie contiene un'interruzione metodologica, quel contesto deve essere visibile.
+Un punto, una barra o una linea non contengono da soli tutto ciò che serve per interpretarli.
 
-Le annotazioni servono proprio a questo: collegare il dato al fenomeno.
+Mancano spesso informazioni come:
 
-## Il titolo non deve essere neutro per forza
+- baseline;
+- target;
+- denominatore;
+- definizione della metrica;
+- data di aggiornamento;
+- cambio metodologico;
+- rollout;
+- shock esterno;
+- regime operativo.
 
-Un titolo come:
+Se una di queste informazioni può cambiare l'interpretazione, deve entrare nel **Context Contract** della visualizzazione.
 
-> Revenue mensile 2025-2026
+## Il Context Contract
 
-è corretto, ma spesso poco utile.
+Per un visual decision-critical chiediamo:
 
-Un titolo come:
+| Campo | Domanda |
+|---|---|
+| Metric definition | Che cosa misura esattamente? |
+| Population / denominator | Su chi o su cosa è calcolata? |
+| Time window | Quale periodo rappresenta? |
+| Baseline | Rispetto a cosa giudichiamo il valore? |
+| Target / threshold | Quale soglia ha significato operativo? |
+| Freshness | Fino a quando il dato è aggiornato? |
+| Maturity | È provisional, reconciled o final? |
+| Method break | È cambiata definizione, tracking o sistema? |
+| Event annotation | Quali eventi osservabili aiutano a leggere il pattern? |
 
-> La revenue è tornata sopra il trend pre-calo dopo il rilascio di giugno
+Non tutti i campi devono essere stampati in grande. Devono però essere disponibili al livello appropriato della Decision Communication Pack.
 
-aiuta il lettore a capire immediatamente la tesi del grafico.
-
-Questo non significa manipolare.
-
-Significa rendere esplicito ciò che il grafico mostra, purché il titolo sia sostenuto dall'evidenza.
-
-L'Office for National Statistics raccomanda di progettare titolo, scala, testo e annotazioni in funzione del messaggio principale e del confronto che aiuta a interpretarlo.
-
-Fonte: https://service-manual.ons.gov.uk/data-visualisation/guidance/principles
-
-## Caso realistico: la linea che sembrava raccontare una crisi
-
-Una piattaforma SaaS mostra il numero di utenti attivi giornalieri.
-
-A metà aprile la serie scende improvvisamente del 16%.
-
-Il grafico finisce in un executive report con il titolo:
-
-> Engagement in forte calo
-
-Il problema è che il 14 aprile è cambiata la definizione di `active_user`: prima bastava aprire l'app; dopo il cambio serviva completare almeno un'azione significativa.
-
-Il dato non è necessariamente sbagliato.
-
-È la comparabilità temporale a essere cambiata.
-
-Una semplice annotazione verticale:
-
-> 14 aprile — nuova definizione di active user
-
-cambia completamente la lettura.
-
-## Annotare eventi, non spiegazioni speculative
+## Annotare eventi, non inventare spiegazioni
 
 È corretto annotare:
 
-- una release;
-- una campagna;
-- un cambio di prezzo;
-- una modifica di tracking;
-- un'interruzione del servizio;
-- una variazione normativa;
-- una migrazione di sistema.
+> “14 aprile — release 6.12 distribuita al 65% degli utenti.”
 
-È più pericoloso annotare:
+È diverso da:
 
-> “Il calo è causato dalla nuova release”
+> “14 aprile — la release causa il calo.”
 
-se abbiamo solo una coincidenza temporale.
+La prima frase documenta un evento.
 
-Meglio:
+La seconda promuove una coincidenza a spiegazione causale.
 
-> “Nuova release distribuita al 65% degli utenti”
+L'annotazione deve rispettare lo stesso claim level del testo.
 
-L'annotazione deve distinguere fatti osservati e interpretazioni.
+## Caso simulato/composito — Il crollo creato da una definizione
 
-## Contesto di confronto
+Una piattaforma SaaS mostra i daily active users.
 
-Una variazione del 12% può sembrare enorme o irrilevante a seconda del confronto.
+Il 14 aprile la serie scende del 16%.
 
-Serve chiedere:
+Il titolo iniziale è:
 
-- rispetto a cosa?
-- su quale periodo?
-- rispetto a quale baseline?
-- il fenomeno è stagionale?
-- esiste un target?
-- esiste un benchmark?
+> **Engagement in forte calo**
 
-Un buon grafico spesso contiene almeno uno di questi riferimenti.
+Ma quel giorno cambia la definizione di `active_user`:
 
-## La regola pratica
+- prima: apertura dell'app;
+- dopo: almeno un'azione significativa.
 
-Prima di pubblicare un grafico chiediamoci:
+Il dato post-14 aprile è valido.
 
-> “Quale informazione non è nei punti o nelle barre, ma è necessaria per interpretarli correttamente?”
+Quello pre-14 aprile è valido secondo la vecchia definizione.
 
-Quella informazione è candidata a diventare titolo, sottotitolo, nota o annotazione.
+È la **comparabilità della serie** a essersi rotta.
 
-**Il contesto non è decorazione. È parte del dato interpretato.**
+Una linea verticale e una nota:
+
+> “14 aprile — nuova definizione di active user; i livelli pre/post non sono direttamente comparabili”
+
+impediscono una lettura falsa.
+
+## Baseline: un numero senza riferimento è quasi sempre incompleto
+
+`Conversion = 3,8%` non dice ancora se dobbiamo preoccuparci.
+
+Possibili riferimenti:
+
+- target: 4,2%;
+- settimana precedente: 3,7%;
+- stesso periodo anno precedente: 4,0%;
+- intervallo storico normale: 3,5–4,1%;
+- gruppo di controllo: 3,9%.
+
+La baseline deve essere scelta perché risponde alla decision question, non perché produce il contrasto più interessante.
+
+## Denominatore: la nota che può cambiare la storia
+
+> “Il 90% dei clienti è soddisfatto.”
+
+La frase cambia significato se scopriamo che:
+
+- ha risposto il 12% degli invitati;
+- il survey è apparso solo dopo un acquisto completato;
+- i ticket aperti sono esclusi;
+- `satisfied` include il punteggio neutrale.
+
+Se il denominatore o l'eligibility sono materialmente importanti, devono essere leggibili senza scavare in un data dictionary.
+
+## Freshness e provisionalità
+
+Una dashboard alle 08:00 può mostrare:
+
+- ordini completi fino alle 07:45;
+- pagamenti fino alle 07:30;
+- refund D+2;
+- logistics cost D+1.
+
+Un contribution margin “di oggi” costruito con queste latenze non è un numero finalizzato.
+
+Il Context Contract dovrebbe mostrare almeno:
+
+> **Data as of 07:45 — margin provisional; refund e logistics reconciliation D+2.**
+
+Il lettore può così decidere se il dato è abbastanza maturo per l'azione richiesta.
+
+## Titoli: conclusivi ma non speculativi
+
+Titolo debole:
+
+> “DAU 2026”
+
+Titolo utile:
+
+> “I DAU post-14 aprile non sono comparabili con lo storico dopo il cambio di definizione”
+
+Titolo eccessivo:
+
+> “La nuova definizione ha ridotto l'engagement”
+
+La regola è:
+
+> **Il titolo può guidare l'attenzione; non può aggiungere evidenza che il grafico non possiede.**
+
+## Provenance vicino al punto d'uso
+
+Per un elemento decision-critical rendiamo facile trovare:
+
+- fonte;
+- metrica/versione;
+- timestamp;
+- eventuale nota metodologica;
+- link all'appendix o al Decision Record.
+
+Non serve trasformare ogni slide in documentazione tecnica. Serve evitare che il contesto necessario venga separato dall'evidenza al punto da non arrivare mai al lettore.
+
+> **Il contesto non è decorazione del grafico. È parte del significato che il grafico pretende di comunicare.**
+
+### Fonte
+
+- Office for National Statistics, *Data visualisation guidance*: https://service-manual.ons.gov.uk/data-visualisation
