@@ -1,14 +1,14 @@
-## 11.11 Many-to-many e bridge tables: quando il join moltiplica il mondo
+## 11.11 Many-to-many e bridge tables: quando una relazione richiede una regola di allocazione
 
-Molte relazioni di business non sono uno-a-molti.
+Molte relazioni di business non sono one-to-many.
 
-Un ordine può avere più promozioni. Un cliente può appartenere a più segmenti. Un medico può lavorare in più strutture. Un prodotto può appartenere a più collezioni. Un contratto può coinvolgere più account manager.
+Un ordine può usare più promozioni. Un cliente può appartenere a più segmenti. Un medico può lavorare in più strutture. Un contratto può coinvolgere più account manager. Un prodotto può comparire in più collezioni.
 
-Quando due tabelle contengono entrambe più righe per la stessa chiave, un join diretto può creare una moltiplicazione combinatoria.
+Il problema non è che la relazione sia many-to-many. Il problema nasce quando la trattiamo come se ogni associazione potesse ricevere l'intero valore della fact.
 
-### Caso realistico: marketing attribution da €3,2M a €5,7M
+### Caso simulato/composito — UrbanPeak e la revenue attribuita che supera la revenue reale
 
-**UrbanPeak**, retailer omnicanale, vuole attribuire il fatturato alle campagne marketing.
+UrbanPeak vuole analizzare il fatturato associato ai touchpoint marketing.
 
 Ha:
 
@@ -18,9 +18,10 @@ order_id | revenue
 O1       | 100
 ```
 
-E una tabella touchpoint:
+E:
 
 ```text
+order_touchpoints
 order_id | campaign
 O1       | Paid Search
 O1       | Email
@@ -38,19 +39,17 @@ JOIN order_touchpoints USING(order_id)
 GROUP BY 1;
 ```
 
-attribuisce €100 a ciascuna campagna.
+attribuisce €100 a ogni campagna.
 
-Il totale attribuito diventa €300, anche se l'ordine vale €100.
+Il totale attribuito diventa €300 per un ordine che vale €100.
 
-A scala mensile, UrbanPeak vede €5,7M di revenue attribuita contro €3,2M di revenue effettiva.
+A scala mensile, una dashboard potrebbe mostrare €5,7M di revenue attribuita contro €3,2M di revenue effettiva.
 
-Il join è tecnicamente corretto. Il modello di allocazione no.
+La join condition è valida. È il **modello di allocazione** a non essere definito.
 
-### La bridge table
+### La bridge table rende esplicita la relazione
 
-Una bridge table rappresenta esplicitamente una relazione many-to-many.
-
-Per esempio:
+Una bridge può contenere:
 
 ```text
 bridge_order_campaign
@@ -60,75 +59,127 @@ O1       | C22         | 0.30
 O1       | C35         | 0.20
 ```
 
-La revenue attribuita può allora essere:
+La misura allocata diventa:
 
 ```sql
 SUM(order_revenue * allocation_weight)
 ```
 
-A condizione che, per ogni ordine:
+con un invariante verificabile:
 
 ```text
-SUM(allocation_weight) = 1
+per ogni order_id, SUM(allocation_weight) = 1
 ```
 
-### Il peso non è un dettaglio tecnico
+Ma anche questo non risolve automaticamente il problema analitico.
 
-Come distribuire il valore?
+### Il peso è una scelta di business
 
-- equally weighted;
+Possibili policy:
+
+- equal split;
 - first touch;
 - last touch;
 - position based;
-- modello algoritmico;
-- nessuna allocazione, mantenendo semplicemente la relazione.
+- quota contrattuale;
+- tempo dedicato;
+- superficie occupata;
+- nessuna allocazione, se vogliamo soltanto rappresentare la relazione.
 
-La bridge table non decide il significato. Lo rende esplicito.
+La bridge table non scopre quale sia la policy corretta. Fa una cosa più importante: **impedisce che la policy resti implicita nel join**.
 
-### Fact-to-fact join: un altro pericolo
+### Relazione e allocazione non sono la stessa cosa
 
-Supponiamo di avere:
+Supponiamo che un ordine abbia tre coupon applicati.
+
+Potremmo voler sapere:
+
+> quali coupon compaiono negli ordini ad alto valore?
+
+In questo caso può bastare la relazione many-to-many, senza dividere la revenue.
+
+Se invece chiediamo:
+
+> quanta revenue attribuiamo a ciascun coupon?
+
+serve una regola di allocazione.
+
+Sono domande diverse.
+
+### Fact-to-fact join: il moltiplicatore più facile da ignorare
+
+Abbiamo:
 
 - `fact_orders`: una riga per ordine;
 - `fact_support_tickets`: una riga per ticket.
 
-Un cliente può avere 8 ordini e 5 ticket.
+Un account ha 8 ordini e 5 ticket.
 
-Se uniamo entrambe direttamente per `customer_id`, otteniamo fino a 40 combinazioni per quel cliente.
+Un join diretto per `account_id` può produrre 40 righe.
 
-Revenue e ticket possono essere entrambi moltiplicati.
+A quel punto:
 
-Una strategia spesso più sicura è aggregare prima ciascuna fact al grain desiderato:
+- revenue viene ripetuta per ogni ticket;
+- ticket vengono ripetuti per ogni ordine;
+- qualsiasi correlazione costruita su quel dataset viene implicitamente pesata dalla molteplicità.
+
+Se la domanda è a livello account, una strategia più coerente è:
 
 ```sql
-WITH order_by_customer AS (...),
-ticket_by_customer AS (...)
+WITH orders_by_account AS (...),
+tickets_by_account AS (...)
 SELECT ...
-FROM order_by_customer o
-JOIN ticket_by_customer t
-  ON o.customer_id = t.customer_id;
+FROM orders_by_account o
+JOIN tickets_by_account t
+  ON o.account_id = t.account_id;
 ```
 
-### Caso realistico: il supporto che sembrava causare più acquisti
+Il principio non è “aggregare sempre prima”. È:
 
-Un SaaS B2B trova una correlazione impressionante tra numero di ticket e fatturato.
+> **portare le fonti allo stesso grain analitico prima di confrontare misure che devono vivere allo stesso livello.**
 
-Dopo il join, i clienti con molti ordini e molti ticket generano molte più righe e dominano il dataset.
+### Caso simulato/composito — il supporto che sembrava aumentare il fatturato
 
-La relazione apparente è in parte un artefatto del grain.
+Un SaaS B2B trova una relazione molto forte tra ticket aperti e revenue.
 
-Dopo aver aggregato correttamente a livello account, la correlazione scende drasticamente.
+Nel dataset ottenuto con una join fact-to-fact, gli account con molti ordini e molti ticket producono decine di righe e dominano la stima.
 
-### Checklist per i many-to-many
+Dopo aver costruito una riga per account-periodo, la relazione si riduce drasticamente.
 
-Prima di un join chiedere:
+Il problema non era un algoritmo sofisticato. Era il peso implicito introdotto dal join.
 
-- la chiave è unica a sinistra?
-- è unica a destra?
-- quante righe ci aspettiamo dopo il join?
-- esiste una bridge table?
-- serve un peso di allocazione?
-- stiamo unendo due fact table?
-- dobbiamo aggregare prima del join?
+### Campo del contract: relationship semantics
 
-**Una relazione many-to-many non è un errore di database. Diventa un errore analitico quando viene trattata come se fosse one-to-many.**
+Per una relazione many-to-many, l'Analytical Data Contract dovrebbe dichiarare:
+
+```text
+left grain:
+right grain:
+relationship grain:
+bridge key:
+allocation required? sì/no
+allocation rule:
+weight invariant:
+unallocated cases:
+expected row multiplier:
+```
+
+Questo rende testabili domande come:
+
+- i pesi sommano a 1?
+- esistono associazioni senza parent?
+- la join produce il numero di righe atteso?
+- il totale allocato si riconcilia con il totale originale?
+
+### Regola operativa
+
+Prima di una many-to-many chiedere:
+
+1. vogliamo rappresentare una relazione o allocare un valore?
+2. qual è il grain della bridge?
+3. una fact viene ripetuta più volte?
+4. il totale deve conservarsi dopo l'allocazione?
+5. quale policy business determina il peso?
+6. la stessa policy viene usata da tutti i consumer?
+
+> **Una many-to-many non è un'anomalia da eliminare. È una relazione che richiede semantica esplicita prima che una misura possa attraversarla senza moltiplicarsi.**
