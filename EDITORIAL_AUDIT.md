@@ -7,23 +7,23 @@ Questo documento è la dashboard editoriale del manoscritto.
 ## 1. Stato attuale
 
 - Corpo principale completo: **Capitoli 0–19**.
-- Review completata: **Capitoli 0–16**.
-- Da revisionare: **Capitoli 17–19**.
+- Review completata: **Capitoli 0–17**.
+- Da revisionare: **Capitoli 18–19**.
 - Markdown è la source of truth.
 - CI attiva su `main` con lint + build Markdown/DOCX/PDF.
 - Casi pubblici e casi simulati/compositi devono essere distinti esplicitamente.
 
 ### Ultima build validata
 
-Dopo la review del Capitolo 16:
+Dopo la review del Capitolo 17:
 
 - **20 capitoli**;
 - **321 file Markdown**;
-- **230.523 parole stimate**;
-- **1.699.234 caratteri**;
-- **177 URL esterni distinti**;
+- **238.362 parole stimate**;
+- **1.758.682 caratteri**;
+- **181 URL esterni distinti**;
 - **8 file con LaTeX**;
-- **1.051 pagine PDF**;
+- **1.093 pagine PDF**;
 - build Markdown, DOCX e PDF: **SUCCESS**.
 
 Il page count non è un obiettivo da massimizzare. La priorità è la densità di valore per pagina.
@@ -62,7 +62,7 @@ Può usare nomi, numeri e circostanze costruiti per la didattica, ma deve essere
 
 La review privilegia standard/governi, documentazione ufficiale, letteratura accademica riconosciuta e fonti primarie per i casi pubblici.
 
-Prima della release resta un audit globale dei **177 URL** per link, redirect, supporto del claim e uniformità delle note.
+Prima della release resta un audit globale dei **181 URL** per link, redirect, supporto del claim e uniformità delle note.
 
 ## 4. Stato capitolo per capitolo
 
@@ -85,7 +85,7 @@ Prima della release resta un audit globale dei **177 URL** per link, redirect, s
 | 14 — AI-assisted analytics | **Revisionato** | **AI Analysis Control Sheet**. |
 | 15 — Insight e decisione | **Revisionato** | **Decision Record**. |
 | 16 — Storytelling/dashboard | **Revisionato** | **Decision Communication Pack**. |
-| 17 — Casi end-to-end | **Da revisionare** | Capstone: selezionare e integrare i deliverable necessari. |
+| 17 — Casi end-to-end | **Revisionato** | **Capstone Routing Canvas / Capstone Case File**. |
 | 18 — Sistema analitico che scala | **Da revisionare** | Operating model, reliability, data products, governance. |
 | 19 — Data Analyst 2026–2035 | **Da revisionare** | Skill, agent management, deskilling, carriera. |
 
@@ -108,6 +108,8 @@ Analytical Brief
 → Decision Record
 → Decision Communication Pack
 ```
+
+Il Capitolo 17 non aggiunge un deliverable tecnico obbligatorio alla catena: introduce il **Capstone Routing Canvas**, che serve a selezionare quali artefatti attivare in base a decisione, failure cost, claim necessario, readiness e stop rule.
 
 Non ogni analisi richiede tutti gli artefatti. Sono un vocabolario operativo per rischi differenti.
 
@@ -141,7 +143,7 @@ Non ogni analisi richiede tutti gli artefatti. Sono un vocabolario operativo per
 
 - **14:** quale claim ha diritto di uscire dal workflow;
 - **15:** quale alternativa scegliere e perché;
-- **16:** come comprimere quel Decision Record senza rafforzare il claim, nascondere l'incertezza o perdere le alternative.
+- **16:** come comprimere il Decision Record senza rafforzare il claim, nascondere l'incertezza o perdere le alternative.
 
 ```text
 AI Analysis Control Sheet
@@ -152,18 +154,21 @@ AI Analysis Control Sheet
 ### 16 / 17 — comunicazione vs capstone
 
 - **16:** progetta la superficie con cui la decisione viene capita;
-- **17:** mette insieme framing, dati, metodi, decisione e comunicazione in problemi end-to-end senza dire in anticipo quale tecnica usare.
+- **17:** seleziona e integra soltanto le evidenze necessarie in problemi end-to-end senza dire in anticipo quale tecnica usare.
+
+### 17 / 18 — singola decisione vs sistema ricorrente
+
+- **17:** come risolvere bene una decisione complessa una volta;
+- **18:** quando e come quella capacità deve diventare un sistema ripetibile con ownership, reliability, change management e cost control.
 
 ### 13 / 18 — workflow locale vs operating model
 
 - **13:** scelta/migrazione del singolo workflow;
 - **18:** standard e ownership organizzativi che permettono di scalare.
 
-## 7. Note review Capitoli 15–16
+## 7. Note review Capitoli 15–17
 
-### Capitolo 15
-
-Il **Decision Record** usa:
+### Capitolo 15 — Decision Record
 
 ```text
 decision
@@ -183,9 +188,7 @@ decision
 
 Punti chiave: alternative reali, ACT/PILOT/WAIT/BUY INFORMATION/ABANDON, evidence threshold distinto da switching threshold, robustness of ranking, pre-mortem, learning contract e distinzione decision/execution/outcome quality.
 
-### Capitolo 16
-
-Il centro è la **Decision Communication Pack**:
+### Capitolo 16 — Decision Communication Pack
 
 ```text
 Decision Record
@@ -204,25 +207,69 @@ Decision Record
 → provenance
 ```
 
+Punti chiave: evidence promotion, ruoli `orient / compare / diagnose / decide / verify`, dashboard per cadence, salience/precision budget, uncertainty rispetto allo switching value, Visual Integrity Gate, accessibility come redundant encoding e Communication Readiness Gate.
+
+### Capitolo 17 — Capstone Routing Canvas
+
+Il capitolo è stato trasformato da catalogo di tecniche a laboratorio di **evidence routing**.
+
+Schema canonico:
+
+```text
+messy question
+→ decision
+→ failure cost
+→ claim needed
+→ readiness
+→ competing explanations
+→ method gate
+→ evidence
+→ alternatives
+→ uncertainty
+→ decision
+→ communication
+→ outcome review
+```
+
+Il **Capstone Routing Canvas** usa:
+
+```text
+decision
+→ failure cost
+→ claim needed
+→ readiness
+→ necessary deliverables
+→ stop rule
+```
+
 Concetti rafforzati:
 
-- discovery artifacts vs decision artifacts ed **evidence promotion**;
-- ruoli `orient / compare / diagnose / decide / verify`;
-- dashboard operative, diagnostiche e decisionali separate per cadence;
-- salience budget e precision budget;
-- uncertainty comunicata rispetto allo switching value;
-- executive summary derivato dal Decision Record;
-- annotazioni di eventi distinte da spiegazioni causali;
-- Visual Integrity Gate: scale, periodi, denominatori, dual axis, cumulative/run-rate, opposite framing;
-- table-first per lookup/audit e small multiples per pattern comparabili;
-- dashboard anti-pattern inclusi KPI wall, slicer cemetery, traffic-light theater, hover-only truth e dashboard-as-database;
-- meeting communication: claim/evidence/caveat/ask e classificazione delle challenge;
-- accessibilità come **redundant encoding**, con WCAG 2.2, alt text, keyboard, contrasto e alternative tabellari/testuali;
-- Communication Readiness Gate: **READY / READY WITH CAVEATS / NOT READY**.
+- il titolo del caso non suggerisce più automaticamente la tecnica;
+- **method gate**: ogni tecnica deve chiudere un rischio decisionale esplicito;
+- deliverable necessari vs deliverable volutamente saltati;
+- Evidence Ledger: `observed / inferred / still unknown`;
+- stop state: `DECIDE / PILOT / WAIT FOR X / BUY INFORMATION / NO ACTION / NOT IDENTIFIED`;
+- prediction ≠ persuadibilità ≠ economics nel churn;
+- elasticity estimate ≠ pricing policy;
+- attribution ≠ incrementality ≠ marginal ROI;
+- forecast accuracy ≠ decision loss;
+- anomaly ≠ incident root cause e ruolo del semantic drift;
+- experiment significance ≠ experiment trustworthiness ≠ rollout policy;
+- unit economics richiede denominatore e cost boundary coerenti;
+- outcome review separata da decision quality ex ante;
+- Capstone Rubric su framing, semantica, hypothesis discipline, method selection, uncertainty, economics, stop rule, communication e outcome review.
 
-Il caso finale NorthRiver Logistics è simulato/composito e sostituisce il precedente caso margin/promotion per evitare sovrapposizione con il Capitolo 15.
+Casi simulati/compositi dichiarati esplicitamente: Orion Living, NorthPeak, Vectora, Helio Market, Aster Components, PulseNote, Arcadia Parcel, VelaPay, Atlas Streaming, NovaCompute e OrbisMarket.
 
-Fonti principali: W3C WCAG 2.2, Government Analysis Function, Office for National Statistics e Microsoft Learn.
+Casi/fonti pubbliche documentate usate con claim limitato alla fonte:
+
+- Microsoft Customer Insights per transactional churn prediction;
+- Google Cloud Hoff e Freshworks per integrazione marketing/attribution/ROI;
+- BMW Group su AWS per shortage, semiconductor demand e supply allocation;
+- Coca-Cola Andina su AWS per inventory/distribution/delivery visibility;
+- AWS Cloud Financial Management per driver-based forecasting;
+- Microsoft Research per Sample Ratio Mismatch;
+- NXP su AWS per unit-cost analysis e FinOps.
 
 ## 8. Arco complessivo
 
@@ -242,14 +289,14 @@ mentalità
 → AI
 → decisione
 → comunicazione
-→ casi completi
+→ capstone
 → scala
 → futuro
 ```
 
 ## 9. Lavori ancora necessari prima della release
 
-- review Capitoli 17–19;
+- review Capitoli 18–19;
 - audit link/fonti globale;
 - formula rendering;
 - frontespizio, copyright/licenza, autore e bio;
@@ -271,19 +318,26 @@ Poi controllo manuale di indice, formule, tabelle, codice, fonti, casi reali/com
 
 ## 11. Prossimo blocco
 
-La review continua dal **Capitolo 17 — Casi end-to-end di Data Analysis**.
+La review continua dal **Capitolo 18 — Costruire un sistema analitico che scala**.
 
 Direzione editoriale:
 
 ```text
-messy business question
-→ risk/decision classification
-→ choose only necessary deliverables
-→ evidence production
-→ competing explanations
-→ decision
-→ communication
-→ measurement / learning
+recurring decision
+→ criticality
+→ product boundary
+→ metric/data ownership
+→ reliability target
+→ test/observability
+→ change management
+→ incident/recovery
+→ self-service contract
+→ cost-to-serve
+→ adoption
+→ operating model
+→ review / retirement
 ```
 
-Il Capitolo 17 deve diventare un **capstone**, non un catalogo di tecniche. Il lettore non deve sapere dal titolo del caso se serviranno forecasting, causalità, experiment, predictive modeling o soltanto una buona decomposition.
+Deliverable previsto: **Analytics Operating Contract**.
+
+Il Capitolo 18 non deve ripetere l'architettura del Capitolo 12, la tool selection del 13 o l'AI governance del 14. Deve spiegare come una capacità analitica ricorrente diventa un prodotto operativo affidabile con ownership, SLO, change control, incident management, economics e criteri di retirement.
