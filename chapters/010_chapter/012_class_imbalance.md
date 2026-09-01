@@ -1,116 +1,129 @@
-## 10.12 Class imbalance: quando l'accuracy racconta quasi niente
+## 10.12 Class imbalance: il problema non è avere pochi positivi, ma decidere con un base rate raro
 
-Molti problemi aziendali importanti riguardano eventi rari:
+Frode, guasto critico, default e incidenti di sicurezza hanno spesso una caratteristica comune: l'evento positivo è raro.
 
-- frodi;
-- default;
-- churn di clienti premium;
-- guasti critici;
-- incidenti di sicurezza;
-- anomalie operative.
+Questo non rende automaticamente il dataset "sbagliato". È spesso il mondo reale.
 
-In questi casi la classe positiva può rappresentare una frazione minima delle osservazioni.
+Il problema è che molte metriche e intuizioni cambiano radicalmente quando il base rate è basso.
 
-### Caso simulato: SafePay e il modello con 99,4% di accuracy
+### Caso simulato/composito — SafePay
 
-SafePay gestisce pagamenti digitali. Solo lo 0,6% delle transazioni è fraudolento.
+SafePay processa 1.000.000 di transazioni al giorno. Lo 0,6% è frode confermata:
 
-Un modello che predice sempre “non frode” ottiene:
+- positivi: 6.000;
+- negativi: 994.000.
 
-**accuracy = 99,4%**
+Un modello che predice sempre "non frode" ottiene accuracy 99,4%.
 
-Tecnicamente il numero è corretto.
+Il risultato non è un paradosso. È la dimostrazione che l'accuracy risponde a una domanda poco utile in questo contesto.
 
-Operativamente il modello è inutile.
+La sezione 10.7 ha già introdotto precision, recall e PR-AUC. Qui il punto è capire che **prevalenza, training strategy e operating capacity devono rimanere coerenti**.
 
-Per problemi sbilanciati bisogna guardare soprattutto:
+### Due modelli, due code molto diverse
 
-- precision;
-- recall;
-- F1;
-- PR-AUC;
-- costi dei falsi positivi e falsi negativi;
-- performance alle soglie operative.
+Supponiamo:
 
-### Il costo degli errori non è simmetrico
+**Modello A**
+- recall: 92%;
+- precision: 8%.
 
-Supponiamo che SafePay analizzi 1.000.000 di transazioni al giorno, di cui 6.000 fraudolente.
+Circa 5.520 frodi intercettate e oltre 63.000 falsi positivi.
 
-Modello A:
+**Modello B**
+- recall: 74%;
+- precision: 31%.
 
-- recall 92%;
-- precision 8%.
+Circa 4.440 frodi intercettate e meno di 10.000 falsi positivi.
 
-Intercetta 5.520 frodi, ma genera circa 63.480 falsi positivi.
-
-Modello B:
-
-- recall 74%;
-- precision 31%.
-
-Intercetta 4.440 frodi e genera circa 9.883 falsi positivi.
-
-Qual è migliore?
-
-Non lo decide una formula universale.
+Quale modello è migliore?
 
 Dipende da:
 
 - valore medio della frode;
-- costo di revisione manuale;
-- danno di bloccare un cliente legittimo;
-- capacità del team antifrode;
-- obblighi normativi;
+- capacità della coda manuale;
+- costo del blocco errato;
+- disponibilità di un secondo controllo automatico;
+- requisiti normativi;
 - rischio reputazionale.
 
-### ROC-AUC può sembrare ottima mentre l'operatività è pessima
+Con 8.000 review disponibili, il modello A potrebbe essere inutilizzabile senza un operating threshold molto più severo, anche se il recall massimo è maggiore.
 
-Con eventi molto rari, una ROC-AUC alta non garantisce una precision utile alle soglie reali.
+### Resampling cambia il training distribution
 
-Per questo la precision-recall curve è spesso più informativa nei problemi fortemente sbilanciati.
+Per aiutare il modello possiamo usare:
 
-### Caso simulato: PlantGuard e i guasti critici
+- class weights;
+- oversampling;
+- undersampling;
+- metodi sintetici, quando appropriati.
 
-PlantGuard vuole prevedere guasti su macchinari industriali.
+Queste tecniche modificano il modo in cui il learner vede le classi durante il training.
 
-Solo 1 macchina su 400 ha un guasto critico nel mese successivo.
+Non dovrebbero però trasformare artificialmente il test finale in un mondo 50/50 se in produzione il base rate è 0,6%.
 
-Il modello raggiunge ROC-AUC 0,91.
+Altrimenti precision e valori probabilistici possono diventare difficili da trasferire alla realtà.
 
-La presentazione al management parla di “91% di performance”.
+### Calibration e prevalenza
 
-Ma alla soglia scelta per ispezionare le 150 macchine più rischiose:
+Quando il base rate cambia, anche la calibration può cambiare.
 
-- 18 sono realmente destinate a guastarsi;
-- 132 sono falsi allarmi.
+Un modello addestrato in un periodo con 0,6% di frode può mantenere un ranking ragionevole in un periodo con 1,2%, ma sottostimare sistematicamente le probabilità.
 
-La precision operativa è quindi 12%.
+Quindi in problemi rari monitoriamo separatamente:
 
-Può comunque essere utile, se un guasto costa centinaia di migliaia di euro e l'ispezione è economica.
+- prevalenza reale;
+- score distribution;
+- ranking;
+- precision/recall agli operating point;
+- calibration.
 
-Ma questa è una decisione economica, non una proprietà astratta del modello.
+### Caso simulato/composito — PlantGuard
 
-### Resampling e class weights
+PlantGuard prevede guasti critici: circa 1 macchina su 400 ha un guasto nel mese successivo.
 
-Tecniche come oversampling, undersampling e class weighting possono aiutare il training.
+Il modello ha ROC-AUC 0,91.
 
-Ma non devono alterare la valutazione finale.
+Il maintenance team può ispezionare 150 macchine al mese.
 
-Il test set dovrebbe riflettere, per quanto possibile, la prevalenza reale del problema.
+Nel top 150:
 
-Se bilanci artificialmente anche il test set, rischi di ottenere metriche molto lontane dal comportamento in produzione.
+- 18 avranno davvero un guasto;
+- 132 no.
 
-### Metodo operativo
+Precision: 12%.
 
-Nei problemi sbilanciati:
+La slide "AUC 0,91" non dice se 12% sia buono o cattivo.
 
-1. misura sempre la prevalenza reale;
-2. costruisci una confusion matrix alla soglia operativa;
-3. calcola precision e recall;
-4. traduci FP e FN in costi o conseguenze;
-5. valuta la capacità operativa di gestire gli alert;
-6. monitora la prevalenza nel tempo.
+Se un'ispezione costa 300 euro e un guasto non prevenuto costa 150.000 euro, il ranking può avere enorme valore anche con molti falsi positivi.
 
-Il modello non deve semplicemente “distinguere le classi”.
+Se l'ispezione richiede fermare l'impianto due giorni, la decisione cambia.
 
-Deve produrre un flusso di decisioni sostenibile.
+### Rare outcome e label delay
+
+Gli eventi rari generano anche un problema di monitoring: servono più osservazioni o più tempo per capire se la performance è cambiata.
+
+Su un segmento con 20 positivi al mese, oscillazioni di precision possono essere enormi per puro rumore.
+
+Perciò soglie di alert e retraining devono considerare:
+
+- volume dei positivi;
+- intervalli/variabilità;
+- aggregazione temporale;
+- costo di reagire troppo spesso.
+
+### La metrica naturale può essere la capacità
+
+In molti sistemi il vincolo principale è `K`:
+
+- 500 review;
+- 2.000 chiamate;
+- 100 ispezioni;
+- 1% del traffico.
+
+La domanda diventa allora:
+
+> **quanto valore o quanti positivi concentriamo nella capacità che possiamo davvero usare?**
+
+Questo collega direttamente ranking e operations.
+
+> **Con classi rare, la prevalenza non è un dettaglio statistico. È il contesto che determina quanti falsi positivi dobbiamo attraversare per trovare ogni positivo e quindi se il modello è operativamente sostenibile.**
