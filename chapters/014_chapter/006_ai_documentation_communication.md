@@ -1,119 +1,207 @@
-## 14.5 AI per documentazione e comunicazione: accelerare la traduzione senza alterare il significato
-Una parte enorme del lavoro analitico non consiste nel calcolare numeri, ma nel renderli comprensibili, verificabili e riusabili.
+## 14.5 AI per documentazione e comunicazione: migliorare la forma senza cambiare il livello di evidenza
 
-L'AI può aiutare molto in:
+L'AI è molto efficace nel trasformare un artefatto analitico in linguaggio per audience diverse.
 
-- documentazione di query e metriche;
+Può aiutare con:
+
+- documentazione SQL;
+- metric card;
 - data dictionary;
-- descrizioni di semantic model;
-- commenti nel codice;
-- executive summary;
 - note metodologiche;
-- traduzione tra linguaggio tecnico e business;
-- preparazione di FAQ;
-- revisione di presentazioni.
+- executive summary;
+- FAQ;
+- commenti al codice;
+- traduzione tecnica-business;
+- editing e concisione.
 
-Ma anche qui esiste un rischio specifico: migliorando la forma, l'AI può involontariamente modificare la sostanza.
+Il rischio specifico è diverso dalla generazione di codice.
 
-## Caso realistico: una frase più elegante, ma causalmente sbagliata
+Qui il sistema può prendere un'analisi corretta e **renderla più sbagliata mentre la rende più leggibile**.
 
-Testo originale dell'analista:
+## 14.5.1 Il Semantic Preservation Contract
 
-> "I clienti che completano il tutorial entro 24 ore mostrano retention D30 più alta di 9,4 punti percentuali. Il confronto è osservazionale e non dimostra che il tutorial causi l'aumento."
-
-Versione riscritta automaticamente:
-
-> "Completare il tutorial entro 24 ore aumenta la retention D30 di 9,4 punti percentuali."
-
-La seconda frase è più corta e più sicura. Ed è metodologicamente peggiore.
-
-L'AI ha eliminato proprio la cautela più importante.
-
-## Separare contenuto e stile
-
-Una buona strategia è dire esplicitamente:
-
-> "Migliora chiarezza e concisione senza cambiare il livello di certezza, la distinzione tra correlazione e causalità, i valori numerici o le limitazioni metodologiche."
-
-Per output sensibili, possiamo anche chiedere un diff concettuale:
-
-> "Dopo la riscrittura, elenca ogni modifica che potrebbe aver cambiato il significato analitico."
-
-## Documentare metriche con una struttura standard
-
-L'AI può aiutare a trasformare una formula dispersa in una scheda metrica coerente.
+Quando chiediamo una riscrittura definiamo ciò che può cambiare e ciò che deve restare invariato.
 
 Esempio:
 
-### Metric card — Net Revenue
+```text
+May change:
+- ordine delle frasi
+- lessico
+- lunghezza
+- esempi esplicativi
 
-- **Business definition:** ricavi da ordini pagati meno refund riconosciuti;
-- **Grain:** giorno × mercato × canale;
-- **Date field:** `payment_captured_at`;
-- **Currency:** EUR a FX rate mensile finance;
-- **Excluded:** test orders, fraud confirmed, full cancellations;
-- **Owner:** Finance Analytics;
-- **Freshness:** D+1 entro 07:00 CET;
-- **Known limitations:** refund tardivi possono retroagire sul mese precedente.
+Must preserve:
+- numeri e unità
+- popolazione
+- periodo
+- direction/magnitude
+- uncertainty
+- causal status
+- limitations
+- recommendation strength
+```
 
-Un assistente AI può produrre una prima bozza da SQL, semantic model e documentazione esistente, ma il metric owner deve validarla.
+Questo è il **Semantic Preservation Contract**.
 
-## Il valore del linguaggio su più livelli
+### Caso simulato/composito — una riscrittura che inventa causalità
 
-Lo stesso risultato può essere spiegato diversamente a seconda dell'audience.
+Testo originale:
 
-### Per un data engineer
+> I clienti che completano il tutorial entro 24 ore mostrano retention D30 più alta di 9,4 punti percentuali. Il confronto è osservazionale e non identifica l'effetto causale del tutorial.
 
-> "Il delta nasce da una SCD2 joinata con current flag invece che point-in-time key."
+Riscrittura automatica:
 
-### Per un product manager
+> Completare il tutorial entro 24 ore aumenta la retention D30 di 9,4 punti percentuali.
 
-> "Stavamo attribuendo agli utenti storici il piano che hanno oggi, non quello che avevano quando hanno compiuto l'azione."
+La seconda frase è più corta.
 
-### Per un executive
+Ha però cambiato il claim da **association** a **causal effect**.
 
-> "Circa un terzo della crescita apparente dipende da una riclassificazione storica dei clienti, non da comportamento nuovo."
+Con la claim ladder della sezione precedente:
 
-L'AI è molto utile in questa traduzione, a condizione che il nucleo analitico venga preservato.
+```text
+originale: L2
+riscrittura: L4
+```
 
-## Caso realistico: board summary di un forecast
+Una trasformazione editoriale non è autorizzata a fare questo salto.
 
-Forecast revenue Q4:
+## 14.5.2 Semantic diff
 
-- point estimate: €48,2M;
-- 80% interval: €44,9M–€51,7M;
-- forte dipendenza da due enterprise deal;
-- regime recente più volatile dello storico.
+Per output importanti chiediamo non solo la nuova versione, ma un **semantic diff**.
 
-Un summary troppo aggressivo potrebbe dire:
+```text
+Numeri modificati?           NO
+Periodo modificato?          NO
+Population modificata?       NO
+Uncertainty rimossa?         NO
+Claim level aumentato?       NO
+Limitations eliminate?       NO
+Recommendation più forte?    NO
+```
 
-> "Il Q4 chiuderà a €48,2M."
+Il controllo può essere parzialmente automatizzato, ma il reviewer resta responsabile per claim materialmente importanti.
 
-Una comunicazione migliore è:
+## 14.5.3 Metric card da codice: inference vs knowledge
 
-> "La stima centrale è €48,2M, ma l'intervallo all'80% è €44,9–51,7M. Due deal enterprise spiegano gran parte dell'upside e la volatilità recente rende il forecast meno stabile del normale."
+Un sistema può leggere SQL e inferire:
 
-L'AI può aiutare a comprimere il messaggio senza eliminare l'incertezza.
-
-## Generare documentazione dal codice: utile ma non sufficiente
-
-Da una query SQL l'AI può inferire:
-
-- tabelle usate;
+- tabelle;
 - filtri;
 - join;
-- aggregazioni;
-- colonne derivate.
+- colonne;
+- aggregazioni.
 
-Non può però sapere con certezza:
+Non può dedurre con certezza soltanto dal codice:
 
-- perché quella logica esiste;
+- perché una business rule esiste;
 - chi la possiede;
 - quale decisione supporta;
-- quali eccezioni business non sono visibili nel codice.
+- se una eccezione è intenzionale;
+- se la definizione è ancora approvata.
 
-Per questo la documentazione generata deve distinguere:
+Per questo la documentazione generata dovrebbe distinguere:
 
-**ciò che il codice mostra** da **ciò che il business intende**.
+```text
+EXTRACTED FROM CODE
+- date field: payment_captured_at
+- excludes status = cancelled
 
-> **L'AI può rendere una spiegazione più chiara. Solo l'analista può garantire che resti vera.**
+REQUIRES OWNER CONFIRMATION
+- business meaning of net revenue
+- refund recognition policy
+- intended consumer
+- known exceptions
+```
+
+Questa distinzione evita che una deduzione plausibile diventi improvvisamente documentazione ufficiale.
+
+## 14.5.4 Caso simulato/composito — forecast per il board
+
+Forecast Q4:
+
+```text
+point estimate: €48,2M
+80% interval: €44,9M–€51,7M
+two large deals dominate upside
+recent volatility above historical norm
+```
+
+Output aggressivo:
+
+> Il Q4 chiuderà a €48,2M.
+
+Output coerente con l'evidenza:
+
+> La stima centrale è €48,2M; l'intervallo predittivo all'80% è €44,9–51,7M. Due deal enterprise spiegano gran parte dell'upside e la volatilità recente rende l'outlook meno stabile del normale.
+
+L'AI è utile per comprimere il messaggio **se il contract impedisce di comprimere anche l'incertezza**.
+
+## 14.5.5 Tradurre per audience senza creare tre verità
+
+Stesso problema tecnico:
+
+> SCD2 joinata usando current record invece della versione point-in-time.
+
+Per Data Engineering:
+
+> Il join non usa la surrogate key storica della fact e riclassifica retroattivamente gli attributi.
+
+Per Product:
+
+> Stiamo attribuendo agli utenti storici il piano che hanno oggi, non quello che avevano al momento dell'evento.
+
+Per Executive:
+
+> Una parte della crescita apparente deriva da riclassificazione storica, non da nuovo comportamento.
+
+Sono traduzioni diverse.
+
+Devono mantenere lo stesso **evidence core**.
+
+## 14.5.6 Quote, fonti e numeri: no semantic autocomplete
+
+Quando un documento contiene fonti esterne, il sistema non deve completare automaticamente:
+
+- titolo di paper;
+- autore;
+- percentuali;
+- benchmark;
+- citazioni;
+- URL.
+
+Questi elementi devono provenire da una fonte recuperata/verificata oppure essere marcati come non verificati.
+
+Un riferimento bibliografico fluente ma inventato è un failure del tipo **entity/factual confabulation**.
+
+## 14.5.7 Approval boundary
+
+Non tutti i testi hanno la stessa conseguenza.
+
+```text
+bozza interna          → review leggera
+nota metodologica      → owner review
+executive KPI summary  → evidence/claim review
+comunicazione esterna  → processo di approvazione appropriato
+```
+
+La AI Analysis Control Sheet deve quindi documentare anche **chi può approvare la forma finale**.
+
+### Campo della AI Analysis Control Sheet
+
+```text
+Communication artifact:
+Audience:
+Source analytical artifact:
+Semantic Preservation Contract:
+Claim level allowed:
+Numbers/source verification:
+Semantic diff result:
+Reviewer:
+External/public approval required?:
+```
+
+### Regola operativa
+
+> **L'AI può tradurre un'analisi tra linguaggi e audience. Non deve tradurla tra livelli di certezza. Chiarezza, brevità e persuasività sono miglioramenti solo se il significato resta invariato.**
