@@ -1,105 +1,131 @@
-## 8.14 Prevedere il churn non significa sapere come ridurlo
+## 8.14 Prediction vs causal targeting: chi è a rischio non è necessariamente chi possiamo aiutare
 
-Una delle confusioni più frequenti nell'analytics moderno nasce dall'equivalenza implicita tra previsione e causalità.
+Il Capitolo 6 ha già separato tre domande:
 
-Un modello può prevedere molto bene chi farà churn e dirci molto poco su quale intervento possa evitarlo.
+1. chi probabilmente farà churn?
+2. perché il churn è più frequente in certi gruppi?
+3. quale intervento modifica realmente il churn?
 
-### Caso realistico: il modello con AUC 0,89
+Qui aggiungiamo il passaggio causale che serve alla decisione di targeting.
 
-Una società SaaS costruisce un modello di churn con AUC 0,89.
+### Risk score e treatment effect hanno target diversi
 
-Le feature più importanti sono:
+Un modello predittivo stima qualcosa come:
 
-- numero di login negli ultimi 30 giorni;
-- ticket aperti;
-- calo nell'utilizzo delle feature core;
-- pagamento fallito;
-- numero di utenti attivi;
-- contatti con il supporto.
+`P(churn | informazioni disponibili)`
 
-Il team Customer Success decide di chiamare i clienti con rischio più alto.
+Una policy causale vuole invece conoscere qualcosa come:
 
-Dopo due mesi nota che i clienti chiamati hanno un churn del 31%, contro il 7% degli altri.
+`P(churn | intervento) - P(churn | nessun intervento)`
 
-Qualcuno conclude che le chiamate non funzionano.
+Il primo ordina il **rischio**.
 
-Ma il confronto è privo di senso: i clienti chiamati erano scelti proprio perché ad altissimo rischio.
+Il secondo ordina la **sensibilità all'intervento**.
 
-### Predictive target e causal target sono diversi
+Sono quantità diverse.
 
-Il modello predittivo risponde a:
+### Caso simulato/composito — Tre segmenti
 
-> **chi è più probabile che faccia churn?**
-
-La domanda causale è:
-
-> **per quali clienti una specifica azione ridurrà il churn rispetto a ciò che sarebbe successo senza l'azione?**
-
-Sono problemi diversi.
-
-Un cliente con rischio altissimo potrebbe essere ormai irrecuperabile.
-
-Un cliente con rischio medio potrebbe invece rispondere molto bene a una chiamata.
-
-Se spendiamo tutte le risorse sui clienti con rischio più alto, potremmo ottenere un ROI inferiore rispetto a un targeting basato sull'**incremental effect** dell'intervento.
-
-### Risk score vs uplift
-
-Immaginiamo 10.000 clienti:
-
-| Segmento | Churn previsto senza azione | Churn con chiamata | Riduzione causale stimata |
+| Segmento | Churn senza azione | Churn con chiamata | Effetto causale stimato |
 |---|---:|---:|---:|
-| A | 55% | 52% | 3 pp |
-| B | 30% | 18% | 12 pp |
-| C | 12% | 9% | 3 pp |
+| A | 55% | 52% | -3 pp |
+| B | 30% | 18% | -12 pp |
+| C | 12% | 9% | -3 pp |
 
-Un modello di rischio puro metterebbe A in cima alla lista.
+Un modello di rischio mette A al primo posto.
 
-Un modello di uplift o una stima dell'effetto eterogeneo suggerirebbe invece che B è il segmento con maggiore valore dell'intervento.
+Se la decisione è **chi chiamare**, B può creare molto più valore incrementale.
 
-### Feature predittive che non sono leve
+Il cliente più facile da prevedere può essere il più difficile da salvare.
 
-Molte feature fortemente predittive non sono modificabili:
+### Caso simulato/composito — Il modello con AUC alta
 
-- anzianità del cliente;
-- settore;
-- paese;
-- storico di acquisto;
+Un SaaS costruisce un churn model con AUC 0,89.
+
+Tra le feature più importanti:
+
+- login recenti;
+- ticket;
+- riduzione feature usage;
+- failed payment;
+- utenti attivi.
+
+Il Customer Success contatta gli account con rischio più alto. Dopo due mesi i contattati churnano molto più degli altri.
+
+Non possiamo concludere che la chiamata sia inefficace: il trattamento è stato assegnato **in base al risk score**.
+
+Il confronto trattati/non trattati incorpora quindi il processo di targeting.
+
+Per valutare l'effetto della chiamata serve un design causale compatibile con quella policy.
+
+### Feature predittiva ≠ leva
+
+Una feature può essere fortemente predittiva ma impossibile o insensata da modificare:
+
+- tenure;
+- country;
+- industry;
+- storico acquisti;
 - dimensione aziendale.
 
-Possono aiutare a prevedere, ma non indicano necessariamente cosa fare.
+Altre variabili possono essere meno predittive ma più vicine a una leva:
 
-Al contrario, variabili meno predittive possono rappresentare leve operative importanti:
-
-- tempo di risposta del supporto;
-- numero di errori nell'onboarding;
+- tempo di risposta;
+- errore onboarding;
 - frizione al pagamento;
-- tempo al primo valore.
+- disponibilità di una integrazione;
+- time-to-value.
 
-### Causal ML
+Anche una variabile modificabile, però, non diventa automaticamente una leva causale. Deve ancora essere identificato l'effetto dell'intervento che la modifica.
 
-Metodi di causal machine learning e uplift modeling cercano di stimare l'eterogeneità dell'effetto del trattamento.
+### Uplift e causal ML
 
-Ma anche qui vale la stessa regola: servono dati e disegni che consentano identificazione causale credibile.
+Uplift modeling e metodi per heterogeneous treatment effects cercano di stimare **dove l'effetto di una specifica azione cambia**.
 
-Un algoritmo sofisticato non ripara automaticamente un trattamento assegnato in modo fortemente selettivo.
+Sono utili quando abbiamo un design che consente identificazione causale credibile, spesso dati sperimentali o quasi-sperimentali ben costruiti.
 
-### Caso operativo: retention budget
+Non riparano automaticamente:
 
-Una subscription company dispone di 25.000 euro al mese per campagne di retention.
+- confounding non osservato;
+- treatment leakage;
+- overlap scarso;
+- interference;
+- cambi di policy.
 
-Approccio 1: contatta i 2.000 clienti con rischio di churn più alto.
+Il Capitolo 10 approfondirà predictive modeling. Qui ci interessa una sola regola:
 
-Approccio 2: usa evidenza sperimentale per identificare i clienti su cui il voucher da 15 euro produce maggiore riduzione incrementale del churn.
+> **non usare una probabilità di evento come se fosse una probabilità di successo dell'intervento.**
 
-Dopo tre mesi:
+### Targeting economico
 
-- targeting per rischio: 240 churn evitati stimati;
-- targeting per uplift: 410 churn evitati stimati;
-- stesso budget.
+Anche treatment effect e uplift non sono ancora la decisione completa.
 
-Il punto non è che l'uplift sia sempre migliore. Il punto è che **ottimizzare la probabilità dell'evento e ottimizzare l'effetto di un intervento sono obiettivi differenti**.
+Per prioritizzare potremmo voler combinare:
 
-### Regola pratica
+```text
+effetto incrementale
+× valore economico dell'outcome evitato
+- costo del trattamento
+- costo/opportunity cost della capacità
+```
 
-> **Prediction dice dove probabilmente accadrà qualcosa. Causal inference prova a dire cosa cambierà se interveniamo.**
+Un intervento con effetto causale alto può non valere il costo. Un effetto più piccolo su account ad alto valore può essere prioritario.
+
+Questo ponte verso decision economics sarà sviluppato nel Capitolo 15.
+
+### Policy targeting card
+
+```text
+Risk model: quale evento predice?
+Intervento disponibile:
+Estimand causale dell'intervento:
+Evidenza usata per stimarlo:
+Heterogeneity affidabile?
+Capacità operativa:
+Costo per trattamento:
+Valore outcome evitato:
+Targeting basato su rischio o incremental effect?
+Come misureremo la policy dopo il rollout?
+```
+
+> **Prediction localizza dove l'evento è probabile. Causal targeting localizza dove la nostra azione può cambiare il risultato.**
