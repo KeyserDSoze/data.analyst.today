@@ -1,101 +1,169 @@
-## 16.10 Dashboard anti-pattern: quando più informazione produce meno comprensione
-Una dashboard può essere tecnicamente completa e cognitivamente inutilizzabile.
+## 16.10 Dashboard anti-pattern: quando l'interfaccia nasconde la decisione
 
-Il problema nasce spesso quando proviamo a soddisfare ogni stakeholder nello stesso schermo.
+Una dashboard può essere tecnicamente completa, aggiornata e perfino molto usata, ma restare un cattivo prodotto decisionale.
 
-## Anti-pattern 1 — Il cockpit pieno di strumenti
+Gli anti-pattern più pericolosi non sono quelli “brutti”. Sono quelli che rendono difficile capire **che cosa conta, che cosa significa e che cosa fare**.
 
-Una pagina contiene:
+## Anti-pattern 1 — KPI wall
 
-- 24 KPI;
-- 12 filtri;
-- 8 grafici;
-- 6 card;
-- 3 mappe;
-- una tabella da 40 colonne.
+Ventiquattro card sulla home page non producono automaticamente una vista completa del business.
 
-Ogni elemento ha una ragione individuale per esistere.
+Producono spesso ventiquattro richieste concorrenti di attenzione.
 
-Il risultato complessivo però non ha una gerarchia.
+Correzione:
 
-Il lettore non sa dove guardare.
+- pochi KPI legati alle decisioni della pagina;
+- baseline/target;
+- exception materialmente rilevanti;
+- drill-down separato.
 
-## Anti-pattern 2 — KPI senza baseline
+## Anti-pattern 2 — Slicer cemetery
 
-Revenue: €12,4M.
+Dodici filtri visibili sembrano offrire libertà.
 
-Conversion: 3,8%.
+Possono invece obbligare l'utente a ricostruire ogni volta il contesto corretto.
 
-Churn: 2,7%.
+Domande utili:
 
-Senza confronto con target, periodo precedente o benchmark, questi valori hanno poco significato decisionale.
+- quali filtri servono davvero alla decisione?
+- quali dovrebbero essere fissati dalla definizione del prodotto?
+- una combinazione di filtri può produrre un KPI semanticamente privo di senso?
 
-Una dashboard dovrebbe aiutare a distinguere:
+L'interattività non deve trasformare il semantic contract in una scelta casuale dell'utente.
 
-- normale;
-- anomalo;
-- migliorato;
-- peggiorato;
-- fuori soglia.
+## Anti-pattern 3 — Metriche uguali con semantica diversa
 
-## Anti-pattern 3 — Filtri che cambiano il significato
+Una pagina filtra `revenue` per `order_date`, un'altra per `invoice_date`, una terza per `payment_date`.
 
-Un filtro di data applicato a `order_date` in una pagina e a `delivery_date` in un'altra può produrre dashboard coerenti visivamente ma semanticamente incompatibili.
+Le tre card portano lo stesso nome.
 
-La governance delle metriche precede la visualizzazione.
+Questo è più pericoloso di un grafico sbagliato perché costruisce una falsa sensazione di coerenza.
 
-## Anti-pattern 4 — Interattività come sostituto del design
+La governance del Capitolo 11 viene prima della visualizzazione.
 
-Drill-down, tooltip, bookmark e slicer sono utili, ma non dovrebbero costringere l'utente a esplorare dieci livelli per capire se esiste un problema.
+## Anti-pattern 4 — Traffic-light theater
 
-L'interattività deve permettere di approfondire una storia già leggibile, non nasconderla.
+Rosso, giallo e verde possono essere utili se le soglie derivano da una regola operativa.
 
-## Anti-pattern 5 — Semafori ovunque
+Diventano teatro quando:
 
-Rosso, giallo e verde sembrano intuitivi.
+- la soglia è arbitraria;
+- tutti i KPI devono per forza avere un colore;
+- il rosso non ha owner né runbook;
+- il verde nasconde un trend in deterioramento;
+- il significato dipende solo dal colore.
 
-Ma se ogni KPI ha soglie arbitrarie, il colore produce una falsa sensazione di precisione.
+Un semaforo senza conseguenza operativa è decorazione normativa.
 
-Inoltre una dashboard che dipende solo dal colore crea problemi di accessibilità.
+## Anti-pattern 5 — Interactivity as design
 
-La Government Analysis Function raccomanda di ridurre clutter e decorazioni non necessarie e di progettare grafici accessibili, non dipendenti da elementi puramente estetici.
+> “L'informazione c'è, basta fare drill-down.”
 
-Fonte: https://analysisfunction.civilservice.gov.uk/policy-store/charts-a-checklist/
+Non è una giustificazione sufficiente.
 
-## Caso realistico: il dashboard che nessuno riusciva a usare
+La prima vista dovrebbe già rendere evidente se esiste un problema e perché merita attenzione. L'interattività serve ad approfondire, non a scoprire casualmente quale domanda la dashboard avrebbe dovuto rispondere.
 
-Una società industriale investe mesi in una dashboard di operations.
+## Anti-pattern 6 — Dashboard-as-database
 
-La home page contiene 62 visualizzazioni distribuite in più tab.
+Una tabella con 60 colonne, export illimitato e ogni metrica disponibile può essere utile come **data access surface**.
 
-Gli utenti dichiarano di volere “tutti i dati disponibili”.
+Non è necessariamente una dashboard.
 
-Dopo il rilascio, però, durante il weekly review i manager continuano a chiedere screenshot preparati manualmente dagli analyst.
+Se tutti esportano in Excel prima di poter rispondere alla domanda, il prodotto sta probabilmente servendo un bisogno diverso da quello dichiarato.
 
-L'analisi del comportamento mostra che quasi tutti usano soltanto:
+La soluzione può essere mantenere entrambe le cose:
 
-- backlog;
-- throughput;
-- on-time delivery;
-- defect rate;
-- tre segmentazioni principali.
+- decision dashboard;
+- detail/export view.
 
-Il redesign parte non dalle visualizzazioni, ma dalle decisioni settimanali.
+Non obbligarle a essere lo stesso oggetto.
 
-La home diventa:
+## Anti-pattern 7 — Mappe senza domanda geografica
 
-1. stato complessivo;
-2. deviazioni principali;
-3. contributori al delta;
-4. aree che richiedono azione;
-5. link al dettaglio operativo.
+Una mappa è appropriata quando posizione, distanza, contiguità o territorio fanno parte del problema.
 
-Il numero di visualizzazioni diminuisce, ma l'utilità aumenta.
+Se dobbiamo solo confrontare revenue di 12 regioni, barre ordinate possono essere molto più precise.
 
-## Una domanda da fare prima di aggiungere un elemento
+La geografia non deve entrare perché “abbiamo un campo regione”.
 
-> “Quale decisione migliora questa visualizzazione?”
+## Anti-pattern 8 — Nessuna freshness o ownership
 
-Se non riusciamo a rispondere, probabilmente stiamo aggiungendo informazione invece di aggiungere valore.
+Un KPI rosso può produrre una decisione urgente.
 
-**Una dashboard non è un archivio di grafici. È un'interfaccia tra dati e decisioni.**
+Se il lettore non sa:
+
+- quando il dato è aggiornato;
+- se è finalizzato;
+- chi possiede l'anomalia;
+- quando arriverà il prossimo refresh;
+
+la dashboard manca di informazioni operative fondamentali.
+
+## Anti-pattern 9 — Hover-only truth
+
+Se definizione, valore esatto, caveat o denominatore compaiono soltanto in un tooltip:
+
+- possono sparire in screenshot e PDF;
+- possono essere difficili con touch o assistive technology;
+- non vengono percepiti da chi non sa che deve cercarli.
+
+L'informazione decision-critical deve esistere anche senza hover.
+
+## Anti-pattern 10 — Nessuna exit condition
+
+Una dashboard nata per una decisione del 2024 può restare online nel 2027 anche se:
+
+- il processo è cambiato;
+- la metrica non è più ufficiale;
+- nessuno la possiede;
+- esiste una nuova fonte certificata.
+
+Il risultato è una foresta di “fonti quasi autorevoli”.
+
+Ogni dashboard dovrebbe avere:
+
+- owner;
+- audience;
+- decisioni supportate;
+- data di review;
+- criterio di retirement o redesign.
+
+## Caso simulato/composito — La dashboard che tutti volevano e nessuno usava
+
+Una società industriale costruisce una home operations con 62 visualizzazioni distribuite in più tab.
+
+Gli stakeholder avevano chiesto “tutti i dati”.
+
+Dopo il rilascio, nei weekly review i manager continuano però a chiedere screenshot manuali agli analyst.
+
+L'osservazione dell'uso mostra che le domande ricorrenti sono soltanto cinque:
+
+1. backlog fuori soglia?
+2. throughput sotto piano?
+3. on-time delivery in deterioramento?
+4. defect rate concentrato su quale linea?
+5. chi deve intervenire questa settimana?
+
+Il redesign parte da queste domande.
+
+La home diventa una superficie di exception e decisione; il dettaglio resta disponibile altrove.
+
+## Dashboard stress test
+
+Prima della pubblicazione chiediamo a un utente reale, senza istruzioni del designer, di:
+
+1. trovare il problema principale;
+2. identificare baseline/target;
+3. spiegare se il dato è aggiornato;
+4. trovare il segmento che guida il delta;
+5. dire quale azione sembra richiesta;
+6. trovare definizione e fonte;
+7. completare il compito senza usare il mouse, quando pertinente.
+
+Se il dato esiste ma il task fallisce, **la dashboard non ha comunicato**.
+
+> **Una dashboard non è un archivio di informazione. È un'interfaccia che deve trasformare segnali affidabili in attenzione, diagnosi e azione con il minimo attrito possibile.**
+
+### Fonte
+
+- Government Analysis Function, *Data visualisation: testing dashboards for design and accessibility*: https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-testing-dashboards-for-design-and-accessibility/
