@@ -1,120 +1,143 @@
-## 10.2 Regressione lineare: stimare una quantità continua
+## 10.2 Regressione lineare: una baseline interpretabile per target continui
 
-La regressione lineare prova a rappresentare una variabile numerica come combinazione lineare di una o più feature.
+La regressione lineare è uno dei migliori punti di partenza quando il target è numerico.
 
-Nella forma più semplice:
+Non perché il mondo sia lineare, ma perché offre tre vantaggi pratici:
 
-\[
-y = \beta_0 + \beta_1 x + \varepsilon
-\]
+- costruisce una baseline difficile da fraintendere tecnicamente;
+- rende visibile la relazione tra feature e previsione;
+- produce residui facili da analizzare.
 
-Con più variabili:
+In forma compatta:
 
-\[
-y = \beta_0 + \beta_1x_1 + \beta_2x_2 + \dots + \beta_px_p + \varepsilon
-\]
+`ŷ = β0 + β1x1 + β2x2 + ... + βpxp`
 
-Dove:
-
-- `y` è il target;
-- `x1...xp` sono le feature;
-- `β` sono i coefficienti stimati;
-- `ε` rappresenta ciò che il modello non spiega.
-
-La documentazione di scikit-learn descrive `LinearRegression` come ordinary least squares: i coefficienti vengono scelti minimizzando la somma dei quadrati dei residui tra valori osservati e valori predetti.
+Il modello sceglie i coefficienti per ridurre la distanza tra valori osservati e previsti secondo la funzione di loss adottata; nell'ordinary least squares classico, minimizza la somma dei residui al quadrato.
 
 Fonte: https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html
 
-### Caso realistico: BrightFoods e il tempo di preparazione ordini
+### Caso simulato/composito — BrightFoods e il tempo di preparazione ordini
 
-BrightFoods distribuisce prodotti freschi a ristoranti e hotel. Il responsabile operations vuole stimare il tempo necessario per preparare ogni ordine prima che il camion arrivi.
+BrightFoods distribuisce prodotti freschi a ristoranti e hotel. Operations deve stimare, al momento in cui un ordine viene rilasciato al magazzino, quanti minuti serviranno per completare il picking.
 
-Il dataset contiene 310.000 ordini con:
+**Prediction unit:** ordine.  
+**Prediction time:** rilascio al warehouse.  
+**Target:** minuti fino a `picking_complete`.  
+**Decisione:** sequenziamento ordini e assegnazione capacità.
 
-- numero di righe d'ordine;
+Il dataset contiene 310.000 ordini con feature conoscibili al prediction time:
+
+- numero di righe;
 - numero di pezzi;
 - quota di prodotti refrigerati;
-- distanza media tra le zone di picking;
+- distanza attesa tra zone di picking;
 - ora del giorno;
-- saturazione del magazzino;
-- esperienza media del team di turno;
-- minuti effettivi di preparazione.
+- saturazione corrente del magazzino;
+- esperienza media del team di turno.
 
-Un primo modello produce:
+Un primo modello produce, in forma semplificata:
 
-\[
-\widehat{minutes} = 8.4 + 0.31 \cdot lines + 0.018 \cdot pieces + 6.7 \cdot refrigerated + 11.2 \cdot saturation
-\]
+`minutes_hat = 8.4 + 0.31*lines + 0.018*pieces + 6.7*refrigerated_share + 11.2*saturation`
 
-Dove `saturation` varia da 0 a 1.
+Il coefficiente sulla saturazione non significa:
 
-Una lettura superficiale potrebbe dire:
+> "se riduciamo la saturazione di una unità, causeremo 11,2 minuti in meno."
 
-- ogni riga aggiunge 0,31 minuti;
-- ogni pezzo aggiunge 0,018 minuti;
-- un ordine totalmente refrigerato aggiunge 6,7 minuti;
-- passare da magazzino vuoto a piena saturazione aggiunge 11,2 minuti.
+Significa che, **nel modello e nella popolazione osservata**, la saturazione contribuisce alla previsione condizionatamente alle altre feature incluse.
 
-Ma qui arriva la parte importante: **un coefficiente non è una legge universale**.
+La distinzione con la causalità del Capitolo 8 deve rimanere esplicita.
 
-Esprime un'associazione condizionata alle altre variabili incluse nel modello e alla popolazione osservata.
+### Prima domanda: batte davvero una baseline più semplice?
 
-### Residui: il modello parla anche quando sbaglia
+Prima del modello multivariato BrightFoods confronta:
+
+1. mediana storica globale;
+2. mediana per fascia di numero righe;
+3. regressione lineare.
+
+Supponiamo che sul test temporale ottenga:
+
+| Baseline/modello | MAE |
+|---|---:|
+| mediana globale | 12,8 min |
+| mediana per fascia | 9,6 min |
+| regressione lineare | 7,9 min |
+
+Ora sappiamo che una parte consistente del valore viene davvero dalla struttura predittiva e non dal fatto di aver costruito un modello sofisticato.
+
+Una baseline semplice è importante anche mesi dopo: se il modello di produzione non la batte più, abbiamo un segnale molto concreto di deterioramento.
+
+### I residui sono una mappa degli errori
 
 Per ogni osservazione:
 
-\[
-residuo = y - \hat{y}
-\]
+`residuo = valore osservato - valore previsto`
 
-Se un ordine richiede 52 minuti e il modello ne prevede 39, il residuo è +13.
+Un ordine richiede 52 minuti e il modello ne prevede 39: residuo `+13`.
 
-Analizzare i residui è fondamentale perché può rivelare:
+Il valore medio dell'errore è utile, ma raramente basta. Conviene cercare struttura nei residui per:
 
-- non linearità;
-- segmenti mancanti;
-- errori di misura;
-- outlier;
-- variabili importanti non incluse;
-- cambiamenti di regime.
+- deposito;
+- fascia oraria;
+- dimensione ordine;
+- cliente premium/non premium;
+- giorni di picco;
+- distanza prevista;
+- periodo temporale.
 
-Nel caso BrightFoods, i residui molto positivi sono concentrati nei turni notturni del deposito di Parma.
+Nel caso BrightFoods i residui molto positivi si concentrano nei turni notturni di un deposito.
 
-L'indagine operativa scopre che durante quel turno una parte degli scanner barcode ha connettività intermittente. Il modello non “ha fallito”: ha fatto emergere un processo che il dataset non rappresentava esplicitamente.
+L'indagine scopre scanner barcode con connettività intermittente.
 
-### R² non è una patente di qualità
+Il modello non ha dimostrato la causa del problema, ma ha localizzato una regione del processo in cui la previsione fallisce sistematicamente e che merita investigazione.
 
-Il coefficiente di determinazione `R²` indica quanta parte della variabilità osservata viene spiegata dal modello rispetto a una baseline che predice la media.
+### R²: utile, ma risponde a una domanda limitata
 
-Un R² alto può essere utile, ma non garantisce che:
+`R²` confronta il modello con una baseline che predice la media e descrive quanta variabilità viene catturata dal modello secondo quella definizione.
 
-- il modello generalizzi;
-- le feature siano disponibili in produzione;
-- le relazioni siano causali;
-- gli errori siano accettabili per il business.
+Non ci dice automaticamente:
 
-Un modello con R² = 0,91 ma con errori enormi proprio sugli ordini premium può essere peggiore di un modello con R² = 0,84 ma performance stabile nei segmenti critici.
+- quanto costa l'errore;
+- se gli errori sono concentrati nei casi più importanti;
+- se le feature esistono in produzione;
+- se il modello generalizza a periodi nuovi;
+- se le relazioni sono causali.
 
-### Errore tipico
+Per il warehouse un MAE di 8 minuti può essere eccellente sugli ordini standard e inaccettabile se gli errori sui clienti con SLA premium arrivano a 25 minuti.
 
-> “Il coefficiente della saturazione è 11,2, quindi se riduciamo la saturazione il tempo di preparazione scenderà di 11,2 minuti.”
+### Error distribution, non soltanto errore medio
 
-Non necessariamente.
+Per target continui è utile mostrare almeno:
 
-Questo è un salto da associazione a causalità.
+- MAE o altra loss coerente con la decisione;
+- mediana dell'errore assoluto;
+- percentili P90/P95 dell'errore;
+- bias medio, cioè sovra/sottostima sistematica;
+- errore per segmenti importanti.
 
-La regressione può supportare la diagnosi e la predizione, ma da sola non identifica automaticamente l'effetto di un intervento.
+Questo rende visibile la differenza tra:
 
-### Metodo operativo
+> "in media sbagliamo poco"
 
-Quando usi una regressione lineare:
+ed
 
-1. definisci bene il target;
-2. controlla disponibilità temporale delle feature;
-3. esplora relazioni e distribuzioni;
-4. stima il modello;
-5. guarda i residui;
-6. valuta il modello su dati non usati per il training;
-7. segmenta gli errori;
-8. interpreta i coefficienti con prudenza;
-9. collega il modello alla decisione reale.
+> "sbagliamo poco dove conta".
+
+### Quando la linearità è insufficiente
+
+Una regressione lineare può perdere:
+
+- soglie;
+- saturazioni;
+- interazioni;
+- relazioni fortemente curve;
+- cambi di regime.
+
+Ma il passaggio a un modello più complesso dovrebbe seguire una diagnosi:
+
+1. quale pattern resta nei residui?
+2. è stabile fuori campione?
+3. quale complessità aggiuntiva lo cattura?
+4. quanto migliora una metrica che interessa alla decisione?
+
+> **La regressione lineare non è il modello da usare quando vogliamo essere semplici. È la baseline da battere prima di poter giustificare una complessità maggiore.**
