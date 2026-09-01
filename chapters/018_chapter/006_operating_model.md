@@ -1,167 +1,385 @@
-## 18.5 Operating model: chi fa cosa quando l'analytics scala
-Quando il numero di dashboard, pipeline, metriche e modelli cresce, la domanda organizzativa diventa inevitabile:
+## 18.5 Operating model: decentralizzare il lavoro senza decentralizzare la fiducia
 
-> chi è responsabile di cosa?
+Quando analytics cresce, la domanda organizzativa non è semplicemente:
 
-Molti problemi di analytics vengono diagnosticati come problemi tecnici quando in realtà sono problemi di operating model.
+> “Quanti analyst ci servono?”
 
-Una pipeline può fallire perché nessuno sa chi deve mantenerla.
+È:
 
-Una metrica può divergere perché due team si sentono entrambi autorizzati a cambiarla.
+> **“Quali responsabilità devono stare vicino al dominio e quali capacità devono essere condivise?”**
 
-Un dataset può diventare inutilizzabile perché chi lo produce non conosce i consumer downstream.
+Questa distinzione determina:
 
-## Ruoli diversi, responsabilità diverse
+- velocità;
+- qualità;
+- ownership;
+- duplicazione;
+- supporto;
+- governance;
+- costi.
 
-In un'organizzazione moderna possiamo trovare:
+Un operating model fragile può rendere inefficace anche un'architettura eccellente.
 
-- data analyst;
-- analytics engineer;
-- data engineer;
-- data scientist;
-- ML engineer;
-- product manager;
-- business owner;
-- platform engineer;
-- governance/security.
+## Tre failure mode opposti
 
-Le etichette variano da azienda ad azienda.
+### Centralizzazione totale
 
-Il punto non è difendere confini rigidi.
+Tutto passa dal team data centrale.
 
-È evitare zone grigie senza owner.
+Vantaggi:
 
-## Un possibile modello di responsabilità
+- standard coerenti;
+- competenza concentrata;
+- governance più semplice.
 
-### Data Analyst
+Rischi:
 
-- formula domande;
-- interpreta metriche;
-- conduce analisi;
-- verifica semantica;
-- traduce evidenze in decisioni.
+- coda infinita;
+- scarsa conoscenza del dominio;
+- team centrale che diventa owner semantico di concetti che non può conoscere abbastanza bene;
+- priorità lontane dal business.
 
-### Analytics Engineer
+### Federazione totale
 
-- trasforma logica analitica ricorrente in modelli riutilizzabili;
-- testa trasformazioni;
-- mantiene semantic layer e data mart;
-- gestisce dipendenze analitiche.
+Ogni dominio costruisce tutto.
 
-### Data Engineer
+Vantaggi:
 
-- garantisce ingestion, orchestrazione, affidabilità e scalabilità delle pipeline;
-- gestisce integrazione tra sistemi.
+- velocità locale;
+- ownership vicina alla decisione;
+- profonda conoscenza del business.
 
-### Business Owner
+Rischi:
 
-- definisce il significato delle metriche critiche;
-- decide priorità e trade-off business;
-- accetta cambiamenti semantici.
+- metriche duplicate;
+- infrastrutture replicate;
+- policy incoerenti;
+- costi più alti;
+- scarsa interoperabilità.
 
-### Platform/Governance
+### Centralized approval theater
 
-- definisce standard comuni;
-- controlla accessi, lineage, policy e osservabilità;
-- riduce duplicazioni infrastrutturali.
+Formalmente i domini sono autonomi, ma ogni decisione richiede numerosi approval centrali.
 
-## La matrice RACI può aiutare, ma non basta
+Il risultato può essere il peggio dei due mondi:
 
-Per un prodotto analitico critico possiamo definire:
+- responsabilità locale;
+- autorità centrale;
+- tempi lunghi;
+- accountability confusa.
 
-- **Responsible** — chi esegue;
-- **Accountable** — chi risponde del risultato;
-- **Consulted** — chi deve essere coinvolto;
-- **Informed** — chi deve essere avvisato.
+## Il principio: centralizzare capability, federare accountability dove serve
 
-Ma una matrice scritta non risolve automaticamente il problema.
+Un modello pratico può separare quattro funzioni.
 
-Serve che gli owner abbiano davvero:
+### Domain analytics / data product team
 
-- autorità;
-- tempo;
-- accesso;
-- incentivi;
-- conoscenza del prodotto.
+Possiede vicino al business:
 
-## Caso realistico: tutti owner, nessun owner
+- use case;
+- semantica locale;
+- data product;
+- decision feedback;
+- parte del supporto.
 
-Una società fintech ha una metrica critica: approval rate dei pagamenti.
+### Shared analytics platform
 
-Payments Engineering gestisce il gateway.
+Fornisce:
+
+- orchestration;
+- storage/query capability;
+- CI/CD pattern;
+- observability;
+- catalog;
+- access primitive;
+- cost metadata;
+- standard template.
+
+La piattaforma dovrebbe ridurre lavoro ripetitivo, non diventare owner di ogni prodotto.
+
+### Governance / risk / security
+
+Definisce policy comuni dove la libertà locale produce rischio sistemico:
+
+- privacy;
+- identity;
+- access;
+- retention;
+- data classification;
+- audit;
+- standard di interoperabilità.
+
+### Analytics enablement / COE
+
+Aiuta l'organizzazione a:
+
+- diffondere pattern efficaci;
+- formare creator e consumer;
+- supportare community;
+- misurare adoption;
+- trasformare pratiche locali efficaci in standard riusabili.
+
+Il COE non deve essere per forza una fabbrica di report né un comitato di veto.
+
+## Caso reale documentato: AWS e i ruoli nel data mesh
+
+AWS Prescriptive Guidance descrive un operating model in cui:
+
+- i **domain team** possiedono i data product e allineano le priorità ai business use case;
+- il **self-service data platform team** possiede e mantiene la piattaforma condivisa;
+- il **governance team** garantisce standard e requisiti.
+
+Fonte: https://docs.aws.amazon.com/prescriptive-guidance/latest/strategy-data-mesh/teams-interactions.html
+
+Non serve adottare formalmente un data mesh per usare questa distinzione.
+
+È utile perché evita di confondere:
+
+> **chi conosce il significato**
+
+con
+
+> **chi costruisce le capability comuni**.
+
+## Caso reale documentato: Microsoft e Center of Excellence
+
+La Microsoft Fabric Adoption Roadmap descrive un Center of Excellence come un team interno con competenze tecniche e business che aiuta attivamente la community analytics e promuove obiettivi di adozione coerenti con la data culture.
+
+Fonte: https://learn.microsoft.com/it-it/power-bi/guidance/fabric-adoption-roadmap-center-of-excellence
+
+La documentazione non impone che il COE sia l'owner di tutto.
+
+Questa è una distinzione importante.
+
+Un COE efficace può aumentare la capacità distribuita dell'organizzazione invece di accentrare ogni delivery.
+
+## Caso simulato/composito: approval rate senza owner end-to-end
+
+Una fintech monitora l'approval rate dei pagamenti.
+
+Payments Engineering gestisce gateway e provider.
 
 Risk modifica regole antifrode.
 
-Finance guarda l'impatto economico.
+Finance misura il costo di false decline.
 
 Analytics mantiene la dashboard.
 
-Quando l'approval rate scende di 4 punti percentuali, ogni team indaga la propria parte.
+Quando approval rate scende di 4 punti:
 
-Nessuno però possiede il KPI end-to-end.
+- Engineering controlla latency;
+- Risk controlla fraud rule;
+- Finance aspetta un numero riconciliato;
+- Analytics produce breakdown.
 
-Il risultato:
+Tutti sono responsabili di qualcosa.
 
-- tre dashboard;
-- quattro definizioni;
-- escalation lenta;
-- diagnosi frammentata.
+Nessuno è accountable per la **health del decision process end-to-end**.
 
-L'azienda introduce un metric owner cross-functional per approval rate e un incident protocol comune.
+L'azienda introduce:
 
-Il cambiamento tecnico è minimo.
+- decision owner: VP Payments;
+- semantic owner: Payments Analytics + Finance per economics;
+- product owner: analytics engineering;
+- incident commander assegnato per SEV-1/2;
+- common runbook;
+- SLO e severity condivisi.
 
-La velocità decisionale migliora drasticamente.
+Non viene creato un nuovo team.
 
-## Centralizzare o federare?
+Viene creata una struttura di responsabilità.
 
-Un team centrale può garantire standard, ma diventa facilmente collo di bottiglia.
+## RACI è utile soltanto se cambia il comportamento
 
-Una struttura totalmente federata aumenta velocità locale, ma rischia duplicazione e incoerenza.
+Una matrice RACI può chiarire:
 
-Una soluzione comune è un modello federato:
+- Responsible;
+- Accountable;
+- Consulted;
+- Informed.
 
-- standard e piattaforma centrali;
-- ownership dei data product nei domini;
-- semantic governance condivisa;
-- meccanismi comuni di discovery e accesso.
+Ma fallisce quando:
 
-La documentazione recente di Microsoft e Databricks insiste proprio sul combinare responsabilità per dominio con standard di publishing, governance, lineage e qualità comuni.
+- l'Accountable non ha autorità;
+- il Responsible non ha capacity;
+- tutti sono Consulted;
+- nessuno possiede incidenti fuori orario;
+- la matrice non viene aggiornata dopo riorganizzazioni.
 
-## Il ruolo dell'analista cambia
+Per ogni responsabilità dobbiamo chiedere:
 
-In questo operating model, l'analista non scompare dietro l'automazione.
+- ha accesso ai sistemi?
+- può approvare la modifica?
+- riceve l'alert?
+- ha tempo allocato alla manutenzione?
+- ha un backup?
+- è incentivato a investire nella reliability?
 
-Diventa spesso il punto di connessione tra:
+Ownership senza capacità operativa è documentazione, non operating model.
 
-- business meaning;
-- comportamento dei dati;
-- metriche;
-- decisioni;
-- requisiti tecnici.
+## Team boundary e product boundary devono allinearsi abbastanza
 
-È una posizione molto potente perché l'analista vede sia la domanda sia il modo in cui la realtà viene rappresentata nel sistema.
+Un problema comune nasce quando un data product attraversa cinque team e nessuno può correggerlo end-to-end.
 
-## Con l'AI il problema diventa ancora più importante
+Più handoff esistono, più servono:
 
-Se agenti e copiloti possono generare query, modelli e dashboard, serve sapere quali asset sono autorevoli e chi ne risponde.
+- contract;
+- SLO;
+- escalation;
+- dependency ownership.
 
-Un agente capace di interrogare tutto senza governance non crea necessariamente più valore.
+Non dobbiamo eliminare ogni dipendenza.
 
-Può semplicemente amplificare più velocemente incoerenze già presenti.
+Dobbiamo evitare dipendenze senza promessa osservabile.
 
-Per questo data governance e AI governance stanno convergendo: gli stessi concetti di accesso, lineage, policy e ownership devono estendersi anche agli asset AI.
+Esempio:
+
+```text
+CRM domain
+  ↓ source contract
+Revenue product
+  ↓ certified metric contract
+Executive pack
+  ↓ decision deadline
+CFO review
+```
+
+Ogni boundary deve indicare:
+
+- cosa viene promesso;
+- chi risponde;
+- come il failure viene propagato.
+
+## Escalation path
+
+Un sistema critico dovrebbe avere un percorso più chiaro di:
+
+> “scrivi nel canale #data-help”.
+
+Esempio:
+
+### T1
+
+Owner di team durante business hours.
+
+### T2
+
+Primary owner + backup + escalation al decision owner se la deadline è a rischio.
+
+### T3
+
+Incident process formalizzato con authority per:
+
+- bloccare pubblicazione;
+- attivare fallback;
+- sospendere change;
+- informare stakeholder critici.
+
+Il livello di reperibilità deve essere proporzionato al rischio.
+
+Non ogni dashboard merita on-call.
+
+## Support model
+
+L'Analytics Operating Contract può distinguere:
+
+### Consumer support
+
+“Come uso il prodotto?”
+
+### Data quality support
+
+“Il dato non sembra corretto.”
+
+### Access support
+
+“Non posso accedere.”
+
+### Incident
+
+“Il prodotto critico è fuori SLO.”
+
+### Change request
+
+“Serve una nuova definizione o capability.”
+
+Se tutto entra nello stesso backlog, le urgenze e il product development competono senza priorità leggibile.
+
+## Operating model e prioritization
+
+Un team che possiede prodotti in esercizio non può pianificare il 100% della capacità su nuove feature.
+
+Serve budget per:
+
+- reliability;
+- incident;
+- tech debt;
+- semantic debt;
+- cost optimization;
+- deprecation;
+- user support.
+
+Altrimenti il portafoglio cresce e la capacità di mantenerlo non cresce con lui.
+
+Questo è uno dei modi più comuni in cui un'organizzazione “scala” il numero di asset ma non la qualità del sistema.
+
+## Toil analitico
+
+Google SRE definisce **toil** come lavoro operativo manuale, ripetitivo e con scarso valore duraturo che tende a crescere linearmente con il servizio.
+
+Fonte: https://sre.google/sre-book/part-II-principles/
+
+In analytics il toil include:
+
+- refresh manuale;
+- correzioni ripetitive;
+- mapping aggiornati a mano;
+- ticket “quale tabella?”;
+- reconciliation identica ogni settimana;
+- recovery non automatizzata;
+- access provisioning ripetitivo.
+
+Non tutto il lavoro manuale è toil.
+
+Un'indagine complessa può essere manuale e ad altissimo valore.
+
+Il segnale di toil è:
+
+> **il lavoro si ripete perché il sistema non ha ancora incorporato l'apprendimento.**
+
+## Automazione come conseguenza del redesign
+
+DORA avverte che continuous delivery non consiste nel ripetere più spesso il vecchio processo; senza miglioramenti a processo, architettura e capability, più deployment possono aumentare failure e burnout.
+
+Fonte: https://dora.dev/capabilities/continuous-delivery/
+
+Lo stesso vale per analytics operations.
+
+Prima di automatizzare:
+
+1. chiarire responsibility;
+2. eliminare passaggi inutili;
+3. definire contract;
+4. standardizzare il caso ricorrente;
+5. poi automatizzare.
+
+Automatizzare un processo ambiguo produce ambiguità più veloce.
+
+## Operating-model review
+
+Ogni trimestre, un portfolio analitico può essere rivisto chiedendo:
+
+- quali prodotti hanno owner chiari?
+- quali hanno più consumer del tier previsto?
+- dove il team centrale è collo di bottiglia?
+- quali domain team dipendono da capability duplicate?
+- quale toil cresce linearmente?
+- quali incidenti attraversano troppi handoff?
+- quali prodotti non hanno backup owner?
+- quali asset dovrebbero essere ritirati?
 
 ## Una regola organizzativa
 
-> **Ogni output che influenza una decisione ricorrente dovrebbe avere un owner riconoscibile, anche quando il lavoro è distribuito tra più team e più agenti.**
+> **Federare significa spostare responsabilità vicino al contesto, non spostare il problema della qualità sul consumer. Centralizzare significa creare capability comuni, non assumere che un team centrale possa possedere il significato di tutta l'organizzazione.**
 
-Scalare non significa eliminare la responsabilità individuale.
-
-Significa renderla esplicita in un sistema più complesso.
-
-## Fonti
-
-- Microsoft, *Data Processing Standards for AI and Analytics*: https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/data/operational-standards-data-processing-standards-unify-data-platform
-- Databricks, *Guiding principles*: https://docs.databricks.com/gcp/en/lakehouse-architecture/guiding-principles
-- Microsoft, *Data governance with Unity Catalog*: https://learn.microsoft.com/en-us/azure/databricks/data-governance/
+Un operating model scala quando autonomia e responsabilità crescono insieme.
