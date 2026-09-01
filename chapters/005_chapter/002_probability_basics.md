@@ -1,125 +1,121 @@
-## 5.1 Eventi, probabilità e frequenze
+## 5.1 Eventi e probabilità: prima del numero viene il processo
 
-La probabilità parte da un'idea semplice: definire con chiarezza **che cosa può accadere**.
+La probabilità parte da una domanda apparentemente semplice:
+
+> **Quale evento stiamo cercando di modellare?**
 
 Un evento può essere:
 
-- un cliente che rinnova;
-- una transazione che viene rifiutata;
-- un ordine che arriva in ritardo;
-- un lead che converte;
-- una macchina che si guasta entro trenta giorni;
-- una campagna che raggiunge almeno il target minimo.
+- un cliente che rinnova entro la data prevista;
+- una transazione che diventa chargeback entro 60 giorni;
+- un ordine che supera lo SLA di consegna;
+- un lead che acquista entro 30 giorni dalla demo;
+- una macchina che si guasta entro il prossimo ciclo manutentivo.
 
-Il primo errore possibile è trattare l'evento in modo ambiguo.
+Il primo errore non è matematico. È **semantico**.
 
-“Cliente perso” può significare nessun acquisto negli ultimi 90 giorni, cancellazione formale dell'abbonamento, mancato rinnovo annuale o riduzione del contratto sotto una certa soglia.
+“Cliente perso” può significare mancato rinnovo, cancellazione formale, nessun utilizzo per 90 giorni o contrazione del contratto. Quattro definizioni producono quattro eventi diversi e quindi quattro probabilità diverse.
 
-Prima della probabilità viene quindi, ancora una volta, la definizione.
+Il Capitolo 2 ci ha insegnato a specificare la metrica. Qui aggiungiamo una proprietà:
 
-### Caso realistico: un antifrode che “blocca troppo”
+> **la probabilità deve sempre riferirsi a un evento, una popolazione e un orizzonte temporale espliciti.**
 
-Una fintech europea elabora circa 420.000 pagamenti con carta al giorno.
+### Caso simulato/composito — Quanti ticket verranno escalati domani?
 
-Il team risk osserva che lo 0,62% delle transazioni viene bloccato dal sistema antifrode.
+Una piattaforma SaaS riceve mediamente circa 2.500 ticket al giorno. Negli ultimi tre mesi, tra i ticket comparabili, il 3,2% è stato escalato al team specialistico.
 
-La prima reazione del product team è negativa:
+Il responsabile support chiede:
 
-> “Stiamo bloccando più di 2.600 pagamenti al giorno. Dobbiamo abbassare la sensibilità.”
+> “Quanti escalation dobbiamo aspettarci domani?”
 
-Il Data Analyst ricostruisce però il quadro completo.
+Una prima stima è:
 
-Su 420.000 pagamenti:
+`2.500 × 3,2% = 80 escalation attese`.
 
-- 2.604 vengono bloccati;
-- 417.396 vengono autorizzati;
-- tra i bloccati, 1.710 risultano effettivamente fraudolenti dopo verifica;
-- tra gli autorizzati, circa 590 vengono successivamente classificati come frode.
+Ma **80 non è una previsione deterministica**.
 
-La frequenza grezza dei blocchi dice poco.
+Domani potrebbero essercene 68, 83 o 97. Il 3,2% descrive un processo incerto e l'80 è un valore atteso sotto alcune assunzioni.
 
-Le domande giuste diventano:
+Prima di usarlo per il capacity planning l'analista verifica:
 
-- qual è la probabilità che una transazione bloccata sia realmente fraudolenta?
-- qual è la probabilità di frode tra le transazioni lasciate passare?
-- quanto costa un falso positivo?
-- quanto costa un falso negativo?
+- i ticket di domani appartengono alla stessa popolazione storica?
+- sono cambiate release, canali o categorie di problema?
+- il volume di 2.500 è realistico per quel giorno della settimana?
+- l'escalation rate è stabile o dipende fortemente dal tipo di ticket?
 
-Il linguaggio probabilistico trasforma un numero isolato in una struttura decisionale.
+La probabilità non sostituisce il contesto. Lo rende esplicito.
 
-### Frequenza osservata e probabilità
+### Frequenza osservata e probabilità futura
 
-Supponiamo di osservare 200.000 ordini e 14.000 resi.
+Se osserviamo 200.000 ordini e 14.000 resi, la frequenza empirica è 7%.
 
-La frequenza osservata dei resi è:
+Possiamo usare quel 7% come stima della probabilità di reso di nuovi ordini soltanto nella misura in cui il futuro resta comparabile al processo che ha prodotto lo storico.
 
-\[
-\frac{14.000}{200.000}=0,07
-\]
+Se domani cambia il mix di prodotto, la politica di reso o il paese servito, il dato storico può rimanere perfettamente corretto e diventare una stima poco utile.
 
-ovvero 7%.
+Per questo una probabilità storica contiene sempre una clausola implicita:
 
-Possiamo utilizzare quel 7% come stima della probabilità di reso di un ordine futuro solo se il contesto è sufficientemente comparabile.
+> **“se le condizioni rilevanti restano sufficientemente simili”.**
 
-Se metà degli ordini futuri appartiene a una nuova categoria con comportamento completamente diverso, il 7% storico può essere una stima molto debole.
+### Probabilità marginale e probabilità congiunta
 
-La probabilità non vive separata dal processo che genera i dati.
+Supponiamo che in una customer base:
 
-### Complemento
+- il 46% utilizzi il prodotto almeno quattro volte a settimana;
+- il 78% rinnovi;
+- il 42% utilizzi il prodotto almeno quattro volte a settimana **e** rinnovi.
 
-Se la probabilità di un evento \(A\) è \(P(A)\), la probabilità che l'evento non si verifichi è:
+Sono tre quantità diverse:
 
-\[
-P(A^c)=1-P(A)
-\]
+- `P(Uso alto) = 46%`;
+- `P(Rinnovo) = 78%`;
+- `P(Uso alto ∩ Rinnovo) = 42%`.
 
-Se la probabilità storica di rinnovo è 82%, la probabilità di mancato rinnovo è 18%.
+Le prime due descrivono eventi considerati singolarmente. La terza descrive la loro intersezione.
 
-La formula è banale. L'utilità pratica è meno banale.
+Questa distinzione diventa essenziale quando passiamo dalla domanda:
 
-Un'azienda può parlare per anni di “82% renewal rate” e non vedere immediatamente che sta perdendo quasi un cliente su cinque a ogni ciclo di rinnovo.
+> “Quanto spesso succede A?”
 
-Il modo in cui formuliamo la stessa probabilità può cambiare la percezione del problema.
+alla domanda:
 
-### Probabilità congiunta
+> “Quanto spesso succede A **insieme a** B?”
 
-Consideriamo due eventi:
+### Il complemento può rendere più visibile il rischio
 
-- \(A\): il cliente utilizza il prodotto almeno quattro volte alla settimana;
-- \(B\): il cliente rinnova.
+Se il renewal rate è 82%, il non-renewal rate è 18%.
 
-Possiamo essere interessati alla probabilità che entrambi avvengano:
+Matematicamente sono la stessa informazione:
 
-\[
-P(A \cap B)
-\]
+`P(non rinnovo) = 1 - P(rinnovo)`.
 
-Questa probabilità congiunta è particolarmente importante quando analizziamo comportamenti multipli.
+Ma il framing cambia la lettura operativa.
 
-Un SaaS potrebbe scoprire che:
+“82% rinnova” può sembrare una performance rassicurante. “18% non rinnova” rende immediatamente visibile che quasi un cliente su cinque è a rischio a ogni ciclo.
 
-- 46% dei clienti usa il prodotto almeno quattro volte a settimana;
-- 78% rinnova;
-- 42% utilizza il prodotto almeno quattro volte a settimana **e** rinnova.
+L'analista dovrebbe conoscere entrambe le formulazioni e scegliere quella più adatta alla decisione, senza usarle per manipolare la percezione.
 
-Questi tre numeri raccontano cose diverse.
+### Probabilità individuale e frequenza di gruppo
 
-### Probabilità non significa certezza individuale
+Se un modello assegna a un cliente `70%` di probabilità di churn, quel cliente non “churnerà al 70%”. Avrà un solo esito osservato.
 
-Se un modello assegna a un cliente una probabilità di churn del 70%, non significa che quel cliente “churnerà al 70%”.
+Il significato diventa verificabile su gruppi di casi comparabili: se prendiamo molti clienti ai quali il modello assegna circa il 70% e il modello è ben calibrato, ci aspettiamo che una quota vicina al 70% faccia churn.
 
-Il cliente farà una cosa o l'altra.
+Questa distinzione tornerà nel Capitolo 10 sui modelli predittivi.
 
-Il 70% descrive la nostra incertezza o la frequenza attesa in una popolazione di casi comparabili.
+### La scheda minima di una probabilità
 
-Se prendessimo 10.000 clienti ai quali il modello assegna circa il 70% e il modello fosse ben calibrato, ci aspetteremmo approssimativamente 7.000 churn.
+Ogni volta che usiamo una probabilità in un'analisi, dovremmo poter compilare:
 
-Questa interpretazione diventerà importante quando parleremo di modelli predittivi.
+```text
+Evento:
+Popolazione eleggibile:
+Orizzonte temporale:
+Fonte della stima:
+Condizioni assunte stabili:
+Decisione che usa la probabilità:
+```
 
-### Il principio operativo
+Se uno di questi campi è ambiguo, il problema non si risolve aggiungendo decimali.
 
-Quando compare una probabilità in un'analisi, chiediamo sempre:
-
-**Qual è l'evento? Qual è la popolazione? Qual è la finestra temporale? Quali condizioni stiamo assumendo stabili?**
-
-Senza queste quattro informazioni, una probabilità rischia di essere solo un numero con il simbolo `%`.
+> **Una probabilità precisa applicata all'evento sbagliato resta una risposta sbagliata.**
