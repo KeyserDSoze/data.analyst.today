@@ -1,162 +1,226 @@
-## 13.8 Case study — Northstar Mobility: il problema non è scegliere un tool, ma progettare il flusso
+## 13.8 Caso end-to-end — Northstar Mobility e il Tooling Decision Record
+
+**Caso simulato/composito.**
+
 Northstar Mobility gestisce servizi di mobilità urbana in 14 città europee.
 
-Il COO chiede un sistema per monitorare ogni mattina:
+Il COO chiede “un sistema unico” per:
 
-- corse completate;
-- cancellazioni;
-- disponibilità mezzi;
-- incidenti;
-- revenue per città;
-- customer support backlog.
+- KPI giornalieri;
+- investigazione delle anomalie;
+- alert operativi;
+- analisi strategiche mensili.
 
-In più, il team Operations vuole poter investigare rapidamente anomalie locali.
+La prima riunione parte male.
 
-Il primo dibattito interno parte male.
+Una persona propone Excel perché tutti lo conoscono. Un'altra Python perché è più flessibile. BI vuole centralizzare tutto nel dashboard. Engineering propone streaming.
 
-Una persona propone Excel perché «tutti lo sanno usare». Un'altra vuole Python perché «è più professionale». Il team BI vuole costruire tutto in Power BI. Data Engineering propone un nuovo streaming layer.
+Ognuna delle proposte può essere tecnicamente sensata.
 
-Tutti stanno parlando dello strumento prima di aver scomposto il problema.
+Il problema è che **stanno scegliendo un tool per quattro lavori diversi**.
 
-## 13.8.1 Scomporre la domanda
+### 1. Scomporre per decisione e tempo
 
-Il team analytics definisce quattro bisogni distinti.
+Il team costruisce questa matrice.
 
-### Bisogno A — KPI ufficiali giornalieri
+| Need | Consumer | Frequenza | Decision deadline | Metodo |
+|---|---|---:|---:|---|
+| KPI ufficiali | COO / city manager | giornaliera | 07:30 | aggregazione |
+| Diagnosi ad hoc | analyst | quando serve | ore | EDA / drill-down |
+| Vehicle availability alert | Operations | continua | < 5 min | regola/anomaly |
+| Strategic review | Strategy | mensile | giorni | cohort, pricing, modelli |
 
-Serve un set stabile di metriche, aggiornato entro le 7:30.
+Già questa tabella rende poco plausibile una soluzione “tutto nello stesso ambiente”.
 
-### Bisogno B — investigazione ad hoc
+### 2. Vincoli comuni
 
-Gli analyst devono poter esplorare città, fasce orarie, vehicle type e cause di cancellazione.
+Qualunque combinazione deve però rispettare:
 
-### Bisogno C — alert operativo
+```text
+metric definitions condivise
+identity di city / vehicle / trip
+controlli su completezza e freshness
+access control
+history sufficiente
+lineage verso le sorgenti
+```
 
-Se la disponibilità mezzi in una città scende sotto una soglia, Operations deve ricevere un alert rapidamente.
+Questi requisiti arrivano dai Capitoli 11 e 12.
 
-### Bisogno D — analisi mensile profonda
+Il tool selection non li sostituisce.
 
-Ogni mese il team Strategy studia retention, pricing, elasticità e performance per coorte.
+### 3. Valutare le proposte
 
-Quattro bisogni diversi non richiedono necessariamente un unico strumento.
+#### Tutto in spreadsheet
 
-## 13.8.2 La prima architettura proposta: tutto in Excel
+Ottimo per:
 
-Il team Operations propone di esportare ogni mattina i dati in un workbook centrale.
+- scenari;
+- review manuali;
+- piccoli estratti.
 
-### Vantaggi
+Debole come backbone perché:
 
-- familiarità;
-- rapidità iniziale;
-- facile modifica manuale.
+- gli eventi sono numerosi;
+- servono refresh affidabili;
+- esistono più consumer;
+- gli alert non sono un uso naturale;
+- la logica ufficiale rischia di duplicarsi.
 
-### Problemi
+**Verdetto:** utile come decision surface locale, non come source of truth.
 
-- milioni di eventi;
-- refresh fragile;
-- versioning debole;
-- accesso concorrente;
-- KPI duplicabili;
-- difficile gestione di alert;
-- rischio di copie locali.
+#### Tutto in Python
 
-Excel rimane utile per scenari e prototipi, ma non come backbone.
+Ottimo per:
 
-## 13.8.3 La seconda proposta: tutto in Python
+- analisi avanzate;
+- simulazione;
+- automazione custom.
 
-Un data scientist propone notebook Python per KPI, alert e report.
+Debole come unica superficie perché:
 
-### Vantaggi
+- il COO non dovrebbe consumare notebook;
+- KPI semplici non richiedono una libreria Python per ogni refresh;
+- la semantica rischia di restare dispersa in script diversi.
 
-- flessibilità;
-- automazione;
-- analisi avanzata.
+**Verdetto:** adatto all'analisi specialistica, non a tutto il serving.
 
-### Problemi
+#### Tutto in BI
 
-- consumo difficile per utenti business;
-- semantic definitions sparse nel codice;
-- notebook non ideale per dashboard executive;
-- manutenzione maggiore per KPI semplici.
+Ottimo per:
 
-Python è utile per analisi profonde, ma non è il miglior front-end per il COO.
+- KPI ricorrenti;
+- distribuzione;
+- drill-down controllato.
 
-## 13.8.4 La terza proposta: tutto in streaming
+Debole per:
 
-Data Engineering propone una pipeline near-real-time per tutti i dati.
+- modellistica avanzata;
+- investigazione molto fluida;
+- ingestion/alert operational real time;
+- business logic che dovrebbe vivere upstream.
 
-Il team quantifica però il requisito.
+**Verdetto:** ottimo consumption layer per le domande stabilizzate.
 
-Il COO accetta dati aggiornati entro 45 minuti. Solo l'alert sulla disponibilità richiede latenza inferiore a 5 minuti.
+#### Streaming per tutto
 
-Costruire streaming completo per tutte le metriche sarebbe una soluzione molto più costosa del bisogno.
+Il requisito più urgente è <5 minuti solo per vehicle availability.
 
-## 13.8.5 La soluzione ibrida
+Gli altri flussi tollerano 45 minuti, giornaliero o più.
 
-Il team sceglie:
+**Verdetto:** usare bassa latenza dove il ritardo cambia l'azione, non come default architetturale.
 
-1. **warehouse/lakehouse centrale** per dati storici e trasformazioni condivise;
-2. **SQL** per costruire fact e metriche operative;
-3. **semantic layer + BI** per KPI ufficiali;
-4. **streaming limitato** solo agli eventi necessari agli alert operativi;
-5. **Python/R notebook** per analisi mensili, modelli e investigazioni avanzate;
-6. **Excel** per scenari finanziari e simulazioni veloci durante le riunioni;
-7. **AI assistant** per accelerare query e documentazione, con test e reconciliation obbligatori.
+### 4. Soluzione composita
 
-Nessuno strumento «vince».
+Il team propone:
 
-Il sistema funziona perché ogni strumento viene usato nel tratto del problema in cui ha il miglior rapporto tra potenza, semplicità e controllo.
+```text
+operational sources
+        ↓
+shared data platform
+        ↓
+certified SQL models
+        ├────────────→ BI: KPI giornalieri
+        ├────────────→ analyst workspace: SQL/Notebook
+        └────────────→ Strategy datasets → Python/R
 
-## 13.8.6 Il risultato dopo sei mesi
+availability events
+        ↓
+low-latency path
+        ↓
+Operations alert
 
-Prima del redesign:
+scenario outputs
+        ↓
+spreadsheet quando serve interazione business
+```
 
-- 7 report manuali;
-- 4 definizioni di cancellazione;
-- aggiornamento mattutino completato tra le 9:00 e le 11:00;
-- circa 16 ore settimanali di lavoro manuale;
-- alert basati su controlli umani.
+L'AI può assistere query, documentazione e review, ma non cambia i confini di ownership.
 
-Dopo il redesign:
+### 5. Il Tooling Decision Record
 
-- KPI ufficiali disponibili alle 7:15;
-- definizioni centralizzate;
-- alert disponibilità in pochi minuti;
-- report manuali ridotti drasticamente;
-- analyst liberi di dedicare più tempo a diagnosi e decisioni.
+Per i KPI giornalieri:
 
-Il beneficio più importante non è tecnologico.
+```text
+Decision: monitoraggio operativo mattutino
+Stage: recurring production
+Data scale: multi-city, storico condiviso
+Freshness: entro 07:30
+Consumers: COO + city managers
+Method: aggregazioni e confronti
+Choice: certified SQL models + BI
+Rejected: spreadsheet backbone, notebook-only
+Reason: riuso, accesso condiviso, refresh e metriche governate
+Owner: Analytics + data platform
+Exit condition: revisione se la decisione richiede latenza <15 min
+```
 
-È che il team smette di discutere «Excel vs Python vs BI» e inizia a ragionare in termini di **funzione del componente**.
+Per l'alert vehicle availability:
 
-## 13.8.7 La matrice pratica di scelta
+```text
+Decision: intervento operativo su disponibilità
+Stage: production
+Freshness: <5 min
+Choice: low-latency event path + alerting
+Rejected: daily BI refresh
+Reason: il ritardo ha costo operativo reale
+Exit condition: rivalutare se policy/azione cambia
+```
 
-| Problema | Strumento candidato |
+Per Strategy:
+
+```text
+Decision: investigazione mensile
+Stage: exploratory / recurring analysis
+Choice: SQL + Python/R/notebook
+Serving: risultati sintetici, non notebook come prodotto executive
+Exit condition: promuovere metriche stabili nel layer certificato
+```
+
+### 6. Il punto più importante: definire la migrazione prima di averne bisogno
+
+Northstar non decide soltanto quali tool usare oggi.
+
+Definisce i segnali che richiedono una nuova review:
+
+- aumento di frequenza;
+- nuovo consumer downstream;
+- maggiore criticità;
+- volume che cambia il runtime;
+- requisito di audit;
+- crescita della manutenzione;
+- definizione diventata stabile e condivisa;
+- nuovo vincolo di latenza.
+
+Questo impedisce due errori opposti:
+
+**premature industrialization**
+
+Costruire troppo prima di dimostrare il valore.
+
+**accidental production**
+
+Lasciare che un prototipo diventi infrastruttura senza accorgercene.
+
+### 7. Tool portfolio invece di tool winner
+
+La maturità non richiede un solo stack per ogni problema.
+
+Richiede un **portfolio coerente**, nel quale ogni ambiente ha un ruolo comprensibile.
+
+| Funzione | Ambiente candidato |
 |---|---|
-| Analisi rapida e scenari | Excel / foglio |
-| Query su grandi dati strutturati | SQL |
-| Statistica, ML, simulazioni | Python / R |
-| EDA e prototipazione programmabile | Notebook |
-| KPI condivisi e monitoraggio | BI + semantic layer |
-| Pipeline e storage scalabile | Cloud data platform |
-| Workflow semplici e ripetitivi | No-code / low-code |
-| Generazione e revisione assistita | AI + verifica umana |
+| Scenario/interazione | spreadsheet |
+| Relational compute vicino al dato | SQL |
+| Metodi specialistici | Python/R |
+| Laboratorio analitico | notebook |
+| Consumo ricorrente | BI |
+| Shared execution | data/cloud platform |
+| Workflow semplice | low-code/no-code |
+| Accelerazione costruzione/review | AI assistita |
 
-Questa tabella non è una legge. È un punto di partenza.
+La tabella non assegna il tool automaticamente.
 
-## 13.8.8 Il test finale prima di scegliere
+Serve a impedire che ogni team trasformi il proprio strumento preferito nell'intera architettura.
 
-Prima di adottare uno strumento chiediamo:
-
-1. Qual è il problema analitico?
-2. Quanto spesso si ripete?
-3. Quanto dato dobbiamo elaborare?
-4. Chi consumerà il risultato?
-5. Quanto deve essere riproducibile?
-6. Chi lo manterrà?
-7. Quanto costa operarlo?
-8. Qual è il rischio se fallisce?
-9. È un prototipo o un sistema?
-10. Stiamo aggiungendo complessità perché serve o perché possiamo?
-
-> **La maturità tecnica non consiste nell'usare strumenti sofisticati. Consiste nel sapere quando la sofisticazione non serve.**
+> **Il problema non è scegliere un vincitore. È assegnare a ogni componente una responsabilità e sapere quando quella responsabilità deve cambiare.**
