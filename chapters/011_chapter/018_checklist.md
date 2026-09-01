@@ -1,90 +1,251 @@
-## 11.17 Checklist operativa: prima di fidarsi di una query
+## 11.17 Analytical Data Contract: prima di fidarsi di una trasformazione
 
-Una query può essere elegante, veloce e sintatticamente perfetta. Prima di usarla per una decisione importante, però, conviene attraversare una checklist più ampia.
+Una query può essere elegante, veloce e sintatticamente perfetta. Il deliverable di questo capitolo non è quindi una checklist di sintassi, ma un **Analytical Data Contract**: una specifica compatta che rende esplicite le proprietà che una trasformazione deve preservare.
 
-### Domanda e metrica
+Non è necessariamente un file YAML o un prodotto specifico. Può vivere in documentazione, codice, metadata o tooling dedicato.
 
-- Quale decisione deve supportare questa query?
-- La metrica è definita in modo non ambiguo?
-- Numeratore e denominatore sono coerenti?
-- Stiamo misurando stock, flow, evento o stato?
+La cosa importante è che le decisioni semantiche non restino nascoste dentro SQL.
 
-### Grain
+### 1. Business meaning
 
-- Qual è il grain di ogni tabella sorgente?
-- Qual è il grain desiderato del risultato?
-- Dopo ogni join, il grain cambia?
-- Il numero di righe cresce più del previsto?
+```text
+business question:
+metric/use case:
+decision supported:
+owner:
+```
 
-### Chiavi e join
+Domande:
 
-- La chiave è unica sul lato che dovrebbe esserlo?
-- Il join è one-to-one, one-to-many o many-to-many?
-- Un `INNER JOIN` sta eliminando entità rilevanti?
-- Un `LEFT JOIN` genera `NULL` che poi influenzano i calcoli?
-- Stiamo unendo due fact table senza pre-aggregazione?
+- quale decisione deve supportare il dataset?
+- quale fenomeno business rappresenta?
+- esiste una definizione certificata della metrica?
 
-### Tempo
+### 2. Grain e popolazione
 
-- Quale data risponde alla domanda?
-- Quale timezone usa il business?
-- Servono attributi correnti o point-in-time?
-- Gli eventi possono arrivare tardi?
-- Esistono backfill o rettifiche?
+```text
+output grain:
+source grains:
+eligible population:
+exclusions:
+```
 
-### Duplicati
+Controllare:
 
-- Cosa significa duplicato in questo modello?
-- La business key è esplicita?
-- Le righe sono eventi o versioni?
-- La deduplicazione è deterministica?
+- cosa rappresenta una riga;
+- se il grain cambia durante le trasformazioni;
+- quali entità devono sopravvivere anche senza match;
+- se filtri e `NULL` cambiano il denominatore.
 
-### Dimensioni e storia
+### 3. Keys e relationship semantics
 
-- Gli attributi dimensionali cambiano nel tempo?
-- Serve SCD Type 1 o Type 2?
-- Le fact puntano alla versione dimensionale corretta?
+```text
+business key:
+record/event key:
+expected uniqueness:
+join cardinality:
+many-to-many bridge:
+allocation policy:
+```
 
-### Qualità
+Controllare:
 
-- Le chiavi obbligatorie sono non-null?
-- Le chiavi che devono essere uniche lo sono davvero?
-- I valori categorici appartengono ai domini previsti?
-- La referential integrity regge?
-- Volumi, freshness e distribuzioni sono plausibili?
-- Il totale si riconcilia con una fonte affidabile?
+- unicità reale delle chiavi;
+- one-to-one / one-to-many / many-to-many;
+- row multiplier atteso;
+- conservazione dei totali dopo allocazioni.
 
-### Performance e costo
+### 4. Time semantics
 
-- Stiamo leggendo solo colonne necessarie?
-- Il periodo analizzato è quello necessario?
-- Il motore può usare partition pruning/clustering/index?
-- Una trasformazione pesante viene ripetuta inutilmente?
-- Il costo è stato stimato prima dell'esecuzione quando possibile?
+```text
+business/event date:
+reporting date:
+timezone:
+point-in-time attributes:
+late-arrival policy:
+```
 
-### Incrementalità
+Chiedere:
 
-- I record possono cambiare dopo la creazione?
-- Qual è la colonna di modifica affidabile?
-- Qual è la lookback window?
-- Come gestiamo delete e late-arriving data?
-- Possiamo fare full refresh e backfill?
+- quale data risponde alla domanda?
+- quale timezone interpreta il business?
+- gli attributi devono essere correnti o storici?
+- come trattiamo backfill, rettifiche e lateness?
 
-### AI-assisted SQL
+### 5. Identity e version semantics
 
-- Abbiamo letto la query generata?
-- Il prompt esplicitava grain, date, metriche e join?
-- Abbiamo testato casi noti?
-- Abbiamo controllato cardinalità e riconciliazioni?
-- La query modifica dati o schema?
-- Esiste una review umana prima dell'esecuzione distruttiva?
+```text
+entity/event/version model:
+version timestamp:
+winner rule:
+tie-break:
+```
 
-### Ultima domanda
+Controllare:
 
-Prima di pubblicare il risultato chiedere:
+- cosa significa “duplicato”;
+- se le righe sono eventi o versioni;
+- se la deduplicazione è deterministica;
+- quanto valore viene rimosso.
 
-> **Se questo numero fosse sbagliato del 20%, quale decisione cambierebbe? E quali controlli abbiamo fatto per ridurre quella possibilità?**
+### 6. Metric semantics
+
+```text
+base measures:
+numerator:
+denominator:
+additivity:
+refund/cancellation policy:
+FX policy:
+```
+
+Controllare:
+
+- ratio of sums vs average of ratios;
+- stock vs flow;
+- metriche additive, semi-additive e non additive;
+- componenti condivisi del semantic layer.
+
+### 7. Transformation path
+
+```text
+source
+→ normalization
+→ dedup/version handling
+→ enrichment
+→ aggregation/allocation
+→ final model
+```
+
+Ogni step dovrebbe avere:
+
+- grain in ingresso;
+- grain in uscita;
+- cosa cambia;
+- perché cambia;
+- test associati.
+
+### 8. Quality invariants
+
+```text
+invariant:
+tolerance:
+severity:
+failure behavior:
+```
+
+Includere dove rilevante:
+
+- uniqueness;
+- not null;
+- accepted values;
+- referential integrity;
+- volume/freshness;
+- join coverage;
+- allocation conservation;
+- reconciliation.
+
+### 9. Update semantics
+
+```text
+source mutability:
+change detection:
+unique/merge key:
+lookback:
+delete policy:
+backfill:
+full refresh:
+reconciliation:
+```
+
+Un modello incrementale deve dichiarare come continua a vedere modifiche tardive e se può essere ricostruito.
+
+### 10. Service envelope
+
+```text
+refresh cadence:
+expected ready time:
+freshness target:
+expected cost/scan:
+performance threshold:
+consumer pattern:
+```
+
+La qualità include anche arrivare in tempo e con un costo proporzionato.
+
+### 11. Lineage e ownership
+
+```text
+upstream sources:
+downstream consumers:
+metric owner:
+technical owner:
+version/change log:
+```
+
+Se una modifica rompe una definizione, dobbiamo sapere chi viene impattato.
+
+Il Capitolo 18 porterà questa logica a livello organizzativo. Qui ci basta rendere la trasformazione auditabile.
+
+### 12. AI execution boundary
+
+Se SQL viene generato o modificato da AI:
+
+```text
+allowed sources:
+read-only boundary:
+required tests:
+required reconciliations:
+human approval for writes:
+```
+
+L'AI deve ricevere più semantica possibile e operare dentro confini verificabili.
+
+### Un esempio compatto
+
+```text
+MODEL: fct_valid_order_lines
+
+PURPOSE
+net revenue e margin analysis
+
+GRAIN
+una riga per order_line_id valido
+
+POPULATION
+ordini confirmed/delivered; cancelled esclusi; refund sottratti
+
+TIME
+order_business_date in timezone locale del mercato
+
+KEYS
+order_line_id unico
+order_id many-to-one rispetto alle linee
+
+PRODUCT DIMENSION
+versione valida alla order_business_date
+
+QUALITY
+order_line_id unique [BLOCK]
+product dimension coverage >= 99.9% [BLOCK]
+Finance net revenue reconciliation ±0.3% [BLOCK]
+freshness entro 07:30 [WARN]
+
+UPDATE
+mutable; updated_at + 45d lookback; late queue; full rebuild disponibile
+
+OWNER
+Analytics Engineering / Finance
+```
+
+Questa specifica permette a un analyst, a un reviewer o a un agente AI di capire ciò che il modello promette senza reverse-engineering completo della query.
+
+### La domanda finale
+
+Prima di pubblicare un dataset o KPI importante chiediamo:
+
+> **Quali proprietà devono restare vere affinché il risultato continui a significare ciò che promettiamo? Sono documentate? Sono testate? Sappiamo che cosa succede quando si rompono?**
 
 La maturità SQL di un Data Analyst non si misura dal numero di funzioni che conosce.
 
-Si misura dalla capacità di costruire query che rappresentano correttamente il business, falliscono in modo visibile quando le assunzioni si rompono e possono essere comprese e verificate anche da altri.
+Si misura dalla capacità di costruire trasformazioni che **preservano significato, rendono visibili le assunzioni e possono essere comprese, testate e modificate senza affidarsi alla memoria dell'autore**.
