@@ -1,84 +1,171 @@
-## 7.8 Il forecast non è un numero: gli intervalli di previsione
+## 7.8 Il forecast non è una linea: distribuzione, intervalli e coverage
 
-Molte dashboard mostrano il futuro con una singola linea. È elegante, leggibile e spesso fuorviante.
+Una previsione puntuale come:
 
-Un forecast puntuale come "la domanda prevista per ottobre è 12.400 unità" dà l'impressione che il futuro sia stato stimato con precisione. In realtà un modello serio dovrebbe comunicare anche quanta incertezza esiste intorno a quella previsione.
+> domanda prevista: 12.400 unità
 
-### Caso realistico: 12.400 unità non significa 12.400 unità
+è semplice da comunicare. È anche incompleta quando l'incertezza modifica la decisione.
 
-Un produttore di elettrodomestici deve decidere quante unità di un nuovo forno ordinare per il mercato italiano nel mese di ottobre.
+Hyndman e Athanasopoulos descrivono il forecast come una **distribuzione di possibili valori futuri**; il point forecast è soltanto un riassunto di quella distribuzione. Gli intervalli di previsione rendono visibile una parte dell'incertezza.[^fpp-pi]
+
+### Caso simulato/composito — Ordinare 12.400 non è la stessa cosa che prevedere 12.400
+
+Un produttore deve ordinare un nuovo forno per il mercato italiano.
 
 Il modello produce:
 
-- forecast puntuale: 12.400 unità;
-- intervallo di previsione 80%: 11.300-13.600;
-- intervallo di previsione 95%: 10.400-14.700.
+- point forecast: 12.400 unità;
+- prediction interval 80%: 11.300–13.600;
+- prediction interval 95%: 10.400–14.700.
 
-Se il responsabile acquisti riceve solo 12.400, potrebbe interpretarlo come una stima quasi certa. Gli intervalli raccontano invece una storia diversa: lo scenario plausibile è ampio.
+Se il buyer vede solo 12.400, può trattarlo come un ordine consigliato.
 
-Questo cambia la decisione.
+Ma il forecast non conosce il costo della decisione.
 
-Se lo stock-out costa molto, può avere senso ordinare più vicino alla parte alta dell'intervallo. Se l'obsolescenza è costosa, può essere preferibile un ordine più prudente con possibilità di riapprovvigionamento.
+Se lo stock-out è molto costoso e il riapprovvigionamento richiede mesi, può essere razionale ordinare sopra il valore centrale. Se l'obsolescenza è costosa e il replenishment è rapido, la decisione può essere più prudente.
 
-Il forecast, quindi, non decide da solo. Offre una distribuzione di scenari che deve essere collegata ai costi delle decisioni.
+La distribuzione di forecast alimenta la decisione. Non la sostituisce.
 
-### Intervallo di confidenza e intervallo di previsione non sono la stessa cosa
+### Confidence interval e prediction interval
 
-È utile separare due idee:
+Il Capitolo 5 ha introdotto gli intervalli di confidenza per l'incertezza su una stima.
 
-- un **intervallo di confidenza** riguarda l'incertezza sulla stima di un parametro;
-- un **intervallo di previsione** riguarda l'incertezza su una futura osservazione.
+Qui la domanda è diversa: **quanto può variare una osservazione futura?**
 
-Il secondo è normalmente più largo perché deve incorporare non solo l'incertezza del modello, ma anche la variabilità futura del fenomeno.
+Un prediction interval incorpora la variabilità del futuro prevista dal modello e tende quindi a essere più ampio dell'incertezza su un semplice parametro medio.
 
-### L'incertezza cresce con l'orizzonte
+Confondere i due intervalli porta a rappresentare il futuro con precisione eccessiva.
 
-Prevedere domani è generalmente più facile che prevedere tra dodici mesi.
+### L'orizzonte allarga l'incertezza
 
-Per questo un forecast corretto dovrebbe mostrare intervalli che tendono ad allargarsi con l'orizzonte.
+Una proprietà comune dei forecast è che l'incertezza aumenta andando avanti nel tempo. Hyndman e Athanasopoulos mostrano che i prediction interval multi-step tendono ad allargarsi con l'horizon.[^fpp-pi]
 
-Un modello che presenta la stessa precisione apparente a 7, 30 e 365 giorni merita attenzione: potrebbe non rappresentare adeguatamente l'incertezza.
+Se la dashboard mostra la stessa banda stretta a:
 
-### Caso realistico: il budget costruito sulla linea centrale
+- 1 giorno;
+- 30 giorni;
+- 12 mesi;
 
-Una società SaaS prepara il piano annuale usando un forecast del new ARR:
+serve capire che cosa stia realmente rappresentando.
 
-| Trimestre | Forecast ARR nuovo |
-|---|---:|
+In alcuni modelli la dinamica può essere particolare, ma una precisione apparentemente invariata a lunghissimo orizzonte merita almeno una verifica.
+
+### Un intervallo dichiarato al 80% deve essere verificato
+
+Stampare “80% prediction interval” non significa che il sistema sia ben calibrato.
+
+Nel backtest possiamo misurare la **coverage**:
+
+> quale quota dei valori futuri osservati è caduta realmente dentro l'intervallo nominale dell'80%?
+
+Se la coverage storica è 52%, gli intervalli sono troppo stretti o le assunzioni non reggono.
+
+Se è 99%, potrebbero essere troppo conservativi per alcune decisioni.
+
+La coverage dovrebbe essere letta anche per:
+
+- horizon;
+- segmento;
+- regime normale vs promozionale;
+- stagione;
+- scala della serie.
+
+### Width e coverage devono essere lette insieme
+
+Un intervallo larghissimo può raggiungere facilmente alta coverage e risultare poco utile.
+
+Un intervallo strettissimo è utile solo se rimane calibrato.
+
+Quindi valutiamo almeno:
+
+- **coverage** — quante osservazioni future conteniamo;
+- **width** — quanto è ampia la banda;
+- **business usefulness** — la banda è abbastanza informativa da cambiare la decisione?
+
+Non basta ottimizzare un singolo numero.
+
+### Caso simulato/composito — Il budget trasformato in promessa
+
+Una società SaaS costruisce il piano annuale sul point forecast del new ARR:
+
+| Trimestre | Point forecast |
+| --- | ---: |
 | Q1 | 4,8 M€ |
 | Q2 | 5,2 M€ |
 | Q3 | 5,7 M€ |
 | Q4 | 6,1 M€ |
 
-Il CFO costruisce costi, assunzioni e investimenti sulla linea centrale. A metà anno, il risultato è del 9% sotto il forecast e parte un piano di riduzione dei costi.
+A metà anno il risultato è 9% sotto la linea centrale e parte una revisione dei costi.
 
-Il problema non era necessariamente che il modello fosse "sbagliato". L'analisi ex post mostra che il risultato reale era ancora dentro l'intervallo di previsione 80%.
+L'analisi mostra che il dato reale è ancora dentro un intervallo di previsione che il modello considerava plausibile.
 
-Il vero errore era organizzativo: il piano aziendale aveva trasformato una previsione probabilistica in una promessa.
+Il problema non è soltanto “forecast error”. È che l'organizzazione ha trasformato la media della distribuzione in una promessa di budget.
 
-Da quel momento l'azienda costruisce tre scenari:
+Il processo viene ridisegnato con:
 
 - downside;
 - base;
-- upside.
+- upside;
+- trigger espliciti per assunzioni di spesa.
 
-Le assunzioni di spesa vengono associate a soglie e trigger espliciti.
+Il forecast diventa una mappa dell'incertezza invece di una falsa certezza.
 
-### Forecast probabilistico e decisione
+### Probabilità di superare una soglia
 
-Quando l'incertezza ha valore economico, possiamo spingerci oltre il singolo intervallo e ragionare in termini di probabilità:
+Per molte decisioni non serve sapere il point forecast. Serve sapere:
 
-- probabilità di superare la capacità produttiva;
+- probabilità di superare capacità;
+- probabilità di stock-out;
 - probabilità di scendere sotto una soglia di cassa;
-- probabilità di mancare l'SLA;
-- probabilità di esaurire lo stock;
-- probabilità di raggiungere il target.
+- probabilità di mancare un SLA;
+- probabilità di raggiungere un target.
 
-A quel punto il forecast diventa un vero strumento di decisione.
+Se la capacità massima è 14.000 unità, una domanda più utile di “forecast = 12.400” è:
 
-> **Una previsione senza incertezza è spesso una narrazione troppo precisa di un futuro che preciso non è.**
+> qual è la probabilità che la domanda superi 14.000?
 
-### Riferimenti
+Questo collega direttamente la distribuzione alla decisione.
 
-- NIST, materiali sugli intervalli statistici e prediction intervals: https://www.nist.gov/publications/fiducial-prediction-intervals
-- Hyndman, R.J. & Athanasopoulos, G., *Forecasting: Principles and Practice*, 3rd edition: https://otexts.com/fpp3/
+### Intervalli condizionati alle assunzioni del modello
+
+Un prediction interval non incorpora automaticamente ogni forma di incertezza del mondo reale.
+
+Può non catturare bene:
+
+- un competitor che entra improvvisamente;
+- una nuova regolamentazione;
+- una promozione non presente nel training;
+- una rottura della supply chain;
+- un cambio di pricing radicale;
+- un errore nella feature pipeline.
+
+La banda è una misura di incertezza **sotto il modello e le sue condizioni**, non un confine metafisico del futuro.
+
+### Forecast distribution e scenari
+
+Quando esistono decisioni note che cambieranno il processo, può essere più utile produrre scenari condizionati:
+
+- forecast con prezzo invariato;
+- forecast con +10% di prezzo;
+- forecast con nuova capacità;
+- forecast con campagna pianificata.
+
+Gli scenari non vanno confusi con quantili della stessa distribuzione. Rispondono a ipotesi di mondo differenti.
+
+### Il campo del Temporal Decision Brief
+
+```text
+Point forecast:
+Forecast distribution / intervalli:
+Coverage nominale:
+Coverage osservata nel backtest:
+Width per horizon:
+Probabilità di superare soglie critiche:
+Scenari condizionati:
+Fonti di incertezza NON incluse:
+Decisione associata:
+```
+
+> **Una previsione senza incertezza comunica più precisione di quella che possiede. Una previsione con un intervallo non calibrato comunica rigore senza averlo ancora verificato.**
+
+[^fpp-pi]: Hyndman, R.J. & Athanasopoulos, G., *Forecasting: Principles and Practice*, 3rd ed., “Distributional forecasts and prediction intervals”, https://otexts.com/fpp3/prediction-intervals.html
