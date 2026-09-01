@@ -1,120 +1,245 @@
-## 12.13 Failure e recovery: progettare il giorno in cui qualcosa andra' storto
+## 12.13 Failure e recovery: tornare a uno stato affidabile, non soltanto far ripartire il job
 
-Una pipeline affidabile non è quella che non fallisce mai. È quella che **fallisce in modo osservabile, recuperabile e senza corrompere il dato**.
+Una pipeline affidabile non è quella che non fallisce mai.
 
-### Caso realistico: Helix Pharma
+È quella che, quando fallisce:
 
-Helix riceve dati di vendita da 42 mercati.
+- rende il problema visibile;
+- limita la propagazione;
+- sa quale stato è ancora valido;
+- può recuperare senza duplicare o perdere dati;
+- dimostra che il risultato recuperato è di nuovo affidabile.
 
-Ogni notte una pipeline:
+### Caso simulato/composito — Helix Pharma e il caricamento parziale
 
-1. acquisisce i file locali;
-2. valida lo schema;
-3. converte le valute;
-4. aggiorna il warehouse;
-5. ricalcola le metriche commerciali.
+Helix riceve ogni notte dati da 42 mercati.
 
-Alle 03:17 la pipeline si interrompe durante il caricamento del mercato brasiliano.
+Il flusso è:
 
-Il problema non è soltanto il fallimento.
+```text
+files
+→ schema validation
+→ currency normalization
+→ warehouse load
+→ commercial mart
+```
 
-Il problema è capire **cosa era già stato scritto**.
+Durante il mercato brasiliano il job si interrompe dopo aver scritto una parte delle righe.
 
-Se il sistema non distingue tra task completati, parziali e non eseguiti, una ripartenza può:
+La domanda operativa non è soltanto:
 
-- duplicare dati;
-- saltare record;
-- lasciare versioni miste;
-- pubblicare un dataset incompleto come se fosse valido.
+> come rilanciamo il task?
 
-### Atomicita' e checkpoint
+È:
 
-Quando possibile, un passaggio dovrebbe essere atomico: o viene completato, oppure il risultato parziale non diventa visibile come prodotto valido.
+> **quale parte dell'output è visibile, quale è completa e quale stato possiamo ancora considerare valido?**
 
-Non sempre è possibile ottenere atomicita' perfetta. In alternativa servono checkpoint affidabili.
+### Failure boundary: impedire che il problema diventi una verità pubblicata
+
+Un buon design separa quando possibile:
+
+```text
+processing area
+→ validation
+→ publish boundary
+```
+
+Se la trasformazione fallisce prima del publish, il consumer continua a vedere:
+
+```text
+last known good version
+```
+
+oppure uno stato esplicitamente stale.
+
+È spesso meglio di esporre metà della nuova giornata insieme a metà della vecchia.
+
+### Atomicità e checkpoint
+
+L'ideale è che una pubblicazione importante sia atomica:
+
+```text
+old valid version
+→ new valid version
+```
+
+senza uno stato intermedio visibile.
+
+Quando non è possibile, servono checkpoint affidabili.
 
 Esempio:
 
 ```text
-market=BR
-date=2026-08-30
-last_successful_file=part-0187
+partition=BR/date=2026-08-30
+last_successful_chunk=0187
 ```
 
-In questo modo il sistema sa da dove riprendere.
+Ma un checkpoint è utile soltanto se il task che riprende è coerente con ciò che era già stato scritto.
 
-### Retry con criterio
+### Retry taxonomy
 
-Non tutti gli errori meritano lo stesso retry.
+Non tutti i failure sono uguali.
 
-Un timeout di rete può risolversi al secondo tentativo.
+**Transient**
 
-Uno schema incompatibile probabilmente no.
+- network timeout;
+- temporary rate limit;
+- short service outage.
 
-Ritentare automaticamente 20 volte una breaking change non rende la pipeline più robusta. Ritarda solo la diagnosi.
+Può meritare retry automatico con backoff.
 
-### Dead-letter e quarantena
+**Deterministic/data failure**
 
-Quando pochi record sono anomali, può essere utile separare:
+- schema incompatibile;
+- chiave mancante;
+- violazione contract;
+- file corrotto.
 
-- dati validi che possono proseguire;
-- record problematici messi in quarantena.
+Ritentare cento volte lo stesso input non aiuta.
 
-Esempio:
+**Partial-write failure**
+
+Richiede capire se il retry è idempotente o deve prima pulire/rollbackare lo stato incompleto.
+
+### Quarantena: continuare senza nascondere la perdita
+
+Un flusso può separare:
 
 ```text
-valid_orders -> curated.orders
-invalid_orders -> quarantine.orders
+valid records   → curated output
+invalid records → quarantine
 ```
 
-Ma attenzione: la quarantena non deve trasformarsi in un buco nero ignorato.
+Questa scelta può mantenere disponibile il servizio quando pochi record sono problematici.
 
-Bisogna monitorare:
+Ma la quarantena deve avere un suo contract:
 
-- quanti record entrano;
-- perché;
-- da quali sorgenti;
-- da quanto tempo non vengono risolti.
+- volume massimo tollerato;
+- motivo;
+- owner;
+- tempo massimo di permanenza;
+- backfill dopo correzione.
 
-### Recovery Point Objective e Recovery Time Objective
+Se il 15% delle righe è in quarantena e il dashboard resta verde, abbiamo semplicemente nascosto il failure.
 
-Anche nei sistemi dati sono utili due concetti operativi:
+### Partial availability: BLOCK, DEGRADE o LAST KNOWN GOOD
 
-- **RPO**: quanta perdita di dati temporale possiamo tollerare;
-- **RTO**: quanto tempo possiamo impiegare per ripristinare il servizio.
+Per ogni prodotto critico serve una policy.
 
-Un dashboard settimanale può tollerare un RTO di alcune ore.
+**BLOCK**
 
-Un sistema antifrode operativo probabilmente no.
+Non pubblicare nulla se manca una regione.
 
-### Il problema dei dati parziali
+Adatto quando l'aggregato sarebbe fuorviante.
 
-Una delle situazioni peggiori è quando il sistema non fallisce apertamente.
+**DEGRADE**
 
-Supponiamo che arrivino 41 mercati su 42.
+Pubblicare subset validi con caveat visibile.
 
-Il job termina con successo perché nessun errore tecnico si è verificato.
+Adatto quando i consumer possono lavorare per regione indipendentemente.
 
-Il fatturato globale viene pubblicato comunque.
+**LAST KNOWN GOOD**
 
-Tecnicamente la pipeline è verde.
+Servire la versione precedente, marcandola come stale.
 
-Analiticamente il prodotto è incompleto.
+Adatto quando un dato vecchio è più utile di un dato parziale.
 
-Per questo servono controlli di **completeness attesa**, non solo controlli di esecuzione.
+La scelta dipende dalla decisione.
 
-### Metodo operativo
+### RPO e RTO
 
-Per ogni pipeline critica definire:
+Due concetti classici di disaster recovery aiutano anche nei sistemi dati.
 
-1. cosa succede se fallisce a meta';
-2. come si identifica l'ultimo stato valido;
-3. quali task sono idempotenti;
-4. quali errori meritano retry;
-5. quali dati vanno quarantinati;
-6. quando bloccare il downstream;
-7. chi riceve l'alert;
-8. come eseguire il backfill;
-9. come verificare che il recovery non abbia duplicato dati.
+**RPO — Recovery Point Objective**
 
-**Recovery non significa far ripartire un job. Significa tornare a uno stato del dato che possiamo di nuovo considerare affidabile.**
+Quanta storia recente possiamo permetterci di non recuperare immediatamente?
+
+**RTO — Recovery Time Objective**
+
+Quanto tempo possiamo impiegare per ripristinare il servizio?
+
+Un fraud pipeline e un report settimanale possono avere obiettivi radicalmente diversi.
+
+Questi parametri devono essere coerenti con retention dei source logs, snapshot e capacità di replay.
+
+### Recovery verification
+
+Una recovery non è conclusa quando il job torna verde.
+
+Dobbiamo verificare almeno:
+
+```text
+uniqueness
+completeness
+freshness
+reconciliation
+partition coverage
+no duplicate replay
+```
+
+Se abbiamo riprocessato una finestra, confrontiamo anche:
+
+```text
+before incident
+vs
+recovered result
+```
+
+sui componenti sensibili.
+
+### Caso silenzioso: 41 mercati su 42
+
+Il failure più pericoloso può non generare exception.
+
+Se arrivano solo 41 file su 42 e il codice processa semplicemente ciò che trova, il task può terminare `SUCCESS`.
+
+Per questo il recovery design dipende anche da **expected completeness**, non soltanto dagli errori tecnici.
+
+### Runbook: cosa facciamo alle 03:00?
+
+Per asset importanti è utile avere un runbook che risponda a:
+
+```text
+symptom:
+likely failure boundaries:
+checks:
+last known good state:
+safe retry procedure:
+rollback:
+backfill:
+consumer communication:
+recovery validation:
+```
+
+Il valore del runbook emerge quando la persona che interviene non è l'autore originale della pipeline.
+
+### Campo della Data Flow Architecture Map
+
+Per ogni nodo critico annotiamo:
+
+```text
+failure modes:
+partial-write behavior:
+retry class:
+idempotent? sì/no
+checkpoint:
+last known good state:
+degraded serving policy:
+RPO:
+RTO:
+replay/backfill source:
+recovery validation:
+owner/on-call:
+```
+
+### Regola operativa
+
+Quando qualcuno dice:
+
+> “La pipeline è stata ripristinata.”
+
+la domanda dell'analista è:
+
+> **Abbiamo ripristinato il processo o abbiamo dimostrato di aver ripristinato uno stato del dato sufficientemente completo, corretto e riconciliato per essere usato di nuovo?**
+
+> **Recovery non significa riaccendere il sistema. Significa tornare a una versione dell'evidenza di cui possiamo nuovamente difendere l'affidabilità.**
