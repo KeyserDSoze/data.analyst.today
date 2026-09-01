@@ -1,101 +1,157 @@
-## 8.12 Mediatori e meccanismi: non basta sapere se funziona, vogliamo capire come
+## 8.12 Mediatori e meccanismi: capire come funziona senza cambiare domanda per errore
 
-Una volta stimato un effetto causale, spesso il business pone una seconda domanda:
+Dopo aver stimato un effetto totale, il business spesso chiede:
 
-> **perché funziona?**
+> **“Perché funziona?”**
 
-Questa domanda introduce il concetto di **mediatore**.
+È una domanda diversa.
 
-Un mediatore è una variabile che si trova sul percorso causale tra trattamento e outcome.
+Un **mediatore** è una variabile sul percorso causale tra trattamento e outcome.
+
+```text
+Trattamento -> Mediatore -> Outcome
+```
 
 Esempio:
 
-**nuovo onboarding → activation più rapida → maggiore retention**
+```text
+onboarding guidato -> time-to-value più breve -> retention più alta
+```
 
-Qui `activation_speed` potrebbe essere un mediatore.
+### Caso simulato/composito — Onboarding SaaS
 
-### Caso realistico: onboarding SaaS
+Un esperimento mostra:
 
-Una società SaaS testa un onboarding guidato con checklist, template e chiamata iniziale.
-
-Risultati a 90 giorni:
-
-| Metrica | Controllo | Nuovo onboarding |
+| Metrica | Standard | Guidato |
 |---|---:|---:|
-| activation entro 7 giorni | 44% | 63% |
-| retention a 90 giorni | 71% | 79% |
+| Activation D7 | 44% | 63% |
+| Retention D90 | 71% | 79% |
 
-L'intervento sembra migliorare la retention di 8 punti percentuali.
+L'effetto totale sulla retention è `+8 pp`.
 
-Ma il team prodotto vuole capire se il beneficio deriva davvero dall'activation più rapida.
+Il team vuole sapere se il beneficio passa attraverso activation più rapida.
 
-La tentazione è inserire `activation_within_7_days` come variabile di controllo in una regressione del churn.
+La tentazione è aggiungere `activation_D7` come controllo in una regressione sulla retention.
 
-Questo può però essere concettualmente sbagliato: l'activation è successiva al trattamento ed è probabilmente parte del meccanismo causale.
+Ma activation è **post-trattamento**.
 
-Controllarla significa bloccare una porzione dell'effetto che stiamo cercando di spiegare.
+Controllarla non “rende più precisa” la stima dell'effetto totale. Cambia il problema che stiamo tentando di stimare.
 
 ### Effetto totale, diretto e indiretto
 
-In modo intuitivo possiamo distinguere:
+In modo intuitivo:
 
-- **effetto totale**: quanto cambia l'outcome grazie al trattamento;
-- **effetto diretto**: parte dell'effetto che non passa attraverso il mediatore considerato;
-- **effetto indiretto**: parte che passa attraverso il mediatore.
+- **effetto totale:** tutto ciò che cambia nell'outcome per effetto del trattamento;
+- **effetto indiretto:** parte che opera attraverso il mediatore considerato;
+- **effetto diretto:** parte che non passa attraverso quel mediatore, secondo la definizione scelta.
 
-Questa scomposizione richiede assunzioni causali più forti rispetto alla semplice stima dell'effetto totale.
+Queste quantità sembrano una semplice scomposizione.
 
-### Perché è utile al business
+In realtà richiedono assunzioni causali aggiuntive.
 
-Capire il meccanismo cambia la decisione.
+### Il mediatore non è randomizzato solo perché il trattamento lo era
 
-Se il nuovo onboarding funziona soprattutto perché riduce il time-to-value, l'azienda può investire direttamente in:
+Anche se l'onboarding è stato randomizzato, `activation_D7` non lo è.
 
-- importazione dati automatica;
-- template preconfigurati;
-- integrazioni più rapide;
-- assistenza nei primi sette giorni.
+Utenti che si attivano presto possono differire per:
 
-Se invece l'effetto deriva soprattutto dalla relazione personale con il Customer Success, la soluzione operativa è diversa.
+- motivazione;
+- competenza tecnica;
+- urgenza;
+- qualità dei dati importati;
+- supporto interno.
 
-### Caso marketing: sconto e conversione
+Queste caratteristiche possono influenzare anche retention.
 
-Un e-commerce testa un coupon del 10%.
+Quindi una relazione `activation -> retention` all'interno dell'esperimento non diventa automaticamente una prova del meccanismo.
 
-La conversione cresce dal 3,8% al 4,7%.
+### Post-treatment confounding
 
-Il team vuole sapere se l'effetto passa da:
+Il trattamento può generare variabili che influenzano sia mediatore sia outcome.
 
-1. percezione di convenienza;
-2. aumento dell'urgenza;
-3. modifica del mix prodotti;
-4. riduzione dell'abbandono al checkout.
-
-Queste variabili non sono semplicemente "controlli". Possono essere componenti del percorso causale.
-
-### Attenzione al post-treatment bias
-
-Una regola molto importante:
-
-> **Non controllare automaticamente variabili misurate dopo il trattamento.**
-
-Possono essere mediatori, conseguenze del trattamento o collider creati dal trattamento stesso.
-
-### Il DAG aiuta
-
-Un DAG semplice può rappresentare:
+Per esempio:
 
 ```text
-Onboarding -> Activation -> Retention
-     \---------------------> Retention
+onboarding -> supporto ricevuto -> activation
+                         \-----> retention
 ```
 
-Questo schema obbliga a chiedere quale effetto vogliamo stimare.
+Studiare mediazione ignorando questo percorso può produrre interpretazioni fragili.
 
-Se vogliamo l'effetto totale dell'onboarding, controllare per activation può essere controproducente.
+La domanda “quanto passa da M?” è spesso più difficile della domanda “T funziona?”
 
-Se vogliamo studiare il meccanismo, dobbiamo formulare una domanda di mediazione esplicita.
+### Un meccanismo è utile se cambia la decisione
 
-### Regola pratica
+Supponiamo di avere evidenza credibile che il nuovo onboarding migliori retention.
 
-> **Prima di aggiungere una variabile al modello chiedi se è una causa preesistente, una conseguenza del trattamento o una parte del meccanismo che vuoi capire.**
+Possibili meccanismi:
+
+- time-to-value più breve;
+- importazione dati più completa;
+- relazione personale con Customer Success;
+- maggiore numero di collaboratori invitati;
+- riduzione degli errori iniziali.
+
+Se il beneficio deriva soprattutto dal TTV, potremmo investire in automazione e template.
+
+Se deriva dalla relazione umana, una soluzione completamente self-service potrebbe distruggere il valore.
+
+Capire il meccanismo può quindi cambiare **come scalare** l'intervento.
+
+### Mechanism evidence ladder
+
+È utile distinguere livelli di evidenza.
+
+**Livello 1 — Pattern coerente**
+
+> Il trattamento modifica il mediatore e il mediatore è associato all'outcome.
+
+Interessante, non sufficiente per una mediazione causale.
+
+**Livello 2 — Timing e DAG coerenti**
+
+> Il mediatore segue il trattamento, precede l'outcome e il causal model è plausibile.
+
+Più forte, ma restano confondenti del mediatore.
+
+**Livello 3 — Design specifico sul meccanismo**
+
+> Variazioni sperimentali o quasi-sperimentali permettono di isolare parti del percorso.
+
+Molto più informativo.
+
+### Caso simulato/composito — Coupon e checkout
+
+Un coupon aumenta conversione dal 3,8% al 4,7%.
+
+Il team osserva anche minore abbandono checkout.
+
+Non basta concludere:
+
+> “Il coupon funziona perché riduce checkout abandonment.”
+
+Potrebbero coesistere:
+
+- maggiore intenzione d'acquisto;
+- cambi di mix prodotto;
+- aumento urgenza;
+- riduzione della sensibilità al prezzo;
+- modifica del basket.
+
+Per attribuire una quota dell'effetto al checkout serve una domanda di mediazione esplicita.
+
+### Mechanism card
+
+```text
+Effetto totale già identificato?
+Mediatore candidato:
+Timing T -> M -> Y:
+Perché M è plausibilmente sul percorso?
+Quali cause pre-treatment influenzano M e Y?
+Quali variabili post-treatment possono confondere M -> Y?
+Quale effetto vogliamo: totale, diretto, indiretto?
+Quale decisione cambia conoscendo il meccanismo?
+Quanto è forte la causal claim consentita?
+```
+
+> **Non controllare automaticamente ciò che succede dopo il trattamento. Una variabile post-treatment può essere proprio il meccanismo che stai cercando di capire.**
