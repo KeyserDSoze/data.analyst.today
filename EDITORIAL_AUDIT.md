@@ -41,14 +41,14 @@ La CI costruisce automaticamente Markdown aggregato, DOCX e PDF a ogni modifica 
 
 ### Ultima build validata
 
-Dopo la revisione editoriale dei Capitoli **0–8**:
+Dopo la revisione editoriale dei Capitoli **0–9**:
 
 - **20 capitoli**;
 - **321 file Markdown**;
-- **192.697 parole stimate**;
-- **1.394.093 caratteri**;
-- **135 URL esterni distinti**;
-- **853 pagine PDF**;
+- **198.717 parole stimate**;
+- **1.443.493 caratteri**;
+- **145 URL esterni distinti**;
+- **885 pagine PDF**;
 - build Markdown, DOCX e PDF completata con successo.
 
 Il numero di pagine non è una metrica da massimizzare. La revisione può comprimere ripetizioni o ampliare esempi che aumentano la comprensione. L'obiettivo è massimizzare **densità di valore per pagina**.
@@ -136,6 +136,7 @@ Ogni caso reale importante deve avere:
 - Il Capitolo 6 usa Duolingo, Canal+, Microsoft Learn, Google Analytics, Stripe e NIST.
 - Il Capitolo 7 usa NIST, Hyndman & Athanasopoulos e Google Flu Trends.
 - Il Capitolo 8 usa World Bank / Inter-American Development Bank per counterfactuals e impact evaluation, Stanford per causal inference e il Premio Nobel 2021 per natural experiments e contributi metodologici di Card, Angrist e Imbens.
+- Il Capitolo 9 usa Microsoft Experimentation Platform / Microsoft Research per SRM, metric sensitivity, variance reduction/CUPED, A/A'/B, experimentation health e test di modifiche infrastrutturali.
 
 ### Da fare prima della release
 
@@ -170,7 +171,8 @@ Obiettivi:
 | 6 — Segmentazione, coorti e lifecycle analysis | **Revisionato** | **Lifecycle Diagnostic Map**. |
 | 7 — Serie temporali, anomalie e forecasting | **Revisionato** | **Temporal Decision Brief**. |
 | 8 — Causalità, confondenti e ragionamento controfattuale | **Revisionato** | **Causal Identification Brief**: estimand → assignment → causal model → counterfactual → identification → diagnostics → effect → scope → claim. |
-| 9–19 | **Da revisionare** | Procedere in ordine, controllando anche le sovrapposizioni inter-capitolo. |
+| 9 — Experimentation e A/B testing nel mondo reale | **Revisionato** | **Experiment Contract**: decision → treatment → eligibility/unità → metric contract → MDE/feasibility → inference plan → health gate → decision matrix → rollout/rollback → learning record. |
+| 10–19 | **Da revisionare** | Procedere in ordine, controllando anche le sovrapposizioni inter-capitolo. |
 
 ## 8. Confini concettuali da governare
 
@@ -225,7 +227,14 @@ Un'anomalia o forecast error può indicare cambiamento, ma non identifica la cau
 - **8:** quale comparison group e quali assunzioni identificano un effetto causale;
 - **9:** come progettare, eseguire, monitorare e decidere con un esperimento reale.
 
-Regola: il Capitolo 9 non deve rispiegare da zero p-value o il motivo per cui la randomizzazione identifica il controfattuale.
+Regola: il Capitolo 9 richiama power e randomizzazione come requisiti del design, senza rispiegare da zero la teoria già consolidata nei Capitoli 5 e 8.
+
+### Capitolo 8 / 9 — causal identification vs experiment operations
+
+- **8:** perché il design randomizzato identifica un effetto e che cosa l'estimand significa;
+- **9:** come preservare quel confronto attraverso assignment, exposure, telemetria, metriche, stopping e rollout.
+
+Regola: un RCT causalmente valido sulla carta può diventare non interpretabile se il sistema di experimentation rompe il confronto in produzione.
 
 ### Capitolo 6 / 8 / 9 / 10 — lifecycle, causalità, esperimento, prediction
 
@@ -264,15 +273,15 @@ La sequenza resta coerente:
 
 **mentalità → domanda → dati → statistica → comportamento → tempo → causalità → esperimenti → modelli → SQL → architettura → strumenti → AI → decisione → comunicazione → casi completi → scala → futuro**.
 
-Il percorso operativo nei primi nove capitoli è ora:
+Il percorso operativo nei primi dieci capitoli è ora:
 
-**Analytical Brief → Data Readiness Review → EDA Evidence Map → Uncertainty Brief → Lifecycle Diagnostic Map → Temporal Decision Brief → Causal Identification Brief**.
+**Analytical Brief → Data Readiness Review → EDA Evidence Map → Uncertainty Brief → Lifecycle Diagnostic Map → Temporal Decision Brief → Causal Identification Brief → Experiment Contract**.
 
-Il Capitolo 8 porta la domanda da “quale pattern osserviamo?” a “quale differenza può essere attribuita a un trattamento rispetto a un controfattuale credibile?”. Il capitolo separa esplicitamente **identificazione** e **stima**, distingue assignment mechanism, confounding, reverse causality, selection/collider e mediatori, e presenta DiD, matching, RDD e IV come strategie legate alla struttura del processo di assegnazione, non come formule che creano causalità.
+Il Capitolo 8 stabilisce quale differenza può essere attribuita a un trattamento rispetto a un controfattuale credibile. Il Capitolo 9 prende quel principio e lo porta nel sistema reale: identità, assignment, exposure, metriche, SRM, interference, durata, stopping, sensitivity, variance reduction, health gate e rollout devono preservare il confronto fino alla decisione. Il risultato finale non è più "B ha vinto", ma uno stato governato come **NO-SHIP / INCONCLUSIVE / REDESIGN AND RETEST / SHIP CANDIDATE / SHIP WITH CONSTRAINTS**, seguito da rollout e rollback espliciti.
 
 ## 10. Lunghezza
 
-Dopo i Capitoli 0–8 revisionati il PDF è di **853 pagine**.
+Dopo i Capitoli 0–9 revisionati il PDF è di **885 pagine**.
 
 La revisione può quindi continuare a comprimere ripetizioni o ampliare esempi che aumentano la comprensione senza alcun rischio rispetto all'obiettivo minimo di 400+ pagine.
 
@@ -318,4 +327,4 @@ Poi controllo manuale di:
 
 Il contenuto principale del libro è strutturalmente completo.
 
-La revisione editoriale ha completato i **Capitoli 0–8**. Il lavoro successivo continua dal **Capitolo 9 — Experimentation e A/B testing nel mondo reale**, che dovrà essere rifondato come capitolo della validità operativa dell'esperimento: unità e assignment, exposure, metric contract, SRM, contamination/interference, novelty, stopping rule, sample size/MDE, variance reduction, multiple metrics/variants, network effects, A/A, health checks, rollout e rollback.
+La revisione editoriale ha completato i **Capitoli 0–9**. Il lavoro successivo continua dal **Capitolo 10 — Regressione e modelli predittivi per Data Analyst**, con il compito di trasformarlo da panoramica di tecniche di modeling in un percorso operativo: target e decisione → baseline → split e leakage → discrimination/calibration → threshold ed economics → robustness → monitoring/drift → deployment e model card decisionale.
