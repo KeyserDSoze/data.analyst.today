@@ -1,78 +1,156 @@
-## 4.13 Una checklist operativa per l'EDA
+## 4.13 L'output dell'EDA: una mappa dell'evidenza, non una cartella di grafici
 
-L'Exploratory Data Analysis non è una sequenza rigida, ma avere una struttura riduce il rischio di saltare controlli essenziali.
+Una buona EDA può produrre decine di tabelle e visualizzazioni durante il lavoro.
 
-Prima di arrivare a una conclusione, un analista dovrebbe essere in grado di rispondere almeno a queste domande.
+Il deliverable finale non dovrebbe conservarle tutte.
 
-### Struttura
+Dovrebbe conservare **la struttura dell'evidenza** emersa dall'esplorazione.
 
-- Qual è l'unità di analisi?
-- Qual è la granularità reale?
-- Quante osservazioni abbiamo?
-- Quali variabili sono quantitative, categoriche, temporali o identificative?
+Un modo utile è costruire una **EDA Evidence Map** con cinque blocchi:
 
-### Distribuzioni
+1. fenomeno osservato;
+2. concentrazione e composizione;
+3. robustezza;
+4. ipotesi candidate;
+5. prossimo metodo necessario.
 
-- Quali sono media, mediana, quantili e dispersione?
-- La distribuzione è simmetrica o fortemente asimmetrica?
-- Esistono code lunghe, multimodalità o cluster visibili?
-- Gli outlier sono errori o fenomeni reali?
+### 1. Fenomeno osservato
 
-### Segmenti
+Scrivi il cambiamento principale in modo quantitativo e con la baseline esplicita.
 
-- Il risultato aggregato cambia per paese, prodotto, canale, customer type o coorte?
-- Un gruppo molto grande sta dominando la media?
-- Esiste un possibile Simpson's paradox?
+Esempio:
 
-### Relazioni
+> Il churn mensile è passato dal 6,2% all'8,1% negli ultimi quattro mesi, +1,9 pp rispetto alla media dei sei mesi precedenti.
 
-- Le variabili si muovono insieme?
-- La relazione è lineare?
-- È guidata da pochi punti?
-- Esiste una terza variabile plausibile che può spiegare entrambe?
+Non ancora:
 
-### Tempo
+> Il nuovo onboarding sta facendo aumentare il churn.
 
-- Esiste trend?
-- Esiste stagionalità?
-- Il confronto temporale usa una baseline sensata?
-- Un singolo giorno o periodo anomalo sta guidando la conclusione?
-- Una media mobile aiuta a separare rumore e movimento di fondo?
+La seconda frase appartiene a un livello di evidenza diverso.
 
-### Sensitivity check
+### 2. Concentrazione e composizione
 
-Una delle abitudini più utili è ripetere l'analisi con assunzioni leggermente diverse.
+Dove vive il fenomeno?
 
-Se il risultato sparisce quando:
+- quali segmenti contribuiscono di più al delta?
+- il movimento è generalizzato o localizzato?
+- cambia il mix della popolazione?
+- numeratore e denominatore si muovono nello stesso modo?
+- media e percentili raccontano la stessa storia?
 
-- si rimuove un singolo outlier;
-- si cambia la finestra temporale;
-- si controlla per un segmento;
-- si usa la mediana invece della media;
-- si esclude una settimana promozionale;
+Esempio:
 
-allora l'insight è fragile e va comunicato come tale.
+> Circa il 72% dell'aumento assoluto di churn proviene da SMB con meno di sei mesi di tenure; Enterprise è stabile.
 
-### L'output dell'EDA
+Questa frase restringe il problema senza pretendere di averne trovato la causa.
 
-L'EDA non dovrebbe produrre soltanto grafici. Dovrebbe produrre una lista di ciò che sappiamo, ciò che sospettiamo e ciò che deve ancora essere verificato.
+### 3. Robustezza
 
-Un buon output può avere questa forma:
+Ogni pattern importante dovrebbe essere accompagnato da almeno un controllo di sensibilità.
 
-**Osservazione:** il churn è aumentato dal 6,2% all'8,1%.
+Domande utili:
 
-**Concentrazione:** l'aumento è quasi interamente nel segmento SMB acquisito negli ultimi sei mesi.
+- resta visibile usando mediana invece della media?
+- cambia se escludiamo un periodo eccezionale, mantenendolo comunque documentato?
+- sopravvive alla segmentazione per una dimensione plausibile?
+- dipende da uno o due punti influenti?
+- è stabile con una baseline temporale alternativa sensata?
+- cambia quando mostriamo tasso e volume insieme?
 
-**Pattern:** i clienti coinvolti mostrano forte crescita dei ticket nei primi 30 giorni.
+Possiamo classificare informalmente il pattern come:
 
-**Ipotesi:** onboarding insufficiente o mismatch tra aspettative commerciali e prodotto.
+- **robusto**;
+- **moderatamente sensibile**;
+- **fragile**.
 
-**Non dimostrato:** i ticket causano churn.
+Non è un test statistico. È un modo per non dimenticare quanto la conclusione dipenda dalle scelte esplorative.
 
-**Prossimo passo:** analizzare categorie ticket, canale di acquisizione, onboarding completion e, se possibile, progettare una verifica causale.
+### 4. Ipotesi candidate e spiegazioni alternative
 
-Questa distinzione è fondamentale: **l'EDA deve restringere lo spazio delle spiegazioni, non fingere di averle già dimostrate**.
+Una tabella semplice evita che le ipotesi diventino fatti per ripetizione:
 
-IBM descrive l'EDA come un processo che usa tecniche statistiche e visuali per analizzare pattern, anomalie e relazioni prima di costruire conclusioni o modelli più formali.[^ibm-eda]
+| Pattern | Ipotesi candidata | Alternativa plausibile | Evidenza mancante |
+|---|---|---|---|
+| churn alto nei nuovi SMB | onboarding insufficiente | acquisition mix | completion e canale |
+| P95 delivery alto nel weekend | capacity insufficiente | mix geografico | volume per zona |
+| AOV alto nel social | effetto canale | product mix premium | confronto a mix costante |
 
-[^ibm-eda]: IBM, *What is Exploratory Data Analysis?*: https://www.ibm.com/think/topics/exploratory-data-analysis
+L'EDA è molto utile proprio quando mantiene aperte spiegazioni concorrenti.
+
+### 5. Prossimo metodo
+
+Alla fine dobbiamo sapere che cosa non può più essere risolto con un altro grafico.
+
+Possibili prossimi passi:
+
+- statistica inferenziale;
+- raccolta di nuovi dati;
+- analisi di coorte;
+- modello predittivo;
+- esperimento;
+- metodo causale;
+- approfondimento temporale;
+- nessun ulteriore lavoro, se l'evidenza è già sufficiente per la decisione descrittiva.
+
+### Template operativo
+
+```text
+Domanda:
+
+Fatto principale:
+
+Baseline:
+
+Distribuzione:
+
+Segmenti che spiegano il delta:
+
+Composizione / denominatori rilevanti:
+
+Pattern principali:
+
+Sensitivity checks:
+
+Pattern robusti:
+
+Pattern fragili:
+
+Ipotesi candidate:
+
+Spiegazioni alternative:
+
+Cosa NON è dimostrato:
+
+Prossimo metodo / decisione:
+```
+
+### Caso breve
+
+Invece di consegnare:
+
+> Correlazione ticket-churn = 0,54.
+
+l'EDA può produrre:
+
+> Il churn è aumentato dal 6,2% all'8,1%, quasi interamente nei nuovi SMB. In quel gruppo i clienti che aprono almeno tre ticket nei primi 30 giorni mostrano churn più elevato. La relazione resta visibile per canale ma si riduce molto controllando per product tier. Non sappiamo se i ticket siano causa del churn, sintomo di problemi di prodotto o entrambe le cose. Il prossimo passo è distinguere categorie ticket e sequenza temporale, poi valutare un disegno causale se vogliamo decidere un intervento.
+
+Questa è già una rappresentazione analitica molto più utile.
+
+### Una checklist finale, ma non quella del Capitolo 3
+
+Prima di chiudere l'EDA chiediti:
+
+- ho descritto centro, dispersione e forma dove servono?
+- ho mostrato volumi e denominatori?
+- ho controllato la composizione dei gruppi?
+- ho guardato i grafici prima di fidarmi dei coefficienti?
+- ho verificato pattern temporali plausibili?
+- ho stressato gli insight principali?
+- ho distinto fatti, ipotesi e causalità non dimostrata?
+- so quale domanda viene dopo?
+
+NIST descrive l'EDA come un approccio orientato alla scoperta della struttura e al controllo delle assunzioni, non come una procedura meccanica.[^nist-eda]
+
+> **Una buona EDA riduce il numero di storie compatibili con i dati, ma non finge di aver identificato la storia causale definitiva.**
+
+[^nist-eda]: NIST/SEMATECH, *Exploratory Data Analysis*. https://www.itl.nist.gov/div898/handbook/eda/eda_d.htm
