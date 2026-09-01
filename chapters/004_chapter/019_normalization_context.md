@@ -1,23 +1,20 @@
-## 4.18 Normalizzare per il contesto: quando i numeri grezzi ingannano
+## 4.18 Rendere confrontabili i confronti: esposizione, mix e base di riferimento
 
-Normalizzare significa riportare una misura a una base comparabile. Non è soltanto una tecnica statistica: è un atto di interpretazione.
+Aver scelto un buon denominatore non garantisce ancora che due gruppi siano confrontabili.
 
-A seconda del problema possiamo normalizzare per:
+Due team possono avere lo stesso win rate ma ricevere opportunità molto diverse. Due ospedali possono avere lo stesso tasso di complicanze ma trattare pazienti con profili di rischio differenti. Due negozi possono avere ricavi per metro quadrato simili ma operare in mercati con stagionalità e prezzi completamente diversi.
 
-- popolazione;
-- tempo;
-- superficie;
-- numero di clienti;
-- ordini;
-- dipendenti;
-- esposizione al rischio;
-- capitale investito;
-- traffico;
-- opportunità commerciali.
+Dopo la domanda:
 
-### Caso: quale team commerciale è davvero più efficace?
+> **Qual è il denominatore corretto?**
 
-La società B2B **VectorCore Systems** confronta tre team commerciali nel trimestre.
+arriva quindi una seconda domanda:
+
+> **Le basi che sto confrontando rappresentano davvero condizioni abbastanza simili da rendere il confronto utile?**
+
+### Caso simulato/composito — Qual è il team commerciale migliore?
+
+La società B2B immaginaria **VectorCore Systems** confronta tre team.
 
 | Team | Contratti chiusi |
 |---|---:|
@@ -25,9 +22,9 @@ La società B2B **VectorCore Systems** confronta tre team commerciali nel trimes
 | Mid-Market | 67 |
 | SMB | 118 |
 
-SMB sembra dominare.
+Se il criterio è il volume, SMB è primo.
 
-Poi vengono aggiunte le opportunità qualificate ricevute:
+Aggiungiamo le opportunità qualificate:
 
 | Team | Contratti | Opportunità | Win rate |
 |---|---:|---:|---:|
@@ -35,9 +32,9 @@ Poi vengono aggiunte le opportunità qualificate ricevute:
 | Mid-Market | 67 | 215 | 31,2% |
 | SMB | 118 | 590 | 20,0% |
 
-Il quadro cambia. Enterprise chiude meno contratti in valore assoluto ma converte una quota molto più alta delle opportunità.
+Ora Enterprise sembra il più efficace.
 
-Poi entra una terza variabile: il valore medio dei contratti.
+Aggiungiamo il valore medio dei contratti:
 
 | Team | Contratti | ACV medio | Nuovo ARR |
 |---|---:|---:|---:|
@@ -45,54 +42,68 @@ Poi entra una terza variabile: il valore medio dei contratti.
 | Mid-Market | 67 | 46.000 € | 3,08 M€ |
 | SMB | 118 | 9.500 € | 1,12 M€ |
 
-Tre metriche producono tre classifiche diverse.
+La classifica cambia ancora.
 
-Qual è quella corretta?
+Ma nemmeno il win rate rende automaticamente i team confrontabili. Le opportunità enterprise possono essere molto più selezionate prima di entrare nel pipeline; SMB può ricevere un volume enorme di lead meno qualificati; i cicli di vendita e i territori possono essere diversi.
 
-Dipende dalla decisione.
+Il problema non è trovare **la metrica che incorona un vincitore**. È capire quale dimensione di performance corrisponde alla decisione.
 
-Se vogliamo misurare volume, guardiamo i contratti. Se vogliamo valutare efficacia del processo commerciale, il win rate è più informativo. Se vogliamo capire contributo economico, nuovo ARR o margine possono essere più appropriati.
+### Volume, efficienza e valore non sono sinonimi
 
-### Normalizzare non significa scegliere la metrica che ci piace
+Tre domande producono tre metriche diverse:
 
-Il rischio opposto consiste nel continuare a cambiare denominatore finché emerge la storia desiderata.
+- **Quanto produciamo?** → contratti, ordini, revenue, casi risolti;
+- **Quanto convertiamo l'opportunità disponibile?** → win rate, conversion rate, output per ora;
+- **Quanto valore generiamo?** → ARR, margine, contribution margin, valore atteso.
 
-Una buona normalizzazione deve essere definita **prima** di guardare il risultato, sulla base del processo che vogliamo rappresentare.
+Una dashboard che usa una sola metrica per classificare processi complessi rischia di confondere questi livelli.
 
-### Metriche per unità
+### Il mix può creare performance apparente
 
-Molte metriche utili sono rapporti:
+Supponiamo che due call center abbiano entrambi un first-contact resolution rate dell'82%.
 
-- revenue per employee;
-- revenue per square meter;
-- cost per acquisition;
-- tickets per 1.000 customers;
-- defects per million opportunities;
-- orders per active customer;
-- incidents per 100.000 hours worked.
+Il primo gestisce soprattutto richieste semplici di password reset. Il secondo gestisce principalmente problemi di fatturazione e integrazioni tecniche.
 
-Il vantaggio è che rendono confrontabili entità di dimensione diversa.
+Il tasso è identico. Il compito no.
 
-Lo svantaggio è che possono nascondere il volume assoluto.
+Prima di concludere che i team abbiano la stessa efficacia, potremmo dover stratificare per tipo di ticket o costruire un confronto su popolazioni più omogenee.
 
-Un piccolo stabilimento può avere il tasso di difetti peggiore ma produrre soltanto il 2% dei pezzi. Un grande stabilimento può avere un tasso migliore ma generare più difetti assoluti.
+È lo stesso principio incontrato con Simpson's paradox: **la composizione della popolazione può generare, attenuare o invertire un confronto aggregato**.
 
-Per decidere dove intervenire potrebbero servirci entrambi.
+### La base di riferimento conta anche per lo z-score
 
-### Mostrare numeratore e denominatore
+Nella sezione 4.14 abbiamo standardizzato osservazioni rispetto a media e deviazione standard. Anche lì il risultato dipende dalla popolazione scelta.
 
-Una buona pratica è non mostrare mai un tasso isolato quando la dimensione della base è rilevante.
+Uno store aeroportuale confrontato con tutta la rete può sembrare estremo. Confrontato soltanto con altri store aeroportuali può risultare normale.
 
-Scrivere:
+La standardizzazione matematica non sostituisce quindi la scelta analitica della **reference population**.
 
-> Conversion rate: 18,4%
+### Mostrare sia intensità sia volume
 
-è meno informativo di:
+Un tasso alto su una base piccola e un tasso moderato su una base enorme possono suggerire priorità differenti.
 
-> 184 conversioni su 1.000 sessioni eleggibili: 18,4%.
+Per esempio:
 
-Questo diventa essenziale con segmenti piccoli. Un segmento con conversion rate del 50% su quattro visite non dovrebbe ricevere lo stesso peso decisionale di un segmento al 22% su 80.000 visite.
+- segmento A: 20% di reclami su 200 ordini → 40 reclami;
+- segmento B: 6% su 50.000 ordini → 3.000 reclami.
 
-Prima di confrontare performance, chiediamo quindi:
+A ha il rischio relativo peggiore. B genera quasi tutto l'impatto assoluto.
 
-**Stiamo confrontando numeri, o stiamo confrontando processi equivalenti su basi equivalenti?**
+Se dobbiamo capire dove il processo è più fragile, guardiamo A. Se dobbiamo ridurre rapidamente il numero totale di reclami, B può avere più leva.
+
+Una buona EDA tiene insieme entrambe le prospettive.
+
+### Una matrice mentale per i confronti
+
+Prima di dichiarare che A è “migliore” o “peggiore” di B, chiediti:
+
+| Dimensione | Domanda |
+|---|---|
+| Volume | Quanti eventi osserviamo? |
+| Esposizione | Su quante opportunità o unità a rischio? |
+| Mix | Le popolazioni hanno composizione simile? |
+| Tempo | Il periodo e la stagionalità sono comparabili? |
+| Valore | Gli eventi hanno lo stesso peso economico? |
+| Base | La popolazione di riferimento è appropriata? |
+
+> **Normalizzare non significa rendere magicamente uguali gruppi diversi. Significa rendere esplicito rispetto a che cosa li stiamo confrontando.**
