@@ -1,73 +1,106 @@
-## 3.5 Data quality: qualità rispetto a quale uso?
+## 3.5 Data quality: qualità rispetto a quale decisione?
 
-Dire che un dataset è "di buona qualità" non basta. La qualità del dato deve essere valutata rispetto all'uso che ne vogliamo fare.
+Dire che un dataset è "di buona qualità" è troppo generico.
 
-Un dataset può essere perfettamente adeguato per una dashboard mensile e inadatto per un sistema antifrode in tempo reale. Può essere sufficiente per stimare un trend aggregato ma troppo incompleto per analizzare singoli clienti.
+La qualità del dato deve essere valutata rispetto all'uso che ne vogliamo fare. Un dataset può essere adeguato per un trend mensile e inadatto per prendere una decisione sul singolo cliente. Può essere abbastanza tempestivo per il reporting finanziario e troppo lento per un sistema operativo che deve reagire in pochi minuti.
 
-IBM descrive la data quality come il grado con cui i dati soddisfano criteri quali accuratezza, completezza, validità, consistenza, unicità, tempestività e fitness for purpose. Le sei dimensioni più comunemente adottate sono accuracy, completeness, consistency, timeliness, validity e uniqueness.  
-Fonti: IBM, *What is Data Quality?* https://www.ibm.com/think/topics/data-quality ; IBM, *Data Quality Dimensions* https://www.ibm.com/think/topics/data-quality-dimensions
+Il Government Data Quality Framework britannico propone sei dimensioni fondamentali — **completeness, uniqueness, consistency, timeliness, validity e accuracy** — e insiste su un principio particolarmente utile per l'analista: non tutte le dimensioni hanno la stessa importanza per ogni uso. La priorità dipende dai bisogni dell'utente e dal contesto decisionale.[^gov-dq]
 
-### 1. Accuracy
+### Completezza
 
-Il valore rappresenta correttamente il fenomeno reale?
+Il dataset contiene i record e i valori che dovrebbero esserci?
 
-Esempio: l'indirizzo di spedizione registrato è quello effettivamente utilizzato?
+La completezza non coincide con `NOT NULL`.
 
-L'accuracy è difficile da misurare solo guardando il dataset perché spesso richiede una fonte esterna o una "source of truth".
+Una data di nascita valorizzata come `1900-01-01` può essere formalmente presente ma semanticamente mancante. E un campo opzionale può avere molti null senza creare alcun problema per la domanda che stiamo studiando.
 
-### 2. Completeness
+La domanda utile non è:
 
-I valori necessari sono presenti?
+> Quanti valori mancano?
 
-Possiamo misurare la percentuale di valori nulli, ma la completezza non coincide semplicemente con `NOT NULL`.
+ma:
 
-Una data di nascita può essere presente nel 100% dei record ma contenere valori di default come `1900-01-01`. Formalmente non è nulla; semanticamente è mancante.
+> **Manca qualcosa che potrebbe cambiare la conclusione?**
 
-### 3. Consistency
+### Unicità
 
-I dati rispettano regole coerenti tra record, tabelle e sistemi?
+Le entità che dovrebbero comparire una volta sono davvero rappresentate una sola volta?
 
-Esempio: lo stesso cliente risulta "Italia" nel CRM e "France" nel sistema ordini.
+Un record può essere duplicato anche se non è una copia byte-per-byte. Due anagrafiche con indirizzi differenti possono riferirsi alla stessa persona; due righe con timestamp di caricamento diversi possono rappresentare lo stesso ordine.
 
-### 4. Timeliness
+L'unicità è quindi una proprietà semantica prima ancora che tecnica.
 
-Il dato è disponibile abbastanza rapidamente per la decisione?
+### Consistenza
 
-Un dato perfettamente accurato consegnato tre settimane dopo può avere qualità insufficiente per una decisione operativa giornaliera.
-
-### 5. Validity
-
-Il valore rispetta formato, tipo, dominio e regole definite?
+Valori che descrivono lo stesso fenomeno si contraddicono?
 
 Esempi:
 
-- percentuale tra 0 e 100;
+- lo stesso cliente è `Italy` nel CRM e `France` nel billing;
+- un contratto risulta chiuso nella sorgente operativa e attivo nel mart analitico;
+- la stessa metrica usa definizioni diverse in due dashboard.
+
+La consistenza può essere interna al dataset oppure tra sistemi differenti.
+
+### Tempestività
+
+Il dato arriva abbastanza presto per essere utile?
+
+Un valore molto accurato disponibile tre settimane dopo può essere perfetto per un consuntivo e inutile per una decisione giornaliera.
+
+La tempestività include anche la **freshness**: quanto è recente il dato rispetto al momento in cui lo stiamo utilizzando?
+
+### Validità
+
+Il valore rispetta formato, tipo, dominio e regole previste?
+
+Esempi:
+
+- percentuale tra 0 e 100 quando il processo lo richiede;
 - `end_date >= start_date`;
-- paese appartenente a una lista valida;
-- quantità non negativa quando il processo non ammette valori negativi.
+- valuta appartenente a un elenco ammesso;
+- stato ordine appartenente all'enum previsto.
 
-### 6. Uniqueness
+Un valore valido, però, può essere comunque inaccurato. `country = IT` è formalmente valido anche se il cliente vive in Francia.
 
-I record che dovrebbero essere unici lo sono davvero?
+### Accuratezza
 
-Duplicati di clienti, transazioni o ordini possono gonfiare metriche e alterare segmentazioni.
+Il dato corrisponde abbastanza bene alla realtà?
 
-### Fitness for purpose
+Questa è spesso la dimensione più difficile da verificare guardando soltanto il dataset, perché richiede una fonte esterna, una riconciliazione o una conoscenza indipendente del fenomeno.
 
-La lezione più importante è che le dimensioni di qualità non devono essere valutate nel vuoto.
+Se il sistema registra 10.000 consegne ma il vettore ne certifica 9.400, il problema non si risolve osservando soltanto la tabella analitica.
 
-Supponiamo che il 10% dei clienti non abbia il campo `profession`.
+### Caso reale documentato — quando qualità significa accettare un trade-off
 
-È grave?
+Il Government Data Quality Framework usa come esempio il passaggio dell'Office for National Statistics britannico a stime mensili del PIL. Rendere il dato disponibile più rapidamente migliora la tempestività, ma può richiedere un compromesso rispetto alla quantità di informazione e alla precisione ottenibile in quella fase.[^gov-dq]
 
-Dipende.
+È un esempio importante perché mostra che la qualità non è una gara a massimizzare ogni dimensione contemporaneamente.
 
-Per calcolare il fatturato totale probabilmente no.
+A volte il business preferisce:
 
-Per costruire una segmentazione basata sulla professione potrebbe essere un problema critico.
+- un dato preliminare oggi, con incertezza dichiarata;
+- invece di un dato più completo tra un mese.
 
-Quindi una valutazione professionale della qualità segue la forma:
+In altri contesti la scelta corretta è l'opposto.
 
-> **Problema di qualità + dimensione interessata + impatto sulla domanda analitica.**
+### Dalla qualità generica all'impatto analitico
 
-Non basta scrivere "ci sono missing values". Dobbiamo spiegare quali conclusioni potrebbero essere distorte da quei missing values.
+Per ogni problema individuato, documentiamo tre cose:
+
+| Problema | Dimensione | Possibile impatto sulla domanda |
+|---|---|---|
+| 18% di `delivery_date` mancanti | Completezza | Il late delivery rate può essere sottostimato |
+| duplicati su `order_id` | Unicità | Ordini e revenue possono essere sovrastimati |
+| dati aggiornati con 36 ore di ritardo | Tempestività | Il monitoraggio giornaliero non rappresenta ancora il giorno precedente |
+| cambio enum non documentato | Validità/consistenza | Segmentazioni storiche non comparabili |
+
+Questa tabella è più utile di una generica etichetta "data quality: poor".
+
+### La regola del capitolo
+
+> **Un problema di data quality diventa analiticamente importante quando possiamo spiegare quale conclusione o decisione potrebbe distorcere.**
+
+Non dobbiamo perfezionare ogni colonna. Dobbiamo rendere affidabili le parti del dato da cui dipende la nostra inferenza.
+
+[^gov-dq]: UK Government Data Quality Hub, *The Government Data Quality Framework*. https://www.gov.uk/government/publications/the-government-data-quality-framework/the-government-data-quality-framework
