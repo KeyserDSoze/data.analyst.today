@@ -1,21 +1,22 @@
-## 11.12 Data quality tests: trasformare le assunzioni in controlli eseguibili
+## 11.12 Data quality tests: trasformare il contratto in invarianti eseguibili
 
 Ogni modello analitico contiene assunzioni.
 
-Spesso sono implicite:
+Nel Capitolo 3 abbiamo imparato a valutarle durante una Data Readiness Review. Qui facciamo un passo diverso: **le assunzioni che devono restare vere nel tempo diventano controlli automatici del modello**.
 
-- `order_id` dovrebbe essere unico;
-- `customer_id` non dovrebbe essere nullo;
-- `status` dovrebbe appartenere a un insieme noto;
-- ogni `product_id` dovrebbe esistere nella dimensione prodotto;
-- la revenue non dovrebbe duplicarsi da un giorno all'altro;
-- una percentuale dovrebbe stare tra 0 e 1.
+Se l'Analytical Data Contract dichiara:
 
-Finché queste assunzioni restano nella testa dell'analista, il sistema è fragile.
+```text
+grain: una riga per order_id
+status domain: created|paid|shipped|delivered|cancelled
+customer_sk: obbligatorio per ordini identificati
+freshness: entro 07:30
+net_revenue: riconciliabile con Finance entro tolleranza
+```
 
-Un modello più maturo le trasforma in **test automatici**.
+allora abbiamo già quasi scritto la specifica dei test.
 
-### Quattro famiglie di test fondamentali
+### Test strutturali
 
 #### Unicità
 
@@ -28,7 +29,7 @@ GROUP BY order_id
 HAVING COUNT(*) > 1;
 ```
 
-La query dovrebbe restituire zero righe.
+Il risultato atteso è zero righe.
 
 #### Not null
 
@@ -43,7 +44,9 @@ WHERE order_id IS NULL;
 ```sql
 SELECT DISTINCT status
 FROM fact_orders
-WHERE status NOT IN ('created', 'paid', 'shipped', 'delivered', 'cancelled');
+WHERE status NOT IN (
+    'created', 'paid', 'shipped', 'delivered', 'cancelled'
+);
 ```
 
 #### Referential integrity
@@ -53,88 +56,151 @@ SELECT COUNT(*)
 FROM fact_orders f
 LEFT JOIN dim_customer d
   ON f.customer_sk = d.customer_sk
-WHERE d.customer_sk IS NULL;
+WHERE f.customer_sk IS NOT NULL
+  AND d.customer_sk IS NULL;
 ```
 
-### Ma la qualità non è soltanto vincoli riga-per-riga
+Questi test verificano proprietà locali del dataset.
 
-Molti problemi emergono solo a livello aggregato.
+### Test di popolazione e comportamento
+
+Molti failure mode non rompono nessuna chiave.
 
 Esempi:
 
-- ordini giornalieri -63% rispetto alla media recente;
-- tasso di `NULL` su `country` da 0,4% a 18%;
-- una sorgente smette improvvisamente di inviare dati;
-- revenue raddoppia esattamente alle 02:00;
-- un evento che arrivava entro 20 minuti comincia ad arrivare dopo 7 ore.
+- ordini giornalieri -63%;
+- `country` null rate da 0,4% a 18%;
+- una sorgente smette di arrivare;
+- revenue raddoppia in un'ora;
+- lateness passa da 20 minuti a 7 ore;
+- una categoria nuova compare improvvisamente sul 35% dei record.
 
-Servono quindi anche test su:
+Servono quindi controlli su:
 
 - volume;
 - freshness;
+- completezza;
 - distribuzioni;
 - range;
-- riconciliazione con fonti operative;
-- continuità temporale.
+- nuove categorie;
+- continuità temporale;
+- row multiplier dopo join critiche.
 
-### Caso realistico: il conversion rate record
+### Caso simulato/composito — BlueBasket e il record di conversione
 
-**BlueBasket**, e-commerce europeo, vede il conversion rate passare dal 3,7% al 5,1% in un giorno.
+BlueBasket vede la conversione passare dal 3,7% al 5,1% in un giorno.
 
-Il dashboard viene condiviso con entusiasmo.
+Gli ordini sono quasi invariati. Le sessioni sono diminuite del 27%.
 
-Gli ordini sono stabili. Sono le sessioni a essere diminuite del 27%.
+Un nuovo consent banner ha ridotto il tracking delle visite anonime, mentre gli acquisti finali continuano a essere registrati.
 
-Un nuovo consent banner ha impedito il tracking di parte delle visite anonime, ma non degli acquisti finali.
+Il numeratore è quasi intatto. Il denominatore è incompleto.
 
-Il KPI è quindi migliorato perché il denominatore è diventato incompleto.
-
-Un test di volume avrebbe potuto segnalare:
-
-```text
-sessions_today < 0.85 * median_sessions_same_weekday_last_8_weeks
-```
-
-prima che il risultato arrivasse al management.
-
-### Data quality e semantica
-
-Un test può passare e il dato può comunque essere sbagliato.
-
-Supponiamo che `net_revenue` sia sempre non-null, positivo e numericamente plausibile.
-
-Se da ieri include l'IVA mentre prima la escludeva, i test tecnici di base possono non accorgersene.
-
-Per questo servono anche **semantic checks** e riconciliazioni:
+Un semplice controllo avrebbe potuto segnalare:
 
 ```text
-warehouse net revenue
-vs
-finance ledger
-vs
-payment processor
+sessions_today < 0.85 × median_sessions_same_weekday_last_8_weeks
 ```
 
-Non devono necessariamente coincidere al centesimo, ma le differenze devono essere spiegabili.
+prima che il KPI venisse presentato come miglioramento di prodotto.
 
-### Severity: non tutti i test devono bloccare tutto
+### Semantic checks: quando i valori sono validi ma il significato cambia
 
-Una strategia utile distingue:
+Supponiamo che `net_revenue` sia sempre:
 
-- **error**: il modello non deve essere pubblicato;
-- **warning**: il modello viene pubblicato ma va investigato;
-- **monitoring**: si registra una deviazione senza bloccare.
+- non-null;
+- positivo;
+- nel range storico;
+- aggiornato in tempo.
+
+Se da oggi include l'IVA mentre ieri la escludeva, quasi tutti i test tecnici possono passare.
+
+Per questo alcuni invarianti devono verificare **relazioni tra sistemi o componenti semantici**.
 
 Esempio:
 
-- duplicato su `order_id` → error;
-- freshness 20 minuti oltre SLA → warning;
-- mix geografico insolito → monitoring.
+```text
+warehouse recognized revenue
+vs
+finance ledger
+```
 
-### Il principio importante
+oppure:
 
-Un test di qualità non serve a dimostrare che i dati sono perfetti.
+```text
+gross_revenue
+- discounts
+- refunds
+= net_revenue
+```
 
-Serve a rendere visibili le condizioni sotto cui siamo disposti a fidarci del modello.
+entro tolleranze dichiarate.
 
-**Ogni assunzione importante che può essere verificata automaticamente dovrebbe, prima o poi, diventare un test.**
+La qualità analitica non coincide con la validità dei singoli campi.
+
+### Severity e comportamento del sistema
+
+Non tutti i test devono avere lo stesso effetto.
+
+Una policy utile distingue:
+
+- **BLOCK**: il dataset non viene pubblicato;
+- **WARN**: viene pubblicato con stato degradato e investigazione obbligatoria;
+- **MONITOR**: deviazione registrata, nessun blocco automatico.
+
+Per esempio:
+
+| Invariante | Severity |
+|---|---|
+| duplicato su chiave primaria analitica | BLOCK |
+| foreign key mancanti > 0,5% | BLOCK |
+| freshness +20 minuti rispetto a SLA | WARN |
+| mix geografico fuori range storico | MONITOR |
+
+La severity dovrebbe riflettere il rischio decisionale, non la facilità tecnica del test.
+
+### Non testare solo il risultato finale
+
+Una pipeline di cinque trasformazioni può produrre un totale plausibile pur avendo compensato due errori opposti.
+
+Per questo i controlli più utili vivono anche sui confini tra step:
+
+```text
+raw_orders
+→ deduped_orders        [uniqueness, removed value]
+→ valid_orders          [population, exclusions]
+→ enriched_orders       [join coverage, row multiplier]
+→ daily_metrics         [reconciliation, denominators]
+```
+
+Ogni trasformazione dovrebbe lasciare traccia di ciò che ha cambiato.
+
+### Test e osservabilità non sono la stessa cosa
+
+Un test verifica una condizione prevista.
+
+L'osservabilità, che approfondiremo nel Capitolo 18, aiuta a capire comportamenti imprevisti e dipendenze del sistema.
+
+Qui il principio è più semplice:
+
+> **se un'assunzione è necessaria affinché la metrica conservi significato, e possiamo verificarla automaticamente, deve diventare un invariante del modello.**
+
+### Campo del contract: quality invariants
+
+L'Analytical Data Contract dovrebbe contenere almeno:
+
+```text
+invariant:
+metric/query used to test it:
+expected condition:
+tolerance:
+severity:
+owner:
+what happens on failure:
+```
+
+A quel punto la frase “questa tabella dovrebbe essere una riga per ordine” non è più documentazione passiva.
+
+È una proprietà che la pipeline dimostra a ogni esecuzione.
+
+> **Un modello affidabile non chiede agli utenti di ricordare tutte le sue assunzioni. Le rende eseguibili e fallisce in modo visibile quando smettono di essere vere.**
