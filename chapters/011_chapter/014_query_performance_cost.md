@@ -1,6 +1,6 @@
-## 11.13 Performance e costo: una query corretta può essere troppo costosa
+## 11.13 Performance e costo: una trasformazione deve arrivare in tempo e con un costo proporzionato
 
-Nel lavoro analitico moderno, una query non viene valutata soltanto per il risultato.
+Una query può essere semanticamente corretta e comunque essere un cattivo componente del sistema analitico.
 
 Conta anche:
 
@@ -8,15 +8,16 @@ Conta anche:
 - quante risorse usa;
 - quante volte viene eseguita;
 - quanto costa;
-- quanto scala quando il volume cresce.
+- se arriva prima della decisione;
+- se scala quando il volume cresce.
 
-Una query che funziona su 5 milioni di righe può diventare problematica su 5 miliardi.
+Queste proprietà entrano nell'Analytical Data Contract perché **latenza e costo possono rendere inutilizzabile un dato perfettamente corretto**.
 
-### Caso realistico: il dashboard da 27.000 euro al mese
+### Caso simulato/composito — TravelSphere e il dashboard da 27.000 euro al mese
 
-**TravelSphere** costruisce un dashboard operativo che aggiorna ogni 15 minuti.
+TravelSphere costruisce un dashboard operativo aggiornato ogni 15 minuti.
 
-La query principale legge una tabella eventi molto grande e contiene:
+La query principale legge una grande tabella eventi:
 
 ```sql
 SELECT *
@@ -24,24 +25,58 @@ FROM events
 WHERE DATE(event_timestamp) >= CURRENT_DATE - 90;
 ```
 
-Il dashboard usa solo 12 colonne su oltre 180.
+Il dashboard usa soltanto 12 colonne su oltre 180.
 
-La query viene eseguita:
+La trasformazione viene eseguita:
 
-- 4 volte l'ora;
+- quattro volte l'ora;
 - 24 ore al giorno;
 - da più ambienti;
-- con filtri differenti.
+- con filtri simili ma non identici.
 
-In un sistema cloud a consumo, una query apparentemente innocua diventa una voce di costo significativa.
+Su un motore cloud a consumo, la ripetizione trasforma una query apparentemente innocua in una voce di costo significativa.
 
-Su BigQuery, per esempio, il modello on-demand può fatturare in base ai byte elaborati; Google raccomanda di stimare il costo prima dell'esecuzione, usare dry run e limitare i byte massimi fatturabili. La documentazione sottolinea inoltre che `LIMIT` non riduce necessariamente i byte letti su tabelle non clusterizzate.[^bq-cost]
+Il problema non è “il cloud costa troppo”. È che il prodotto analitico sta pagando continuamente per ricostruire lo stesso lavoro.
 
-### `SELECT *` non è sempre innocuo
+### Caso reale documentato — BigQuery e il costo per byte elaborati
 
-In un motore columnar, leggere colonne inutili può significare elaborare più dati del necessario.
+Nel modello on-demand di BigQuery il costo delle query dipende dai byte letti. Google raccomanda di:
 
-Meglio:
+- stimare i byte prima dell'esecuzione;
+- usare query validator o dry run;
+- impostare `maximum bytes billed` quando appropriato;
+- evitare di usare `LIMIT` come controllo dei costi su tabelle non clusterizzate;
+- preferire le funzioni di preview quando si vuole soltanto ispezionare i dati.
+
+In particolare, su una tabella non clusterizzata:
+
+```sql
+SELECT *
+FROM huge_table
+LIMIT 1000;
+```
+
+può restituire poche righe senza ridurre i byte letti dalla query.
+
+Fonte: https://docs.cloud.google.com/bigquery/docs/best-practices-costs
+
+Questo caso è utile perché mostra una differenza fondamentale:
+
+> **numero di righe restituite e lavoro necessario per ottenerle non sono la stessa cosa.**
+
+### `SELECT *`: il problema è anche il contratto
+
+Su motori columnar, leggere colonne non necessarie può aumentare il volume elaborato.
+
+Ma c'è un secondo problema.
+
+```sql
+SELECT *
+```
+
+lega implicitamente il consumer a qualunque nuova colonna venga aggiunta alla sorgente.
+
+Una query più esplicita:
 
 ```sql
 SELECT
@@ -54,90 +89,131 @@ FROM events
 WHERE ...;
 ```
 
-Non perché `SELECT *` sia moralmente sbagliato, ma perché rende meno esplicito il contratto della query e può aumentare costo e fragilità.
+comunica anche quali campi appartengono davvero all'interfaccia analitica.
 
-### Filtrare presto, ma capire il motore
+### Ottimizzare significa misurare il piano, non applicare superstizioni
 
-Una regola generale utile è ridurre il volume il prima possibile, ma l'ottimizzatore del database può riscrivere il piano.
+Regole come:
 
-Il punto non è applicare superstizioni del tipo "CTE è sempre più veloce" o "subquery è sempre più lenta".
+- “CTE è sempre più lenta”;
+- “subquery è sempre peggiore”;
+- “filtra sempre nella prima riga possibile”;
 
-Il punto è osservare:
+non sono universali.
+
+I motori possono riscrivere il piano.
+
+Quando il costo conta, osserviamo ciò che il sistema esegue realmente:
 
 - execution plan;
 - bytes scanned;
-- righe lette e prodotte;
+- partizioni lette;
+- righe input/output;
 - shuffle;
-- spill su disco;
+- spill;
 - scansioni ripetute;
-- join cardinality.
+- cardinalità dei join.
 
-### Partitioning e clustering
+La competenza importante non è memorizzare trucchi. È saper formulare un'ipotesi di costo e verificarla.
 
-Se una tabella è interrogata quasi sempre per data, partizionarla temporalmente può evitare di leggere periodi irrilevanti.
+### Partitioning, clustering e pruning
 
-Se viene filtrata spesso per alcune colonne ad alta utilità, il clustering o meccanismi equivalenti possono aiutare il pruning.
+Se quasi tutte le query leggono periodi limitati, il layout fisico può aiutare a evitare scansioni inutili.
 
-Google indica esplicitamente partitioning e clustering come strumenti per ridurre i dati elaborati e quindi, in molti scenari, il costo delle query.[^bq-pricing]
+BigQuery documenta partitioning e clustering proprio come strumenti che possono ridurre la quantità di dati letti e quindi costo e latenza in molti workload.
 
-### Il filtro che rompe il pruning
+La regola analitica da ricordare è:
 
-Supponiamo che una tabella sia partizionata su `event_date`.
+> **la struttura fisica dovrebbe riflettere i pattern di accesso importanti e ricorrenti.**
 
-Una query chiara:
+Non significa partizionare ogni tabella. Significa capire quali filtri delimitano davvero il lavoro.
 
-```sql
-WHERE event_date >= DATE '2026-08-01'
-```
+### Materializzare quando il riuso supera il costo di ricostruzione
 
-può consentire un pruning diretto.
-
-Trasformazioni inutilmente complesse sulla colonna di partizione possono rendere più difficile l'ottimizzazione in alcuni motori.
-
-Per questo, quando performance e costo contano, è importante capire come il motore interpreta il predicato.
-
-### Materializzare quando ha senso
-
-Se una trasformazione molto pesante viene riutilizzata da 20 dashboard, ricalcolarla ogni volta può essere inefficiente.
-
-Può essere più sensato materializzare un modello intermedio:
+Supponiamo che venti dashboard ripetano:
 
 ```text
 raw events
-    ↓
-clean events
-    ↓
-daily customer activity
-    ↓
-dashboards
+→ identity resolution
+→ bot filtering
+→ sessionization
+→ customer-day aggregation
 ```
 
-Google suggerisce anche di materializzare risultati intermedi in alcuni casi di query grandi e ripetute, così da interrogare poi dataset più piccoli.[^bq-cost]
+Ricalcolare l'intera catena per ogni consumer aumenta:
 
-### Performance come problema di prodotto analitico
+- costo;
+- latenza;
+- possibilità di divergenza;
+- superficie di errore.
 
-Un dashboard che impiega 45 secondi a caricarsi viene usato meno.
+Può essere più sensato materializzare:
 
-Una query ad hoc che costa centinaia di euro viene eseguita meno liberamente.
+```text
+raw events
+→ clean events
+→ customer_daily_activity
+→ dashboard / notebook / model
+```
 
-Un modello che completa alle 10:30 invece che alle 07:00 può arrivare troppo tardi per la decisione.
+Google raccomanda anche, per query grandi e ripetute, di valutare la materializzazione di risultati intermedi in tabelle più piccole.
 
-Quindi performance e costo non sono soltanto ottimizzazione tecnica. Sono parte della qualità del prodotto analitico.
+La decisione va comunque bilanciata con:
 
-### Checklist rapida
+- storage;
+- freshness;
+- complessità operativa;
+- numero di consumer;
+- frequenza di riuso.
 
-Prima di ottimizzare chiedere:
+### Query budget: collegare costo e valore
 
-- quali colonne servono davvero?
-- qual è il periodo necessario?
-- la tabella è partizionata coerentemente con l'uso?
-- stiamo ripetendo la stessa trasformazione pesante?
-- un join sta esplodendo il numero di righe?
-- possiamo pre-aggregare?
-- esiste un execution plan o un dry run da leggere?
-- il costo è proporzionato al valore della decisione?
+Un'analisi una tantum che costa €80 ma supporta una decisione da €20 milioni può essere economicamente irrilevante.
 
-**La query più elegante non è necessariamente quella che crea il sistema analitico migliore.**
+Una dashboard consultata raramente che brucia €800 al giorno è un altro problema.
 
-[^bq-cost]: Google Cloud Documentation, *Estimate and control costs*, https://docs.cloud.google.com/bigquery/docs/best-practices-costs
-[^bq-pricing]: Google Cloud, *BigQuery pricing*, https://cloud.google.com/bigquery/pricing
+Perciò “query costosa” non dovrebbe significare semplicemente “numero grande”.
+
+Serve un rapporto:
+
+```text
+costo di produrre il dato
+vs
+frequenza d'uso
+vs
+valore/rischio della decisione
+```
+
+Questo prepara il terreno al Capitolo 18, dove parleremo di cost management del sistema analitico nel suo complesso.
+
+### Campo del contract: service envelope
+
+Per un modello importante possiamo dichiarare:
+
+```text
+refresh cadence:
+expected completion time:
+freshness target:
+expected scanned volume/cost:
+consumer concurrency:
+materialization strategy:
+performance owner:
+alert threshold:
+```
+
+Il modello non promette soltanto “il numero corretto”. Promette anche **quando** e **a quale costo operativo ragionevole** quel numero sarà disponibile.
+
+### Metodo operativo
+
+Prima di ottimizzare chiediamo:
+
+1. quale decisione ha una deadline reale?
+2. quali colonne e periodi servono davvero?
+3. quante volte ricostruiamo la stessa trasformazione?
+4. il layout fisico supporta i filtri ricorrenti?
+5. possiamo stimare il lavoro prima di eseguire?
+6. il join produce un'esplosione inutile?
+7. materializzare ridurrebbe costo totale e divergenza?
+8. il costo è proporzionato all'uso e al valore?
+
+> **Performance e costo non sono un'appendice tecnica del SQL. Sono parte del contratto con cui un prodotto analitico promette di essere disponibile quando serve senza sprecare risorse.**
