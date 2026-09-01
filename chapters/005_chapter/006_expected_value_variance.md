@@ -1,6 +1,8 @@
-## 5.5 Valore atteso e varianza: stessa media, decisione diversa
+## 5.5 Valore atteso e rischio: la media degli esiti non basta per decidere
 
-Il valore atteso riassume il risultato medio che ci aspetteremmo se un processo incerto potesse essere ripetuto molte volte.
+Il **valore atteso** combina esiti possibili e probabilità. Risponde a una domanda del tipo:
+
+> **Se potessimo ripetere molte volte una decisione nelle stesse condizioni, quale risultato medio produrrebbe?**
 
 Per una variabile discreta:
 
@@ -8,15 +10,21 @@ Per una variabile discreta:
 E[X]=\sum_x x\,P(X=x)
 \]
 
-Nel business il valore atteso compare continuamente, anche quando non viene chiamato così.
+Nel lavoro analitico il concetto compare continuamente:
 
-Quando stimiamo il ricavo atteso di una campagna, il costo atteso di un guasto, il margine atteso di un portafoglio clienti o la perdita attesa per frode, stiamo combinando esiti possibili e probabilità.
+- ricavo atteso di una campagna;
+- perdita attesa da frode;
+- costo atteso di un guasto;
+- valore atteso di un lead;
+- margine atteso di una decisione di pricing.
 
-### Caso realistico: due campagne con lo stesso ROI atteso
+Ma il valore atteso non contiene da solo tutta la decisione.
+
+### Caso simulato/composito — Due campagne, stesso valore atteso
 
 Un e-commerce deve scegliere tra due campagne promozionali.
 
-La campagna A ha questi possibili esiti:
+**Campagna A**
 
 | Esito | Probabilità | Margine incrementale |
 |---|---:|---:|
@@ -24,13 +32,11 @@ La campagna A ha questi possibili esiti:
 | Normale | 60% | 80.000 € |
 | Ottimo | 20% | 140.000 € |
 
-Il valore atteso è:
+Valore atteso:
 
-\[
-0,2\cdot20.000+0,6\cdot80.000+0,2\cdot140.000=80.000\,€
-\]
+`0,20 × 20.000 + 0,60 × 80.000 + 0,20 × 140.000 = 80.000 €`.
 
-La campagna B ha invece:
+**Campagna B**
 
 | Esito | Probabilità | Margine incrementale |
 |---|---:|---:|
@@ -38,101 +44,95 @@ La campagna B ha invece:
 | Buono | 10% | 80.000 € |
 | Eccezionale | 45% | 200.000 € |
 
-Anche qui il valore atteso è:
+Anche qui:
 
-\[
-0,45\cdot(-40.000)+0,10\cdot80.000+0,45\cdot200.000=80.000\,€
-\]
+`0,45 × (-40.000) + 0,10 × 80.000 + 0,45 × 200.000 = 80.000 €`.
 
-Stesso valore atteso. Decisione completamente diversa.
+Stesso valore atteso. Distribuzione degli esiti completamente diversa.
 
-La campagna A è relativamente stabile. La B è molto più rischiosa.
+Se l'azienda non può permettersi una perdita di 40.000 €, la Campagna B può essere inaccettabile anche con expected value positivo. Se invece gestisce centinaia di iniziative poco correlate e può assorbire la volatilità, la valutazione può cambiare.
 
-Se l'azienda ha poca liquidità, il 45% di probabilità di perdere 40.000 euro può essere inaccettabile. Se invece ha un portafoglio ampio di campagne indipendenti e può assorbire la volatilità, la B può diventare interessante.
+Il punto è:
 
-### La varianza misura la dispersione attorno al valore atteso
+> **expected value e tolleranza al rischio sono concetti distinti.**
 
-La varianza di una variabile casuale è:
+### Varianza e deviazione standard descrivono quanto gli esiti si disperdono
+
+La varianza misura la dispersione degli esiti attorno al valore atteso:
 
 \[
 Var(X)=E[(X-E[X])^2]
 \]
 
-La deviazione standard è la radice quadrata della varianza.
+La deviazione standard riporta la misura nell'unità originale.
 
-Il significato operativo è importante: due strategie con lo stesso valore medio possono produrre livelli di incertezza molto diversi.
+Questa idea collega probabilità e decisione: due strategie con la stessa media possono avere code e volatilità molto diverse.
 
-### Caso realistico: forecasting della domanda
+### Caso simulato/composito — Due SKU da 120 unità al giorno
 
-Due SKU hanno entrambi domanda media giornaliera di 120 unità.
+Due prodotti hanno domanda media di 120 unità al giorno.
 
-SKU A:
+- SKU A: deviazione standard 8;
+- SKU B: deviazione standard 47.
 
-- deviazione standard: 8 unità;
-- domanda quasi sempre tra 105 e 135.
+Una policy di riordino costruita soltanto sulla media li tratterebbe quasi allo stesso modo.
 
-SKU B:
+Ma il secondo SKU espone il business a un rischio molto maggiore di stock-out o overstock.
 
-- deviazione standard: 47 unità;
-- frequenti giornate sotto 60 o sopra 190.
+Per operations interessa quindi almeno la coppia:
 
-Se il planner guarda soltanto la media, assegna a entrambi stock simili.
+> **domanda attesa + distribuzione dell'errore attorno alla domanda attesa**.
 
-Ma il secondo SKU richiede più safety stock oppure una politica di riordino diversa.
+Il Capitolo 7 trasformerà questa intuizione in forecast e intervalli predittivi.
 
-La variabilità è parte della decisione.
+### Expected loss: collegare probabilità e conseguenza
 
-### Il valore atteso non è una promessa
+Supponiamo che una certa classe di transazioni abbia:
 
-Supponiamo che una startup valuti un progetto con:
+- probabilità di frode: 0,3%;
+- perdita media se la frode avviene: 1.400 €.
 
-- 90% di probabilità di perdere 50.000 euro;
-- 10% di probabilità di guadagnare 600.000 euro.
+La perdita attesa per transazione è:
 
-Il valore atteso è positivo:
+`0,003 × 1.400 € = 4,20 €`.
 
-\[
-0,9\cdot(-50.000)+0,1\cdot600.000=15.000\,€
-\]
+Se un controllo aggiuntivo costa 0,40 € a transazione e riduce significativamente la perdita attesa, può avere senso economico. Se costa 12 €, probabilmente no — a meno che non riduca anche altri rischi importanti.
 
-Ma un solo progetto non verrà ripetuto infinite volte.
+Questo è il ponte tra statistica e decisione:
 
-Il valore atteso da solo non risolve quindi la decisione. Servono anche:
+**probabilità × conseguenza**.
 
-- capacità di assorbire la perdita;
-- frequenza con cui la decisione si ripete;
-- dipendenza tra i rischi;
-- vincoli di cassa;
-- asimmetria delle conseguenze;
-- utilità reale dei diversi esiti.
+### Il valore atteso non è una promessa né un ordine automatico
 
-### Expected loss
+Consideriamo un progetto con:
 
-In risk management è frequente ragionare in termini di perdita attesa.
+- 90% di probabilità di perdere 50.000 €;
+- 10% di probabilità di guadagnare 600.000 €.
 
-Se una frode ha:
+Expected value:
 
-- probabilità 0,3%;
-- perdita media 1.400 euro;
+`0,90 × (-50.000) + 0,10 × 600.000 = +15.000 €`.
 
-la perdita attesa per transazione è:
+Dire “il progetto vale +15.000 €” senza altro sarebbe fuorviante.
 
-\[
-0,003\cdot1.400=4,20\,€
-\]
+Un solo progetto non verrà necessariamente ripetuto molte volte. La perdita può compromettere la liquidità. Gli esiti possono essere correlati con altri rischi aziendali. Il management può avere vincoli che rendono alcuni downside non accettabili.
 
-Questo numero può essere confrontato con il costo di una verifica manuale, di un controllo aggiuntivo o di un'assicurazione.
+Per questo il Capitolo 15, dedicato alla decisione, aggiungerà elementi come:
 
-Ancora una volta il dato diventa decisione quando colleghiamo probabilità e conseguenza economica.
+- scenari;
+- sensitività;
+- soglie decisionali;
+- value of information;
+- costi asimmetrici;
+- capacità di assorbire il downside.
 
-### La lezione
+Qui fissiamo la base probabilistica.
 
-Una media senza dispersione è incompleta.
+### Quattro domande prima di confrontare decisioni incerte
 
-Un valore atteso senza distribuzione degli esiti può essere pericoloso.
+1. Qual è il valore atteso?
+2. Quanto sono dispersi gli esiti?
+3. Quanto è grave la coda negativa?
+4. La decisione è ripetibile abbastanza volte da rendere il valore medio una guida utile?
 
-Quando confrontiamo decisioni in condizioni di incertezza, chiediamo sempre:
-
-**Qual è il risultato atteso? Quanto varia? Quanto è grave la coda negativa? Quante volte possiamo ripetere la decisione?**
-
-È questa combinazione, non una singola metrica, che rende il ragionamento utile.
+> **Una strategia non è “buona” perché ha expected value positivo. È buona rispetto a obiettivi, vincoli e distribuzione degli esiti.**
