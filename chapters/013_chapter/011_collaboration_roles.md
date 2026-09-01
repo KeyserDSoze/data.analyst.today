@@ -1,95 +1,140 @@
-## 13.10 Collaborare tra analyst, analytics engineer, data engineer e data scientist
+## 13.10 Il team è parte dello stack: scegliere strumenti che qualcuno possa possedere
 
-Molti problemi attribuiti agli strumenti sono in realtà problemi di confini organizzativi poco chiari.
+Una soluzione tecnicamente elegante può essere una pessima scelta se nessuno nel team reale può revisionarla, operarla o modificarla.
 
-Un Data Analyst non lavora in isolamento. Nei team maturi, il valore nasce spesso dall'interazione tra competenze diverse.
+Per questo il Tooling Decision Record deve considerare **chi mantiene il lavoro**, non soltanto chi lo costruisce.
 
-### Un modello mentale dei ruoli
+Il Capitolo 18 entrerà nell'operating model analitico. Qui ci interessa una conseguenza pratica:
 
-| Ruolo | Domanda tipica |
-|---|---|
-| Data Analyst | Cosa sta succedendo e cosa significa per il business? |
-| Analytics Engineer | Come rendiamo questa logica analitica affidabile e riusabile? |
-| Data Engineer | Come facciamo arrivare il dato in modo stabile, scalabile e osservabile? |
-| Data Scientist | Possiamo stimare, prevedere o ottimizzare un fenomeno con modelli più avanzati? |
-| Business stakeholder | Quale decisione dobbiamo prendere? |
+> **la mantenibilità è una proprietà della combinazione tool + persone + processo.**
 
-Queste categorie non sono rigide. In aziende piccole una persona può coprirne tre. In aziende grandi possono esistere specializzazioni ancora più fini.
+### Il rischio del “best tool in theory”
 
-Il punto non è il titolo. È sapere **quale problema appartiene a quale livello**.
+Immaginiamo due opzioni.
 
-### Caso realistico: il dashboard che si rompe ogni lunedì
+**A**
 
-Un analyst costruisce una dashboard vendite collegata direttamente a tre database operativi.
+- soluzione tecnicamente ottimale;
+- conosciuta da una sola persona;
+- nessun supporto interno;
+- deployment complesso.
 
-Ogni lunedì:
+**B**
 
-- una sorgente risponde lentamente;
-- una tabella cambia schema;
-- il refresh fallisce;
-- l'analyst perde due ore a sistemare il problema.
+- soluzione leggermente meno sofisticata;
+- standard aziendale;
+- sei persone in grado di revisionarla;
+- logging e accessi già integrati.
 
-La soluzione non è diventare più bravo a fare refresh manuali.
+Se la differenza di performance non cambia la decisione, B può avere un costo totale molto inferiore.
 
-Il problema è passato da analisi a **affidabilità della pipeline**.
+La familiarità non deve dominare la scelta, ma **la capacità collettiva è un requisito reale**.
 
-A quel punto serve collaborazione con engineering.
+### Caso simulato/composito — dashboard che si rompe ogni lunedì
 
-### Quando l'analyst dovrebbe chiedere supporto
+Un analyst collega una dashboard direttamente a tre sorgenti operative.
 
-Segnali tipici:
+Ogni lunedì un refresh fallisce e l'analyst interviene manualmente.
 
-- la stessa trasformazione viene riscritta da molti analyst;
-- un dataset alimenta processi business critici;
-- il volume cresce oltre ciò che uno script locale gestisce bene;
-- servono SLA o alert;
-- la logica deve essere usata da più team;
-- l'accesso ai dati richiede governance o sicurezza avanzata;
-- un prototipo sta diventando servizio operativo.
+Finché il dashboard è un prototipo, questa soluzione può essere tollerabile.
 
-### Quando invece non serve escalation tecnica
+Quando 80 manager iniziano a dipendere dall'output, il failure mode cambia natura.
 
-Non ogni analisi esplorativa ha bisogno di una pipeline industriale.
+Non serve che l'analyst diventi improvvisamente un data engineer.
 
-Se una domanda è una tantum, il dataset è piccolo e la decisione deve essere presa oggi, costruire tre livelli di orchestrazione e CI/CD può essere puro overhead.
+Serve riconoscere che la responsabilità è passata da:
 
-La maturità consiste anche nel **non industrializzare troppo presto**.
+> analisi
 
-### Caso realistico: churn prediction che nessuno può usare
+ad
 
-Il data scientist produce un modello con AUC 0,89.
+> **servizio dati ricorrente**.
 
-Il Customer Success Manager chiede:
+Il tool e l'ownership devono essere rivalutati insieme.
 
-> "Chi devo chiamare domani mattina?"
+### Handoff threshold
 
-Il modello restituisce 62.000 account ad alto rischio.
+Alcuni segnali indicano che un artefatto sta attraversando un confine organizzativo:
 
-Il team CS può contattarne 450 a settimana.
+- più team dipendono dall'output;
+- serve SLA;
+- servono credenziali/secret gestiti;
+- una trasformazione è riusata ampiamente;
+- il failure blocca un processo business;
+- serve on-call o recovery;
+- il codice deve essere deployment-ready;
+- il dataset deve avere access control sofisticato.
 
-Qui la parte statistica è buona ma il prodotto analitico è incompleto.
+A quel punto possiamo decidere di:
 
-L'analyst può fare da ponte tra modello e decisione:
+- mantenere ownership analytics con supporto engineering;
+- estrarre alcuni componenti verso analytics engineering;
+- affidare ingestion/orchestration a data engineering;
+- mantenere la logica semantica sotto ownership business/analytics.
 
-- definire segmenti prioritari;
-- stimare valore economico per account;
-- introdurre soglie coerenti con capacità operativa;
-- misurare il trattamento;
-- distinguere rischio da persuadibilità.
+Il titolo del ruolo conta meno della **responsabilità esplicita**.
 
-### La collaborazione migliore parte dal contratto decisionale
+### Caso simulato/composito — modello eccellente, capacità operativa sbagliata
 
-Prima di discutere di strumenti o modelli, il team dovrebbe chiarire:
+Un data scientist produce un churn score con AUC 0,89.
 
-1. quale decisione deve essere presa;
-2. da chi;
-3. con quale frequenza;
-4. entro quale tempo;
-5. con quale livello di rischio;
-6. con quali risorse operative.
+La lista contiene 62.000 account ad alto rischio.
 
-Questa semplice disciplina riduce moltissimi progetti tecnicamente impressionanti ma inutilizzati.
+Customer Success può contattarne 450 a settimana.
+
+Questo non è un problema che si risolve scegliendo una libreria ML diversa.
+
+Serve collaborazione tra:
+
+- chi modella il rischio;
+- chi conosce valore e segmenti;
+- chi definisce la policy;
+- chi esegue l'intervento;
+- chi misura l'effetto.
+
+Il Capitolo 10 ci ha già dato la Predictive Decision Card. Qui la lezione è che **lo strumento deve adattarsi al sistema di lavoro che trasforma l'output in azione**.
+
+### Bus factor e tool choice
+
+Una domanda utile è:
+
+> Quante persone potrebbero mantenere questo processo se il suo autore fosse indisponibile per un mese?
+
+Non esiste una soglia universale.
+
+Ma per un processo critico:
+
+```text
+bus factor = 1
+```
+
+è un segnale di rischio.
+
+Possibili mitigazioni:
+
+- standardizzare il tool;
+- documentare;
+- fare pairing/review;
+- ridurre custom code;
+- spostare il workload su piattaforma supportata;
+- creare runbook;
+- trasferire ownership.
+
+### Campo del Tooling Decision Record
+
+```text
+builder:
+long-term owner:
+reviewers available:
+team skill coverage:
+platform support:
+on-call / recovery need:
+bus factor:
+handoff threshold:
+documentation/runbook:
+exit condition:
+```
 
 ### Regola operativa
 
-> **Il confine tra ruoli dovrebbe seguire la natura del problema, non il titolo scritto sull'organigramma.**
+> **Non scegliere soltanto uno strumento che tu sappia usare. Scegli una soluzione che l'organizzazione possa continuare a capire e possedere quando il lavoro smette di essere personale.**
