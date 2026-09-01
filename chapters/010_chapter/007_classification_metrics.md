@@ -1,161 +1,146 @@
-## 10.7 Accuracy non basta: precision, recall, ROC-AUC e PR-AUC
+## 10.7 Classification metrics: separare ranking, probabilità e operating point
 
-Un classificatore può essere eccellente secondo una metrica e quasi inutile per il business.
+Un classificatore non ha una sola qualità.
 
-La scelta della metrica deve dipendere da:
+Possiamo chiedere almeno tre cose diverse:
 
-- frequenza del fenomeno;
-- costo dei falsi positivi;
-- costo dei falsi negativi;
-- capacità operativa;
-- uso della probabilità stimata.
+1. **ranking:** ordina i positivi sopra i negativi?
+2. **probabilità:** gli score possono essere interpretati come probabilità affidabili?
+3. **operating point:** alla soglia o capacità reale, il flusso di decisioni è utile?
 
-La documentazione ufficiale di scikit-learn include numerose metriche di classificazione, tra cui accuracy, precision-recall curve, ROC curve e AUC.
+Confondere questi livelli porta a frasi come:
+
+> "AUC 0,91 significa 91% di accuratezza."
+
+Non è così.
+
+### Partire dal base rate
+
+Prima di qualsiasi metrica, dichiariamo la prevalenza della classe positiva.
+
+Se le frodi sono lo 0,18%, un classificatore che dice sempre "non frode" ha accuracy 99,82%.
+
+Il numero è corretto e quasi privo di valore operativo.
+
+Lo stesso base rate è importante anche per interpretare la Precision-Recall curve: con un ranking casuale, la precision attesa è circa la prevalenza della classe positiva.
 
 Fonte: https://scikit-learn.org/stable/modules/model_evaluation.html
 
-### La confusion matrix
+### Confusion matrix: il modello visto alla soglia reale
 
-Per una classificazione binaria abbiamo:
+A una soglia specifica otteniamo:
 
 | | Predetto positivo | Predetto negativo |
 |---|---:|---:|
-| Reale positivo | True Positive | False Negative |
-| Reale negativo | False Positive | True Negative |
+| Reale positivo | TP | FN |
+| Reale negativo | FP | TN |
 
-Da qui derivano metriche diverse.
+Da qui:
 
-### Precision
+`precision = TP / (TP + FP)`
 
-\[
-Precision = \frac{TP}{TP+FP}
-\]
+`recall = TP / (TP + FN)`
 
-Risponde a:
+Queste metriche non appartengono al modello in astratto. Appartengono a **modello + soglia + prevalenza + popolazione**.
 
-> tra i casi che ho segnalato come positivi, quanti lo erano davvero?
+Se cambia uno di questi elementi, possono cambiare anche precision e recall.
 
-### Recall
+### Caso simulato/composito — ShieldPay e due code operative
 
-\[
-Recall = \frac{TP}{TP+FN}
-\]
+ShieldPay processa 8 milioni di transazioni al mese; lo 0,18% è frode confermata.
 
-Risponde a:
+Il modello alimenta due decisioni:
 
-> tra tutti i positivi reali, quanti ne ho intercettati?
+- **auto-block:** costo del falso positivo molto alto;
+- **manual review:** capacità massima di 12.000 casi al giorno.
 
-### Caso realistico: ShieldPay e il fraud screening
+Per l'auto-block il team vuole precision molto elevata.
 
-ShieldPay processa 8 milioni di transazioni al mese.
+Per la manual review può accettare più falsi positivi pur di aumentare recall, ma il volume deve rimanere entro capacità.
 
-Solo lo 0,18% è realmente fraudolento.
+Lo stesso score produce quindi due operating point differenti.
 
-Un modello che predice sempre “non frode” avrebbe accuracy:
+Questo mostra perché chiedere "qual è il threshold del modello?" è spesso la domanda sbagliata. Esistono soglie della **policy**.
 
-\[
-99,82\%
-\]
+### ROC-AUC: capacità di ranking su tutte le soglie
 
-Sembra fantastico.
+ROC-AUC misura, in termini intuitivi, quanto spesso un positivo casuale riceve score maggiore di un negativo casuale.
 
-In realtà intercetta **zero frodi**.
+È utile per confrontare discrimination, ma non dice direttamente:
 
-Il team ha due livelli operativi:
+- quanti casi arriveranno al team;
+- quale sarà la precision al top 1%;
+- quanto costa un falso positivo;
+- se le probabilità sono calibrate.
 
-- blocco automatico per rischio molto alto;
-- revisione manuale per casi intermedi.
+Con classi rare, false positive rate piccoli possono corrispondere a un numero enorme di falsi positivi perché i negativi sono moltissimi.
 
-Per il blocco automatico serve precision elevata: bloccare clienti legittimi è costoso.
+### Precision-Recall: zoom sulla classe positiva
 
-Per la coda di revisione manuale può essere accettabile maggiore recall, purché il volume rimanga gestibile.
+Nei problemi fortemente sbilanciati la curva precision-recall rende molto visibile il trade-off operativo.
 
-La stessa probabilità prodotta dal modello alimenta quindi due policy diverse.
+ShieldPay confronta due modelli:
 
-### ROC-AUC
-
-La curva ROC confronta:
-
-- true positive rate;
-- false positive rate;
-
-al variare della soglia.
-
-ROC-AUC misura la capacità di ranking del modello attraverso tutte le soglie.
-
-È utile, ma può risultare molto ottimista in problemi estremamente sbilanciati.
-
-### Precision-Recall curve
-
-Quando la classe positiva è rara, la curva precision-recall è spesso molto più informativa.
-
-Per ShieldPay, due modelli hanno:
-
-| Modello | ROC-AUC | PR-AUC |
+| Modello | ROC-AUC | Average Precision / PR summary |
 |---|---:|---:|
 | A | 0,962 | 0,284 |
 | B | 0,951 | 0,367 |
 
-Guardando solo ROC-AUC sceglieremmo A.
+A ha ROC-AUC leggermente maggiore. B concentra meglio i positivi dove il team può agire.
 
-Ma B concentra meglio i casi di frode nelle prime posizioni del ranking e produce una coda di revisione più utile.
+La scelta finale richiede comunque il confronto alle soglie reali, non solo una metrica aggregata.
 
-Il team sceglie B.
+### Precision@K e recall@capacity
 
-### F1 score
+Quando la capacità è fissa, metriche di ranking legate al volume possono essere più naturali.
 
-F1 combina precision e recall tramite media armonica:
+Se Customer Success può chiamare 2.000 clienti:
 
-\[
-F1 = 2\frac{Precision \times Recall}{Precision+Recall}
-\]
+> **precision@2000** = quanti dei 2.000 clienti prioritizzati manifestano davvero l'evento?
 
-Può essere utile quando precision e recall hanno importanza simile.
+Se il team antifrode può revisionare l'1% delle transazioni:
 
-Ma non incorpora direttamente costi economici diversi.
+> **recall@1%** = quale quota delle frodi reali entra in quell'1%?
 
-### Dal modello al valore economico
+Queste metriche rendono esplicito il vincolo operativo.
 
-Supponiamo che:
+### F1 non conosce la tua funzione di costo
 
-- una frode non bloccata costi in media 480 euro;
-- una revisione manuale costi 3,20 euro;
-- bloccare erroneamente una transazione legittima abbia un costo medio stimato di 18 euro tra supporto e churn.
+F1 sintetizza precision e recall in un singolo numero e può essere utile quando vogliamo attribuire loro importanza simile.
 
-A quel punto la scelta della soglia può essere formulata come problema economico, non come gara tra metriche astratte.
+Ma non sa che:
 
-### Caso realistico: CarePlus e il richiamo clienti
+- una frode persa costa 480 euro;
+- una review costa 3,20 euro;
+- bloccare un cliente legittimo può avere un costo commerciale di 18 euro;
+- il team può gestire solo un certo volume.
 
-CarePlus vuole prevedere quali clienti hanno alta probabilità di non rinnovare.
+Una metrica tecnica non sostituisce la funzione di utilità.
 
-Modello A:
+### Metriche per target continuo e classificazione: stessa regola
 
-- precision 62%;
-- recall 31%.
+Anche nella regressione la scelta della metrica deve riflettere l'errore che conta.
 
-Modello B:
+- MAE tratta gli errori in modo lineare;
+- RMSE penalizza maggiormente errori grandi;
+- metriche percentuali hanno problemi specifici vicino a zero;
+- una business loss può essere asimmetrica.
 
-- precision 41%;
-- recall 68%.
+Il principio è lo stesso del Capitolo 7 sul forecasting: **la loss utile dipende dalla decisione**.
 
-Se il team può contattare solo 5.000 clienti, A può essere migliore.
+### Evaluation table minima
 
-Se l'intervento è una email automatica quasi gratuita, B può essere più utile.
+Per un classificatore operativo conviene riportare:
 
-Non esiste una metrica “migliore” indipendentemente dal processo decisionale.
+- prevalenza/base rate;
+- ROC-AUC o altra misura di ranking pertinente;
+- PR curve/AP quando la classe è rara;
+- precision e recall agli operating point reali;
+- confusion matrix alle soglie candidate;
+- volume generato;
+- performance per segmenti critici;
+- costo/valore atteso della policy, quando stimabile.
 
-### Regola operativa
+La calibration verrà trattata separatamente nella prossima sezione.
 
-Quando presenti un classificatore, evita di mostrare solo una metrica aggregata.
-
-Mostra almeno:
-
-- prevalenza della classe;
-- confusion matrix a una o più soglie operative;
-- precision;
-- recall;
-- curve o metriche di ranking appropriate;
-- volume di casi generato;
-- costo o beneficio atteso.
-
-Il modello produce segnali. Il business deve trasformarli in una policy.
+> **Un buon score ordina. Una buona probabilità quantifica. Una buona soglia rende l'azione sostenibile. Sono tre proprietà diverse e vanno misurate separatamente.**
