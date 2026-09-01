@@ -1,71 +1,190 @@
 # Capitolo 12 — Data architecture per Data Analyst
 
-Un Data Analyst non deve necessariamente progettare da solo l'intera piattaforma dati di un'azienda. Ma deve capire abbastanza bene l'architettura da sapere **dove vive il dato, come ci è arrivato, quanto è fresco, quali trasformazioni ha subito e quale livello è quello corretto da interrogare**.
+## 12.0 Dal dataset al percorso che lo rende disponibile
 
-Questa competenza diventa sempre più importante quando l'ecosistema cresce. Un file CSV locale è semplice. Un sistema composto da applicazioni transazionali, CRM, eventi digitali, API, pipeline, data warehouse, lakehouse, semantic layer e dashboard non lo è.
+Nel Capitolo 11 abbiamo costruito l'**Analytical Data Contract**: grain, chiavi, tempo, metriche, trasformazioni e invarianti che permettono a un dataset di conservare il significato analitico promesso.
 
-La domanda non è quindi:
+Ora allarghiamo l'inquadratura.
 
-> Qual è la tecnologia migliore?
+Quel dataset non appare dal nulla.
 
-La domanda utile è:
+Prima di arrivare a una query o a un semantic model, il dato:
 
-> Quale architettura rende possibile rispondere alle domande di business in modo affidabile, sostenibile, governato e sufficientemente veloce?
+1. nasce in un sistema;
+2. viene catturato;
+3. attraversa una rete o un meccanismo di ingestion;
+4. viene memorizzato;
+5. trasformato;
+6. pubblicato;
+7. consumato da persone o sistemi.
 
-## Dalla query al sistema
+Ognuno di questi passaggi può introdurre:
 
-Nel capitolo precedente abbiamo ragionato sulla qualità di una query. Qui allarghiamo la prospettiva.
+- latenza;
+- perdita di record;
+- duplicazioni;
+- schema incompatibile;
+- dati tardivi;
+- stato parziale;
+- costi;
+- dipendenze;
+- nuovi failure mode.
 
-Una query corretta può comunque produrre una risposta sbagliata se:
+Per un Data Analyst, capire l'architettura significa quindi saper rispondere a una domanda molto concreta:
 
-- legge una tabella operativa invece della versione analitica;
-- ignora dati arrivati in ritardo;
-- usa una dimensione non storicizzata;
-- interroga un layer raw non ancora validato;
-- legge una replica aggiornata ogni 24 ore per una decisione che richiede dati quasi real time;
-- usa metriche costruite localmente invece di definizioni condivise;
-- combina dati provenienti da pipeline con SLA differenti.
+> **Quale percorso ha attraversato questo dato prima di diventare il numero che sto usando per decidere?**
 
-L'architettura non è quindi un tema distante dall'analisi. È parte della qualità dell'evidenza.
+### Il deliverable del capitolo: Data Flow Architecture Map
 
-## Caso realistico: il dashboard che era sempre in ritardo
+Useremo una mappa semplice:
 
-Una società di delivery, **SwiftDrop**, misura gli ordini consegnati in ritardo. Il management vede alle 9:00 del mattino un late delivery rate del 7,8% e conclude che la situazione è sotto controllo.
+```text
+SOURCE
+  ↓
+CAPTURE
+  ↓
+TRANSPORT
+  ↓
+STORAGE
+  ↓
+TRANSFORM
+  ↓
+SERVE
+  ↓
+CONSUME
+```
 
-Alle 14:00 Operations comunica però che la mattina è stata disastrosa.
+Per ogni passaggio vogliamo conoscere almeno:
 
-L'analista scopre che:
+```text
+owner
+input/output
+expected latency
+freshness/completeness expectation
+schema/contract boundary
+failure behavior
+retry/replay/backfill
+monitoring
+cost driver
+```
 
-- gli ordini sono registrati nel sistema operativo in tempo reale;
-- il data warehouse riceve un batch completo solo alle 6:00 e alle 18:00;
-- il dashboard BI usa il warehouse;
-- quindi alle 9:00 mostra quasi esclusivamente il giorno precedente.
+Non è un diagramma decorativo.
 
-Il calcolo del KPI era corretto. La **latenza architetturale** non era coerente con la decisione.
+È la mappa che permette all'analista di distinguere rapidamente:
 
-Il problema non si risolve cambiando formula. Si risolve chiarendo la relazione tra:
+- problema business;
+- problema semantico;
+- problema di pipeline;
+- problema di freshness;
+- problema di serving;
+- problema di consumer.
 
-**domanda → freschezza necessaria → sorgente → pipeline → layer analitico → SLA**.
+### Caso simulato/composito — SwiftDrop e il dashboard corretto ma vecchio
 
-## La mappa del capitolo
+SwiftDrop gestisce consegne urbane.
 
-Costruiremo una mappa mentale dei componenti più comuni:
+Alle 09:00 il management guarda il late-delivery rate e vede:
 
-**sistemi operativi → ingestion → trasformazione → storage analitico → modellazione → semantic layer → consumo**
+```text
+7,8%
+```
 
-Vedremo:
+Operations sostiene invece che la mattina stia andando molto male.
 
-- OLTP vs OLAP;
-- ETL vs ELT;
-- warehouse e data mart;
-- data lake e lakehouse;
-- batch vs streaming;
-- architetture a livelli come Bronze, Silver e Gold;
-- semantic layer;
-- lineage, catalogo e governance;
-- affidabilità, costi e trade-off;
-- come scegliere un'architettura proporzionata al problema.
+Il KPI è calcolato correttamente.
 
-Il principio guida sarà sempre lo stesso:
+L'indagine mostra però questo flusso:
 
-> L'architettura migliore non è quella con più componenti. È quella che riduce l'ambiguità e il costo operativo mantenendo il livello di affidabilità richiesto dalle decisioni.
+```text
+operational orders DB
+        ↓
+batch extraction 06:00 / 18:00
+        ↓
+warehouse
+        ↓
+daily delivery model
+        ↓
+BI dashboard
+```
+
+Alle 09:00 il warehouse contiene quasi esclusivamente consegne del giorno precedente.
+
+La metrica è corretta rispetto ai dati disponibili e inutilizzabile rispetto alla decisione.
+
+Il failure mode non è nella formula.
+
+È nella relazione tra:
+
+```text
+time-to-decision
+vs
+architecture latency
+```
+
+### L'architettura è parte dell'evidenza
+
+Due query identiche possono avere affidabilità molto diversa se una legge:
+
+- una sorgente operativa incompleta;
+- una replica in ritardo;
+- un raw layer non validato;
+- un modello curato con SLO espliciti.
+
+Per questo una frase come:
+
+> “Il dato viene dal database.”
+
+non è sufficiente.
+
+Dobbiamo sapere:
+
+- quale database;
+- quale replica o snapshot;
+- a quale istante;
+- attraverso quale pipeline;
+- con quali controlli;
+- con quale politica sui dati tardivi;
+- con quale stato di affidabilità.
+
+### Il confine con il Capitolo 11
+
+È importante non confondere i due capitoli.
+
+**Capitolo 11**
+
+> Come rappresentiamo correttamente il fenomeno analitico?
+
+**Capitolo 12**
+
+> Quale sistema produce, trasporta e rende disponibile quella rappresentazione con le garanzie necessarie?
+
+Lo star schema, il semantic layer o le metriche non verranno quindi rispiegati da zero. Qui ci interessano soprattutto come **boundary di serving** dentro un flusso più ampio.
+
+### Il confine con il Capitolo 18
+
+Anche governance, ownership e observability torneranno più avanti.
+
+Qui li trattiamo al livello necessario per leggere l'architettura:
+
+- chi possiede un componente;
+- quali dipendenze esistono;
+- quale failure blocca il downstream;
+- come si recupera.
+
+Il Capitolo 18 affronterà invece la capacità organizzativa di gestire tutto questo su scala.
+
+### Principio guida
+
+Non cercheremo l'architettura più moderna.
+
+Cercheremo l'architettura **minima sufficiente** a soddisfare:
+
+- correttezza;
+- freshness;
+- disponibilità;
+- recovery;
+- sicurezza;
+- costo;
+- evoluzione futura.
+
+> **L'architettura migliore non è quella con più componenti. È quella in cui il percorso dalla realtà alla decisione è sufficientemente affidabile, osservabile e proporzionato al valore della decisione.**
