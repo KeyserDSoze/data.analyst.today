@@ -1,48 +1,123 @@
-## 4.9 Trend, stagionalità e serie temporali: il tempo non è una dimensione come le altre
+## 4.9 Il tempo nell'EDA: trend, stagionalità e baseline prima del forecasting
 
-Quando i dati sono ordinati nel tempo, le osservazioni non possono essere trattate sempre come punti indipendenti.
+Una variabile temporale non è una dimensione qualsiasi.
 
-Vendite, ticket di assistenza, traffico web, domanda energetica e ordini logistici hanno spesso una struttura interna: trend, stagionalità, cicli, autocorrelazione, shock e cambi di regime. NIST evidenzia proprio questa caratteristica delle serie temporali: i punti osservati nel tempo possono avere dipendenze e strutture che devono essere considerate nell'analisi.[^nist-timeseries]
+Quando osserviamo vendite, traffico, ticket, ordini o domanda giorno dopo giorno, l'ordine delle osservazioni contiene informazione. Un lunedì non è necessariamente confrontabile con una domenica; dicembre non è necessariamente confrontabile con gennaio; due mesi consecutivi possono condividere un trend di fondo.
 
-### Caso: il lunedì peggiore dell'anno
+Nel Capitolo 7 affronteremo in modo sistematico serie temporali, autocorrelazione, decomposizione, anomalie e forecasting.
 
-Una catena di palestre osserva che il 7 gennaio gli accessi sono cresciuti del 92% rispetto al 7 dicembre. Il responsabile marketing attribuisce il risultato alla nuova campagna lanciata il 2 gennaio.
+Qui ci serve un obiettivo più modesto e fondamentale:
 
-Il confronto sembra convincente, ma è metodologicamente debole. Gennaio è storicamente il mese con il maggior numero di nuove iscrizioni e accessi. Confrontare gennaio con dicembre confonde effetto campagna e stagionalità.
+> **evitare che l'EDA interpreti come eccezione ciò che il calendario o il trend rendono normale.**
 
-L'analista ricostruisce cinque anni di dati settimanali e confronta la prima settimana di gennaio con la stessa settimana degli anni precedenti. La crescita rispetto al normale pattern stagionale è solo del 9%.
+### Caso simulato/composito — Il +92% che diventò +9%
 
-Il 92% era reale. L'interpretazione era sbagliata.
+Una catena di palestre osserva che nella prima settimana di gennaio gli accessi sono superiori del **92%** rispetto alla prima settimana di dicembre.
 
-### Trend
+La campagna di Capodanno è partita il 2 gennaio. Il team marketing attribuisce quasi tutto l'incremento alla campagna.
 
-Il trend è un movimento di fondo persistente nel tempo. Può essere crescente, decrescente o cambiare direzione.
+L'analista allunga la serie e confronta la stessa settimana su cinque anni.
 
-Un'azienda può avere ricavi in crescita del 2% ogni mese ma perdere progressivamente clienti, compensando il calo attraverso aumenti di prezzo. Guardare una sola serie può quindi nascondere la dinamica sottostante.
+Gennaio mostra sistematicamente un forte aumento di accessi e iscrizioni.
 
-### Stagionalità
+Rispetto alla baseline stagionale, l'anno corrente è circa **+9%**.
 
-La stagionalità è una variazione che tende a ripetersi con una periodicità riconoscibile: giorno della settimana, mese, trimestre, festività, stagione turistica o ciclo operativo.
+Il +92% è un fatto descrittivo corretto rispetto a dicembre.
 
-NIST usa l'esempio delle vendite retail che tendono a crescere prima di Natale e a diminuire dopo le festività, e raccomanda di incorporare la stagionalità quando è presente.[^nist-seasonality]
+Non è la baseline corretta per stimare quanto sia eccezionale gennaio.
 
-### Il confronto giusto
+### Tre strutture da cercare prima di interpretare
 
-Una buona analisi temporale chiede sempre: rispetto a cosa?
+**Trend**
+
+Un movimento persistente di fondo.
+
+Esempio: ricavi crescono gradualmente da 24 mesi.
+
+**Stagionalità**
+
+Una struttura che tende a ripetersi con frequenza regolare:
+
+- giorno della settimana;
+- mese;
+- trimestre;
+- festività;
+- stagione turistica;
+- ciclo commerciale.
+
+**Shock o cambi di livello**
+
+Un cambiamento improvviso può essere associato a:
+
+- lancio prodotto;
+- modifica prezzo;
+- outage;
+- campagna;
+- nuova regolamentazione;
+- evento esterno.
+
+L'EDA può rilevare la coincidenza. Non dimostra automaticamente che l'evento abbia causato il cambiamento.
+
+### La baseline temporale deve seguire il processo
+
+"Rispetto a prima" può voler dire molte cose:
 
 - giorno precedente;
-- stessa settimana precedente;
-- stesso giorno della settimana;
+- stessa giornata della settimana precedente;
+- media delle ultime quattro settimane;
 - stesso mese dell'anno precedente;
-- media mobile;
-- baseline stagionale;
-- forecast atteso.
+- periodo pre-intervento;
+- valore atteso per la stagione.
 
-La scelta dipende dal processo.
+La baseline appropriata dipende dal ciclo naturale del fenomeno.
 
-Un ristorante non dovrebbe valutare il venerdì sera rispetto al giovedì sera. Un marketplace turistico non dovrebbe confrontare agosto con luglio senza conoscere la stagionalità. Un servizio B2B con rinnovi annuali potrebbe trovare molto più informativo un confronto year-over-year.
+Un ristorante può confrontare venerdì con gli altri venerdì. Un SaaS B2B potrebbe guardare il mese su anno. Un sito di e-commerce può dover allineare Black Friday e festività mobili, non semplicemente i numeri di giorno del calendario.
 
-La domanda corretta non è semplicemente "il numero è salito?", ma **"è salito più o meno di quanto sarebbe stato ragionevole aspettarsi in quel momento?"**.
+### Il grafico temporale deve mostrare anche il denominatore quando serve
 
-[^nist-timeseries]: NIST/SEMATECH, *Introduction to Time Series Analysis*: https://www.itl.nist.gov/div898/handbook/pmc/section4/pmc4.htm
-[^nist-seasonality]: NIST/SEMATECH, *Seasonality*: https://itl.nist.gov/div898/handbook/pmc/section4/pmc443.htm
+Un conteggio può crescere solo perché cresce l'esposizione.
+
+Esempio:
+
+```text
+cancellazioni mensili: 900 → 1.100
+abbonati attivi:      25.000 → 40.000
+```
+
+Il conteggio aumenta, ma il tasso scende.
+
+Per questo un trend di numerator senza denominator può raccontare una storia diversa dal rischio individuale.
+
+### Un confronto before/after è ancora descrittivo
+
+Supponiamo che conversion rate passi da 4,2% a 5,1% subito dopo una release.
+
+L'EDA può dire:
+
+> il livello cambia in coincidenza temporale con la release.
+
+Non può ancora dire:
+
+> la release ha causato +0,9 pp.
+
+Nello stesso momento possono essere cambiati mix di traffico, campagne, stagionalità o altri fattori.
+
+Questa distinzione prepara il lavoro causale dei Capitoli 8 e 9.
+
+### Una sequenza pratica
+
+Per una metrica temporale:
+
+1. mostra la serie grezza;
+2. aggiungi il volume o denominatore rilevante;
+3. confronta cicli equivalenti;
+4. identifica trend e pattern ricorrenti;
+5. annota eventi di business noti;
+6. verifica se il pattern aggregato cambia per segmento;
+7. usa smoothing soltanto come supporto visivo, non come prova.
+
+NIST sottolinea che le osservazioni temporali possono presentare dipendenze e struttura e che stagionalità e trend devono essere riconosciuti nel processo analitico.[^nist-timeseries]
+
+> **Nel tempo, un numero non è "alto" o "basso" in assoluto. È alto o basso rispetto a ciò che era ragionevole aspettarsi in quel momento.**
+
+[^nist-timeseries]: NIST/SEMATECH, *Introduction to Time Series Analysis*. https://www.itl.nist.gov/div898/handbook/pmc/section4/pmc4.htm
