@@ -1,38 +1,43 @@
-# Capitolo 11 — SQL, trasformazione del dato e data modeling per l'analisi
+# Capitolo 11 — SQL, trasformazione del dato e data modeling per l’analisi
 
-## 11.0 Il problema non è scrivere query: è costruire numeri di cui possiamo fidarci
+## 11.0 Una query può essere corretta e il numero può essere sbagliato
 
-SQL viene spesso insegnato come un linguaggio di sintassi: `SELECT`, `JOIN`, `GROUP BY`, funzioni finestra, CTE. Tutto corretto, ma incompleto.
+SQL viene spesso insegnato come una sequenza di costrutti: `SELECT`, `JOIN`, `GROUP BY`, funzioni finestra, CTE. Sono strumenti necessari, ma non sono il vero problema professionale.
 
-Nel lavoro reale un analyst raramente fallisce perché non ricorda la sintassi esatta di una funzione. Molto più spesso fallisce perché:
+Nel lavoro reale una query può:
 
-- unisce tabelle a granularità diverse;
-- duplica righe senza accorgersene;
-- sceglie il denominatore sbagliato;
-- tratta una tabella eventi come se fosse una tabella snapshot;
-- aggrega prima di aver definito il grain corretto;
-- confonde data di ordine, data di spedizione e data di competenza;
-- ricostruisce una metrica in modo diverso rispetto al team Finance;
-- usa una dimensione corrente per reinterpretare il passato;
-- crea una query tecnicamente corretta che risponde alla domanda sbagliata.
+- essere sintatticamente valida;
+- terminare senza errori;
+- produrre numeri plausibili;
+- essere veloce;
+- alimentare una dashboard perfettamente funzionante;
 
-Il punto centrale di questo capitolo è quindi semplice:
+e tuttavia rispondere alla domanda sbagliata.
 
-> **SQL è il linguaggio con cui formalizziamo una parte del nostro modello mentale dei dati. Se il modello mentale è sbagliato, una query perfettamente valida può produrre un risultato perfettamente sbagliato.**
+Succede quando durante la trasformazione cambia silenziosamente il significato del dato:
 
-### Caso simulato — Aurora Market e i 3,8 milioni di euro apparsi dal nulla
+- una riga per ordine diventa più righe per ordine dopo un join;
+- il denominatore esclude casi che dovrebbero restare nella popolazione;
+- la data di ordine viene usata al posto della data di competenza;
+- una dimensione corrente viene applicata retroattivamente al passato;
+- un saldo viene sommato nel tempo come se fosse un flusso;
+- una metrica chiamata `revenue` incorpora una definizione diversa da quella di Finance;
+- una deduplicazione sceglie arbitrariamente quale record conservare;
+- un modello incrementale dimentica record arrivati in ritardo.
 
-Aurora Market, marketplace europeo di prodotti per la casa, prepara il board meeting trimestrale. Il dashboard principale mostra ricavi Q2 pari a 48,6 milioni di euro, contro 44,8 milioni nel trimestre precedente.
+Il principio guida del capitolo è quindi:
 
-La crescita sembra essere dell'8,5%.
+> **SQL non serve soltanto a interrogare tabelle. Serve a rendere eseguibile una definizione analitica senza modificarne il significato lungo il percorso.**
 
-Il team Finance però comunica un numero diverso: 44,9 milioni.
+### Caso simulato/composito — Aurora Market e i 3,8 milioni di euro apparsi dal nulla
 
-La prima reazione è cercare un errore nel sistema contabile. Invece il problema è nella query analitica.
+Aurora Market, marketplace europeo di prodotti per la casa, prepara il board meeting trimestrale.
 
-La tabella `orders` contiene una riga per ordine. La tabella `order_lines` contiene più righe per ordine. La tabella `payments` può contenere più tentativi o movimenti per lo stesso ordine.
+Il dashboard commerciale mostra revenue Q2 pari a **48,6 milioni di euro**. Finance chiude invece il trimestre a **44,8 milioni**.
 
-La query del dashboard unisce direttamente tutte e tre:
+La differenza è troppo grande per essere attribuita ad arrotondamenti o timing di chiusura.
+
+La query del dashboard contiene un join apparentemente innocuo:
 
 ```sql
 SELECT
@@ -42,49 +47,100 @@ JOIN order_lines ol
     ON o.order_id = ol.order_id
 JOIN payments p
     ON o.order_id = p.order_id
-WHERE o.order_date >= '2026-04-01'
-  AND o.order_date < '2026-07-01';
+WHERE o.order_date >= DATE '2026-04-01'
+  AND o.order_date <  DATE '2026-07-01';
 ```
 
-La sintassi è valida.
+Il modello operativo ha però tre grain differenti:
 
-Il problema è semantico.
+| tabella | grain |
+|---|---|
+| `orders` | una riga per ordine |
+| `order_lines` | una riga per linea d’ordine |
+| `payments` | una riga per movimento di pagamento |
 
-Un ordine con quattro linee e due movimenti di pagamento diventa otto righe dopo il join. Il fatturato delle linee viene duplicato.
+Un ordine con quattro linee e due movimenti di pagamento diventa otto righe dopo il join. Il valore delle linee viene ripetuto due volte.
 
-Quando l'analyst ricostruisce il grain delle tre tabelle, scopre che circa il 14% degli ordini possiede più di un record in `payments`, soprattutto dopo l'introduzione di un nuovo flusso di autorizzazione carta.
+L’errore non nasce da `SUM`. Nasce prima: il team non ha dichiarato quale entità dovesse esistere una sola volta nel dataset finale.
 
-La query non è diventata sbagliata quando è stata eseguita. Era sbagliata nel momento in cui è stato ignorato il grain.
+Questa distinzione è fondamentale perché l’AI rende sempre più economico generare SQL. Un assistente può scrivere il join in pochi secondi. Non può però decidere automaticamente che cosa significhi “revenue Q2” per quell’organizzazione se grain, popolazione, tempo e definizione della metrica non sono espliciti.
 
-### Le domande che vengono prima di SQL
+### L’Analytical Data Contract
 
-Prima di iniziare una query, l'analyst dovrebbe riuscire a rispondere almeno a queste domande:
+Il deliverable operativo del capitolo sarà l’**Analytical Data Contract**.
 
-1. Qual è l'entità o evento elementare che voglio misurare?
-2. Qual è il grain di ogni tabella coinvolta?
-3. Quali chiavi sono davvero uniche?
-4. Il join è uno-a-uno, uno-a-molti o molti-a-molti?
-5. Quali misure sono additive e quali no?
-6. Quale dimensione temporale rappresenta la domanda di business?
-7. Sto misurando uno stock, un flusso o uno stato?
-8. La definizione della metrica esiste già in un layer condiviso?
+Prima che una trasformazione importante diventi una query ricorrente, un modello condiviso o una fonte per dashboard, dovremmo poter compilare almeno questi campi:
 
-Nel resto del capitolo useremo SQL non come fine, ma come strumento per rendere esplicite queste decisioni.
+| Campo | Domanda |
+|---|---|
+| Business entity | Che cosa rappresentiamo: ordine, cliente, sessione, contratto, evento? |
+| Grain | Che cosa rappresenta esattamente una riga? |
+| Keys | Quali colonne identificano univocamente una riga o entità? |
+| Expected cardinality | Cosa ci aspettiamo da ogni join: 1:1, 1:N, N:M? |
+| Population semantics | Chi o cosa entra nel dataset e chi resta fuori? |
+| Time semantics | Quale timestamp/data determina appartenenza al periodo e validità storica? |
+| Metric semantics | Quali componenti, esclusioni e denominatori definiscono la metrica? |
+| Transformation path | Quali cambi di grain avvengono tra sorgente e output? |
+| Quality invariants | Quali proprietà devono restare vere dopo ogni trasformazione? |
+| Refresh / latency | Quanto deve essere aggiornato il dato? |
+| Cost / performance | Quanto costa produrlo e a quale frequenza? |
+| Lineage / owner | Da dove arriva e chi risponde della definizione? |
 
-### Obiettivo del capitolo
+Il contratto non sostituisce SQL. Rende SQL verificabile.
 
-Alla fine dovremo saper passare da una richiesta come:
+### Il collegamento con i capitoli precedenti
 
-> “Fammi il revenue per cliente, canale e mese, confrontalo con l'anno scorso e mostrami i clienti che stanno rallentando”
+Il percorso operativo del libro diventa:
 
-non direttamente a una query, ma a una sequenza più robusta:
+```text
+Analytical Brief
+→ Data Readiness Review
+→ Analytical Data Contract
+→ dataset analitico
+→ analisi / modello / dashboard
+```
 
-**domanda → grain → fonti → chiavi → trasformazioni → modello → metrica → validazione → query → interpretazione**.
+L’**Analytical Brief** specifica quale domanda dobbiamo supportare.
 
----
+La **Data Readiness Review** verifica se le fonti sono adatte all’uso previsto.
 
-**Riferimenti**
+L’**Analytical Data Contract** stabilisce come trasformare quelle fonti senza perdere il significato necessario alla domanda.
+
+Questa sequenza evita un errore comune: credere che una volta trovate le tabelle “giuste” il problema semantico sia finito. In realtà è proprio durante join, filtri, aggregazioni e storicizzazione che molte definizioni cambiano.
+
+### Le domande che vengono prima del codice
+
+Prima di scrivere una query importante, dovremmo riuscire a rispondere a queste domande:
+
+1. qual è l’entità business che voglio rappresentare?
+2. qual è il grain desiderato dell’output?
+3. qual è il grain di ogni sorgente?
+4. quali chiavi sono uniche e in quale dominio?
+5. quale popolazione entra nel calcolo?
+6. quale tempo rappresenta la domanda: evento, competenza, stato, validità?
+7. quali misure sono additive, semi-additive o non additive?
+8. quali join possono moltiplicare righe?
+9. quali trasformazioni cambiano il grain?
+10. quali invarianti posso testare automaticamente?
+11. la metrica esiste già in un layer condiviso?
+12. come saprò se la stessa query domani sta ancora calcolando la stessa cosa?
+
+### Il confine con il Capitolo 3 e il Capitolo 12
+
+Questo capitolo non ripete la qualità dei dati del Capitolo 3 e non anticipa l’architettura del Capitolo 12.
+
+- **Capitolo 3:** i dati sono adatti alla domanda?
+- **Capitolo 11:** come trasformiamo quei dati preservandone il significato analitico?
+- **Capitolo 12:** quale architettura produce, trasporta e serve quelle trasformazioni in modo affidabile e scalabile?
+
+Il risultato a cui puntiamo non è “saper scrivere query complesse”.
+
+È saper difendere questa frase:
+
+> **So che questo numero rappresenta ciò che diciamo che rappresenta, e posso mostrare dove quella semantica viene preservata nel codice e nei test.**
+
+### Riferimenti
 
 Microsoft Learn, *Understand star schema and the importance for Power BI*: https://learn.microsoft.com/en-us/power-bi/guidance/star-schema
 
-Microsoft Learn, *Dimensional modeling in Microsoft Fabric Warehouse*: https://learn.microsoft.com/en-us/fabric/data-warehouse/dimensional-modeling-overview
+Databricks, *Model metric views*: https://docs.databricks.com/aws/en/uc-semantics/metric-views/basic-modeling
