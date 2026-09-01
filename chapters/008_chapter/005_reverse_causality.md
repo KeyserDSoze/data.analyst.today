@@ -1,69 +1,117 @@
-## 8.4 Causalità inversa: quando l'effetto sembra la causa
+## 8.4 Causalità inversa e treatment response: quando l'intervento è una conseguenza del rischio
 
-Una relazione può apparire plausibile anche quando la direzione causale è opposta a quella intuita inizialmente.
+Una delle fonti più comuni di interpretazione sbagliata nasce quando l'azienda interviene **in risposta** a un deterioramento già iniziato.
 
-### Caso - Più sconti, più churn
+Il trattamento precede l'outcome finale, ma non precede necessariamente il processo che lo ha generato.
 
-Un'azienda SaaS osserva che i clienti che ricevono sconti di retention hanno un churn del 27%, contro il 9% dei clienti che non ricevono sconti.
+### Caso simulato/composito — Più sconti, più churn
 
-La prima lettura potrebbe essere:
+Un SaaS osserva:
 
-> "Gli sconti fanno aumentare il churn."
+| Clienti | Churn 90 giorni |
+|---|---:|
+| ricevono retention discount | 27% |
+| non ricevono discount | 9% |
 
-Ma gli sconti vengono concessi proprio ai clienti che hanno manifestato intenzione di cancellare, ridotto l'utilizzo o aperto ticket critici.
+La lettura ingenua è:
 
-La direzione reale del processo è più simile a:
+> “Gli sconti aumentano il churn.”
 
-`rischio churn -> concessione sconto`
+Ma gli sconti vengono concessi dopo segnali come:
 
-Non necessariamente:
+- calo d'uso;
+- ticket critici;
+- richiesta di cancellazione;
+- pressione del procurement;
+- downgrade pianificato.
 
-`sconto -> churn`
+Il processo assomiglia a:
 
-Il trattamento è una risposta al rischio.
+```text
+rischio latente -> sconto
+rischio latente -> churn
+sconto ---------> possibile riduzione del churn
+```
 
-### Caso - Più medici, più mortalità ospedaliera
+Il trattamento può essere utile e apparire comunque associato a risultati peggiori.
 
-Supponiamo che un network sanitario osservi che gli ospedali con più specialisti per paziente hanno mortalità più alta.
+### Il problema non è solo “Y causa X”
 
-Una conclusione ingenua sarebbe che una maggiore intensità clinica peggiori gli outcome.
+Nella pratica è spesso più utile parlare di **treatment by indication** o **intervento reattivo**.
 
-Ma gli ospedali con casi più gravi ricevono più personale specializzato. La gravità del paziente influenza sia l'intensità delle cure sia la mortalità.
+La dinamica può essere:
 
-Nel business il meccanismo è diffusissimo:
+```text
+stato deteriorato_t-1 -> trattamento_t -> outcome_t+1
+          |
+          +---------------------------> outcome_t+1
+```
 
-- i clienti più problematici ricevono più assistenza;
-- i negozi peggiori ricevono più visite del management;
-- i lead più difficili ricevono più follow-up;
-- gli SKU più instabili ricevono più interventi sul prezzo;
-- i sistemi più fragili ricevono più manutenzione.
+Il trattamento arriva dopo che una parte della traiettoria causale è già iniziata.
 
-Se osserviamo solo intervento e outcome, l'intervento può sembrare associato a risultati peggiori proprio perché viene applicato dove il rischio era già maggiore.
+### Il tempo va modellato come processo
 
-### Il tempo aiuta a ragionare, ma non risolve tutto
+Per ogni analisi causale dovremmo distinguere almeno:
 
-Una causa deve precedere il proprio effetto. Ordinare correttamente gli eventi nel tempo è quindi essenziale.
+1. finestra pre-trattamento;
+2. momento di eleggibilità;
+3. assignment;
+4. exposure effettiva;
+5. periodo in cui il trattamento può agire;
+6. finestra di outcome.
 
-Tuttavia la precedenza temporale non basta a dimostrare causalità.
+Esempio:
 
-Se un cliente riduce i login a gennaio, riceve uno sconto a febbraio e cancella a marzo, lo sconto precede il churn ma è stato generato da un deterioramento iniziato prima.
+```text
+D-60 ... D-1   comportamento pre-treatment
+D0             account diventa eleggibile
+D1             chiamata assegnata
+D3             chiamata effettivamente ricevuta
+D4 ... D90     outcome window
+```
 
-### Variabili laggate e finestre temporali
+Senza questa timeline è facile usare segnali prodotti dopo l'inizio del trattamento oppure trattare come baseline un comportamento già modificato dall'intervento.
 
-Per evitare errori grossolani conviene distinguere chiaramente:
+### Immortal time e finestre costruite male
 
-- covariate pre-trattamento;
-- momento del trattamento;
-- outcome successivi;
-- variabili che possono essere conseguenze del trattamento.
+Supponiamo di confrontare clienti che “hanno ricevuto almeno una sessione di training nei primi 60 giorni” con quelli che non l'hanno ricevuta.
 
-Nel caso SaaS potremmo definire:
+Per entrare nel gruppo trattato un cliente deve **sopravvivere abbastanza a lungo** da ricevere il training.
 
-- utilizzo nei 60 giorni precedenti;
-- ticket aperti prima dell'offerta;
-- sconto concesso nel giorno `t`;
-- churn entro 90 giorni dopo `t`.
+Se alcuni clienti churnano al giorno 10 non potranno mai entrare nel gruppo trattato.
 
-Questa struttura temporale non elimina da sola il confounding, ma impedisce di usare accidentalmente informazioni future per spiegare il passato.
+Il confronto può quindi favorire artificialmente il training.
 
-> **Quando un'azienda interviene in risposta a un rischio, il rischio stesso può far sembrare inefficace o dannoso l'intervento.**
+La definizione del tempo zero deve essere coerente tra gruppi.
+
+### Caso simulato/composito — Manutenzione predittiva
+
+Un impianto industriale mostra più guasti tra macchine che ricevono manutenzione straordinaria.
+
+Non significa che la manutenzione causi i guasti.
+
+I sensori rilevano vibrazioni anomale, il team pianifica manutenzione e alcune macchine falliscono comunque.
+
+La vera domanda è:
+
+> “Tra macchine con segnali di rischio comparabili, quale sarebbe stato il failure rate senza manutenzione?”
+
+### Lag non significa automaticamente pre-treatment
+
+Creare `feature_lag_7d` non rende automaticamente una variabile causalmente sicura.
+
+Se il processo decisionale è iniziato due settimane prima, il valore a `t-7` può già riflettere il trattamento o la decisione di trattare.
+
+Serve conoscere il **momento in cui l'intervento diventa possibile e inizia a influenzare il sistema**.
+
+### Regola operativa
+
+Prima di confrontare trattati e non trattati, costruisci una timeline e chiedi:
+
+- quando è comparso il primo segnale di rischio?
+- quando l'operatore ha deciso il trattamento?
+- quando l'unità lo ha ricevuto davvero?
+- quali covariate erano già influenzate dalla decisione?
+- tutti i gruppi hanno lo stesso time zero?
+
+> **La precedenza temporale è necessaria, ma la causalità richiede di ricostruire il processo che ha portato al trattamento, non soltanto l'ordine dei timestamp.**
