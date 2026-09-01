@@ -1,105 +1,147 @@
-## 11.2 Aggregare è scegliere: somme, medie e denominatori
+## 11.2 Aggregare significa scegliere una popolazione, un peso e un denominatore
 
-`GROUP BY` sembra innocuo. In realtà è uno dei punti in cui l'analyst prende più decisioni implicite.
+`GROUP BY` sembra un’operazione tecnica. In realtà ogni aggregazione incorpora una decisione semantica.
 
-Ogni aggregazione risponde a tre domande:
+Quando calcoliamo una metrica, dovremmo poter rispondere a quattro domande:
 
-1. cosa sto contando o sommando?
-2. su quale popolazione?
-3. con quale denominatore?
+1. **che cosa sto sommando o contando?**
+2. **qual è la popolazione eleggibile?**
+3. **qual è il denominatore?**
+4. **quale peso implicito assegno alle osservazioni?**
 
-### Caso simulato — NovaCare e il tempo medio di risposta
+Se una di queste risposte è ambigua, la metrica può cambiare senza che cambi la formula.
 
-NovaCare gestisce un customer service multicanale. Il management riceve un report:
+### Caso simulato/composito — NovaCare e il miglioramento che nasceva dai `NULL`
+
+NovaCare gestisce un customer service multicanale.
+
+Il report mensile mostra:
 
 - tempo medio di prima risposta: 4,8 ore;
 - mese precedente: 5,6 ore;
-- miglioramento: 14%.
+- miglioramento apparente: 14%.
 
-Il numero sembra positivo.
-
-La query è:
+La query è semplice:
 
 ```sql
 SELECT
     AVG(first_response_minutes) / 60.0 AS avg_hours
 FROM tickets
-WHERE created_at >= '2026-07-01'
-  AND created_at < '2026-08-01';
+WHERE created_at >= DATE '2026-07-01'
+  AND created_at <  DATE '2026-08-01';
 ```
 
-Ma nel mese corrente è stata introdotta una nuova regola: i ticket ancora aperti senza risposta hanno `first_response_minutes = NULL`.
+Nel mese corrente, però, è cambiata la pipeline: i ticket ancora aperti senza risposta hanno `first_response_minutes = NULL`.
 
 `AVG` ignora i `NULL`.
 
-Quindi i casi peggiori spariscono dal denominatore.
+Quindi i ticket peggiori — quelli che non hanno ancora ricevuto alcuna risposta — spariscono dalla popolazione osservata.
 
-Il team non ha migliorato davvero di 14%. Ha cambiato implicitamente la popolazione su cui calcola la media.
+La sintassi non contiene errori. È cambiato il significato del denominatore.
 
-### Conteggi che sembrano uguali ma non lo sono
+### Popolazione eleggibile e popolazione osservata
+
+Molte metriche diventano più robuste se distinguiamo esplicitamente:
+
+- **eligible population** — casi che dovrebbero poter entrare nel calcolo;
+- **observed population** — casi per cui abbiamo effettivamente un valore;
+- **excluded population** — casi eliminati secondo una regola dichiarata.
+
+Nel caso NovaCare potremmo produrre insieme:
+
+- numero totale di ticket eleggibili;
+- numero di ticket già risposti;
+- numero ancora senza risposta;
+- media sui ticket risposti;
+- percentile o SLA breach sul totale, con una policy esplicita per i censored/open cases.
+
+Il problema non è che `AVG` ignori i `NULL`. Il problema è dimenticare che lo fa.
+
+### Conteggi diversi rispondono a domande diverse
 
 ```sql
 COUNT(*)
 ```
 
-conta le righe.
+conta righe.
 
 ```sql
 COUNT(customer_id)
 ```
 
-conta le righe in cui `customer_id` non è NULL.
+conta righe in cui `customer_id` non è `NULL`.
 
 ```sql
 COUNT(DISTINCT customer_id)
 ```
 
-conta clienti distinti non nulli.
+conta identità cliente distinte non nulle.
 
-Queste tre espressioni possono produrre numeri molto diversi.
+Se una tabella contiene più righe per cliente, questi tre numeri non sono versioni alternative della stessa metrica. Rappresentano entità differenti.
 
-### Media delle medie: un errore classico
+### La media delle medie nasconde il peso
 
-Immaginiamo due negozi:
+Consideriamo due negozi:
 
 | Negozio | Ordini | AOV |
 |---|---:|---:|
 | A | 100 | €40 |
 | B | 10.000 | €52 |
 
-La media semplice tra 40 e 52 è 46 euro.
+Fare `(40 + 52) / 2` produce €46.
 
-Ma l'AOV complessivo corretto è:
+Ma ogni negozio riceve così lo stesso peso, non ogni ordine.
+
+L’AOV complessivo è invece:
 
 ```text
 (100 × 40 + 10.000 × 52) / 10.100 ≈ 51,88 euro
 ```
 
-Una media di metriche aggregate spesso introduce un peso implicito sbagliato.
+La domanda da fare non è “media o media ponderata?”. È:
+
+> **qual è l’unità che deve avere peso uno nella metrica finale?**
 
 ### Ratio of sums vs average of ratios
 
-Consideriamo il return rate.
-
-Metodo A:
+Per un return rate possiamo scrivere:
 
 ```sql
 SUM(returned_units) * 1.0 / SUM(sold_units)
 ```
 
-Metodo B:
+oppure:
 
 ```sql
-AVG(returned_units * 1.0 / sold_units)
+AVG(returned_units * 1.0 / NULLIF(sold_units, 0))
 ```
 
 Non sono equivalenti.
 
-Il secondo assegna lo stesso peso a ogni riga o gruppo, indipendentemente dal volume.
+La prima formula assegna peso alle unità vendute. La seconda assegna peso alle righe o ai gruppi su cui stiamo facendo la media.
 
-### Caso simulato — PeakSports e il venditore “peggiore”
+Per questo nell’Analytical Data Contract una ratio dovrebbe dichiarare almeno:
 
-Un marketplace sportivo misura il tasso di reso per seller.
+- numeratore;
+- denominatore;
+- unità di ponderazione;
+- esclusioni;
+- gestione dei denominatori zero;
+- livello al quale numeratore e denominatore devono essere aggregati prima della divisione.
+
+### Metriche additive, semi-additive e non additive
+
+Una classificazione operativa utile è:
+
+- **additive**: revenue, units, costi; possono essere sommate attraverso molte dimensioni;
+- **semi-additive**: inventory, balance, headcount snapshot; possono essere aggregate su alcune dimensioni ma non liberamente nel tempo;
+- **non additive**: percentuali, medie, ratio, score; spesso devono essere ricalcolate dai componenti.
+
+Un saldo giornaliero di 10, 12 e 9 unità non implica uno stock di 31 unità. Abbiamo tre stati in tre momenti, non tre flussi.
+
+### Caso simulato/composito — PeakSports e il seller “peggiore”
+
+Un marketplace misura i resi.
 
 Seller Alpha:
 
@@ -113,37 +155,54 @@ Seller Beta:
 - 6.000 ordini;
 - return rate 4%.
 
-Se osserviamo solo i resi assoluti, Beta sembra il problema principale.
+Se osserviamo i resi assoluti, Beta domina il volume.
 
 Se osserviamo il tasso, Alpha è peggiore.
 
-Ma se Alpha vende quasi esclusivamente scarponi da sci, categoria con baseline di reso al 12%, il suo 8% potrebbe essere eccellente.
+Ma Alpha vende quasi solo scarponi da sci, categoria con baseline di reso 12%.
 
-L'aggregazione corretta dipende dal confronto corretto.
+Il confronto corretto può quindi richiedere un’ulteriore normalizzazione per category mix.
 
-### Metriche additive, semi-additive e non additive
+Questo esempio mostra una sequenza importante:
 
-Una distinzione utile:
+```text
+conteggio
+→ tasso
+→ denominatore
+→ composizione
+→ confronto appropriato
+```
 
-- **additive**: revenue, units, costi; si possono sommare su molte dimensioni;
-- **semi-additive**: saldo conto, inventory level; si possono sommare tra clienti o prodotti, ma non nel tempo senza attenzione;
-- **non additive**: percentuali, medie, ratio; spesso devono essere ricalcolate dai componenti.
+L’aggregazione non è il punto finale del ragionamento. È una scelta di rappresentazione.
 
-Un saldo giornaliero di magazzino di 10, 12 e 9 unità non significa che abbiamo avuto 31 unità di stock.
+### Conservare componenti, non soltanto percentuali
 
-### Pattern robusto: conservare numeratore e denominatore
-
-Invece di materializzare solo:
+Invece di materializzare soltanto:
 
 ```text
 conversion_rate = 3,7%
 ```
 
-è spesso meglio conservare:
+è spesso preferibile conservare:
 
 - `converted_sessions`;
 - `eligible_sessions`.
 
-La ratio può essere ricalcolata in modo coerente a diversi livelli di aggregazione.
+Poi:
 
-> **Le percentuali sono spesso il risultato finale di un calcolo. Numeratore e denominatore sono invece dati analiticamente riusabili.**
+```text
+conversion_rate = converted_sessions / eligible_sessions
+```
+
+può essere ricalcolato coerentemente per canale, Paese, settimana o prodotto.
+
+Lo stesso principio vale per:
+
+- margin %;
+- return rate;
+- attach rate;
+- activation rate;
+- churn rate;
+- on-time delivery rate.
+
+> **Una percentuale è spesso un risultato. Numeratore, denominatore e popolazione sono il vero contratto analitico.**
