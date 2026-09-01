@@ -1,71 +1,123 @@
-## 6.9 Reactivation: quando un utente torna non significa che il problema sia risolto
+## 6.9 Reactivation: distinguere il ritorno momentaneo dal recupero duraturo
 
-Retention e churn vengono spesso trattati come stati definitivi: attivo oppure perso. Nella realtà molti prodotti hanno comportamenti intermittenti. Un utente può sparire per settimane, tornare, utilizzare intensamente il prodotto per pochi giorni e poi sparire di nuovo.
+Retention e churn vengono spesso rappresentati come due stati definitivi: presente oppure perso.
 
-Per questo è utile distinguere almeno tre stati:
+Molti prodotti reali sono più intermittenti. Un cliente può diventare inattivo, tornare dopo settimane, usare intensamente il prodotto per poco tempo e poi sparire di nuovo.
 
-- attivo;
-- inattivo o churnato secondo una soglia operativa;
-- riattivato.
+Per questo conviene modellare almeno tre stati distinti:
 
-La **reactivation rate** misura la quota di utenti precedentemente inattivi che tornano a soddisfare la definizione di attività.
+- **attivo**;
+- **inattivo/churned secondo una soglia operativa**;
+- **riattivato**.
 
-### Caso: FitNow e la campagna che “recupera” il 18% degli utenti
+Il problema è che “riattivato” può significare quasi qualunque cosa.
 
-FitNow è un'app fitness in abbonamento. L'azienda considera churnato un utente che non apre l'app e non completa alcun workout per 30 giorni.
+### Caso simulato/composito: FitNow e la campagna che recuperava il 18%
 
-A marzo il CRM team lancia una campagna aggressiva verso 180.000 utenti inattivi: email, push notification e un mese premium gratuito.
+**FitNow** è un'app fitness in abbonamento. Considera inattivo un utente che non apre l'app e non completa workout per almeno trenta giorni.
 
-Dopo due settimane la dashboard mostra un dato apparentemente ottimo:
+Il CRM team contatta 180.000 utenti inattivi con email, push notification e un mese premium gratuito.
 
-- 32.400 utenti tornano nell'app;
-- reactivation rate = 18%.
+Dopo due settimane:
 
-La campagna viene presentata come successo.
+- 32.400 utenti riaprono l'app;
+- reactivation rate dichiarata: 18%.
 
-L'analista decide però di estendere la finestra di osservazione. Divide gli utenti riattivati in base alla profondità del ritorno:
+La campagna sembra un successo.
 
-| Comportamento dopo la riattivazione | Quota dei riattivati | Attivi anche dopo 60 giorni |
-|---|---:|---:|
-| una sola apertura | 37% | 4% |
-| almeno un workout | 34% | 21% |
-| almeno 3 workout in 14 giorni | 21% | 49% |
-| nuovo piano settimanale completato | 8% | 68% |
+L'analista osserva però ciò che succede dopo il ritorno:
 
-Il 18% iniziale era tecnicamente corretto, ma mescolava ritorni quasi irrilevanti con veri recuperi di comportamento.
+| Comportamento dopo il ritorno | Quota dei riattivati | Attivi anche dopo 60 giorni |
+| --- | ---: | ---: |
+| Una sola apertura | 37% | 4% |
+| Almeno un workout | 34% | 21% |
+| Almeno 3 workout in 14 giorni | 21% | 49% |
+| Nuovo piano settimanale completato | 8% | 68% |
 
-La domanda diventa quindi:
+Il 18% misurava **ritorno**, non necessariamente **recupero della relazione**.
 
-> cosa intendiamo davvero per utente riattivato?
+### Reactivation event e durable reactivation
+
+È utile distinguere:
+
+**Reactivation event** — il primo comportamento che riporta l'utente nello stato attivo.
+
+**Durable reactivation** — il ritorno persiste abbastanza da indicare un recupero reale del comportamento.
+
+FitNow sostituisce quindi la metrica principale con una definizione più severa:
+
+> utente inattivo da almeno trenta giorni che completa almeno due workout nei quattordici giorni successivi al ritorno e rimane attivo nella finestra seguente.
+
+La reactivation scende dal 18% al 6,3%.
+
+È un numero meno spettacolare, ma molto più vicino al fenomeno economico che interessa.
+
+### Il denominatore deve descrivere chi era realmente recuperabile
+
+Anche il denominatore può essere ingannevole.
+
+Tra i 180.000 utenti inattivi potrebbero esserci:
+
+- persone che hanno già chiesto la cancellazione definitiva;
+- account duplicati;
+- utenti che non possono più essere contattati;
+- clienti che hanno smesso perché il bisogno è terminato;
+- utenti stagionali che sarebbero tornati comunque.
+
+La popolazione eleggibile a una campagna di reactivation dovrebbe essere definita prima di calcolare il tasso.
+
+### Il problema controfattuale: quanti sarebbero tornati comunque?
+
+Se 32.400 persone tornano dopo una campagna, non possiamo attribuire automaticamente tutti i ritorni alla campagna.
+
+Una parte degli utenti inattivi sarebbe potuta tornare spontaneamente.
+
+Supponiamo che, nello stesso periodo e su una popolazione comparabile non contattata, il 7% torni comunque.
+
+Il 18% osservato nella popolazione contattata resta interessante, ma la domanda causale diventa:
+
+> quanto ritorno **incrementale** ha prodotto davvero l'intervento rispetto a ciò che sarebbe successo senza campagna?
+
+Questa distinzione prepara il terreno per sperimentazione e causalità. Qui ci basta non confondere un evento post-campagna con un effetto della campagna.
+
+### Il costo della reactivation
+
+Il mese premium gratuito ha un costo.
+
+Se consideriamo tutti i 32.400 utenti tornati, il costo per reactivation sembra basso. Se consideriamo soltanto i recuperi duraturi, il costo per cliente realmente recuperato aumenta molto.
+
+Una valutazione completa dovrebbe includere:
+
+- costo del contatto;
+- costo dell'incentivo;
+- quota di ritorni duraturi;
+- revenue/margine dopo il ritorno;
+- eventuale cannibalizzazione;
+- ritorno spontaneo di baseline.
 
 ### Reactivation non è acquisition
 
-Un utente che torna porta con sé una storia. Ha già sperimentato il prodotto, ha avuto un motivo per allontanarsi e potrebbe avere aspettative diverse da un nuovo utente.
+Un utente riattivato porta con sé una storia che un nuovo utente non ha.
 
-Per questo non conviene analizzare i riattivati come se fossero nuovi signup. È utile costruire coorti specifiche e misurare:
+Conviene quindi costruire coorti specifiche per:
 
-- tempo trascorso dall'ultima attività;
-- motivo di churn, quando noto;
-- canale che ha generato il ritorno;
-- evento di reactivation;
-- retention dopo il ritorno;
-- revenue incrementale;
-- costo dell'incentivo.
+- durata dell'inattività;
+- comportamento prima dell'uscita;
+- motivo di churn, quando disponibile;
+- canale di reactivation;
+- incentivo ricevuto;
+- comportamento dopo il ritorno.
 
-### Il costo nascosto della reactivation
+Un utente inattivo da 35 giorni e uno assente da 18 mesi non sono necessariamente lo stesso problema.
 
-Nel caso FitNow, il mese premium gratuito costa in media 5,40 € per utente riattivato. Se consideriamo tutti i 32.400 ritorni, il costo sembra accettabile.
+### La domanda operativa
 
-Ma solo 9.396 utenti restano attivi dopo 60 giorni. Il costo per riattivazione duratura è quindi molto più alto.
+Una buona analisi di reactivation non si ferma a:
 
-Questo esempio mostra perché **un tasso di ritorno senza una finestra di persistenza può trasformare un evento momentaneo in un successo fittizio**.
+> quanti sono tornati?
 
-### Una definizione operativa migliore
+Chiede:
 
-FitNow sostituisce infine la vecchia metrica con:
+> quanti sono tornati, quanti sono rimasti, quanto valore hanno ricominciato a generare e quanta parte del ritorno è plausibilmente incrementale?
 
-> utente riattivato = utente inattivo da almeno 30 giorni che completa almeno due workout in 14 giorni e rimane attivo nella finestra successiva di 30 giorni.
-
-La percentuale scende dal 18% al 6,3%.
-
-La metrica è meno spettacolare. Ma descrive meglio il fenomeno che interessa davvero al business.
+Il lifecycle non termina sempre con il churn. Ma nemmeno ogni ritorno rappresenta una relazione recuperata.
