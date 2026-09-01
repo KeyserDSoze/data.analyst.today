@@ -1,117 +1,163 @@
 # Capitolo 16 — Data storytelling, dashboard ed executive communication
 
-## 16.0 Un numero corretto può produrre una decisione sbagliata
+## 16.0 Comunicare bene significa comprimere senza deformare
 
-Un'analisi non termina quando abbiamo calcolato correttamente un numero.
+Nel Capitolo 15 abbiamo costruito il **Decision Record**: decisione, alternative, evidenza, incertezza, trade-off, switching value, raccomandazione, owner e condizioni di revisione.
 
-Termina quando quel numero viene capito nel modo giusto da chi deve prendere una decisione.
+Il lavoro non è ancora finito.
 
-Questa distinzione sembra banale, ma nella pratica è uno dei punti in cui anche ottimi analyst falliscono.
+Una decisione può essere analiticamente ben costruita e venire comunque comunicata in modo da:
 
-Possiamo avere:
+- enfatizzare il dettaglio sbagliato;
+- nascondere l'incertezza che conta;
+- far sembrare causale un'associazione;
+- trasformare una variazione piccola in una crisi visiva;
+- sommergere il decision maker sotto informazioni corrette ma irrilevanti;
+- lasciare implicita la domanda più importante: **che cosa dobbiamo decidere adesso?**
 
-- dati corretti;
-- metodologia corretta;
-- metriche corrette;
-- grafici tecnicamente corretti;
-- conclusioni coerenti;
+Il problema della comunicazione analitica non è quindi rendere i dati più belli.
 
-ma una comunicazione che porta il management a ricordare il messaggio sbagliato.
+È **ridurre il costo cognitivo senza ridurre l'integrità dell'evidenza**.
 
-Il problema non è soltanto estetico.
+## Compressione informativa e perdita di significato
 
-È decisionale.
+Un'analisi può contenere:
 
-## Caso realistico: il grafico corretto che spinge verso la decisione sbagliata
+- 40 query;
+- 25 grafici esplorativi;
+- 12 segmentazioni;
+- tre robustness check;
+- un modello;
+- un intervallo di incertezza;
+- cinque alternative;
+- una raccomandazione.
+
+Il CEO non leggerà tutto prima del meeting.
+
+Questo non significa che il rigore debba sparire. Significa che dobbiamo costruire **livelli di accesso alla stessa evidenza**.
+
+Una buona comunicazione permette almeno tre letture:
+
+1. **30 secondi** — qual è la decisione e perché conta;
+2. **5–10 minuti** — quali evidenze sostengono la raccomandazione e quale incertezza può cambiarla;
+3. **audit** — come sono stati definiti metriche, filtri, metodi, fonti e controlli.
+
+La sintesi è buona quando i tre livelli restano semanticamente coerenti.
+
+## Caso simulato/composito — Il churn che sembrava una crisi
 
 Una società SaaS presenta al leadership team il churn mensile degli ultimi dodici mesi.
 
-Il grafico è corretto.
+Il numero è corretto:
 
-Il churn passa dal 2,8% al 3,4%.
+- churn precedente: 2,8%;
+- churn corrente: 3,4%.
 
-La slide mostra una linea crescente molto evidente, con asse verticale che parte da 2,5%.
+La slide mostra una linea con asse verticale da 2,5% a 3,5% e un titolo:
 
-La reazione immediata è:
+> **Churn in forte accelerazione**
 
-> “Il churn sta esplodendo.”
+La reazione immediata è spostare €2 milioni dal budget acquisition a retention.
 
-Si propone di bloccare alcune iniziative di acquisizione e spostare €2 milioni di budget sulla retention.
+Prima della decisione emergono però tre elementi rimasti fuori dalla slide:
 
-L'analista però aggiunge due informazioni che non erano nella prima visualizzazione:
-
-- il churn era già oscillato tra 2,7% e 3,5% nei tre anni precedenti;
-- l'incremento attuale è concentrato quasi interamente in una coorte di clienti annuali arrivata a rinnovo nello stesso mese.
-
-La storia cambia.
-
-Il numero non era falso.
+- negli ultimi tre anni il churn mensile ha oscillato tra 2,7% e 3,5%;
+- il 72% del delta corrente proviene da una singola coorte annuale arrivata al rinnovo;
+- il churn dei clienti attivati negli ultimi sei mesi è stabile.
 
 Il grafico non era falso.
 
-Ma il contesto visivo aveva trasformato una variazione da investigare in una crisi apparente.
+Il numero non era falso.
 
-## Visualizzare significa scegliere cosa rendere cognitivamente facile
+Il **framing aveva reso cognitivamente dominante una lettura non sufficientemente supportata**.
 
-Ogni grafico rende alcune relazioni facili da vedere e altre più difficili.
+La comunicazione corretta potrebbe diventare:
 
-Una linea rende naturale osservare il trend.
+> **Il churn è salito a 3,4%, vicino al limite superiore dello storico. Il deterioramento è concentrato nella coorte annuale in rinnovo; non vediamo per ora un peggioramento generalizzato. Raccomandiamo un intervento mirato sulla coorte e monitoraggio per due cicli, non una riallocazione generalizzata del budget.**
 
-Un bar chart rende naturale confrontare grandezze discrete.
+Lo stesso dato produce una decisione diversa perché è cambiato il contesto decisionale.
 
-Uno scatter plot rende naturale osservare relazione e dispersione.
+## Dal Decision Record alla Decision Communication Pack
 
-Una heatmap rende naturale individuare pattern su due dimensioni.
+Il deliverable centrale di questo capitolo sarà la **Decision Communication Pack**.
 
-Una tabella rende naturale cercare valori precisi.
+Non è necessariamente un file unico. È un contratto tra ciò che abbiamo deciso di sostenere e ciò che il pubblico vedrà.
 
-Questo significa che la scelta del grafico non è neutrale.
+Una versione minima contiene:
 
-È una scelta su **quale domanda vogliamo rendere facile da rispondere con gli occhi**.
+| Campo | Domanda |
+|---|---|
+| Audience | Chi deve capire o decidere? |
+| Decision question | Quale scelta è aperta? |
+| Headline | Qual è il messaggio principale consentito dall'evidenza? |
+| Evidence | Quali 2–4 elementi sono sufficienti a sostenerlo? |
+| Context | Quale baseline, target, denominatore o evento è indispensabile? |
+| Uncertainty | Quale incertezza può cambiare la decisione? |
+| Alternatives | Quali opzioni devono restare visibili? |
+| Decision requested | Che cosa chiediamo al destinatario oggi? |
+| Guardrail / next step | Cosa monitoriamo dopo? |
+| Provenance | Dove troviamo definizioni, dati, metodo e appendix? |
 
-## Dashboard non significa raccolta di grafici
+Il principio è:
 
-Microsoft raccomanda esplicitamente di progettare dashboard pensando al pubblico, mettere in evidenza le informazioni più importanti e, quando possibile, raccontare la storia principale su una singola schermata senza sovraccaricare la pagina.
+**Decision Record → Decision Communication Pack**
 
-Fonte: https://learn.microsoft.com/en-us/power-bi/create-reports/service-dashboards-design-tips
+non:
 
-Il principio è più generale dello strumento.
+**dataset → grafico interessante → storia**.
 
-Una dashboard utile non è:
+## Visualizzare significa scegliere cosa rendere facile da vedere
 
-> “tutto quello che siamo riusciti a misurare.”
+Ogni forma visiva rende alcune relazioni più immediate di altre.
 
-È:
+- una linea facilita la lettura del cambiamento nel tempo;
+- barre allineate facilitano il confronto tra categorie;
+- uno scatter plot facilita la lettura di relazione, dispersione e outlier;
+- small multiples facilitano il confronto di pattern ripetuti;
+- una tabella facilita il recupero di valori precisi.
 
-> **“il minimo insieme di informazioni che permette a un determinato pubblico di capire lo stato del sistema e decidere cosa fare.”**
+La scelta del grafico è quindi una scelta su **quale struttura rendere percettivamente dominante**.
 
-## Comunicazione come ultimo miglio dell'analisi
+Per questo non è neutrale.
 
-Il percorso completo diventa quindi:
+## Dashboard non significa archivio di KPI
 
-**Problema → Analisi → Evidenza → Insight → Decisione → Comunicazione → Interpretazione → Azione**
+Microsoft raccomanda di progettare dashboard partendo dal pubblico, mettere in evidenza le informazioni più importanti e ridurre il clutter. La Government Analysis Function britannica, nelle linee guida 2026 sul testing dei dashboard, insiste inoltre su user needs, accessibilità, test su dispositivi diversi e disponibilità di contenuti alternativi ai grafici interattivi.
 
-La comunicazione non è il packaging finale.
+Il principio generale è più importante di qualsiasi tool:
 
-È parte del sistema analitico.
+> **Una dashboard utile organizza l'attenzione intorno a decisioni e anomalie; non espone semplicemente tutto ciò che il sistema sa misurare.**
 
-Se il pubblico interpreta male il messaggio, l'analisi non ha completato il proprio lavoro.
+## Il limite etico della comunicazione
 
-## Cosa vedremo nel capitolo
+Comunicare significa selezionare.
 
-In questo capitolo distingueremo:
+Selezionare significa inevitabilmente escludere qualcosa.
 
-- visualizzazione esplorativa e visualizzazione esplicativa;
-- scelta dei grafici;
-- dashboard operative, diagnostiche e decisionali;
-- gerarchia visiva e cognitive load;
-- annotazioni e contesto;
-- executive summary;
-- comunicazione dell'incertezza;
-- storytelling senza manipolazione;
-- dashboard anti-pattern;
-- casi in cui una presentazione cambia completamente l'interpretazione dello stesso dato.
+La responsabilità professionale consiste nel non escludere proprio ciò che renderebbe la conclusione meno conveniente ma più corretta:
 
-La tesi centrale è semplice:
+- una baseline sfavorevole alla nostra storia;
+- un intervallo ampio;
+- un segmento che contraddice l'aggregato;
+- una definizione cambiata;
+- una spiegazione alternativa;
+- un guardrail deteriorato.
 
-> **Il compito della visualizzazione non è rendere i dati belli. È rendere il ragionamento più facile e l'interpretazione meno ambigua.**
+Il data storytelling non deve trasformare l'analista in un avvocato della propria raccomandazione.
+
+Deve trasformarlo in un **curatore dell'evidenza decisionale**.
+
+## Il percorso del capitolo
+
+Costruiremo la Decision Communication Pack attraverso:
+
+**audience → domanda → evidence hierarchy → visual encoding → contesto → incertezza → executive summary → storytelling integrity → dashboard design → meeting → accessibilità → provenance**.
+
+La tesi centrale è:
+
+> **Una buona comunicazione analitica comprime la complessità senza aumentare la forza del claim, nascondere l'incertezza o cambiare il significato della decisione.**
+
+### Fonti
+
+- Microsoft Learn, *Tips for designing a great Power BI dashboard*: https://learn.microsoft.com/en-us/power-bi/create-reports/service-dashboards-design-tips
+- Government Analysis Function, *Data visualisation: testing dashboards for design and accessibility*: https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-testing-dashboards-for-design-and-accessibility/
