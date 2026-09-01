@@ -1,66 +1,120 @@
-## 4.5 Confrontare gruppi senza farsi ingannare
+## 4.5 Confrontare gruppi: composizione, denominatori e Simpson's paradox
 
-Molte analisi iniziano con un confronto: clienti nuovi contro clienti esistenti, regione A contro regione B, prima contro dopo, campagna X contro campagna Y.
+Molte analisi iniziano con un confronto:
 
-Il confronto è uno degli strumenti più potenti dell'analisi. È anche uno dei più facili da usare male.
+- clienti nuovi contro clienti esistenti;
+- regione A contro regione B;
+- prima contro dopo;
+- campagna X contro campagna Y;
+- piano mensile contro annuale.
 
-### Caso: il team commerciale migliore
+Il confronto è potente perché crea un riferimento.
 
-Un'azienda B2B confronta due team di vendita.
+È anche pericoloso perché due gruppi possono differire in molti modi oltre alla caratteristica che stiamo osservando.
 
-Il team Nord chiude il 31% delle opportunità.
+### Caso reale documentato — Le ammissioni graduate a Berkeley nel 1973
 
-Il team Centro chiude il 24%.
+Uno degli esempi più noti del problema di composizione nasce dai dati di ammissione graduate della University of California, Berkeley.
 
-La conclusione iniziale è semplice: il team Nord è più efficace.
+Nei dati aggregati del 1973 risultavano:
 
-Poi l'analista segmenta le opportunità per dimensione del cliente.
-
-| Segmento | Nord | Centro |
+| Gruppo | Applicant | Tasso di ammissione |
 |---|---:|---:|
-| Small business | 36% | 38% |
-| Mid-market | 25% | 27% |
-| Enterprise | 14% | 16% |
+| Uomini | 8.442 | 44% |
+| Donne | 4.321 | 35% |
 
-All'interno di ogni segmento il Centro performa leggermente meglio.
+Guardando soltanto il totale, il gap era netto e sembrava fornire forte evidenza di un processo sfavorevole alle donne.[^berkeley-simpson]
 
-Come è possibile che il totale dica il contrario?
+Bickel, Hammel e O'Connell analizzarono però il processo a livello di dipartimento. Le ammissioni graduate venivano decise dai singoli dipartimenti, che avevano tassi di selettività molto differenti. Inoltre uomini e donne non presentavano domanda con la stessa composizione tra i diversi campi di studio.
 
-Il Nord riceve una quota molto maggiore di opportunità small business, che sono più facili da chiudere. Il Centro lavora molto più spesso su enterprise.
+Nel materiale Berkeley che ricostruisce il lavoro originale, su 101 dipartimenti:
 
-Il confronto aggregato confonde quindi performance e composizione del portafoglio.
+- 75 non mostravano bias statisticamente rilevato;
+- 4 mostravano un risultato sfavorevole alle donne;
+- 6 un risultato sfavorevole agli uomini;
+- in 16 non era possibile il confronto perché non avevano candidate donne o non rifiutavano nessuno.[^berkeley-simpson]
 
-Questo tipo di paradosso è una forma classica del problema noto come Simpson's paradox.
+Nei sei dipartimenti più grandi si vede bene il meccanismo: le donne presentavano domanda molto più frequentemente in dipartimenti con tassi di ammissione bassi, mentre gli uomini erano maggiormente rappresentati in alcuni dipartimenti meno selettivi.
 
-### Prima di confrontare due gruppi
+Gli autori conclusero che il test applicato all'aggregato non rispettava una propria assunzione fondamentale e che, tenendo conto della diversa composizione per campo, non emergeva evidenza di bias contro le donne **nel processo di ammissione dipartimentale studiato**. Allo stesso tempo sottolinearono che la diversa distribuzione delle candidature tra discipline sollevava un problema sociale più ampio, che non poteva essere liquidato dalla sola analisi delle decisioni di ammissione.[^berkeley-simpson]
 
-Verificare almeno:
+Questo è importante perché evita una lettura caricaturale del caso.
 
-- hanno la stessa composizione?
-- sono osservati nello stesso periodo?
-- vengono applicate le stesse definizioni?
-- hanno la stessa esposizione al rischio o all'opportunità?
-- i denominatori sono comparabili?
-- esistono variabili che influenzano sia l'appartenenza al gruppo sia il risultato?
+La lezione non è:
 
-### Differenza assoluta e differenza relativa
+> "segmentare elimina sempre il problema".
 
-Un conversion rate che passa dal 2% al 3% aumenta di un punto percentuale, ma cresce del 50% in termini relativi.
+È:
 
-Entrambe le formulazioni sono corrette.
+> **un tasso aggregato è una media pesata di gruppi con dimensioni e baseline differenti; se cambia la composizione, il totale può cambiare anche quando il comportamento all'interno dei gruppi racconta un'altra storia.**
 
-Possono però produrre una percezione molto diversa.
+### Il meccanismo in termini di business
 
-Per questo una comunicazione rigorosa dovrebbe spesso riportare entrambe:
+Supponiamo di confrontare due team commerciali:
 
-**+1 punto percentuale, equivalente a +50% rispetto alla baseline.**
+```text
+Nord:   win rate 31%
+Centro: win rate 24%
+```
 
-### Confrontare non significa spiegare
+Prima di concludere che Nord sia migliore, dobbiamo chiedere come sono distribuite le opportunità tra:
 
-Se un segmento ha churn maggiore di un altro, abbiamo descritto una differenza.
+- SMB;
+- mid-market;
+- enterprise;
+- inbound;
+- outbound;
+- territori più o meno maturi.
 
-Non abbiamo ancora dimostrato perché esista.
+Se Nord riceve soprattutto opportunità facili e Centro soprattutto account enterprise, il confronto totale mescola **performance** e **portfolio mix**.
 
-Questa distinzione accompagnerà tutto il libro:
+### Simpson's paradox
 
-**differenza osservata ≠ causa identificata.**
+Il termine **Simpson's paradox**, o Yule-Simpson effect, descrive situazioni in cui una relazione aggregata si indebolisce, scompare o può perfino invertirsi quando osserviamo gruppi rilevanti separatamente.
+
+Matematicamente non c'è nulla di paradossale: cambiano i pesi con cui i sottogruppi contribuiscono al totale.
+
+Analiticamente, però, l'effetto è potente perché il dato aggregato può suggerire una decisione opposta a quella suggerita dai confronti condizionati.
+
+### Ma segmentare non è automaticamente corretto
+
+Qui serve una cautela fondamentale che ci prepara ai Capitoli 8 e 9.
+
+Non ogni variabile deve essere "controllata".
+
+Se segmentiamo per una variabile che è conseguenza dell'azione che stiamo studiando, possiamo eliminare proprio parte dell'effetto che ci interessa. Se segmentiamo arbitrariamente decine di dimensioni, possiamo produrre pattern casuali.
+
+Nell'EDA la domanda è quindi:
+
+> **Questa dimensione descrive una differenza di composizione plausibilmente rilevante per interpretare il confronto?**
+
+La risposta causale richiederà un ragionamento più forte.
+
+### Differenza assoluta e relativa
+
+Un conversion rate che passa dal 2% al 3% cambia di:
+
+- **+1 punto percentuale**;
+- **+50% in termini relativi**.
+
+Entrambe le espressioni sono corrette e comunicano aspetti diversi.
+
+Una buona pratica è riportarle insieme quando entrambe aiutano:
+
+> Conversion rate +1 pp, da 2% a 3%, equivalente a +50% rispetto alla baseline.
+
+### Checklist del confronto
+
+Prima di confrontare gruppi chiediti:
+
+- la popolazione è comparabile?
+- il periodo è comparabile?
+- metriche e denominatori sono definiti nello stesso modo?
+- la composizione per segmenti rilevanti è differente?
+- un gruppo ha diversa esposizione al rischio o all'opportunità?
+- pochi sottogruppi dominano il totale?
+- il risultato aggregato sopravvive a segmentazioni motivate dal processo?
+
+> **Confrontare due numeri è facile. Capire che cosa rende i gruppi confrontabili è il vero lavoro analitico.**
+
+[^berkeley-simpson]: Lisa Goldberg, Berkeley Math Circle, *Gender Bias, Simpson's Paradox and Causal Inference*, basato su Bickel, Hammel & O'Connell (1975), *Sex Bias in Graduate Admissions: Data from Berkeley*. https://mathcircle.berkeley.edu/sites/default/files/handouts/2019/Simpson%20Paradox%20-%20Lisa%20Goldberg%20BMC%20Dec%2015%202019_0.pdf
