@@ -1,88 +1,97 @@
-## 3.7 Duplicati: quando una riga in più diventa un milione di euro in più
+## 3.7 Duplicati: quando una riga in più cambia il risultato economico
 
-Un duplicato non è sempre una riga identica a un'altra.
+Un duplicato non è necessariamente una riga identica a un'altra.
 
-Nel lavoro reale, i duplicati più pericolosi sono spesso duplicati **semantici**: record diversi che rappresentano lo stesso evento economico, la stessa persona, lo stesso ordine o la stessa transazione.
+I casi più pericolosi sono spesso duplicati **semantici**: record diversi che rappresentano lo stesso evento economico o la stessa entità.
 
-### Caso studio simulato — Il fatturato cresciuto del 7% durante la notte
+Prima di deduplicare dobbiamo quindi sapere che cosa dovrebbe essere unico al grain corrente.
 
-L'azienda immaginaria **Nordline Retail** vende arredamento online in quattro Paesi europei. Il lunedì mattina il direttore commerciale riceve una dashboard con una notizia sorprendente: il fatturato del weekend è cresciuto del 7,2% rispetto al weekend precedente.
+### Caso simulato/composito — Il fatturato cresciuto durante la notte
 
-Il dato sembra coerente con una campagna promozionale lanciata il venerdì sera. Il team marketing è pronto a rivendicare il risultato.
+**Nordline Retail** vende arredamento online in quattro Paesi europei.
 
-Un'analista, però, nota qualcosa di strano: il numero degli ordini è aumentato del 6,9%, mentre le sessioni del sito sono rimaste quasi stabili. La conversione apparente è salita troppo rapidamente.
+Il lunedì mattina la dashboard segnala che il fatturato del weekend è cresciuto del **7,2%** rispetto al weekend precedente. La campagna promozionale lanciata venerdì sera sembra aver funzionato.
 
-Inizia quindi dal livello più basso: la tabella `orders`.
+Un'analista, però, esegue il controllo che precede qualsiasi interpretazione: confronta il numero di righe con il numero di ordini distinti.
 
-Trova 184.223 righe nel weekend. Il sistema di e-commerce, però, dichiara 171.906 ordini unici.
-
-La differenza è enorme.
-
-Il problema emerge poco dopo: durante una migrazione, un processo ETL è stato eseguito due volte su una finestra temporale di circa tre ore. I record non sono identici perché il campo `load_timestamp` è diverso. Per un semplice controllo `SELECT DISTINCT *` non risultano quindi duplicati.
-
-La chiave naturale dell'evento è invece `order_id`.
-
-Quando il team ricontrolla:
-
-```sql
-SELECT
-    COUNT(*) AS rows,
-    COUNT(DISTINCT order_id) AS unique_orders
-FROM orders
-WHERE order_date BETWEEN '2026-08-21' AND '2026-08-23';
+```text
+righe nella tabella orders:       184.223
+order_id distinti:                171.906
 ```
 
-emerge immediatamente il problema.
+La differenza non è compatibile con il grain dichiarato: una riga per ordine.
 
-Il fatturato non era cresciuto del 7,2%.
+Indagando, il team scopre che durante una migrazione il caricamento di una finestra di circa tre ore è stato eseguito due volte.
 
-Era cresciuto dell'1,1%.
+I record non sono copie perfette perché `load_timestamp` è diverso. Un ingenuo `SELECT DISTINCT *` non li eliminerebbe.
 
-La campagna non aveva prodotto il risultato sperato.
+Il fatto economico, però, è lo stesso: stesso `order_id`, stesso importo, stesso ordine reale.
 
-### La lezione
+Dopo la correzione, la crescita del fatturato passa dal **7,2% all'1,1%**.
 
-Prima di aggregare una misura bisogna sapere **che cosa identifica univocamente l'evento**.
+La storia raccontata dalla dashboard cambia completamente.
 
-Le domande minime sono:
+### Duplicato tecnico, versione o evento legittimo?
 
-- Qual è la chiave naturale del record?
-- Può esistere più di una riga per quella chiave?
-- Se sì, perché?
-- Il duplicato è tecnico, funzionale o legittimo?
-- Quale record va mantenuto?
-- Esiste un ordine temporale affidabile tra i record?
+Trovare la stessa chiave più volte non basta per decidere che cosa fare.
 
-### Deduplicare non significa cancellare alla cieca
+Tre righe con lo stesso `order_id` potrebbero essere:
 
-Immaginiamo due righe con lo stesso `customer_id`.
+- tre copie accidentali dello stesso ordine;
+- tre versioni successive dello stesso record;
+- tre eventi di stato associati all'ordine;
+- tre pagamenti parziali;
+- un ordine e due rettifiche.
 
-Potrebbero essere un duplicato.
+La deduplicazione è corretta soltanto dopo aver identificato quale di queste storie descrive il processo reale.
 
-Oppure due versioni successive dello stesso cliente.
+### La regola di deduplica deve essere dimostrabile
 
-Oppure due clienti distinti ai quali è stato assegnato erroneamente lo stesso identificatore.
-
-Prima di eliminare una riga dobbiamo capire il processo che l'ha prodotta.
-
-Una strategia comune consiste nel mantenere il record più recente:
+Una strategia comune consiste nel mantenere la versione più recente:
 
 ```sql
-WITH ranked AS (
-    SELECT
-        *,
-        ROW_NUMBER() OVER (
-            PARTITION BY order_id
-            ORDER BY updated_at DESC
-        ) AS rn
-    FROM orders
+ROW_NUMBER() OVER (
+    PARTITION BY order_id
+    ORDER BY updated_at DESC
 )
-SELECT *
-FROM ranked
-WHERE rn = 1;
 ```
 
-Ma questa query è corretta solo se `updated_at` rappresenta davvero una sequenza affidabile delle versioni.
+Ma questa regola è valida solo se:
+
+- `order_id` identifica davvero l'entità da deduplicare;
+- `updated_at` ordina correttamente le versioni;
+- la versione più recente sostituisce le precedenti;
+- non stiamo cancellando eventi storici che hanno significato proprio.
+
+Il codice non può decidere queste assunzioni al posto nostro.
+
+### Duplicati di entità: ancora più difficili
+
+Per i clienti la situazione può essere più complessa.
+
+Due record con email differenti possono essere la stessa persona. Due record con la stessa email possono essere persone diverse. Un indirizzo può cambiare. Un account può essere condiviso.
+
+Questo è il motivo per cui la deduplicazione di identità non dovrebbe essere ridotta a una singola regola del tipo:
+
+```text
+stessa email = stesso cliente
+```
+
+Una regola troppo aggressiva produce **false merge**. Una regola troppo prudente produce **false split**.
+
+Entrambi possono distorcere metriche come clienti unici, retention e lifetime value.
+
+### Un controllo minimo
+
+Per ogni tabella critica confrontiamo almeno:
+
+- numero totale di righe;
+- cardinalità della chiave attesa;
+- distribuzione del numero di righe per chiave;
+- andamento temporale dei duplicati;
+- attributi che differiscono tra record con la stessa chiave.
+
+Se una tabella dichiarata "una riga per ordine" mostra improvvisamente il 6% di `order_id` ripetuti dopo una release, abbiamo un segnale molto più informativo di un generico controllo sui duplicati perfetti.
 
 ### Regola operativa
 
@@ -92,8 +101,6 @@ Non chiederti soltanto:
 
 Chiediti:
 
-> "Esistono più rappresentazioni dello stesso fatto economico o della stessa entità?"
+> **"Esistono più rappresentazioni dello stesso fatto o della stessa entità, e qual è la regola che stabilisce quale rappresentazione usare?"**
 
-È una domanda molto più potente.
-
-> **Nota editoriale:** i case study narrativi del libro sono simulati o compositi e sono costruiti per riprodurre situazioni realistiche di lavoro.
+Deduplicare non significa rendere il dataset più corto. Significa evitare che la stessa realtà venga contata più volte.
