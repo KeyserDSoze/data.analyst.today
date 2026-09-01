@@ -1,118 +1,118 @@
-## 5.3 Indipendenza: quando due eventi non si influenzano davvero
+## 5.3 Indipendenza: quando conoscere B non cambia la probabilità di A
 
-Due eventi sono indipendenti quando conoscere il verificarsi di uno non cambia la probabilità dell'altro.
+Due eventi sono **indipendenti** quando conoscere il verificarsi di uno non cambia la probabilità dell'altro.
 
-Formalmente:
+Formalmente, se `A` e `B` sono indipendenti:
 
 \[
 P(A|B)=P(A)
 \]
 
-oppure, in modo equivalente:
+ed equivalentemente:
 
 \[
 P(A \cap B)=P(A)P(B)
 \]
 
-La definizione è semplice. Il problema è che nel mondo reale molti eventi che sembrano indipendenti non lo sono affatto.
+È importante usare parole precise: indipendenza statistica non significa semplicemente che due eventi “non si causano”. È una proprietà della loro distribuzione congiunta.
 
-### Caso realistico: il rischio di consegna sottostimato
+Due eventi possono non avere un rapporto causale diretto e risultare comunque dipendenti perché condividono condizioni comuni.
 
-Una società di food delivery vuole stimare la probabilità che un ordine subisca almeno uno tra due problemi:
+### Caso simulato/composito — Il rischio di consegna sottostimato
 
-- ritardo del rider;
-- ritardo del ristorante.
+Una piattaforma di food delivery vuole stimare la probabilità che un ordine subisca contemporaneamente:
 
-Dai dati storici risulta:
+- un ritardo del rider;
+- un ritardo del ristorante.
 
-- 8% degli ordini ha ritardo del rider;
-- 6% ha ritardo del ristorante.
+Dai dati storici:
 
-Un'analisi superficiale assume indipendenza e calcola la probabilità che entrambi avvengano:
+- `P(ritardo rider) = 8%`;
+- `P(ritardo ristorante) = 6%`.
 
-\[
-0,08 \times 0,06 = 0,0048
-\]
+Assumendo indipendenza otterremmo:
 
-quindi 0,48%.
+`8% × 6% = 0,48%`.
 
-Ma quando l'analista guarda i dati reali scopre che la probabilità congiunta è 1,9%.
+Ma nei dati la frequenza congiunta osservata è **1,9%**.
+
+È quasi quattro volte più alta.
 
 Perché?
 
-Le due cause condividono fattori comuni:
+Entrambi gli eventi sono più probabili quando si verificano condizioni come:
 
 - pioggia intensa;
 - picchi serali;
-- eventi sportivi;
-- zone con traffico critico;
-- ristoranti sovraccarichi che trattengono i rider.
+- grandi eventi locali;
+- traffico critico;
+- ristoranti sovraccarichi;
+- zone con offerta di rider insufficiente.
 
-Gli eventi non sono indipendenti.
+Le due probabilità condividono driver comuni. Non possiamo quindi moltiplicarle come se fossero indipendenti.
 
-Assumere indipendenza aveva sottostimato di quasi quattro volte la probabilità del problema combinato.
+### Un modo utile per diagnosticare la dipendenza
 
-### Dipendenza nascosta da una variabile comune
+L'analista segmenta gli ordini per condizioni meteo.
 
-Supponiamo di osservare una relazione tra:
+| Condizione | Ritardo rider | Ritardo ristorante | Entrambi |
+|---|---:|---:|---:|
+| Normale | 5,1% | 4,3% | 0,5% |
+| Pioggia forte | 18,4% | 12,7% | 5,9% |
 
-- probabilità di reso;
-- richiesta di assistenza prima dell'acquisto.
+Il tempo atmosferico cambia entrambe le probabilità.
 
-Potremmo concludere che il contatto con il customer care aumenta i resi.
+Questo è un esempio semplice di **dipendenza indotta da un fattore comune**.
 
-Ma entrambe le variabili potrebbero dipendere da un terzo fattore: la complessità del prodotto.
+Nel Capitolo 8 useremo un linguaggio causale più rigoroso per parlare di confondenti. Qui ci interessa una lezione precedente:
 
-I prodotti complessi generano più domande e più resi.
+> **le assunzioni sulle relazioni tra eventi devono riflettere il processo reale, non la comodità della formula.**
 
-Quindi i due eventi risultano associati senza che uno causi necessariamente l'altro.
+### Correlazione zero non implica indipendenza
 
-La probabilità ci prepara già al ragionamento sui confondenti.
+Nel Capitolo 4 abbiamo visto che la correlazione lineare può essere vicina a zero anche quando esiste una relazione non lineare forte.
 
-### Perché moltiplichiamo troppo facilmente
+Di conseguenza:
 
-Molti modelli di rischio iniziali fanno qualcosa di simile:
+> **correlazione zero ≠ indipendenza**.
 
-> probabilità guasto componente A × probabilità guasto componente B
+L'indipendenza è una condizione più forte. Se due variabili sono indipendenti, in condizioni regolari la loro covarianza è zero; l'inverso non vale in generale.
 
-oppure:
+Questo è uno dei motivi per cui “non vedo correlazione” non dovrebbe diventare automaticamente “le variabili non hanno nulla a che fare l'una con l'altra”.
 
-> probabilità click × probabilità conversione
+### Quando l'assunzione di indipendenza entra nei modelli
 
-oppure:
+L'indipendenza compare continuamente, spesso senza essere dichiarata.
 
-> probabilità ritardo fornitore × probabilità ritardo trasporto
+Per esempio quando stimiamo:
 
-La moltiplicazione è corretta solo sotto determinate condizioni.
+- probabilità congiunte di più guasti;
+- sequenze di conversione;
+- failure rate di componenti;
+- errori standard;
+- probabilità binomiali;
+- risultati di osservazioni campionarie.
 
-Se gli eventi condividono cause, stagionalità o vincoli operativi, l'assunzione può fallire.
+In alcuni casi l'assunzione è ragionevole. In altri è un'approssimazione. In altri ancora è chiaramente falsa.
 
-### Un test pratico prima della formula
+Per questo, prima di moltiplicare probabilità o applicare una formula che presume osservazioni indipendenti, chiediamo:
 
-Prima di assumere indipendenza chiediamoci:
+1. le unità possono influenzarsi tra loro?
+2. condividono tempo, geografia, campagna o capacità operativa?
+3. una stessa persona può generare più osservazioni?
+4. esistono cluster naturali, come store, aziende, famiglie o team?
+5. un evento rende più o meno probabile l'altro?
 
-**Esiste un fattore che potrebbe influenzare entrambi gli eventi?**
-
-Nel business la risposta è spesso sì.
-
-Tempo, prezzo, canale, segmento cliente, geografia, campagna, capacità operativa e stagionalità sono tutte fonti comuni di dipendenza.
-
-### Indipendenza non significa assenza di relazione visibile
-
-Due variabili possono mostrare poca correlazione lineare e non essere indipendenti.
-
-La correlazione misura soltanto un particolare tipo di associazione. L'indipendenza è un concetto più forte.
-
-Questo diventerà ancora più importante quando studieremo relazioni non lineari e modelli predittivi.
+Queste domande torneranno nei capitoli su inferenza, A/B test e modelli.
 
 ### La domanda dell'analista
 
-Quando una probabilità viene costruita combinando più eventi, non chiediamo soltanto:
+Quando una probabilità combina più eventi, non chiediamo soltanto:
 
-**“La formula è corretta?”**
+> “La formula è corretta?”
 
 Chiediamo:
 
-**“L'assunzione di indipendenza è plausibile nel processo reale?”**
+> **“Quale assunzione di dipendenza o indipendenza rende corretta questa formula, e il processo reale la rende plausibile?”**
 
-Ancora una volta, la parte più difficile non è il calcolo. È capire il sistema che stiamo modellando.
+La matematica viene dopo la struttura del fenomeno.
