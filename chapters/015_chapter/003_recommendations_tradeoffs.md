@@ -1,115 +1,243 @@
-## 15.2 Dall'insight alla raccomandazione: ogni scelta ha un costo
-Una raccomandazione analitica utile deve essere più precisa di:
+## 15.2 Dall'insight alla raccomandazione: non difendere un'idea, confrontare alternative
 
-> “Dovremmo migliorare il funnel.”
+Una raccomandazione debole spesso nasce così:
 
-Una buona raccomandazione specifica:
+```text
+abbiamo trovato un problema
+→ abbiamo immaginato una soluzione
+→ abbiamo stimato il beneficio della soluzione
+→ raccomandiamo la soluzione
+```
 
-- **cosa fare**;
-- **dove intervenire**;
-- **su chi**;
-- **con quale priorità**;
-- **quanto potrebbe valere**;
-- **quali costi e rischi comporta**;
-- **come capiremo se ha funzionato**.
+Manca il passaggio più importante:
 
-## Il problema delle raccomandazioni senza trade-off
+> **rispetto a quali alternative?**
 
-Ogni intervento consuma qualcosa:
+Una raccomandazione professionale non è un business case costruito per difendere la prima idea emersa.
 
-- budget;
-- tempo;
-- capacità operativa;
-- attenzione del management;
-- opportunità alternative;
-- rischio reputazionale;
-- complessità tecnica.
+È il risultato di un **option appraisal**.
 
-Dire “questa iniziativa può aumentare la conversione” non basta.
+### Partire dall'obiettivo, non dalla soluzione
 
-Serve confrontare il beneficio atteso con ciò a cui stiamo rinunciando.
+Problema:
 
-## Caso realistico: recuperare carrelli abbandonati
+> checkout abandonment elevato quando compare il costo di spedizione.
 
-Un retailer online scopre che il 21% degli utenti che abbandonano il checkout lo fa dopo aver visto il costo di spedizione.
+Obiettivo:
 
-Il team propone spedizione gratuita sopra €40.
+> aumentare contribution margin dagli utenti che raggiungono il checkout senza peggiorare economics e customer experience.
 
-L'analisi preliminare stima:
+Possibili alternative:
 
-- +2,4 punti percentuali di conversione;
+```text
+A — business as usual
+B — free shipping universale sopra €40
+C — free shipping solo per segmenti ad alto rischio di abbandono
+D — soglia differenziata per margine/categoria
+E — ridurre tariffa ma non azzerarla
+F — testare messaggio e trasparenza prima del checkout
+```
+
+Ora il problema non è più “free shipping sì/no?”.
+
+È scegliere il miglior compromesso tra alternative reali.
+
+### Caso simulato/composito — la free shipping che distrugge valore
+
+Un retailer osserva che il 21% degli utenti che abbandonano il checkout lo fa dopo aver visto il costo di spedizione.
+
+Una prima analisi propone free shipping sopra €40.
+
+Stime iniziali:
+
+- +2,4 punti percentuali di conversion;
 - circa 31.000 ordini incrementali annui;
-- margine lordo medio per ordine: €18;
-- costo medio della spedizione sovvenzionata: €6,20.
+- contribution margin prima della shipping subsidy: €18 per ordine;
+- costo medio shipping sovvenzionato: €6,20.
 
-Una lettura ingenua considera soltanto i nuovi ordini:
+La prima presentazione enfatizza:
 
-31.000 × €18 = €558.000 di margine lordo potenziale.
+```text
+31.000 × €18 ≈ €558k
+```
 
-Ma la policy di free shipping si applicherà anche a molti ordini che sarebbero avvenuti comunque.
+Ma il costo della policy non ricade soltanto sui nuovi ordini.
 
-Se 420.000 ordini esistenti ricevono una sovvenzione media aggiuntiva di €3,10, il costo supera €1,3 milioni.
+Se centinaia di migliaia di ordini che sarebbero avvenuti comunque ricevono la sovvenzione, il trasferimento di margine agli ordini non incrementali può superare il beneficio.
 
-La raccomandazione cambia.
+Il punto non è trovare il calcolo “giusto” in astratto.
 
-Invece di:
+È distinguere:
 
-> “Introduciamo free shipping sopra €40.”
+```text
+incremental benefit
+− incremental cost
+− cannibalization / subsidy on existing behavior
+− operational cost
+− downside risk
+```
 
-può diventare:
+La raccomandazione diventa quindi un test mirato, non un rollout universale.
 
-> “Testiamo free shipping solo sui clienti ad alta probabilità di abbandono e sulle categorie con margine sufficiente, con un cap di costo per ordine incrementale.”
+### Incrementalità: ogni alternativa ha un controfattuale
 
-## Incrementalità, non volume
+Quando diciamo:
 
-Il principio fondamentale è:
+> “questa iniziativa vale €500k”
 
-> **Non chiedere quanto volume tocca una decisione. Chiedi quanto valore incrementale produce rispetto all'alternativa.**
+stiamo implicitamente dicendo:
 
-Questo vale per:
+> “rispetto all'alternativa che avremmo seguito senza l'iniziativa.”
 
-- campagne marketing;
-- retention;
-- sconti;
-- pricing;
-- interventi operativi;
-- automazione;
-- modelli predittivi.
+Questo vale anche quando non stiamo facendo causal inference formale.
 
-## Il costo opportunità
+La base di confronto deve essere esplicita:
 
-Una raccomandazione può essere positiva e comunque non essere la migliore.
+- business as usual;
+- soluzione corrente;
+- opzione più economica;
+- opzione reversibile;
+- altra iniziativa concorrente.
 
-Se un progetto produce €300.000 di valore atteso ma richiede sei mesi del team data, e un'alternativa produce €250.000 in tre settimane, la seconda potrebbe essere preferibile.
+### Non tutto deve essere monetizzato
 
-L'analista non deve necessariamente decidere il portafoglio investimenti, ma deve rendere visibile il trade-off.
+Alcuni trade-off hanno una misura economica ragionevole.
 
-## Una struttura pratica
+Altri no.
 
-Per ogni raccomandazione importante possiamo scrivere:
+Una decisione può coinvolgere:
 
-**Azione proposta**  
-Che cosa suggeriamo di fare?
+- customer harm;
+- sicurezza;
+- compliance;
+- reputazione;
+- resilienza;
+- fairness;
+- strategic option value;
+- concentrazione del rischio;
+- workload umano.
 
-**Target**  
-Su quale segmento/processo?
+Forzare tutto in euro può creare falsa precisione.
 
-**Beneficio atteso**  
-Qual è l'ordine di grandezza del valore?
+HM Treasury, nel Green Book 2026, richiede esplicitamente che l'appraisal consideri non soltanto costi e benefici monetizzabili ma anche impatti non monetizzabili, rischi e incertezze.
 
-**Costo**  
-Budget, capacità, complessità.
+Fonte: https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2026
 
-**Rischi**  
-Che cosa potrebbe andare storto?
+Il principio trasferibile all'analytics è:
 
-**Reversibilità**  
-Quanto è facile tornare indietro?
+> **se qualcosa cambia materialmente la preferenza tra alternative, deve essere visibile anche quando non ha una conversione monetaria pulita.**
 
-**Evidenza**  
-Quanto è solida la base empirica?
+### Opportunity cost: il progetto buono che perde contro un progetto migliore
 
-**Misurazione**  
-Come sapremo se la decisione ha funzionato?
+Una iniziativa può avere valore atteso positivo e comunque non meritare priorità.
 
-> **Una raccomandazione senza trade-off è spesso soltanto un'idea.**
+Esempio:
+
+```text
+Project A
+expected value: €300k
+team effort: 6 mesi
+high irreversibility
+
+Project B
+expected value: €250k
+team effort: 3 settimane
+low irreversibility
+```
+
+Se lo stesso team può fare soltanto uno dei due, il costo di A include anche il valore dell'alternativa rinunciata.
+
+Per questo il Decision Record deve elencare **alternative considerate e alternative escluse**, non soltanto la raccomandazione finale.
+
+### Constraints prima del ranking
+
+Alcune alternative non sono realmente disponibili.
+
+Vincoli possibili:
+
+- budget massimo;
+- capacità di engineering;
+- disponibilità operativa;
+- scadenza regolatoria;
+- staffing;
+- dipendenze tecniche;
+- requisito di rollback;
+- limite di customer exposure.
+
+Non serve stimare con grande precisione il valore di un'opzione che viola un vincolo non negoziabile.
+
+Il flusso diventa:
+
+```text
+objectives
+→ constraints
+→ longlist
+→ eliminate non-viable options
+→ compare shortlist
+```
+
+### Reversibilità come parte del valore
+
+Due opzioni con uguale expected value non sono equivalenti se una:
+
+- richiede investimento irreversibile;
+- blocca alternative future;
+- è difficile da rollbackare;
+
+mentre l'altra consente di imparare e cambiare rotta.
+
+Questa **option value** diventerà centrale nelle sezioni su uncertainty e sensitivity.
+
+### Recommendation Card dentro il Decision Record
+
+Per ciascuna alternativa shortlist registriamo:
+
+```text
+option:
+objective fit:
+expected upside:
+expected downside:
+implementation cost:
+operational capacity:
+time to value:
+key uncertainty:
+reversibility:
+non-monetizable impacts:
+evidence strength:
+```
+
+Poi la raccomandazione deve completare:
+
+> **“Preferiamo X a Y e Z perché…”**
+
+non soltanto:
+
+> “X sembra una buona idea.”
+
+### What would make us choose differently?
+
+Ogni raccomandazione importante dovrebbe dichiarare almeno una **switching condition**.
+
+Esempio:
+
+> “Preferiamo il pilot mirato, a meno che il costo di implementazione superi €300k o il segmento eleggibile scenda sotto 40.000 utenti.”
+
+Questa frase prepara il terreno per la sensitivity analysis.
+
+Rende inoltre evidente che la raccomandazione dipende da assunzioni, non da una verità eterna.
+
+### Regola operativa
+
+Prima di consegnare una raccomandazione chiediamo:
+
+1. qual è l'obiettivo?
+2. qual è business as usual?
+3. quali alternative credibili abbiamo considerato?
+4. quali sono state escluse e perché?
+5. quali costi e benefici sono incrementali?
+6. quali impatti non sono monetizzabili?
+7. quali vincoli cambiano la scelta?
+8. quale alternativa preserva più flessibilità?
+9. quale assunzione, se cambia, ribalta la raccomandazione?
+
+> **Una raccomandazione senza alternative è spesso un'idea con una tabella di numeri. Una raccomandazione analitica spiega perché una scelta batte le altre nel contesto reale.**
