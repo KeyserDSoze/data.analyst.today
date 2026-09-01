@@ -1,73 +1,129 @@
-## 16.9 Tabelle, small multiples e confronti complessi
+## 16.9 Tabelle, ranking e small multiples: scegliere tra pattern e precisione
+
 Non tutto deve diventare un grafico.
 
-Quando l'obiettivo è leggere valori precisi, confrontare molte categorie o verificare dettagli, una tabella ben progettata può essere superiore a una visualizzazione più appariscente.
+La domanda utile è:
 
-## Quando usare una tabella
+> **“Il destinatario deve percepire un pattern o recuperare un valore preciso?”**
 
-Una tabella è utile quando il lettore deve:
+Questa distinzione evita molta visualizzazione decorativa.
+
+## Quando la tabella è la forma migliore
+
+Una tabella è spesso superiore quando il lettore deve:
 
 - trovare un valore specifico;
 - confrontare numeri molto vicini;
 - leggere più metriche per la stessa entità;
-- verificare dettagli operativi;
-- esportare o riutilizzare l'informazione.
+- verificare una soglia;
+- individuare owner e azione;
+- utilizzare il contenuto come lista operativa.
 
-Una executive summary con cinque KPI può funzionare meglio come piccola tabella che come cinque gauge.
+Esempio decisionale:
 
-## Caso realistico: 18 regioni in un solo grafico
+| Regione | OTD | Target | Gap | Ordini a rischio | Owner |
+|---|---:|---:|---:|---:|---|
+| Nord-Ovest | 91,2% | 95% | -3,8 pp | 4.120 | Ops A |
+| Centro | 94,6% | 95% | -0,4 pp | 780 | Ops B |
+| Sud | 96,1% | 95% | +1,1 pp | 210 | Ops C |
 
-Un'azienda di logistica vuole confrontare il tasso di consegna puntuale per 18 regioni negli ultimi 24 mesi.
+Una tabella ordinata per gap può essere più utile di tre gauge.
 
-Il primo tentativo è un line chart con 18 linee.
+## Ranking: ordinare significa proporre una priorità
 
-Tecnicamente contiene tutto.
+Una tabella non è neutrale nemmeno nell'ordine.
 
-Praticamente non si legge nulla.
+Possibili ordinamenti:
 
-Il secondo tentativo usa small multiples: un piccolo grafico per regione, stessa scala, stesso intervallo temporale.
+- valore assoluto;
+- delta;
+- severità;
+- impatto economico;
+- rischio;
+- alfabetico.
 
-Ora emergono subito tre pattern:
+Se l'obiettivo è prioritizzare interventi, l'ordine alfabetico nasconde la decisione. Se l'obiettivo è lookup, può essere invece appropriato.
+
+Dobbiamo rendere esplicita la regola di ranking quando ha significato decisionale.
+
+## Small multiples: molti pattern, una grammatica comune
+
+### Caso simulato/composito — 18 regioni, 18 linee
+
+Una società logistica vuole confrontare l'on-time delivery di 18 regioni negli ultimi 24 mesi.
+
+Un line chart con 18 serie contiene tutto ma rende difficile seguire qualsiasi regione.
+
+Gli small multiples usano:
+
+- un pannello per regione;
+- stessa finestra temporale;
+- stessa scala quando la magnitudine deve essere confrontabile;
+- stesso encoding per target ed eventi.
+
+Emergono subito tre famiglie:
 
 - regioni stabilmente forti;
-- regioni con deterioramento progressivo;
-- regioni con shock temporanei.
+- deterioramenti progressivi;
+- shock temporanei con recovery.
 
-La forza degli small multiples è proprio questa: ripetere la stessa struttura visiva mantenendo costante la scala per facilitare il confronto.
+La ripetizione della stessa grammatica riduce il costo cognitivo.
 
-## La scala deve essere coerente
+## Scale coerenti: quando servono davvero
 
-Se ogni piccolo grafico usa una scala diversa, le differenze apparenti possono diventare ingannevoli.
+Se vogliamo confrontare **magnitudini**, scale diverse tra pannelli possono ingannare.
 
-L'Office for National Statistics raccomanda di usare scale coerenti quando si confrontano grafici comparabili.
+Se vogliamo confrontare soltanto **forma interna del pattern**, scale locali possono avere valore, ma vanno rese evidenti.
 
-Fonte: https://service-manual.ons.gov.uk/data-visualisation/guidance/axes-and-gridlines
+Una soluzione possibile è mostrare:
 
-## Tabelle con gerarchia visiva
+- small multiples con scala comune nella vista decisionale;
+- versione normalizzata o locale nell'appendix diagnostica.
 
-Una tabella non deve essere un foglio Excel incollato in una slide.
+## Sparklines: contesto temporale dentro una tabella
 
-Possiamo migliorare la leggibilità con:
+Una tabella operativa può aggiungere una piccola sparkline per rispondere contemporaneamente:
 
-- ordinamento significativo;
-- unità esplicite;
-- poche cifre decimali;
-- evidenza selettiva delle eccezioni;
-- separazione tra valori, target e delta;
-- subtotal solo quando utili.
+- quanto vale oggi?
+- è un problema nuovo o persistente?
 
-## Il pericolo delle heatmap decorative
+La sparkline non deve sostituire assi o dettaglio quando il trend è il cuore del claim. Serve come contesto compatto.
 
-Colorare ogni cella può sembrare sofisticato ma aumentare il carico cognitivo.
+## Conditional formatting: segnale, non pittura
 
-Il colore dovrebbe aiutare a trovare pattern o eccezioni, non sostituire una struttura informativa debole.
+Colorare ogni cella crea spesso una heatmap involontaria.
 
-## Un principio operativo
+La formattazione condizionale dovrebbe evidenziare soltanto:
 
-Se il lettore deve **vedere un pattern**, pensiamo a un grafico.
+- violazioni di soglia;
+- top/bottom materialmente rilevanti;
+- cambiamenti che richiedono azione.
 
-Se deve **recuperare un numero**, pensiamo a una tabella.
+E deve avere una codifica alternativa al colore: simbolo, testo, ordinamento o label.
 
-Se deve **confrontare molti pattern simili**, pensiamo a small multiples.
+## Table-first per l'audit
 
-La scelta della forma nasce dal compito cognitivo, non dal catalogo di visual disponibili nel tool.
+Anche quando la pagina executive usa grafici, la Decision Communication Pack dovrebbe offrire una forma tabellare per:
+
+- numeri esatti;
+- accessibilità;
+- verifica;
+- export;
+- provenance.
+
+La Government Analysis Function sottolinea che i dashboard interattivi non sono pienamente accessibili a tutti e raccomanda alternative come tabelle di supporto, testo e download dei dati.
+
+## Una regola operativa
+
+- **pattern** → grafico;
+- **lookup** → tabella;
+- **molti pattern comparabili** → small multiples;
+- **priorità operativa** → tabella ordinata con soglie e owner;
+- **audit/accessibilità** → tabella o underlying data disponibile.
+
+> **La sofisticazione di una visualizzazione non si misura dal numero di encoding. Si misura da quanto rapidamente il destinatario riesce a svolgere il compito cognitivo corretto.**
+
+### Fonti
+
+- Office for National Statistics, *Axes and gridlines*: https://service-manual.ons.gov.uk/data-visualisation/guidance/axes-and-gridlines
+- Government Analysis Function, *Data visualisation: testing dashboards for design and accessibility*: https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-testing-dashboards-for-design-and-accessibility/
