@@ -1,31 +1,35 @@
-## 3.4 Eventi, stati e snapshot: capire il tempo nel dato
+## 3.4 Eventi, stati e snapshot: capire che cosa significa il tempo nel dato
 
-Non tutti i dati descrivono il tempo nello stesso modo.
+Non tutti i dataset temporali raccontano il tempo nello stesso modo.
 
-Una transazione è un evento: avviene in un momento specifico.
+Un pagamento è un **evento**: qualcosa è accaduto in un momento specifico.
 
-Un saldo di magazzino è invece uno stato: descrive una condizione valida in un certo istante o intervallo.
+Uno stock di magazzino è uno **stato**: descrive una condizione valida in un certo istante.
 
-Questa differenza sembra semplice, ma determina quali aggregazioni sono corrette.
+Uno snapshot giornaliero è invece una fotografia periodica di quello stato.
 
-### Event data
+Questa distinzione determina quali aggregazioni sono sensate.
 
-Gli eventi rappresentano qualcosa che è accaduto:
+### Eventi: qualcosa è successo
 
-- acquisto;
+Esempi tipici:
+
+- ordine creato;
+- pagamento autorizzato;
 - login;
 - click;
-- pagamento;
-- spedizione;
-- apertura ticket;
-- cambio stato;
-- misurazione sensore.
+- spedizione partita;
+- ticket aperto;
+- stato cambiato;
+- lettura prodotta da un sensore.
 
-Gli eventi sono spesso additivi nel tempo: se abbiamo 10 ordini lunedì e 12 martedì, possiamo dire che nei due giorni abbiamo avuto 22 ordini.
+Molte misure evento sono additive nel tempo. Se lunedì abbiamo 10 nuovi ordini e martedì 12, possiamo dire che nei due giorni sono stati creati 22 ordini.
 
-### Snapshot data
+Ma anche qui bisogna capire il grain: dieci righe di stato associate allo stesso ordine non sono dieci nuovi ordini.
 
-Gli snapshot descrivono invece uno stato in momenti successivi.
+### Snapshot: la stessa realtà fotografata più volte
+
+Consideriamo:
 
 | date | warehouse | product | stock |
 |---|---|---|---:|
@@ -33,50 +37,79 @@ Gli snapshot descrivono invece uno stato in momenti successivi.
 | 2026-08-02 | A | P1 | 95 |
 | 2026-08-03 | A | P1 | 110 |
 
-La somma `100 + 95 + 110 = 305` non rappresenta lo stock totale del periodo. Stiamo sommando tre fotografie successive dello stesso fenomeno.
+La somma `100 + 95 + 110 = 305` non rappresenta lo stock del periodo. Stiamo sommando tre fotografie successive della stessa quantità.
 
-Possiamo invece essere interessati a:
+Possiamo invece voler conoscere:
 
-- stock alla fine del periodo;
+- stock finale;
 - stock medio;
 - minimo o massimo;
-- variazione tra inizio e fine.
+- variazione tra inizio e fine;
+- numero di giorni sotto una determinata soglia.
 
-### Flow vs stock
+Le misure di stock sono spesso **semi-additive**: possono essere sommate lungo alcune dimensioni, per esempio tra magazzini, ma non necessariamente lungo il tempo.
 
-Una distinzione utile è:
+### Uno stato può essere memorizzato o ricostruito
 
-- **flow**: quantità che si accumula durante un intervallo, come vendite o nuovi ticket;
-- **stock**: quantità esistente in un momento, come disponibilità, utenti attivi o saldo.
+Un sistema può conservare soltanto lo stato corrente:
 
-Le metriche stock sono spesso **semi-additive**: possono essere sommate lungo alcune dimensioni ma non lungo il tempo.
+```text
+order_id | status
+A17      | delivered
+```
 
-### Quale timestamp stiamo usando?
+oppure l'intera storia degli eventi:
 
-Un record può contenere molti tempi diversi:
+```text
+order_id | status       | event_time
+A17      | created      | 10:01
+A17      | paid         | 10:04
+A17      | shipped      | 15:20
+A17      | delivered    | 09:12 +2d
+```
+
+Le due rappresentazioni consentono domande differenti. Dal solo stato corrente sappiamo dove si trova l'ordine oggi, ma potremmo non essere in grado di misurare quanto tempo ha trascorso nelle fasi precedenti.
+
+La struttura del dato definisce quindi non soltanto ciò che sappiamo, ma anche **ciò che non possiamo più ricostruire**.
+
+### Event time, processing time e ingestion time
+
+Un record può avere molti timestamp:
 
 - `created_at`;
-- `updated_at`;
-- `paid_at`;
-- `shipped_at`;
 - `event_time`;
+- `paid_at`;
+- `updated_at`;
 - `ingested_at`;
 - `processed_at`.
 
-Se analizziamo vendite giornaliere usando `created_at` otteniamo una storia diversa rispetto a `paid_at`.
+Il timestamp rilevante dipende dalla domanda.
 
-E nei sistemi moderni può esistere una differenza importante tra **event time**, il momento in cui il fenomeno è avvenuto, e **processing/ingestion time**, il momento in cui il sistema analitico lo ha ricevuto.
+Se un ordine viene effettuato alle 23:58 ma arriva nel warehouse alle 00:06, l'analisi commerciale per giorno potrebbe usare il momento dell'ordine, mentre un controllo di pipeline potrebbe interessarsi al momento di ingestion.
 
-Questo spiega perché i numeri degli ultimi giorni possono cambiare retroattivamente quando arrivano eventi in ritardo.
+Confondere i due produce errori soprattutto vicino a fine giornata, fine mese e durante backfill o ritardi.
 
-### Domanda pratica
+### Late-arriving data e numeri che cambiano dopo la pubblicazione
 
-Per ogni dataset temporale dovremmo poter rispondere:
+Nei sistemi reali alcuni eventi arrivano in ritardo. Un'app mobile può restare offline, una sorgente può avere una coda, una pipeline può effettuare un backfill.
 
-> Questo record descrive qualcosa che è successo, oppure lo stato di qualcosa in un dato momento?
+Di conseguenza, il dato di "ieri" può non essere definitivo oggi.
 
-E subito dopo:
+L'analista dovrebbe sapere:
 
-> Quale timestamp rappresenta il tempo che interessa alla domanda di business?
+- qual è la latenza normale;
+- quando un periodo può considerarsi sufficientemente completo;
+- se i dati storici vengono riscritti;
+- quale timestamp stabilisce l'appartenenza al periodo analitico.
 
-Queste due domande evitano una quantità sorprendente di errori analitici.
+### Regola operativa
+
+Per ogni dataset temporale, completa queste frasi:
+
+> **Questo record descrive un evento / uno stato / uno snapshot di...**
+
+> **Il tempo rilevante per la nostra domanda è...**
+
+> **Il dato può arrivare o essere corretto fino a...**
+
+Capire il tempo nel dato significa capire **quale storia il sistema è effettivamente in grado di raccontare**.
