@@ -1,90 +1,162 @@
-## 5.18 Multiple testing: quando cercare abbastanza a lungo garantisce una falsa scoperta
+## 5.18 Multiple testing: più occasioni abbiamo di trovare un segnale, più dobbiamo ricordarcelo
 
-Se esegui un solo test con livello di significatività del 5%, accetti un certo rischio di falso positivo. Se esegui decine o centinaia di test indipendenti e poi mostri soltanto quelli con p-value più piccolo, il rischio di trovare almeno una "scoperta" casuale cresce rapidamente.
+L'analisi moderna rende facilissimo provare molte metriche, segmenti, finestre temporali e specificazioni.
 
-Questo è il problema del multiple testing.
+Questo è utile per esplorare.
 
-### Caso realistico: il team growth trova 14 segmenti "vincenti"
+Diventa pericoloso quando il risultato più interessante trovato dopo decine di tentativi viene presentato come se fosse l'unico test pianificato dall'inizio.
 
-Una piattaforma subscription lancia una nuova offerta annuale. Il risultato globale non è particolarmente interessante. La conversione passa dal 6,21% al 6,28%.
+Il problema non è soltanto il **multiple testing esplicito**. È anche la molteplicità nascosta nelle scelte analitiche.
 
-Il team growth decide allora di esplorare i risultati per:
+### Caso simulato/composito — Il segmento perfetto trovato al centododicesimo tentativo
+
+Una piattaforma subscription introduce una nuova offerta annuale.
+
+Nel totale:
+
+- controllo: conversione 6,21%;
+- offerta: 6,28%.
+
+Il risultato globale è poco interessante.
+
+Il team growth esplora quindi:
 
 - 8 paesi;
 - 5 fasce d'età;
-- 4 canali di acquisizione;
-- 3 device;
-- nuovi vs clienti di ritorno;
-- 6 fasce di spesa storica.
+- 4 canali;
+- 4 device/platform;
+- nuovi vs returning;
+- 6 fasce di spesa storica;
+- varie combinazioni tra questi attributi.
 
-In poche ore vengono prodotti più di cento confronti.
+Dopo oltre cento confronti trova:
 
-Quattordici segmenti mostrano p < 0,05. Il più spettacolare è "utenti iOS, 25-34 anni, acquisiti da paid social in Spagna": +11,8% di conversione relativa.
+> **iOS, 25–34 anni, paid social, Spagna: +11,8% conversione relativa, `p < 0,05`.**
 
-Il team propone una campagna dedicata.
+Il segmento può davvero contenere un effetto interessante.
 
-L'analyst chiede una cosa semplice: quanti segmenti sono stati testati prima di trovare quello?
+Ma il p-value di quel confronto non porta con sé una nota automatica che dice:
 
-La risposta cambia completamente il significato della scoperta.
+> “prima di arrivare qui abbiamo avuto più di cento opportunità di trovare qualcosa di estremo”.
 
-Se si eseguono molti test, alcuni risultati estremi emergeranno per puro caso anche quando non esiste alcun effetto specifico nei segmenti.
+Questa informazione deve aggiungerla l'analista.
 
-### Fishing expedition e p-hacking
+### Perché il rischio cresce
 
-Il problema non è esplorare. L'esplorazione è fondamentale.
+Supponiamo, per intuizione, che:
 
-Il problema nasce quando un'analisi esplorativa viene presentata come se fosse stata una verifica confermativa pianificata in anticipo.
+- tutti e 20 i null siano veri;
+- i test siano indipendenti;
+- ciascuno usi `α = 0,05`.
 
-Cercare pattern nei dati è legittimo. Ma un pattern trovato dopo aver provato molte combinazioni dovrebbe essere trattato come ipotesi da verificare su nuovi dati, non come prova definitiva.
+La probabilità di ottenere **almeno un falso positivo** è:
 
-### Family-Wise Error Rate
+`1 - (1 - 0,05)^20 ≈ 64%`.
 
-Se facciamo \(m\) test indipendenti ciascuno con α = 0,05, la probabilità di ottenere almeno un falso positivo cresce con \(m\).
+Questa non è una formula universale per qualsiasi analisi reale — i test possono essere correlati — ma rende visibile il principio:
 
-Con 20 test indipendenti, la probabilità di almeno un falso positivo sotto null tutte vere è approssimativamente:
+> **quando aumentano le opportunità di vedere un risultato raro, vedere almeno un risultato raro diventa meno sorprendente.**
 
-\[
-1 - (1 - 0.05)^{20} \approx 64\%
-\]
+### Esplorazione e conferma hanno ruoli diversi
 
-Quindi non è sorprendente trovare "qualcosa" quando si guarda abbastanza a lungo.
+Nel Capitolo 4 abbiamo difeso l'EDA come strumento per generare ipotesi.
 
-### Correzioni
+La stessa regola vale qui.
 
-Esistono diversi approcci. Bonferroni riduce la soglia per ogni singolo test dividendo α per il numero di confronti. È semplice e conservativo.
+Se scopriamo a posteriori che un segmento sembra reagire molto bene, possiamo scrivere:
 
-Altri metodi, come Holm, controllano anch'essi il family-wise error rate in modo meno rigido. Quando il problema è gestire una grande quantità di scoperte, può essere più appropriato controllare il False Discovery Rate con procedure come Benjamini-Hochberg.
+> **“Segnale esplorativo: il segmento X mostra un effetto maggiore; da verificare su nuovi dati o in un'analisi pianificata.”**
 
-La scelta dipende dal costo dei falsi positivi e dal tipo di analisi.
+Non dobbiamo scrivere:
 
-### Caso realistico: 60 metriche in un A/B test
+> “Abbiamo dimostrato che la variante funziona per X.”
 
-Una marketplace company testa un nuovo layout. Il documento iniziale definisce una metrica primaria: purchase conversion rate. Ma nel dashboard dell'esperimento compaiono anche 59 metriche secondarie.
+La distinzione non riduce il valore della scoperta. Evita di confondere **generazione di ipotesi** con **evidenza confermativa**.
 
-La metrica primaria non cambia. Tre metriche secondarie hanno p < 0,05:
+### La molteplicità non riguarda soltanto i segmenti
 
-- click sulla wishlist +4,2%;
-- tempo sulla pagina +2,1%;
-- apertura FAQ +7,8%.
+Possiamo creare molte opportunità di trovare un risultato favorevole cambiando:
 
-Il product manager propone di dichiarare il test positivo perché "tre KPI sono significativamente migliori".
+- metrica primaria dopo aver visto i risultati;
+- finestra temporale;
+- criterio di esclusione;
+- trasformazione del dato;
+- modello statistico;
+- soglia;
+- subset della popolazione;
+- momento in cui fermiamo l'analisi.
 
-Questa interpretazione ignora il fatto che 60 metriche sono state osservate. Se nessun effetto fosse reale, aspettarsi alcuni p-value piccoli non sarebbe affatto sorprendente.
+Anche se ogni singola scelta sembra difendibile, selezionare a posteriori la combinazione che produce il risultato più forte aumenta il rischio di overfitting analitico.
 
-Una pratica migliore è definire prima:
+Per questo l'ASA include **trasparenza e reporting completo** tra i principi essenziali per interpretare correttamente i p-value.[^asa-multiple]
+
+### Strategie di controllo
+
+Non esiste una sola soluzione.
+
+#### Pre-specificare ciò che conta
+
+Definire prima:
 
 - metrica primaria;
-- metriche secondarie;
-- guardrail metrics;
-- piano di analisi;
-- eventuale strategia di correzione per confronti multipli.
+- confronti principali;
+- segmenti confermativi;
+- eventuali guardrail;
+- criterio di analisi.
 
-### Regola editoriale per l'analyst
+È spesso la misura più efficace contro il risultato “scelto dopo”.
 
-Quando presenti un risultato statisticamente interessante, aggiungi sempre una domanda mentale:
+#### Correggere la molteplicità quando serve
 
-**Quante opportunità avevamo di trovare qualcosa di interessante?**
+Metodi comuni includono:
 
-Un p-value non porta con sé la memoria di tutti i test che hai eseguito prima di arrivare a quello che stai mostrando.
+- **Bonferroni:** semplice e spesso conservativo;
+- **Holm:** controllo del family-wise error rate con maggiore flessibilità;
+- **Benjamini–Hochberg:** controllo del False Discovery Rate, utile quando l'obiettivo è gestire molte potenziali scoperte.
 
-La trasparenza su numero di confronti, analisi esplorative e ipotesi definite a posteriori è quindi parte integrante della qualità analitica.
+La scelta dipende dal problema. Cercare un singolo claim altamente affidabile non è la stessa cosa che fare screening di centinaia di segnali per priorità successive.
+
+#### Usare nuovi dati per confermare
+
+Un pattern scoperto esplorativamente può essere validato su:
+
+- periodo futuro;
+- holdout non usato nella scoperta;
+- nuovo esperimento;
+- popolazione indipendente.
+
+È uno dei modi più intuitivi per separare scoperta e conferma.
+
+### Caso simulato/composito — Sessanta metriche e tre verdi
+
+Un dashboard mostra 60 metriche di un confronto prodotto.
+
+La metrica primaria non cambia in modo materialmente rilevante. Tre metriche secondarie mostrano `p < 0,05`.
+
+Se scegliamo proprio quelle tre e ignoriamo le altre 57, creiamo un racconto molto più ottimista dell'insieme dell'evidenza.
+
+La conclusione corretta non è necessariamente “sono tutti falsi positivi”.
+
+È:
+
+> **“Questi tre segnali sono emersi in una famiglia ampia di confronti; devono essere interpretati tenendo conto della molteplicità e, se importanti, confermati.”**
+
+### La domanda che deve accompagnare ogni scoperta
+
+Quando un risultato sembra sorprendente, chiedi:
+
+> **Quante occasioni avevamo di essere sorpresi?**
+
+Poi documenta:
+
+```text
+Ipotesi pre-specificata o esplorativa?
+Numero/famiglia dei confronti:
+Correzione applicata, se necessaria:
+Scelte analitiche effettuate dopo aver visto i dati:
+Nuovi dati disponibili per conferma:
+```
+
+> **La trasparenza sulla ricerca del segnale è parte dell'evidenza sul segnale.**
+
+[^asa-multiple]: American Statistical Association, *Statement on Statistical Significance and P-Values*: https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf
