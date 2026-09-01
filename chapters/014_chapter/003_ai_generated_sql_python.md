@@ -1,160 +1,262 @@
-## 14.2 Generare SQL e Python con l'AI: velocità enorme, responsabilità invariata
-La generazione di codice è probabilmente uno degli usi più immediati dell'AI per un Data Analyst.
+## 14.2 AI-generated SQL e Python: il codice è una proposta eseguibile, non una prova
 
-Una richiesta come:
+La generazione di codice è uno dei vantaggi più immediati dell'AI per un Data Analyst.
 
-> "Scrivi una query che calcoli retention D30 per cohort di signup"
+Possiamo ottenere rapidamente:
 
-può produrre in pochi secondi una struttura SQL che, scritta a mano, richiederebbe diversi minuti.
+- SQL;
+- Python/R;
+- formule;
+- test;
+- trasformazioni;
+- boilerplate;
+- documentazione tecnica.
 
-Lo stesso vale per Python:
+Il guadagno è reale.
 
-- pulizia dati;
-- aggregazioni;
-- regressioni;
-- grafici;
-- test statistici;
-- parsing di file;
-- automazioni ripetitive.
+Ma proprio perché il costo di scrittura si avvicina a zero, una vecchia euristica smette di funzionare:
 
-Il vantaggio è reale. Ma il rischio è altrettanto reale: il codice generato può essere **plausibile, eseguibile e sbagliato**.
+> “Se il codice è complesso e ci ha richiesto molto lavoro, probabilmente qualcuno lo ha pensato con attenzione.”
 
-## Il test delle quattro correttezze
+Con AI possiamo produrre **molto codice prima di aver stabilito che il codice rappresenta il problema giusto**.
 
-Prima di fidarsi di codice generato, distinguiamo quattro livelli.
+Per questo il codice generato va trattato come:
 
-### 1. Correttezza sintattica
+> **una proposta eseguibile che deve attraversare evidence gates.**
 
-Il codice gira?
+## 14.2.1 Le quattro correttezze
 
-### 2. Correttezza logica
+Prima di usare un artefatto generato distinguiamo quattro livelli.
 
-Fa ciò che la formula o l'algoritmo dichiarano?
+### Correttezza sintattica
 
-### 3. Correttezza semantica
+Il codice compila o gira?
 
-Usa la definizione business giusta?
+### Correttezza computazionale
 
-### 4. Correttezza decisionale
+Implementa correttamente l'algoritmo o la formula dichiarata?
 
-L'output supporta davvero la decisione per cui è stato creato?
+### Correttezza semantica
 
-Il livello 1 è quello che l'AI risolve meglio. I livelli 3 e 4 richiedono ancora fortissimo giudizio umano.
+Popolazione, grain, date, metriche e business rules sono quelle corrette?
 
-## Caso realistico: retention D30 calcolata perfettamente male
+### Correttezza decisionale
 
-Un'app consumer vuole misurare la retention D30.
+L'output è adatto alla decisione e al livello di claim richiesto?
 
-L'AI genera:
+Un sistema generativo è spesso molto forte sul primo livello.
 
-```sql
-WITH signup AS (
-    SELECT user_id, MIN(event_date) AS signup_date
-    FROM events
-    WHERE event_name = 'signup'
-    GROUP BY 1
-),
-active_d30 AS (
-    SELECT DISTINCT e.user_id
-    FROM events e
-    JOIN signup s USING (user_id)
-    WHERE e.event_date = DATE_ADD(s.signup_date, INTERVAL 30 DAY)
-)
-SELECT
-    COUNT(DISTINCT a.user_id) * 1.0 / COUNT(DISTINCT s.user_id) AS retention_d30
-FROM signup s
-LEFT JOIN active_d30 a USING (user_id);
+Il lavoro professionale consiste nel non confondere il primo gate con l'ultimo.
+
+## 14.2.2 Caso simulato/composito — retention D30 perfettamente sbagliata
+
+Un'app consumer chiede:
+
+> Calcola retention D30 per signup cohort.
+
+L'AI genera una query elegante che identifica utenti attivi esattamente 30 giorni dopo signup.
+
+La query è sintatticamente e computazionalmente corretta.
+
+Ma la definizione aziendale è:
+
+```text
+D30 retained = almeno un evento qualificante tra D27 e D33
 ```
 
-La query è leggibile. Ma l'azienda definisce D30 retention come **qualunque attività tra giorno 27 e giorno 33**, perché l'uso del prodotto è settimanale.
+perché il prodotto ha uso prevalentemente settimanale.
 
 In più:
 
-- alcuni utenti fanno signup senza aver completato l'onboarding;
-- gli account test interni non sono esclusi;
-- `event_date` è in UTC mentre il prodotto usa local date per il reporting.
+- gli utenti test devono essere esclusi;
+- activation deve essere completata entro D2 per entrare nella cohort;
+- le date di prodotto sono locali, non UTC.
 
-Il problema non è SQL. È la specifica.
+Il codice non contiene un bug tradizionale.
 
-## Chiedere test insieme al codice
+Ha implementato **una specifica che nessuno aveva realmente definito**.
 
-Una buona pratica è non chiedere solo:
+Questo è precisamente il motivo per cui il Context Pack viene prima della generazione.
 
-> "Scrivi la query."
+## 14.2.3 Il Verification Bundle
 
-ma:
+Non chiediamo soltanto codice.
 
-> "Scrivi la query e proponi almeno cinque controlli per verificare grain, join cardinality, duplicati, null, perimetro e confronto con una metrica indipendente."
+Chiediamo un **Verification Bundle**.
 
-Per esempio:
+Per una query può includere:
+
+```text
+1. expected output grain
+2. row-count invariants
+3. key uniqueness checks
+4. join cardinality checks
+5. reconciliation query
+6. edge cases
+7. small hand-computable fixture
+8. performance / scan estimate se rilevante
+```
+
+Esempio:
 
 ```sql
--- controllo: una riga per user_id nella cohort
-SELECT user_id, COUNT(*)
-FROM cohort
-GROUP BY 1
+-- deve esistere una riga per user nella cohort finale
+SELECT user_id, COUNT(*) AS n
+FROM cohort_final
+GROUP BY user_id
 HAVING COUNT(*) > 1;
 ```
 
 Oppure:
 
 ```sql
--- controllo: quanti utenti vengono persi dopo il join?
+-- quale percentuale della popolazione viene persa dopo il join?
 SELECT
-  COUNT(DISTINCT s.user_id) AS before_join,
-  COUNT(DISTINCT j.user_id) AS after_join
-FROM signup s
-LEFT JOIN joined_data j USING (user_id);
+    COUNT(DISTINCT b.user_id) AS before_join,
+    COUNT(DISTINCT j.user_id) AS after_join
+FROM base_population b
+LEFT JOIN joined_population j USING (user_id);
 ```
 
-## AI come reviewer di codice
+La query generata e i test non devono necessariamente provenire dallo stesso sistema.
 
-L'AI è utile non solo per scrivere, ma anche per criticare codice esistente.
+Quando il rischio è alto, **indipendenza del percorso di verifica** aumenta il valore del controllo.
 
-Prompt utile:
+## 14.2.4 Test fixture: prima milioni di righe, cinque casi che possiamo capire
 
-> "Rivedi questa query come se dovessi approvarla per un KPI executive. Cerca duplicazioni da join, filtri impliciti, rischio di leakage temporale, denominatori instabili, date sbagliate e assunzioni non documentate. Non riscriverla subito: prima elenca i rischi."
+Un metodo molto efficace è creare una piccola fixture con casi noti.
 
-Questa modalità può essere più preziosa della semplice generazione.
+Esempio retention:
 
-## Python: l'errore silenzioso è spesso più pericoloso dell'errore esplicito
+| user | signup | activity | expected D30 |
+|---|---|---|---:|
+| A | 1 gen | 31 gen | 1 |
+| B | 1 gen | 28 gen | 1 |
+| C | 1 gen | 10 feb | 0 |
+| D | 1 gen | nessuna | 0 |
+| E | test account | 31 gen | excluded |
 
-In Python, un'eccezione visibile è fastidiosa ma utile. Più pericoloso è un risultato plausibile ottenuto con una trasformazione errata.
+Prima di lanciare la query su centinaia di milioni di eventi possiamo verificare se produce il risultato atteso su cinque righe comprensibili.
 
-### Caso realistico: imputazione prima dello split
+Questa pratica è particolarmente utile con codice AI-generated perché riduce il rischio di **plausibility bias**: fidarsi del risultato perché “sembra giusto” su una tabella enorme.
 
-Un modello di churn viene preparato con:
+## 14.2.5 Python: pipeline leakage e hidden preprocessing
+
+Consideriamo:
 
 ```python
 X_filled = imputer.fit_transform(X)
 X_train, X_test, y_train, y_test = train_test_split(X_filled, y)
 ```
 
-L'AI ha scritto codice valido.
+Il codice gira.
 
-Ma l'imputer è stato fit sull'intero dataset, quindi ha usato informazioni della distribuzione del test set. Il leakage può essere piccolo o grande, ma la procedura non è pulita.
+Ma il preprocessing è fit prima dello split e quindi impara anche dalla distribuzione del test set.
 
-Una pipeline corretta dovrebbe imparare preprocessing soltanto dai dati di training.
+La lezione non è “l'AI sbaglia sklearn”.
 
-## Chiedere alternative, non una sola soluzione
+Il Capitolo 10 ha già trattato leakage.
 
-Per un task non banale, è utile chiedere:
+Qui la lezione è:
 
-> "Proponi tre implementazioni: una SQL-only, una Python-only e una ibrida. Per ciascuna valuta leggibilità, costo computazionale, riproducibilità e facilità di manutenzione."
+> **il reviewer deve applicare gli invarianti del dominio tecnico al codice generato, non limitarsi a chiedere al modello se il codice è corretto.**
 
-Questo aiuta a evitare che la prima soluzione generata venga automaticamente trattata come la migliore.
+Per modeling, gli invarianti possono includere:
 
-## Quando non delegare la scrittura del codice
+- fit solo sul training;
+- feature disponibili `as-of` prediction time;
+- split coerente con deployment;
+- baseline;
+- calibration/threshold separati;
+- metriche per segmento e tempo.
 
-È prudente mantenere controllo diretto quando:
+## 14.2.6 Read-only by default
 
-- la query alimenta reporting finanziario o regolatorio;
-- l'output modifica dati di produzione;
-- esistono implicazioni di sicurezza o privacy;
-- il costo computazionale può essere molto alto;
-- il codice entra in una pipeline critica;
-- il significato della metrica è ancora ambiguo.
+Se l'AI può usare tool, la generazione di codice si fonde con l'esecuzione.
 
-In questi casi l'AI può assistere, ma review e test devono essere espliciti.
+Questo cambia il rischio.
 
-> **La generazione di codice abbassa il costo di scrivere una soluzione. Non abbassa il costo di dimostrare che quella soluzione è corretta.**
+Una proposta SQL che dobbiamo copiare manualmente è diversa da un agente con permesso di eseguire:
+
+```sql
+DELETE
+UPDATE
+MERGE
+CREATE OR REPLACE
+```
+
+Per analisi ordinarie una policy ragionevole è:
+
+```text
+read-only by default
+write only when the task requires it
+approval before destructive/irreversible action
+```
+
+Il principio vale anche fuori dal database:
+
+- creare file è diverso da sovrascriverli;
+- preparare una bozza email è diverso da inviarla;
+- proporre un dashboard change è diverso da pubblicarlo.
+
+La **permission boundary** è parte della correttezza del workflow.
+
+## 14.2.7 AI come reviewer: utile, ma non indipendente per definizione
+
+Chiedere:
+
+> Trova cinque failure mode in questa query.
+
+può essere molto utile.
+
+Ma “AI genera” + “stessa AI approva” non equivale automaticamente a review indipendente.
+
+Possiamo migliorare la separazione usando:
+
+- test deterministici;
+- query di reconciliation;
+- fixture note;
+- regole statiche;
+- peer review umana;
+- secondo modello/configurazione quando appropriato;
+- confronto con asset certificati.
+
+L'obiettivo non è moltiplicare revisori.
+
+È evitare che **lo stesso errore di contesto** venga ripetuto in generation e critique.
+
+## 14.2.8 Acceptance gate per codice generato
+
+Per un artefatto importante definiamo prima:
+
+```text
+must compile/run
+must pass tests
+must preserve expected grain
+must reconcile within tolerance
+must respect permission policy
+must satisfy cost/runtime limit
+must produce no unresolved critical warning
+```
+
+Solo dopo può diventare input dell'interpretazione.
+
+### Campo della AI Analysis Control Sheet
+
+```text
+Generated artifact:
+Execution environment:
+Permission mode:
+Expected invariants:
+Fixture / golden cases:
+Tests generated:
+Independent checks:
+Reconciliation target:
+Performance/cost limit:
+Reviewer:
+Acceptance result:
+```
+
+### Regola operativa
+
+> **L'AI abbassa il costo di scrivere codice. Il processo analitico deve abbassare anche il costo di falsificarlo: piccoli test, invarianti e reconciliation devono diventare parte standard dell'artefatto.**
