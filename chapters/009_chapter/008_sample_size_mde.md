@@ -1,56 +1,177 @@
-## 9.7 Sample size e Minimum Detectable Effect: quanto traffico serve davvero?
+## 9.7 MDE e feasibility: quale effetto vale il costo di un esperimento?
 
-Un esperimento non diventa affidabile solo perché coinvolge "molti utenti". La domanda corretta è: **quanti utenti servono per rilevare un effetto abbastanza piccolo da essere ancora rilevante per il business?**
+Il Capitolo 5 ha già spiegato la relazione tra sample size, effect size, alpha e power.
 
-Il concetto operativo è il Minimum Detectable Effect, o MDE: la più piccola variazione che vogliamo essere in grado di distinguere dal rumore con una probabilità ragionevole.
+Qui usiamo quei concetti per una domanda più concreta:
 
-Se la conversione di checkout è del 4,0%, un miglioramento di 0,05 punti percentuali può essere statisticamente interessante ma economicamente irrilevante. Un aumento di 0,4 punti percentuali, invece, potrebbe valere milioni. Il sample size deve quindi partire dalla decisione, non da una formula scollegata dal contesto.
+> **Il nostro sistema ha abbastanza traffico per distinguere un effetto che sarebbe abbastanza importante da cambiare la decisione?**
 
-### Caso simulato/composito - Il bottone che valeva troppo poco
+Questa è una verifica di **experiment feasibility**.
 
-Una grande piattaforma travel vuole testare un nuovo bottone di conferma prenotazione. La baseline è:
+### Minimum Detectable Effect non significa “effetto minimo che esiste”
 
-- conversion rate: 3,80%;
-- sessioni eleggibili al mese: 4,2 milioni;
-- margine medio per booking: 17,40 euro.
+L'MDE è una soglia di sensibilità del design.
 
-Il product manager propone un MDE relativo del 2%, cioè circa +0,076 punti percentuali. Il test richiederebbe una quantità di traffico rilevante e diverse settimane.
+Se pianifichiamo un test per rilevare `+0,20 pp`, un effetto reale di `+0,08 pp` può comunque esistere. Il test potrebbe semplicemente non essere abbastanza informativo per distinguerlo dal rumore con la precisione desiderata.
 
-L'analista fa però una domanda diversa: quanto vale quell'effetto?
+Per questo l'MDE non deve essere scelto perché:
 
-Un incremento di 0,076 punti percentuali su 4,2 milioni di sessioni equivale a circa 3.192 booking aggiuntivi al mese. A 17,40 euro di margine, parliamo di circa 55.500 euro mensili prima dei costi operativi e degli effetti collaterali.
+- produce una durata comoda;
+- è il default del tool;
+- “2% relativo suona ragionevole”.
 
-Il team scopre che il redesign richiede manutenzione su quattro codebase e introduce dipendenze con due sistemi di pagamento. Il costo annuale stimato supera il beneficio atteso dell'MDE originario.
+Deve partire da **materialità e decisione**.
 
-La soglia viene quindi ridefinita: il team vuole rilevare almeno +0,15 punti percentuali. Il test diventa più breve e soprattutto allineato a una decisione economicamente sensata.
+### Caso simulato/composito — QuickPay e la soglia economica
 
-> **Il MDE non è solo una scelta statistica. È una dichiarazione su quale effetto sarebbe abbastanza importante da cambiare una decisione.**
+Baseline:
 
-### Cosa determina il sample size
+- conversion: 3,80%;
+- utenti eleggibili/mese: 4,2 milioni;
+- contribution margin per ordine: 17,40 €.
 
-A parità di tutto il resto, servono più osservazioni quando:
+Il PM propone MDE relativo `+2%`, cioè circa `+0,076 pp` assoluti.
 
-- l'effetto che vogliamo rilevare è più piccolo;
-- la metrica è più rumorosa;
-- chiediamo maggiore potenza statistica;
-- imponiamo una soglia di errore di tipo I più severa;
-- la randomizzazione avviene a livello di cluster, tenant, negozio o area geografica anziché utente;
-- la metrica primaria è rara, come frodi, cancellazioni o incidenti.
+Su 4,2 milioni di utenti:
 
-Per proporzioni, la dimensione campionaria dipende fortemente dal tasso di base. Per metriche continue, conta molto la varianza storica.
+```text
+4.200.000 × 0,00076 ≈ 3.192 ordini incrementali/mese
+```
 
-### Errore frequente: scegliere il test in base al tempo disponibile
+Contribution margin lordo indicativo:
 
-"Abbiamo dieci giorni" non è un criterio statistico. Se in dieci giorni il test non può distinguere un effetto economicamente utile dal rumore, le opzioni corrette sono:
+```text
+3.192 × 17,40 € ≈ 55.500 €/mese
+```
 
-1. aumentare il traffico;
-2. allungare il test;
-3. usare una metrica più sensibile e coerente;
-4. applicare tecniche di variance reduction se appropriate;
-5. accettare esplicitamente che il risultato sarà inconclusivo.
+Ma il redesign:
 
-La scelta sbagliata è fingere che dieci giorni siano sufficienti solo perché la roadmap lo richiede.
+- richiede manutenzione su quattro codebase;
+- modifica due integration path di pagamento;
+- aumenta costi di fraud review;
+- ha costo opportunità per altri progetti.
 
-### Fonti
+Se un effetto di `+0,076 pp` non giustifica implementazione e rischio, non è la soglia decisionale corretta.
 
-- Microsoft Experimentation Platform, *Beyond Power Analysis: Metric Sensitivity Analysis in A/B Tests*.
+Il team può definire:
+
+> “Ship solo se il beneficio plausibile è almeno +0,15 pp senza violare i guardrail.”
+
+Ora MDE, traffic plan e business threshold parlano la stessa lingua.
+
+### Tre soglie che non vanno confuse
+
+**Minimum effect of interest (MEI)**
+
+Il più piccolo effetto che cambierebbe la decisione business.
+
+**MDE del design**
+
+La dimensione di effetto che il test è progettato a rilevare con certe proprietà statistiche.
+
+**Observed effect**
+
+La stima prodotta dai dati.
+
+Idealmente il design dovrebbe essere abbastanza sensibile intorno al **minimum effect of interest**, non attorno a una soglia scelta per comodità.
+
+### Traffic feasibility
+
+Supponiamo che per l'MDE desiderato servano 900.000 utenti per variante.
+
+Ma soltanto 80.000 utenti/mese sono realmente eleggibili.
+
+La durata teorica supera undici mesi per arm, senza considerare maturity e stagionalità.
+
+La risposta professionale non è:
+
+> “Facciamolo comunque e vediamo.”
+
+Le alternative sono:
+
+- cambiare la domanda;
+- usare un outcome più sensibile ma ancora decision-relevant;
+- aumentare l'eligible population se semanticamente valido;
+- usare variance reduction;
+- testare un trattamento più forte;
+- accettare che l'esperimento non sia praticabile;
+- usare un design diverso.
+
+### Guardrail rari possono determinare la durata
+
+Un test può avere moltissimo power sulla conversione e pochissima informazione su:
+
+- frode rara;
+- incidenti;
+- churn a 90 giorni;
+- severe crash;
+- chargeback.
+
+Se uno di questi outcome può bloccare lo ship, il traffic plan deve dichiarare **quanto bene saremo in grado di escludere danni materialmente importanti**.
+
+Non basta dimensionare soltanto la primary metric.
+
+### Clustered experiments
+
+Se randomizziamo 80 negozi anziché 2 milioni di utenti, il volume di transazioni non recupera automaticamente la sensibilità persa.
+
+Il numero e la variabilità dei cluster diventano centrali.
+
+Per questo il feasibility check deve usare l'unità di randomizzazione reale e la struttura di dipendenza del design.
+
+### Exposure rate
+
+Supponiamo:
+
+```text
+1.000.000 utenti randomizzati
+solo 35% raggiunge la feature
+```
+
+Se l'estimand è intent-to-treat, l'effetto medio sugli assegnati sarà diluito dall'esposizione parziale.
+
+Se l'effetto business rilevante è molto piccolo, il test può richiedere molto più traffico di quanto suggerirebbe un calcolo basato soltanto sugli utenti che vedono la feature.
+
+Questa realtà deve essere incorporata **prima** del lancio.
+
+### Sample size non risolve la durata minima
+
+Anche quando il sample requirement viene raggiunto rapidamente, il 9.5 ci ha ricordato che potremmo dover attendere:
+
+- cicli temporali;
+- outcome maturity;
+- learning/novelty;
+- exposure ripetuta.
+
+Quindi:
+
+```text
+experiment end = max(
+    sample requirement,
+    minimum calendar duration,
+    outcome maturity requirement
+)
+```
+
+come principio operativo, non come formula statistica universale.
+
+### Feasibility card
+
+```text
+Baseline metric:
+Minimum effect of business interest:
+MDE planned:
+Alpha / desired power:
+Randomization unit:
+Eligible units/day:
+Expected exposure rate:
+Variance / baseline rate:
+Cluster design effect if any:
+Rare guardrail feasibility:
+Expected time to sample requirement:
+Minimum calendar duration:
+Outcome maturity:
+Is the experiment decision-useful at this sensitivity?
+```
+
+> **Un esperimento sottodimensionato non spreca soltanto traffico. Può consumare settimane per produrre un risultato che, qualunque sia il segno, non distingue le decisioni che ci interessano.**
