@@ -1,37 +1,43 @@
-## 10.8 Calibration e soglie: una probabilità del 70% deve significare qualcosa
+## 10.8 Calibration e soglie: stimare rischio e decidere un'azione sono due problemi diversi
 
-Un modello può ordinare bene i casi dal meno rischioso al più rischioso e allo stesso tempo produrre probabilità poco affidabili.
+Un modello può ordinare molto bene i casi e produrre probabilità poco credibili.
 
-Questa distinzione è fondamentale.
+Questa distinzione diventa critica quando lo score entra in:
 
-Se assegniamo probabilità di churn intorno al 70% a cento clienti simili, ci aspettiamo che nel lungo periodo circa settanta di loro churnino. Se ne churnano solo quaranta, il modello è mal calibrato in quella regione.
+- expected loss;
+- pricing;
+- provisioning;
+- prioritizzazione per valore atteso;
+- soglie di rischio.
 
-### Ranking e calibration non sono la stessa cosa
+Scikit-learn definisce un classificatore ben calibrato come un modello per cui, tra i casi a cui assegna probabilità vicina a 0,8, circa l'80% appartiene effettivamente alla classe positiva nel lungo periodo.
 
-Un modello può avere AUC alta ma probabilità distorte.
+Fonte: https://scikit-learn.org/stable/modules/calibration.html
 
-Esempio:
+### Ranking buono, probabilità sbagliate
 
-| Gruppo di score | Churn previsto medio | Churn osservato |
-|---|---:|---:|
-| 0,1–0,2 | 15% | 14% |
-| 0,3–0,4 | 35% | 24% |
-| 0,5–0,6 | 55% | 38% |
-| 0,7–0,8 | 75% | 52% |
+Immaginiamo:
 
-Il ranking può essere utile: i clienti con score più alto churnano di più.
+| Score medio previsto | Evento osservato |
+|---:|---:|
+| 15% | 14% |
+| 35% | 24% |
+| 55% | 38% |
+| 75% | 52% |
 
-Ma usare direttamente quelle probabilità per calcolare expected loss porterebbe a sovrastimare il rischio.
+Il rischio cresce insieme allo score: il ranking contiene informazione.
 
-### Caso realistico: NovaCredit e il default risk
+Ma il modello sovrastima sistematicamente la probabilità.
 
-NovaCredit usa un classificatore per stimare il rischio di default a 12 mesi.
+Usare `0,75` come se significasse davvero 75% gonfierebbe expected loss e potrebbe modificare decisioni economiche.
 
-Il risk committee non usa soltanto il ranking. Calcola:
+### Caso simulato/composito — NovaCredit
 
-\[
-Expected\ Loss = PD \times LGD \times EAD
-\]
+NovaCredit usa un modello per stimare probability of default a 12 mesi.
+
+Il risk committee combina:
+
+`Expected Loss = PD × LGD × EAD`
 
 Dove:
 
@@ -39,114 +45,138 @@ Dove:
 - `LGD` = loss given default;
 - `EAD` = exposure at default.
 
-Se la PD è sistematicamente sovrastimata, il modello può portare a:
+Il modello ha ROC-AUC 0,84, quindi discrimina discretamente.
 
-- pricing troppo alto;
+Nella fascia con PD prevista 20–30%, però, il default osservato è 13%.
+
+Una PD sistematicamente troppo alta può contribuire a:
+
+- pricing troppo aggressivo;
 - rifiuto di clienti profittevoli;
-- allocazione eccessiva di capitale;
-- stime di rischio poco credibili.
+- stime economiche distorte;
+- allocazione di capitale non coerente con il rischio osservato.
 
-Il team scopre che il modello ha ROC-AUC 0,84, ma nella fascia stimata 20–30% il default osservato è solo 13%.
+La discrimination non salva la calibration quando il numero viene usato come probabilità.
 
-La discriminazione è discreta. La calibration no.
+### Reliability diagram e segment calibration
 
-### Calibration curve
-
-Un modo intuitivo per verificare la calibration è raggruppare le previsioni in intervalli e confrontare:
+Una calibration curve confronta, per gruppi di score:
 
 - probabilità prevista media;
 - frequenza osservata dell'evento.
 
-Un modello perfettamente calibrato si avvicina alla diagonale `predicted = observed`.
+La diagonale `predicted = observed` rappresenta calibration ideale.
 
-La documentazione scikit-learn dedica strumenti specifici alla calibration dei classificatori e distingue la qualità delle probabilità dalla sola capacità discriminativa.
+Ma una curva globale può nascondere errori rilevanti per:
 
-Fonte: https://scikit-learn.org/stable/modules/calibration.html
-
-### Brier score
-
-Per target binari, una metrica utile è il Brier score:
-
-\[
-Brier = \frac{1}{n}\sum_{i=1}^{n}(p_i-y_i)^2
-\]
-
-Penalizza probabilità lontane dall'esito osservato.
-
-Un valore più basso è migliore.
-
-Ma anche qui non basta una metrica globale: la calibration può degradare in specifici segmenti.
-
-### La soglia è una decisione, non una proprietà naturale del modello
-
-Supponiamo che NovaCredit stabilisca:
-
-- sotto 5%: approvazione automatica;
-- 5–15%: revisione standard;
-- 15–25%: analisi approfondita;
-- sopra 25%: rifiuto salvo eccezioni.
-
-Queste soglie non derivano magicamente dall'algoritmo.
-
-Sono policy che dovrebbero incorporare:
-
-- costo del capitale;
-- margine del prodotto;
-- appetite for risk;
-- capacità di revisione;
-- regolamentazione;
-- qualità della calibration.
-
-### Caso realistico: ServiceOne e la priorità dei ticket
-
-ServiceOne costruisce un modello per prevedere quali ticket customer care finiranno in escalation.
-
-Il team inizialmente usa soglia 0,5.
-
-Risultato:
-
-- solo 280 ticket al giorno vengono segnalati;
-- il team specializzato può gestirne 900;
-- molte escalation ad alto costo vengono perse.
-
-Abbassando la soglia a 0,27:
-
-- il volume sale a 860;
-- recall aumenta fortemente;
-- precision scende, ma rimane economicamente accettabile.
-
-La soglia ottimale non è quella statisticamente più elegante. È quella coerente con capacità e costi.
-
-### Segment calibration
-
-Un modello globalmente calibrato può essere mal calibrato per:
-
-- Paese;
+- paese;
 - canale;
-- fascia cliente;
-- periodo;
 - prodotto;
-- device.
+- customer segment;
+- device;
+- periodo temporale.
 
-Se un risk score viene usato per decisioni importanti, l'analista deve chiedersi se la probabilità è affidabile **dove conta**.
+Se la decisione cambia per questi segmenti, la calibration va controllata anche lì, con prudenza sulla numerosità.
 
-### Un modello può degradare anche senza perdere subito AUC
+### Brier score: utile, ma non è una calibration curve in un numero
 
-Immagina che il tasso medio di churn raddoppi per un cambio di prezzo.
+Per target binari il Brier score può essere scritto come:
 
-Il modello può continuare a ordinare correttamente i clienti — quindi mantenere AUC simile — ma sottostimare tutte le probabilità.
+`Brier = mean((predicted_probability - outcome)^2)`
 
-Questo rende calibration e monitoraggio nel tempo essenziali.
+È una proper scoring rule utile per la qualità probabilistica complessiva.
 
-### Regola operativa
+La documentazione scikit-learn ricorda però che Brier e log loss riflettono insieme aspetti di calibration e discrimination. Un Brier migliore non dimostra da solo che la calibration curve sia migliore in ogni regione dello score.
 
-Prima di utilizzare probabilità predette in formule economiche o decisioni individuali, verifica:
+Perciò conviene usare:
 
-1. discrimination;
-2. calibration globale;
-3. calibration per segmenti importanti;
-4. stabilità nel tempo;
-5. soglie coerenti con il costo degli errori;
-6. capacità operativa generata dalle soglie.
+- score probabilistico;
+- reliability diagram;
+- distribuzione degli score;
+- metriche per segmenti rilevanti.
 
-Il classificatore non decide. Produce una stima. La soglia trasforma quella stima in una politica operativa.
+### Recalibration senza contaminare la valutazione
+
+Tecniche come sigmoid/Platt scaling, isotonic regression o temperature scaling possono migliorare la mappa tra score e probabilità.
+
+Il principio più importante è il data separation: il calibratore deve essere appreso su dati indipendenti da quelli usati per fit del classifier, o tramite una procedura cross-validated adeguata. Calibrare sulle stesse predizioni in-sample produce probabilità troppo ottimistiche.
+
+Scikit-learn implementa questa disciplina con `CalibratedClassifierCV`.
+
+### Dalla probabilità alla soglia
+
+Anche un modello perfettamente calibrato non decide autonomamente la soglia.
+
+Scikit-learn separa esplicitamente:
+
+- **statistical problem:** stimare probabilità/score;
+- **decision problem:** scegliere quale azione prendere a partire dallo score.
+
+Fonte: https://scikit-learn.org/1.9/modules/classification_threshold.html
+
+Il cutoff `0,5` è un default dell'API, non una legge statistica o economica.
+
+### Caso simulato/composito — ServiceOne e la capacità della coda
+
+ServiceOne prevede quali ticket finiranno in escalation.
+
+Con soglia 0,5:
+
+- 280 ticket/giorno vengono segnalati;
+- il team specializzato può gestirne 900;
+- molte escalation costose restano fuori.
+
+Una soglia 0,27 produce:
+
+- 860 ticket/giorno;
+- recall molto maggiore;
+- precision inferiore ma ancora sostenibile.
+
+La nuova soglia può creare più valore anche se non modifica in alcun modo ROC-AUC: il ranking del modello è identico, cambia solo la policy operativa.
+
+### Tuning della soglia: proteggere il test set
+
+La soglia non dovrebbe essere scelta guardando il test finale e poi riportando la stessa performance come se fosse out-of-sample.
+
+Se ottimizziamo threshold, cost matrix o top-K su un dataset, quel dataset è parte del processo di tuning.
+
+La valutazione finale deve quindi usare:
+
+- validation separata;
+- cross-validation interna;
+- oppure un test successivo non toccato.
+
+Scikit-learn offre, per esempio, `TunedThresholdClassifierCV`, che separa il modello probabilistico dalla scelta dell'operating threshold.
+
+### Threshold economics
+
+Una policy può considerare:
+
+- costo FP;
+- costo FN;
+- valore a rischio;
+- costo dell'intervento;
+- capacità massima;
+- vincoli regolatori;
+- fairness/servizio;
+- reversibilità dell'azione.
+
+Per esempio, due clienti con stesso `P(churn)` possono ricevere priorità diversa se il valore economico a rischio è molto diverso.
+
+Ma attenzione: per stimare il **beneficio dell'intervento** non basta la probabilità di churn. Serve evidenza sull'incremental effect dell'azione, collegandoci di nuovo ai Capitoli 8 e 9.
+
+### Calibration drift
+
+La calibration può degradare anche quando AUC rimane quasi stabile.
+
+Se il base rate di churn raddoppia dopo un cambiamento di prezzo, il modello può continuare a ordinare bene i clienti ma sottostimare sistematicamente le probabilità.
+
+Per questo in produzione monitoreremo separatamente:
+
+- ranking/discrimination;
+- calibration;
+- prevalenza;
+- distribuzione score;
+- operating volumes.
+
+> **Lo score ordina il rischio. La calibration dà significato numerico allo score. La soglia trasforma quel numero in una policy. Un sistema predittivo serio governa tutti e tre i livelli separatamente.**
