@@ -1,27 +1,51 @@
-## 11.15 AI-assisted SQL: accelerare la sintassi senza delegare il significato
+## 11.15 AI-assisted SQL: accelerare la sintassi senza delegare il contratto
 
-Gli assistenti AI possono già generare SQL da linguaggio naturale, completare query, spiegare codice e suggerire correzioni.
+Gli assistenti AI possono già:
 
-Microsoft Fabric, per esempio, documenta funzionalità Copilot che trasformano richieste in linguaggio naturale in T-SQL, propongono completamenti e possono spiegare o correggere query. La documentazione raccomanda comunque di specificare con chiarezza colonne, aggregazioni e filtri e di rivedere la query generata prima di eseguirla.[^ms-copilot]
+- generare SQL da linguaggio naturale;
+- completare query;
+- tradurre tra dialetti;
+- spiegare codice legacy;
+- suggerire test;
+- proporre correzioni.
 
-Questa evoluzione cambia il lavoro dell'analista.
+Questo cambia davvero il costo della sintassi.
 
-Scrivere una `ROW_NUMBER()` corretta diventa più economico.
+Non cambia però la domanda più difficile:
 
-Capire **quale grain deve avere il risultato**, invece, non viene automaticamente risolto.
+> **che cosa deve significare il risultato?**
 
-### Caso realistico: una query perfetta per la domanda sbagliata
+Una `ROW_NUMBER()` corretta può implementare una deduplicazione sbagliata. Un `JOIN` perfetto può moltiplicare una misura. Una query velocissima può usare la data sbagliata.
 
-Un analyst di **HelioTravel** chiede a un assistente AI:
+Per questo l'AI-assisted SQL deve consumare, per quanto possibile, lo stesso **Analytical Data Contract** che userebbe un analyst umano.
+
+### Caso reale documentato — Microsoft Fabric Copilot
+
+Microsoft Fabric documenta funzionalità Copilot che trasformano richieste in linguaggio naturale in T-SQL, completano codice e offrono azioni di explain/fix.
+
+La documentazione Microsoft avverte però che le risposte non sono perfette e devono essere **testate, revisionate e validate** prima di apportare cambiamenti a un database.
+
+Fonti:
+
+- https://learn.microsoft.com/en-us/fabric/database/sql/query
+- https://learn.microsoft.com/en-us/fabric/database/sql/copilot-faq
+
+Il principio è esattamente quello del Capitolo 0:
+
+> la capacità di eseguire può essere delegata; la responsabilità di capire e approvare resta umana.
+
+### Caso simulato/composito — una query perfetta per la domanda sbagliata
+
+Un analyst di HelioTravel chiede:
 
 > Mostrami il revenue medio per cliente per paese negli ultimi 12 mesi.
 
-L'assistente genera una query plausibile:
+L'assistente produce:
 
 ```sql
 SELECT
     c.country,
-    SUM(o.revenue) / COUNT(DISTINCT o.customer_id) AS avg_revenue_per_customer
+    SUM(o.net_revenue) / COUNT(DISTINCT o.customer_id) AS avg_revenue_per_customer
 FROM orders o
 JOIN customers c
   ON o.customer_id = c.customer_id
@@ -29,141 +53,158 @@ WHERE o.order_date >= CURRENT_DATE - INTERVAL '12 months'
 GROUP BY c.country;
 ```
 
-La query compila.
+La query compila e risponde letteralmente al prompt.
 
-Il risultato è formalmente coerente con il prompt.
+Ma il business intendeva:
 
-Ma il business voleva rispondere a una domanda diversa:
+> quanto net revenue genera mediamente, nei primi 365 giorni, un cliente acquisito in ciascun paese?
 
-> Quanto vale mediamente un cliente acquisito in ciascun paese nei primi 12 mesi dalla sua acquisizione?
+Cambiano almeno quattro cose:
 
-Serviva quindi una finestra relativa alla data di acquisizione del singolo cliente, non gli ultimi 12 mesi di calendario.
+- finestra relativa alla `acquisition_date` del singolo cliente;
+- popolazione delle coorti;
+- trattamento dei clienti senza ordini successivi;
+- paese al momento dell'acquisizione, non necessariamente paese corrente.
 
-L'AI non ha fatto un errore SQL.
+L'AI non ha commesso un errore di SQL.
 
-Ha eseguito fedelmente una richiesta ambigua.
+Ha trasformato fedelmente un requisito ambiguo in codice.
 
-### Il prompt deve includere semantica
+### Prompt libero vs contract-driven generation
 
-Un buon prompt SQL dovrebbe specificare almeno:
-
-- grain del risultato;
-- tabella o entità di partenza;
-- definizione della metrica;
-- data da usare;
-- filtri;
-- trattamento dei `NULL`;
-- comportamento dei join;
-- esclusioni importanti;
-- eventuale necessità di mantenere righe senza match.
-
-Esempio migliore:
+Un prompt libero può dire:
 
 ```text
-Voglio una riga per paese di acquisizione.
-Per ogni cliente acquisito nel 2025, calcola il net revenue generato nei 365 giorni successivi alla sua acquisition_date.
-Escludi ordini cancellati, sottrai refund, mantieni anche clienti con zero ordini e usa country_at_acquisition, non il paese corrente.
+Calcola la conversione per paese.
 ```
 
-Non garantisce che la query sia corretta, ma riduce l'ambiguità.
+Un input guidato dal contract può dire:
 
-### Protocollo di verifica in sette passaggi
+```text
+output grain: una riga per acquisition_country e acquisition_month
+population: sessioni web eligible, bot esclusi
+conversion numerator: sessioni con almeno un ordine valido
+conversion denominator: eligible sessions
+order validity: net amount > 0 dopo cancellation/refund
+session date: local business date Europe/Rome
+join: preservare sessioni senza ordine
+country: country_at_session_time
+```
 
-#### 1. Leggere la query prima di eseguirla
+Non garantisce la correttezza, ma sposta l'AI da “indovinare la semantica” a “implementare una specifica”.
 
-Capire quali tabelle usa, con quali join e quale grain produce.
+È un enorme miglioramento del problema.
 
-#### 2. Controllare le cardinalità
+### Protocollo di verifica in otto passaggi
 
-Prima e dopo ogni join:
+**1. Confrontare query e contract**
 
-```sql
+La query produce il grain dichiarato?
+
+**2. Controllare la popolazione**
+
+`INNER JOIN`, filtri e `NULL` stanno eliminando entità che dovrebbero restare?
+
+**3. Controllare cardinalità e row multiplier**
+
+Prima e dopo join critici:
+
+```text
 COUNT(*)
 COUNT(DISTINCT business_key)
 ```
 
-#### 3. Testare su pochi record conosciuti
+**4. Verificare la semantica temporale**
 
-Scegliere 3-5 clienti o ordini di cui possiamo ricostruire manualmente il risultato.
+La query usa event time, reporting time, timezone e attributi point-in-time corretti?
 
-#### 4. Riconciliare i totali
+**5. Testare record conosciuti**
 
-Se la query calcola revenue:
+Ricostruire manualmente alcuni casi normali ed edge case.
 
-```text
-somma finale
-vs
-fonte finanziaria / modello certificato
-```
+**6. Riconciliare i componenti**
 
-#### 5. Provare edge case
+Revenue, ordini o clienti devono essere compatibili con modelli o fonti certificate.
 
-- cliente senza ordini;
-- refund totale;
-- doppia valuta;
-- cambio segmento;
-- evento tardivo;
-- riga duplicata.
+**7. Chiedere una critica indipendente**
 
-#### 6. Chiedere all'AI di criticare la propria query
-
-Prompt utile:
+L'AI può essere utile anche per produrre una seconda passata:
 
 ```text
-Elenca almeno cinque modi in cui questa query potrebbe produrre risultati semanticamente sbagliati anche se viene eseguita senza errori. Controlla grain, join cardinality, date, NULL e denominatori.
+Cerca failure mode semantici in questa query.
+Confrontala con il contract e controlla grain, join, date, NULL,
+denominatori, SCD e many-to-many.
 ```
 
-La seconda risposta non è una garanzia, ma può accelerare la review.
+La critica automatica è un acceleratore, non una garanzia.
 
-#### 7. Salvare test e definizioni, non solo la query
+**8. Salvare query + contract + test**
 
-Una query generata oggi può essere rigenerata domani in modo diverso.
+Il vero asset non è il testo SQL generato oggi.
 
-Il vero asset dovrebbe includere:
+È:
 
-- definizione della metrica;
-- grain;
+```text
+specifica semantica
++ implementazione versionata
++ test
++ lineage
++ owner
+```
+
+### AI e DDL/DML: il livello di rischio cambia
+
+Una query `SELECT` sbagliata può produrre una conclusione errata.
+
+Un `UPDATE`, `DELETE`, `MERGE`, `DROP` o `CREATE OR REPLACE` sbagliato può modificare lo stato del sistema.
+
+Per operazioni mutative servono guardrail più forti:
+
+- ambiente corretto;
+- least privilege;
+- preview delle righe coinvolte;
+- transazione quando disponibile;
+- backup/versioning;
+- rollback;
+- approvazione umana.
+
+Il principio non dipende dallo strumento AI utilizzato.
+
+### Dove l'AI crea valore reale
+
+L'AI può essere particolarmente efficace per:
+
+- boilerplate;
+- sintassi rara;
+- traduzione di dialetti;
+- refactoring in CTE leggibili;
+- spiegazione di query legacy;
+- generazione di test a partire dal contract;
+- confronto tra implementazione e specifica;
+- documentazione;
+- prima lettura di execution plan.
+
+Più la sintassi diventa economica, più aumenta il valore di:
+
+- semantica;
 - test;
-- lineage;
-- query versionata.
+- review;
+- ownership.
 
-### AI e query distruttive
+### Campo del contract: AI execution boundary
 
-Gli assistenti moderni possono anche suggerire DDL o DML.
+Per trasformazioni assistite da AI può essere utile dichiarare:
 
-La documentazione Microsoft distingue modalità read-only e modalità che richiedono approvazione esplicita per operazioni che modificano dati o schema.[^ms-copilot-overview]
+```text
+allowed sources:
+allowed operations:
+read-only? sì/no
+required tests:
+required reconciliations:
+human approval threshold:
+production write permissions:
+```
 
-Anche senza una protezione integrata, la regola professionale è semplice:
+Questo anticipa temi che riprenderemo nel Capitolo 14 sugli AI workflow e nel Capitolo 18 sulla governance degli agenti.
 
-**una query generata da AI che modifica dati va trattata come codice non revisionato.**
-
-Prima di un `UPDATE`, `DELETE`, `MERGE`, `DROP` o `CREATE OR REPLACE`:
-
-- verificare l'ambiente;
-- verificare il `WHERE`;
-- fare preview delle righe coinvolte;
-- usare transazioni se disponibili;
-- avere rollback o backup;
-- applicare least privilege.
-
-### Dove l'AI crea davvero valore
-
-L'AI è particolarmente utile per:
-
-- ricordare sintassi rara;
-- tradurre tra dialetti SQL;
-- generare boilerplate;
-- creare CTE leggibili;
-- spiegare query legacy;
-- suggerire test;
-- produrre una prima bozza di documentazione;
-- aiutare a leggere execution plan.
-
-Il guadagno è reale.
-
-Ma proprio perché la sintassi costa meno, aumenta il valore della verifica.
-
-> **L'AI può generare SQL. L'analista resta responsabile di ciò che quel SQL significa.**
-
-[^ms-copilot]: Microsoft Learn, *Query your SQL database in Fabric*, https://learn.microsoft.com/en-us/fabric/database/sql/query
-[^ms-copilot-overview]: Microsoft Learn, *Microsoft Copilot in the SQL Database workload overview*, https://learn.microsoft.com/en-us/fabric/database/sql/copilot-sql-database
+> **L'AI può generare una query in pochi secondi. Il vantaggio competitivo dell'analista è sapere quali proprietà quella query deve preservare prima di potersi fidare del risultato.**
