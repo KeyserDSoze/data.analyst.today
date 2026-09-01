@@ -1,166 +1,327 @@
-## 12.16 Esercizi: progettare e diagnosticare sistemi dati
+## 12.16 Esercizi: diagnosticare il percorso del dato
 
-Gli esercizi di questo capitolo non chiedono di memorizzare definizioni. Chiedono di ragionare come un analista che deve lavorare dentro un sistema reale.
+Gli esercizi non chiedono di scegliere il servizio cloud “migliore”.
 
-### Esercizio 1 — Full reload o CDC?
+Chiedono di costruire e criticare una **Data Flow Architecture Map** collegando requisiti decisionali, latenze, dipendenze e recovery.
 
-Un e-commerce ha una tabella ordini da 600 milioni di righe. Ogni giorno vengono create o modificate circa 4 milioni di righe.
+### Esercizio 1 — Il dashboard delle 09:00
 
-Il full reload notturno dura 5 ore e spesso termina dopo l'orario previsto per il dashboard executive.
+Il CEO apre un dashboard ogni mattina alle 09:00.
 
-Domande:
-
-1. quali vantaggi potrebbe offrire il CDC?
-2. quali nuovi rischi introduce?
-3. come gestiresti update multipli dello stesso ordine?
-4. come verificheresti che una ripartenza non abbia duplicato dati?
-
-### Esercizio 2 — Pipeline verde, dato sbagliato
-
-Un dashboard mostra vendite giornaliere inferiori del 14% rispetto alla settimana precedente.
-
-Tutti i job risultano `SUCCESS`.
-
-Scopri che 3 dei 28 file regionali non sono mai arrivati.
-
-Domande:
-
-- quale controllo mancava?
-- quale SLO proporresti?
-- il dashboard dovrebbe essere pubblicato comunque?
-- come comunicheresti l'incidente agli stakeholder?
-
-### Esercizio 3 — Breaking change silenzioso
-
-Un campo `delivery_time` mantiene lo stesso nome ma cambia unità da minuti a secondi.
-
-Le pipeline non falliscono.
-
-Il P95 dei tempi di consegna cresce di circa 60 volte.
-
-Domande:
-
-1. perché uno schema test non basta?
-2. quale data contract avrebbe potuto prevenire il problema?
-3. quale controllo di plausibilita' aggiungeresti?
-
-### Esercizio 4 — Real time o no?
-
-Una società B2B produce circa 25.000 eventi al giorno.
-
-Il CFO legge il report una volta al giorno alle 09:00.
-
-Il team propone una piattaforma streaming con latenza inferiore al secondo.
-
-Valuta:
-
-- valore reale della latenza;
-- costi operativi;
-- soluzione alternativa;
-- casi in cui invece lo streaming sarebbe giustificato.
-
-### Esercizio 5 — Orchestrazione
-
-Hai questi task:
+Il flusso è:
 
 ```text
-A: ingest orders
-B: ingest refunds
-C: ingest customers
-D: calculate net revenue
-E: calculate customer segments
-F: refresh semantic model
+ERP export 05:00
+→ file landing
+→ transform 06:00
+→ warehouse 06:30
+→ semantic refresh 07:00
+→ dashboard
 ```
 
-Definisci un DAG ragionevole.
+Oggi il file ERP arriva alle 08:20 ma tutti i task downstream partono agli orari previsti e terminano `SUCCESS` usando il file precedente.
 
-Poi descrivi cosa dovrebbe succedere se `B` fallisce.
+Progetta:
 
-### Esercizio 6 — Recovery
+1. dependency/readiness condition corretta;
+2. freshness SLI/SLO;
+3. stato da mostrare sul dashboard;
+4. comportamento `BLOCK / STALE / DEGRADE`;
+5. alert e owner.
 
-Una pipeline incrementale ha caricato 730.000 righe prima di fallire.
+### Esercizio 2 — Full reload o CDC?
 
-Il retry riparte dall'inizio e usa `INSERT` puro.
+Un e-commerce ha 600 milioni di righe ordine e circa 4 milioni di insert/update giornalieri.
 
-Qual è il rischio?
+Il full reload dura cinque ore.
 
-Proponi almeno due strategie per rendere il processo idempotente.
+Disegna due alternative:
 
-### Esercizio 7 — Data product SLO
+**A. full reload**
 
-Progetta SLO per un dataset usato dal team antifrode.
+**B. initial snapshot + CDC**
 
-Considera almeno:
+Per ciascuna valuta:
+
+- workload sulla sorgente;
+- freshness;
+- delete;
+- ordering;
+- idempotenza;
+- checkpoint;
+- recovery dopo 48 ore di outage;
+- possibilità di ricostruire lo stato.
+
+Non assumere che CDC sia automaticamente migliore.
+
+### Esercizio 3 — Pipeline verde, dato incompleto
+
+Arrivano 25 file regionali su 28.
+
+Il codice processa quelli presenti e termina senza errori.
+
+Il report globale mostra revenue -14%.
+
+Costruisci:
+
+```text
+expected completeness SLI:
+SLO:
+quality gate:
+severity:
+degraded behavior:
+consumer message:
+```
+
+Spiega perché monitorare soltanto il job status non poteva intercettare il problema.
+
+### Esercizio 4 — Event time e late data
+
+Una pipeline streaming calcola transazioni per finestre di cinque minuti.
+
+Tre eventi sono generati alle:
+
+```text
+10:01
+10:03
+10:04
+```
+
+ma vengono processati alle:
+
+```text
+10:02
+10:04
+10:14
+```
+
+Definisci:
+
+- event time;
+- processing time;
+- cosa significa late data;
+- come una watermark policy influenza la pubblicazione;
+- provisional result e final/reconciled result.
+
+Descrivi come testeresti il sistema con eventi early, on-time e late.
+
+### Esercizio 5 — Il cambio schema che non rompe nulla
+
+Il producer mantiene:
+
+```text
+speed: number
+```
+
+ma cambia l'unità da km/h a m/s.
+
+Rispondi:
+
+1. perché uno schema test può passare?
+2. perché è un semantic breaking change?
+3. quale producer contract avrebbe dovuto includere l'unità?
+4. quale plausibility test potrebbe intercettarlo?
+5. serve una nuova versione?
+6. quali consumer individueresti tramite lineage?
+
+### Esercizio 6 — Raw, curated e serving
+
+Hai tre asset:
+
+```text
+raw_events
+valid_events
+customer_daily_activity
+```
+
+Per ciascuno specifica:
+
+- state of data;
+- garanzie esistenti;
+- garanzie non ancora esistenti;
+- consumer ammessi;
+- replay source;
+- quality gate.
+
+Poi spiega quale layer useresti per:
+
+- debugging di un evento;
+- dashboard executive;
+- ricostruzione dopo un bug di business logic.
+
+### Esercizio 7 — Orchestrazione e retry
+
+Un task scrive 730.000 righe, fallisce e viene automaticamente ritentato.
+
+La seconda esecuzione usa `INSERT` puro.
+
+Disegna due strategie sicure, scegliendo tra:
+
+- staging + atomic publish;
+- idempotent merge;
+- partition replacement;
+- checkpoint.
+
+Per ciascuna indica come verificheresti il risultato dopo recovery.
+
+### Esercizio 8 — SLO per due user journey
+
+Lo stesso dominio dati serve:
+
+**A. fraud operations**
+
+azione necessaria entro pochi secondi/minuti.
+
+**B. monthly Finance report**
+
+richiede riconciliazione e quasi totale completezza.
+
+Progetta SLI/SLO separati per:
 
 - freshness;
 - completeness;
 - availability;
+- reconciliation;
 - recovery.
 
-Poi confrontali con gli SLO di un report finanziario mensile.
+Spiega perché un unico SLO per il dataset sarebbe poco informativo.
 
-### Esercizio 8 — Caso da architecture review
+### Esercizio 9 — Semantic layer e serving failure
 
-Una società omnicanale ha:
+Il warehouse è aggiornato correttamente ma il semantic model non si aggiorna da sei ore.
 
-- POS;
-- e-commerce;
-- loyalty;
-- ERP;
-- app mobile;
-- advertising data.
+Disegna la mappa:
 
-Il CEO vuole sapere il Customer Lifetime Value omnicanale.
+```text
+source → storage → transform → serve → dashboard
+```
 
-Progetta ad alto livello:
+Indica:
 
-1. sorgenti;
-2. ingestion;
-3. raw layer;
-4. curated layer;
-5. identity resolution;
-6. business layer;
-7. semantic layer;
-8. freshness appropriata;
-9. quality checks;
-10. ownership.
+- dove si trova il failure;
+- quale SLI è violato;
+- se il dashboard deve usare last-known-good;
+- quale timestamp mostrare;
+- quali altri consumer possono continuare a lavorare interrogando il warehouse.
 
-### Esercizio 9 — Cloud cost investigation
+### Esercizio 10 — Cloud architecture review
 
-Una dashboard cloud costa circa €24.000 al mese.
+Un report viene consultato da 20 persone una volta al giorno.
 
-La usano 32 persone.
+Il team propone:
 
-Scopri che:
+- streaming sub-second;
+- multi-region active-active;
+- cluster always-on;
+- sette giorni di event replay;
+- dashboard refresh continuo.
 
-- legge 18 TB a refresh;
-- si aggiorna ogni 5 minuti;
-- il 70% degli utenti la apre una sola volta al giorno;
-- la maggior parte delle metriche cambia lentamente.
+Costruisci un'architecture review che chieda:
 
-Elenca le prime cinque azioni che valuteresti.
+1. decision deadline;
+2. cost of lateness;
+3. cost of failure;
+4. RTO/RPO necessari;
+5. alternative più semplici;
+6. trigger futuri che giustificherebbero maggiore complessità.
 
-### Esercizio 10 — La domanda più importante
+### Esercizio 11 — Caso VMO2
 
-Per un dataset che usi regolarmente, prova a rispondere senza consultare documentazione:
+Usando il caso pubblico Virgin Media O2 citato nel capitolo, identifica almeno cinque motivi per cui consolidare piattaforme può generare valore oltre al costo del compute.
 
-> Da dove arriva, quali trasformazioni subisce, quando è considerato completo, chi ne è responsabile e cosa succede se il processo fallisce?
+Poi spiega perché:
 
-Se non sai rispondere, hai appena identificato un rischio analitico reale.
+> “unificare la piattaforma”
 
-## Sintesi finale del capitolo
+non equivale automaticamente a:
 
-Un Data Analyst moderno non deve progettare ogni pipeline, ma deve saper leggere l'architettura abbastanza bene da distinguere:
+> “unificare la semantica”.
 
-- dato operativo e dato analitico;
-- batch e streaming;
-- raw e curated;
-- lake, warehouse e lakehouse;
-- trasformazione e semantica;
-- refresh riuscito e dato affidabile;
-- schema valido e significato valido;
-- disponibilita' tecnica e utilita' decisionale.
+### Esercizio 12 — Data contract end-to-end
 
-L'architettura non è lo sfondo dell'analisi.
+Un producer aggiunge una colonna `battery_health` e successivamente cambia il tipo di `device_state`.
 
-**È la catena di assunzioni attraverso cui la realtà diventa un numero.**
+Per ogni modifica stabilisci:
+
+- additive / structural breaking / semantic breaking;
+- comportamento desiderato dell'ingestion;
+- auto-evolve / rescue / fail;
+- versioning;
+- consumer notification;
+- impact analysis;
+- eventuale backfill.
+
+### Esercizio 13 — Recovery dopo una business rule sbagliata
+
+Scopri che il modello `net_revenue` ha sottratto due volte un tipo di refund per 43 giorni.
+
+La pipeline oggi funziona perfettamente.
+
+Disegna il recovery:
+
+```text
+identify affected period
+→ freeze/publish state decision
+→ correct code
+→ backfill
+→ validate invariants
+→ reconcile Finance
+→ republish
+→ notify downstream
+```
+
+Indica quali layer devono essere ricostruiti e quale raw/curated source useresti.
+
+### Esercizio 14 — Costruisci la Data Flow Architecture Map
+
+Scegli un dataset reale che utilizzi nel tuo lavoro o un dominio che conosci.
+
+Completa:
+
+```text
+DECISION / CONSUMER
+SOURCE
+CAPTURE
+TRANSPORT
+STORAGE
+TRANSFORM
+SERVE
+CONSUME
+CONTRACT BOUNDARIES
+LINEAGE
+SLI/SLO
+FAILURE MODES
+RECOVERY
+COST DRIVERS
+OWNERS
+```
+
+Poi evidenzia in rosso, idealmente su un diagramma o in una tabella, tutti i campi per cui la risposta è:
+
+```text
+non lo so
+```
+
+Quelli sono rischi reali da investigare.
+
+### Autovalutazione
+
+Dovresti essere in grado di spiegare senza nominare un vendor:
+
+- perché OLTP e analytical serving hanno workload differenti;
+- perché ingestion e transformation boundary contano per il replay;
+- cosa promettono raw/curated/business layers;
+- perché real time è un requisito economico, non estetico;
+- differenza tra event time e processing time;
+- cosa rappresenta una watermark;
+- perché CDC non è ancora stato analitico;
+- differenza tra scheduling e readiness orchestration;
+- perché `SUCCESS` non garantisce completeness;
+- come SLI/SLO descrivono l'esperienza del consumer;
+- differenza tra schema evolution e contract evolution;
+- cosa significa recovery del dato;
+- perché una soluzione può essere contemporaneamente scalabile e sproporzionata.
+
+La frase finale del capitolo è:
+
+> **L'architettura è la sequenza di garanzie e failure boundary attraverso cui un evento del mondo reale diventa un'informazione disponibile per una decisione. Conoscerla significa sapere non soltanto dove si trova il dato, ma quando possiamo fidarci del fatto che sia arrivato intero, aggiornato e recuperabile.**
