@@ -1,100 +1,150 @@
-# Capitolo 5 - Probabilità e incertezza
+# Capitolo 5 — Probabilità, campionamento e incertezza
 
-> La statistica descrive ciò che abbiamo osservato. La probabilità ci aiuta a ragionare su ciò che potrebbe accadere, su quanto siamo incerti e su quali decisioni siano sensate quando non possiamo conoscere tutto.
+> **Un numero senza incertezza può sembrare più preciso di quanto la realtà consenta.**
 
-## Introduzione
+Nel Capitolo 4 abbiamo costruito una **EDA Evidence Map**: ciò che osserviamo, dove si concentra il fenomeno, quanto è robusto il pattern e quali spiegazioni restano soltanto ipotesi.
 
-Un Data Analyst lavora quasi sempre in condizioni di informazione incompleta.
+Ora cambia la domanda.
 
-Non conosce il comportamento futuro di ogni cliente. Non sa con certezza quante spedizioni arriveranno in ritardo domani. Non può osservare tutti i clienti possibili, tutti gli ordini futuri o tutte le condizioni di mercato che potrebbero verificarsi. Anche quando dispone di milioni di righe, rimane una parte della realtà che non ha ancora osservato.
+Non vogliamo più sapere soltanto:
 
-Per questo la probabilità non è un argomento teorico separato dal lavoro quotidiano. È il linguaggio con cui si ragiona quando esistono **variabilità, rischio e incertezza**.
+> **Che cosa mostrano i dati che abbiamo osservato?**
 
-Nel capitolo precedente abbiamo imparato a descrivere i dati: medie, mediane, dispersione, percentili, correlazioni, trend, distribuzioni empiriche. Ora facciamo un passo diverso.
+Vogliamo anche sapere:
 
-La domanda non è più soltanto:
+> **Quanto possiamo fidarci della stima? Quanto potrebbe cambiare se osservassimo altri casi? Che cosa possiamo generalizzare oltre il campione? Quanto è plausibile un risultato sotto determinate assunzioni?**
 
-**“Che cosa è successo?”**
+Questa è la funzione del Capitolo 5.
 
-Diventa anche:
+## 5.0 Due tipi di incertezza che l'analista incontra continuamente
 
-**“Quanto è plausibile che succeda?”**
+Nel lavoro reale la parola *incertezza* nasconde almeno due problemi distinti.
 
-**“Quanto possiamo fidarci del risultato che vediamo?”**
+### 1. Variabilità del processo
 
-**“Che cosa cambia se arriva una nuova informazione?”**
+Anche se conoscessimo perfettamente il processo, il prossimo risultato non sarebbe necessariamente deterministico.
 
-**“Quale decisione conviene prendere quando gli esiti possibili sono diversi?”**
+Un corriere può avere il 6% di consegne oltre SLA. Non sappiamo in anticipo quali saranno le prossime consegne in ritardo.
 
-### Un caso semplice: il problema non è la media
+Un cliente può appartenere a un gruppo con churn rate del 12%. Non sappiamo con certezza se quel singolo cliente rinnoverà.
 
-Immaginiamo una compagnia di e-commerce che promette consegna in 48 ore.
+Qui la probabilità descrive **la variabilità degli esiti**.
 
-Negli ultimi sei mesi il tempo medio di consegna è stato di 31 ore.
+### 2. Incertezza della stima
 
-Il responsabile operativo conclude:
+Spesso non conosciamo nemmeno perfettamente quel 6% o quel 12%.
 
-> “Siamo tranquillamente dentro la promessa. Abbiamo diciassette ore di margine.”
+Lo stimiamo da:
 
-Ma il team analytics guarda la distribuzione e scopre che:
+- un campione;
+- una finestra storica limitata;
+- una survey;
+- un esperimento;
+- un sottoinsieme di utenti;
+- dati soggetti a nonresponse, selezione o rumore.
 
-- il 76% delle spedizioni arriva entro 36 ore;
-- il 91% arriva entro 48 ore;
-- il 7% arriva tra 48 e 72 ore;
-- il 2% impiega più di 72 ore.
+Se osserviamo 500 clienti e 60 churnano, il 12% è una stima. Un altro campione della stessa popolazione potrebbe produrre 10,8%, 12,6% o 13,4%.
 
-Il tempo medio è ottimo, ma circa una spedizione su undici viola la promessa.
+Qui l'inferenza statistica cerca di quantificare **quanto è precisa la nostra conoscenza del parametro**.
 
-Se domani partono 18.000 pacchi, il problema operativo non è sapere che il tempo medio atteso è vicino alle 31 ore. Il problema è capire quanti pacchi potrebbero superare le 48 ore, con quale variabilità e con quali conseguenze per customer care, rimborsi e reputazione.
+Le due incertezze non sono la stessa cosa.
 
-Qui compare il ragionamento probabilistico.
+Un processo può essere molto variabile ma stimato con grande precisione grazie a milioni di osservazioni. Oppure può essere relativamente stabile ma conosciuto male perché abbiamo pochi dati o un campione distorto.
 
-Non perché serva una formula sofisticata, ma perché la decisione riguarda **eventi incerti**.
+### Caso simulato/composito — Due numeri entrambi “91%”
 
-### La probabilità come modello, non come magia
+Una società e-commerce osserva che, negli ultimi sei mesi, il **91% delle spedizioni** è arrivato entro 48 ore.
 
-Quando diciamo che un evento ha probabilità del 10%, non stiamo affermando che ogni gruppo di dieci casi conterrà esattamente un evento.
+Nello stesso trimestre conduce una survey su 620 clienti e il **91% dei rispondenti** dichiara di essere soddisfatto della consegna.
 
-Stiamo costruendo un modello del processo.
+I due `91%` sembrano simili. Statisticamente non lo sono.
 
-Se il processo fosse sufficientemente stabile e ripetuto molte volte, ci aspetteremmo una frequenza vicina al 10%. Nel breve periodo, però, i risultati possono deviare anche in modo significativo.
+Il primo deriva da quasi tutte le spedizioni concluse nel periodo. Per descrivere quel periodo l'incertezza di campionamento è minima, anche se rimane incertezza su ciò che accadrà domani e su quanto il processo resterà stabile.
 
-Questa distinzione è fondamentale.
+Il secondo deriva da un campione di rispondenti. Prima di generalizzare alla customer base dobbiamo chiederci:
 
-Un churn rate storico del 5% non significa che esattamente cinque dei prossimi cento clienti abbandoneranno. Significa che, sotto determinate condizioni e assunzioni, possiamo trattare il 5% come una stima della probabilità individuale o aggregata di churn.
+- come sono stati selezionati i 620 clienti?
+- quanti sono stati invitati e quanti hanno risposto?
+- i non rispondenti differiscono dai rispondenti?
+- qual è la precisione dovuta al campionamento?
+- la domanda misura davvero la soddisfazione che ci interessa?
 
-Il lavoro dell'analista consiste nel capire se quelle condizioni sono plausibili.
+AAPOR sottolinea un punto essenziale: il margine di campionamento quantifica soltanto una parte dell'errore e non incorpora automaticamente problemi come nonresponse bias o errori di copertura.[^aapor-accuracy]
 
-### Dal dato osservato all'incertezza
+Lo stesso valore percentuale può quindi avere **qualità inferenziale completamente diversa**.
 
-Il percorso che seguiremo in questo capitolo è:
+## Più dati non significa automaticamente meno incertezza
 
-**Evento → probabilità → condizionamento → distribuzione → valore atteso → variabilità → aggiornamento dell'evidenza → decisione**
+Se il campione è rappresentativo e le assunzioni sono ragionevoli, più osservazioni riducono spesso l'incertezza di campionamento.
 
-Vedremo che molti concetti apparentemente astratti diventano immediatamente concreti quando vengono collegati a problemi reali:
+Ma un miliardo di osservazioni selezionate male può stimare con enorme precisione la popolazione sbagliata.
 
-- probabilità condizionata per capire il rischio di churn dato un comportamento;
-- indipendenza per evitare di moltiplicare probabilità che non sono indipendenti;
-- distribuzione binomiale per ragionare sul numero di conversioni in una campagna;
-- valore atteso per confrontare decisioni con esiti economici incerti;
-- varianza per distinguere due strategie con la stessa media ma rischio diverso;
-- legge dei grandi numeri per capire perché i KPI diventano più stabili all'aumentare dei volumi;
-- ragionamento bayesiano per aggiornare una probabilità quando arriva nuova evidenza.
+Questo principio tornerà più volte:
 
-La probabilità diventa così una disciplina pratica: non serve a prevedere perfettamente il futuro, ma a **prendere decisioni razionali quando il futuro non è perfettamente prevedibile**.
+> **La numerosità riduce il rumore casuale. Non corregge automaticamente bias, definizioni sbagliate o campioni non rappresentativi.**
 
-### Una nota sulle distribuzioni
+Per questo probabilità e inferenza devono sempre restare collegate ai Capitoli 2–4:
 
-Le distribuzioni di probabilità sono modelli. Non sono la realtà.
+**domanda ben specificata → dato fit for purpose → struttura esplorata → incertezza quantificata**.
 
-NIST descrive le distribuzioni come strumenti fondamentali della statistica e sottolinea che, prima di utilizzare una tecnica basata su una particolare assunzione distributiva, occorre verificare che tale assunzione sia adeguata ai dati e al problema.[^1]
+## Il percorso del capitolo
 
-Questa idea accompagnerà tutto il capitolo.
+Il capitolo è organizzato in tre movimenti.
 
-Non useremo una distribuzione perché “è quella che si usa di solito”.
+### Parte I — Modellare l'incertezza
 
-La useremo quando le assunzioni che la rendono sensata sono compatibili con il processo che stiamo studiando.
+Costruiremo il linguaggio di base:
 
----
+**evento → probabilità → probabilità condizionata → indipendenza → distribuzione → valore atteso → variabilità → aggiornamento bayesiano**.
 
-[^1]: NIST/SEMATECH, *e-Handbook of Statistical Methods - Probability Distributions*: https://www.itl.nist.gov/div898/handbook/eda/section3/eda36.htm
+L'obiettivo non è memorizzare formule, ma imparare a tradurre un processo reale in eventi e assunzioni esplicite.
+
+### Parte II — Dal campione alla popolazione
+
+Passeremo poi a:
+
+**campionamento → sampling distribution → standard error → Central Limit Theorem → intervallo di confidenza → margin of error → sample size**.
+
+Qui la domanda sarà:
+
+> **Se ripetessimo il processo di raccolta, quanto oscillerebbe la nostra stima?**
+
+NIST descrive l'intervallo di confidenza proprio come uno strumento per esprimere l'incertezza con cui una statistica campionaria approssima un parametro di popolazione.[^nist-ci]
+
+### Parte III — Valutare evidenza senza trasformare un test in una sentenza
+
+Infine affronteremo:
+
+**ipotesi nulla → test → p-value → errori di tipo I e II → power → significatività statistica vs rilevanza economica → multiple testing**.
+
+Qui fisseremo una regola editoriale e professionale importante.
+
+L'American Statistical Association ricorda che un p-value non misura la probabilità che l'ipotesi studiata sia vera, non misura la dimensione dell'effetto e non dovrebbe essere l'unica base per una decisione.[^asa-pvalue]
+
+Quindi:
+
+> **`p < 0,05` non è una decisione di business. È un pezzo di evidenza prodotto sotto un insieme di assunzioni.**
+
+## Il filo logico
+
+Alla fine del capitolo dovremmo essere in grado di passare da:
+
+> “Il conversion rate osservato è 8,4%.”
+
+A domande molto più mature:
+
+- 8,4% su quale campione e quale popolazione?
+- quanto è precisa la stima?
+- quali fonti di bias non sono rappresentate dal margine di errore?
+- qual è l'intervallo di valori compatibile con i dati e il metodo?
+- se confrontiamo 8,4% con 8,0%, la differenza è abbastanza grande da contare?
+- quante osservazioni servono per rilevare un effetto che abbia valore economico?
+- quante metriche o segmentazioni abbiamo provato prima di trovare quella “significativa”? 
+
+Questo è il vero salto dall'EDA all'inferenza.
+
+> **L'incertezza non è una debolezza da nascondere nel footer. È una proprietà dell'evidenza che determina quanto forte può essere la conclusione.**
+
+[^aapor-accuracy]: AAPOR, *Polling Accuracy*: https://aapor.org/polling-accuracy/
+[^nist-ci]: NIST/SEMATECH, *What are confidence intervals?*: https://www.itl.nist.gov/div898/handbook/prc/section1/prc14.htm
+[^asa-pvalue]: American Statistical Association, *Statement on Statistical Significance and P-Values*: https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf
