@@ -1,73 +1,93 @@
-## 12.4 Data lake e lakehouse: flessibilità senza perdere affidabilità
+## 12.4 Lake, lakehouse e architetture a livelli: distinguere lo stato del dato
 
-Un **data lake** nasce dall'idea di poter conservare grandi quantità di dati, spesso in formati diversi e con costi di storage relativamente bassi.
+Un data lake nasce dalla possibilità di conservare grandi quantità di dati, anche semi-strutturati o non ancora modellati, in storage relativamente economico.
 
-Può contenere:
+Un lakehouse cerca di combinare questa flessibilità con proprietà tipiche di un ambiente analitico più strutturato:
 
-- file CSV e Parquet;
-- JSON;
-- log applicativi;
-- eventi clickstream;
-- immagini o altri oggetti;
-- dati semi-strutturati;
-- estrazioni raw da sistemi operativi.
+- tabelle governate;
+- schema e transazioni;
+- affidabilità;
+- performance analitica;
+- supporto a BI e ML.
 
-Questa flessibilità è potente, ma introduce un rischio: se il lake diventa soltanto un deposito di file senza struttura, ownership, catalogo e controlli, trovare il dato giusto può diventare più difficile, non più facile.
+Per il Data Analyst, però, la domanda più utile non è:
 
-Da qui nasce il concetto di **lakehouse**, che cerca di combinare la flessibilità e la scalabilità del lake con proprietà tipiche dei sistemi analitici più strutturati: tabelle governate, transazioni, schema enforcement, qualità, catalogazione e supporto a BI e ML.
+> warehouse o lakehouse?
 
-Databricks definisce il lakehouse come un sistema che combina benefici di data lake e data warehouse e lo collega frequentemente a un'architettura a livelli che migliora progressivamente qualità e struttura dei dati.
+È:
 
-## Medallion architecture: Bronze, Silver, Gold
+> **In quale stato si trova il dato che sto usando? È source-aligned, validato o già modellato per il business?**
 
-Un pattern diffuso è la cosiddetta **medallion architecture**.
+### Caso reale documentato — la medallion architecture come crescita della qualità
 
-### Bronze
+Databricks descrive Bronze, Silver e Gold come livelli in cui la qualità del dato aumenta progressivamente:
 
-Contiene dati raw o quasi raw.
+- Bronze preserva dati raw e provenance;
+- Silver applica pulizia, validazione, deduplicazione e normalizzazione;
+- Gold contiene dati allineati a business logic, analytics e reporting.
 
-Obiettivi principali:
+Fonte: https://docs.databricks.com/aws/en/lakehouse/medallion
 
-- preservare fedeltà alla sorgente;
-- consentire replay e reprocessing;
-- mantenere metadata di provenienza;
-- evitare trasformazioni irreversibili premature.
+Il concetto importante non è il colore.
 
-### Silver
+È la separazione tra **stati del dato con garanzie differenti**.
 
-Contiene dati validati e puliti.
+### Bronze: fedeltà e replay
 
-Tipicamente qui avvengono:
+Un raw/source-aligned layer ottimizza:
 
-- schema enforcement;
-- type casting;
-- deduplication;
-- gestione null;
-- normalizzazione;
-- gestione record fuori ordine o arrivati in ritardo;
-- primi join e arricchimenti.
+- fedeltà alla sorgente;
+- metadata di ingestion;
+- audit;
+- reprocessing;
+- debugging.
 
-### Gold
+Non promette automaticamente:
 
-Contiene dati orientati al consumo business.
+- deduplicazione business;
+- chiavi conformate;
+- metriche corrette;
+- usability per dashboard.
 
-Tipicamente:
+Un analyst che interroga Bronze deve sapere che sta entrando prima del confine di curation.
 
-- modelli dimensionali;
-- metriche;
+### Silver: rendere il dato composable
+
+Un curated layer può occuparsi di:
+
+- tipi e schema;
+- record invalidi;
+- dedup/version handling;
+- late data;
+- identity resolution tecnica;
+- normalizzazione di timezone/unità;
+- join di riferimento.
+
+Qui il dato diventa più adatto a essere combinato e riutilizzato.
+
+Ma non significa ancora che ogni decisione business debba leggere Silver direttamente.
+
+### Gold: serving orientato alle decisioni
+
+Il layer business/serving può contenere:
+
+- facts e dimensions;
+- data marts;
 - aggregazioni;
-- dataset ottimizzati per dashboard e reporting;
-- viste di dominio.
+- feature o dataset curati;
+- input al semantic layer.
 
-Databricks documenta esplicitamente che Bronze, Silver e Gold rappresentano livelli crescenti di qualità e che la Gold layer è normalmente allineata alla business logic e ai requisiti di reporting.
+Le regole semantiche precise rimangono materia del Capitolo 11.
 
-## Caso realistico: il lake che nessuno voleva usare
+In questa architettura Gold significa soprattutto:
 
-**NovaMedia** raccoglie eventi da sito web, app mobile, piattaforma video e advertising.
+> **questo asset ha superato boundary di qualità e trasformazione sufficienti per uno specifico tipo di consumo.**
 
-Il team costruisce un data lake e celebra il fatto di avere "tutto il dato in un unico posto".
+### Caso simulato/composito — NovaMedia e il lake che nessuno vuole interrogare
 
-Dopo un anno contiene oltre 80.000 oggetti e centinaia di directory con nomi come:
+NovaMedia raccoglie eventi web, mobile, video e advertising.
+
+Dopo un anno il lake contiene directory come:
 
 ```text
 /events/new/
@@ -77,43 +97,94 @@ Dopo un anno contiene oltre 80.000 oggetti e centinaia di directory con nomi com
 /mobile/events_backup/
 ```
 
-Gli analyst iniziano a copiare file nei propri workspace perché non sanno quale sia la versione corretta.
+Tutti i dati “esistono”.
 
-Il problema non è lo storage. È la mancanza di:
+Nessuno sa però:
 
-- catalogo;
-- ownership;
-- schema stabile;
-- quality checks;
-- convenzioni;
-- livelli curati.
+- quale dataset sia autorevole;
+- quale schema aspettarsi;
+- quale sia l'ultimo backfill;
+- quali file abbiano superato controlli;
+- quale tabella sia appropriata per il reporting.
 
-Il team introduce quindi tre layer:
+Gli analyst iniziano a copiare file localmente.
+
+Il problema non è il data lake.
+
+È l'assenza di **state boundaries e ownership**.
+
+Una struttura più chiara diventa:
 
 ```text
 bronze.raw_events
-silver.sessionized_events
+        ↓
+silver.valid_events
+        ↓
 gold.content_engagement_daily
 ```
 
-Il vantaggio non è il nome "medallion". È che ora ogni layer ha un contratto chiaro.
+Ogni transizione ha input, output, test e owner.
 
-## Un pattern, non una religione
+### Layering come recovery strategy
 
-Bronze/Silver/Gold non è obbligatorio e non risolve automaticamente la qualità del dato.
+La separazione a livelli ha anche valore durante un incidente.
 
-Può essere eccessivo per una startup con tre tabelle e un report settimanale.
+Se una nuova business rule in Gold è sbagliata:
 
-Il criterio utile è chiedersi:
+```text
+Bronze: intatto
+Silver: intatto
+Gold: da ricostruire
+```
 
-> Abbiamo bisogno di separare il dato ricevuto, quello validato e quello pronto per il business?
+Possiamo correggere la logica e riprocessare senza richiedere nuovamente i dati alla sorgente.
 
-Se la risposta è sì, un'architettura a livelli può ridurre ambiguità e migliorare debuggabilità.
+Le best practice di affidabilità Databricks collegano esplicitamente layer raw/curated/final alla possibilità di rebuild e recovery.
 
-### Fonti pubbliche
+Fonte: https://docs.databricks.com/aws/en/lakehouse-architecture/reliability-best-practices
 
-Databricks, *What is the medallion lakehouse architecture?*:
-https://docs.databricks.com/gcp/en/lakehouse/medallion
+### Non moltiplicare layer per moda
 
-Databricks, *What is a data lakehouse?*:
-https://docs.databricks.com/aws/en/lakehouse/
+Per un progetto piccolo potrebbe bastare:
+
+```text
+source snapshot
+→ curated analytical table
+```
+
+Aggiungere cinque livelli nominali senza responsabilità differenti crea solo più cose da gestire.
+
+Un layer merita di esistere se introduce almeno una boundary utile:
+
+- durability;
+- privacy;
+- schema;
+- qualità;
+- business semantics;
+- performance;
+- access control.
+
+### Campo della Data Flow Architecture Map
+
+Per ogni layer annotiamo:
+
+```text
+state of data:
+what guarantees begin here:
+what guarantees do NOT exist yet:
+upstream replay source:
+quality gates:
+retention:
+owner:
+allowed consumers:
+```
+
+### Regola operativa
+
+Quando vediamo nomi come `raw`, `bronze`, `silver`, `curated`, `gold`, `serving`, chiediamo:
+
+> **Quale promessa cambia davvero attraversando questo confine?**
+
+Se nessuno sa rispondere, il layer è probabilmente una convenzione nominale e non una vera architettura.
+
+> **L'architettura a livelli è utile quando rende visibile lo stato di affidabilità del dato e permette di ricostruire i layer downstream senza perdere la sorgente.**
