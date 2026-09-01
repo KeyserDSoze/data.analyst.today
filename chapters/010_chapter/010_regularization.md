@@ -1,98 +1,113 @@
-## 10.10 Regularizzazione: accettare un po' di errore per ottenere più stabilità
+## 10.10 Regularizzazione: preferire pattern stabili a coefficienti spettacolari
 
-Quando un modello diventa troppo complesso, una strategia comune consiste nel penalizzare la complessità stessa.
+Quando un modello ha abbastanza libertà da inseguire rumore, possiamo introdurre una preferenza esplicita per soluzioni più semplici.
 
-Questa idea prende il nome di **regularizzazione**.
+La regularizzazione fa esattamente questo: accetta un po' meno fit sul training set in cambio di maggiore stabilità fuori campione.
 
-In termini intuitivi, la regularizzazione dice al modello:
+Nei modelli lineari due famiglie classiche sono:
 
-> non cercare di spiegare ogni minima oscillazione del training set; preferisci una soluzione un po' più semplice e più stabile.
+- **L2 / Ridge:** riduce coefficienti grandi senza portarli normalmente a zero;
+- **L1 / Lasso:** può portare alcuni coefficienti esattamente a zero.
 
-### L1 e L2 senza trasformarle in formule decorative
+Per un Data Analyst la parte importante non è memorizzare la penalizzazione. È capire **quale problema operativo stiamo cercando di ridurre**.
 
-Nella regressione, due approcci classici sono:
+### Caso simulato/composito — BrightTel e 180 segnali di churn
 
-- **L2 / Ridge**: penalizza coefficienti molto grandi e tende a ridurli;
-- **L1 / Lasso**: può portare alcuni coefficienti esattamente a zero, producendo una forma di selezione delle variabili.
+BrightTel costruisce una regressione logistica di churn con 180 feature.
 
-L'obiettivo non è rendere il modello “più elegante”.
+Una variabile rara identifica 73 clienti con una combinazione specifica di device, offerta e canale. Sul training set è fortemente associata al target e riceve un coefficiente enorme.
 
-È migliorare la generalizzazione quando molte variabili rischiano di adattarsi troppo al campione disponibile.
+Nei periodi successivi il pattern quasi scompare.
 
-### Caso simulato: BrightTel e 180 segnali di churn
+Confronto:
 
-BrightTel costruisce un modello per prevedere il churn dei clienti mobile.
-
-Il dataset contiene 180 feature:
-
-- utilizzo dati;
-- chiamate al supporto;
-- pagamenti in ritardo;
-- variazioni di traffico;
-- device;
-- promozioni;
-- rete;
-- comportamenti digitali.
-
-Una regressione logistica senza regularizzazione produce coefficienti enormi su alcune feature rare.
-
-Per esempio, una variabile che identifica utenti con una specifica combinazione di device e promozione appare fortemente associata al churn, ma riguarda soltanto 73 clienti su 140.000.
-
-Sul training set sembra informativa.
-
-Nei mesi successivi quasi scompare.
-
-Con una penalizzazione L2, i coefficienti estremi vengono ridotti e il modello diventa meno sensibile a queste coincidenze.
-
-Con L1, alcune feature quasi ridondanti vengono eliminate.
-
-Il risultato non è spettacolare sul training set:
-
-| Modello | AUC training | AUC validation |
+| Modello | AUC train | AUC validation |
 |---|---:|---:|
-| non regolarizzato | 0,88 | 0,74 |
-| Ridge | 0,83 | 0,77 |
-| Lasso | 0,81 | 0,76 |
+| penalizzazione debole | 0,88 | 0,74 |
+| L2 più forte | 0,83 | 0,77 |
+| L1 | 0,81 | 0,76 |
 
-Il modello “peggiore” sul training set è migliore dove conta davvero.
+Il modello L2 "perde" cinque punti sul training e guadagna tre punti dove conta.
 
-### Regolarizzazione e interpretabilità
+Questa è l'intuizione della regularizzazione.
 
-La regularizzazione può aiutare anche l'interpretabilità, ma non bisogna esagerare.
+### Regularizzazione e feature correlate
 
-Un coefficiente portato a zero da Lasso non dimostra che la variabile sia causalmente irrilevante.
+Supponiamo di avere:
 
-Significa soltanto che, **dato quel modello, quelle feature, quella penalizzazione e quel campione**, il modello può ottenere una buona soluzione senza usare quella variabile.
+- spesa 30 giorni;
+- spesa 28 giorni;
+- ordini 30 giorni;
+- AOV;
+- revenue 30 giorni.
 
-Se due feature sono molto correlate, il modello può conservarne una e ridurre l'altra quasi arbitrariamente.
+Le feature contengono informazione sovrapposta.
 
-### Il parametro di penalizzazione
+Con L1 una può rimanere e altre essere portate a zero. Questo non significa che le feature eliminate siano concettualmente inutili o causalmente irrilevanti. Significa che, **per quella soluzione predittiva**, il modello può ottenere una performance simile usando un sottoinsieme.
 
-Una penalizzazione troppo debole può lasciare il modello quasi invariato.
+Con feature fortemente correlate, la selezione può essere instabile tra campioni.
 
-Una penalizzazione troppo forte può invece produrre underfitting.
+Quindi "coefficiente zero" non deve diventare una conclusione sul business.
 
-Anche qui non esiste un valore “giusto” in assoluto.
+### Regularizzazione come hyperparameter
 
-Il parametro va scelto tramite validation o cross-validation.
+La quantità di penalizzazione deve essere scelta usando validation/cross-validation coerente con il deployment.
 
-### Metodo operativo
+Troppo poca:
 
-Usa la regularizzazione quando:
+- coefficienti instabili;
+- variance elevata;
+- overfitting.
 
-- hai molte feature rispetto alle osservazioni;
-- esiste multicollinearità;
-- i coefficienti sono instabili;
-- il gap tra training e validation è elevato;
-- vuoi una soluzione più parsimoniosa.
+Troppa:
 
-Ma ricordati che la regularizzazione non risolve:
+- pattern reali compressi;
+- underfitting;
+- ranking meno utile.
+
+Il valore ottimale non è una proprietà universale del dataset. Dipende anche da split, metrica e popolazione futura.
+
+### Stabilità dei coefficienti
+
+Nei modelli interpretabili conviene guardare non soltanto il coefficiente finale, ma quanto cambia tra:
+
+- fold;
+- periodi temporali;
+- bootstrap/campioni;
+- versioni del modello.
+
+Un coefficiente che cambia segno continuamente può essere un segnale di:
+
+- multicollinearità;
+- poco supporto dati;
+- instabilità del processo;
+- feature engineering fragile.
+
+La regularizzazione può attenuare il problema, ma la diagnosi resta importante.
+
+### Quando aiuta
+
+La regularizzazione è particolarmente utile quando:
+
+- il numero di feature è elevato;
+- esistono feature ridondanti;
+- alcuni coefficienti sono estremi;
+- il train-validation gap è elevato;
+- vogliamo un modello più parsimonioso;
+- la performance è sensibile a piccole variazioni del training set.
+
+### Che cosa non risolve
+
+Non corregge automaticamente:
 
 - leakage;
-- bias di selezione;
-- target definito male;
-- drift;
-- assenza di segnale;
-- causalità confusa con predizione.
+- label definita male;
+- train-serving skew;
+- selection bias nella popolazione;
+- concept drift;
+- mancata calibration;
+- causalità confusa con prediction.
 
-È uno strumento per controllare la complessità, non una cura universale.
+Un modello regolarizzato su dati sbagliati è semplicemente un modello più disciplinato che impara il problema sbagliato.
+
+> **Regularizzare significa imporre un prezzo alla complessità statistica. Non significa risolvere la complessità semantica del problema.**
