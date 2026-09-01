@@ -1,143 +1,148 @@
-## 16.6 Executive summary: arrivare al punto senza perdere il rigore
-Un executive summary non è un riassunto corto di tutto ciò che abbiamo fatto.
+## 16.6 Executive summary: una vista corta del Decision Record
 
-È una struttura pensata per permettere a chi decide di capire rapidamente:
+Un executive summary non è il riassunto abbreviato dell'analisi.
 
-- cosa è successo;
-- perché conta;
-- cosa sappiamo;
-- cosa non sappiamo;
-- cosa proponiamo;
-- quale decisione è richiesta.
+È la **vista decisionale** del Decision Record.
 
-## Il problema delle presentazioni “analyst-first”
+Deve permettere a chi decide di capire rapidamente:
 
-Molte presentazioni seguono il percorso dell'analista:
+- quale scelta è aperta;
+- cosa raccomandiamo;
+- quali evidenze sostengono la raccomandazione;
+- quale downside o incertezza potrebbe cambiarla;
+- cosa deve essere deciso oggi.
 
-1. dataset;
-2. metodo;
-3. query;
-4. grafici;
-5. segmentazioni;
-6. modelli;
-7. conclusione.
+## Answer first, evidence second
 
-Per un peer tecnico può avere senso.
+Una struttura utile è:
 
-Per un executive spesso no.
+1. **Decision requested**
+2. **Recommendation**
+3. **Evidence**
+4. **Business impact / downside**
+5. **Uncertainty + switching value**
+6. **Next step / owner**
 
-L'executive ha bisogno di sapere prima perché dovrebbe dedicare attenzione.
+Non sempre l'ordine grafico deve essere esattamente questo, ma il decision maker non dovrebbe attraversare dieci slide prima di sapere qual è la domanda.
 
-## Una struttura utile
+## Dal Decision Record alla pagina executive
 
-Possiamo usare:
+Decision Record:
 
-### 1. Headline
+- decisione: scegliere tra rollout generalizzato, rollout selettivo o ulteriore pilot;
+- raccomandazione: rollout selettivo;
+- evidence: uplift concentrato su due segmenti;
+- downside: aumento support load;
+- switching value: se support tickets aumentano oltre 11%, l'opzione perde vantaggio;
+- decision owner: VP Product.
 
-Una frase che contiene il messaggio principale.
+Executive summary:
 
-> “Il calo di margine è concentrato nei prodotti bulky e deriva principalmente da costo logistico, non da sconti.”
+> **Decisione richiesta:** approvare il rollout al 40% sui segmenti A e B.  
+> **Perché:** l'uplift è positivo nei segmenti target e il valore atteso resta favorevole nei principali scenari.  
+> **Rischio:** il support load è il guardrail più fragile; sopra +11% cambieremmo scelta.  
+> **Proposta:** rollout graduale con stop automatico sulla soglia e review tra due settimane.
 
-### 2. Evidence
+La sintesi non inventa una nuova storia. È una compressione del record.
 
-Due o tre evidenze che sostengono la headline.
+## Caso simulato/composito — Da 18 slide a una decisione leggibile
 
-### 3. Business impact
+Un marketplace fashion analizza l'aumento dei resi.
 
-Quanto vale il fenomeno?
+L'analyst prepara 18 slide con categorie, seller, sizing, paese, device e customer tenure.
 
-### 4. Uncertainty / caveat
+Il COO interrompe presto:
 
-Qual è il principale limite che potrebbe cambiare la decisione?
+> “Quale decisione devo prendere?”
 
-### 5. Recommendation
+La pagina iniziale viene riscritta:
 
-Cosa proponiamo?
+**Decision requested**  
+Sospendere temporaneamente l'autopublish per i seller ad alto rischio e finanziare quattro settimane di quality control.
 
-### 6. Decision needed
+**Headline**  
+Il return rate è aumentato di 2,1 punti; l'81% del delta è concentrato in tre seller e due categorie.
 
-Cosa deve decidere il pubblico oggi?
+**Evidence**  
+Nei seller interessati la quota di articoli con sizing inconsistente è aumentata dopo l'onboarding catalogo accelerato.
 
-## Caso realistico: da 18 slide a 5 righe
+**Impact**  
+Circa €640k di costo incrementale trimestrale tra reverse logistics e refund handling.
 
-Un analyst prepara 18 slide sull'aumento dei resi in un marketplace fashion.
+**Uncertainty**  
+La concentrazione è robusta; il ruolo causale della nuova procedura non è ancora isolato.
 
-Le prime dodici mostrano breakdown dettagliati.
+**Next step**  
+Pilot di controllo qualità con guardrail su time-to-publish e seller activation.
 
-Il COO interrompe alla quarta:
+Le altre 17 slide diventano evidence layer e appendix.
 
-> “Quindi cosa dobbiamo fare?”
+## Tre profondità, una sola semantica
 
-Il team riscrive l'apertura:
+Una Decision Communication Pack dovrebbe permettere:
 
-**Headline:** il return rate è aumentato di 2,1 punti, ma l'81% del delta viene da tre seller e due categorie.
+### 30 secondi — Decision layer
 
-**Evidence:** nei seller coinvolti la quota di articoli con sizing inconsistente è raddoppiata dopo un onboarding catalogo accelerato.
+- decision requested;
+- recommendation;
+- reason;
+- principale caveat.
 
-**Impact:** circa €640k di costo incrementale trimestrale tra reverse logistics e refund handling.
+### 10 minuti — Evidence layer
 
-**Uncertainty:** il legame con la nuova procedura di onboarding è forte ma non ancora causalmente isolato.
+- 2–4 visual decisivi;
+- alternative;
+- scenario / switching value;
+- guardrail.
 
-**Decision:** sospendere l'autopublish per i seller ad alto rischio e avviare un test di controllo qualità per quattro settimane.
+### Audit — Provenance layer
 
-Le 18 slide non spariscono.
+- definizioni;
+- query/dataset;
+- metodi;
+- robustness check;
+- dettagli dei segmenti;
+- assunzioni.
 
-Diventano appendix ed evidenza di supporto.
+Le tre profondità non devono produrre tre versioni diverse della verità.
 
-## Executive non significa superficiale
+## Titoli conclusivi, ma claim-safe
 
-Semplificare non significa nascondere complessità.
-
-Significa organizzare la complessità in livelli.
-
-Un buon executive summary permette due letture:
-
-- in 30 secondi: il messaggio;
-- in 10 minuti: l'evidenza;
-- in 30 minuti: il dettaglio metodologico.
-
-## Titoli descrittivi vs titoli conclusivi
-
-Titolo debole:
+Titolo descrittivo:
 
 > “Revenue by region”
 
-Titolo migliore:
+Titolo decisionale:
 
 > “La Germania spiega il 64% del gap revenue europeo”
 
-Titolo debole:
+Titolo eccessivo:
 
-> “Conversion trend”
+> “La Germania causa il calo europeo”
 
-Titolo migliore:
+se abbiamo solo decomposition geografica.
 
-> “Il calo conversion è iniziato con la release iOS 6.12”
+Un titolo conclusivo è utile quando completa la frase:
 
-Il titolo dovrebbe aiutare a capire perché il grafico esiste.
+> “Questo visual dimostra/supporta che...”
 
-## Attenzione al confirmation framing
+senza salire di livello rispetto al metodo.
 
-Un titolo conclusivo non deve trasformare un'ipotesi debole in una certezza.
+## Headline test
 
-Se non abbiamo evidenza causale, meglio:
+Prima dell'invio chiediamo:
 
-> “Il calo conversion coincide con la release iOS 6.12 ed è concentrato sugli utenti esposti”
+1. se il destinatario leggesse soltanto la headline, riceverebbe il claim corretto?
+2. capirebbe se la conclusione è descrittiva, predittiva o causale?
+3. vedrebbe il principale caveat se può cambiare la scelta?
+4. saprebbe cosa gli viene chiesto?
 
-che:
+Se una risposta è no, il problema non è la brevità. È la struttura.
 
-> “La release iOS 6.12 ha causato il calo conversion”
+## La sintesi non deve cancellare le alternative
 
-La forza del linguaggio deve seguire la forza del disegno analitico.
+Una recommendation può essere la protagonista, ma almeno l'alternativa più credibile deve restare visibile quando il trade-off è importante.
 
-## Una domanda finale
+Questo protegge dalla presentazione “advocacy-first”, in cui l'evidenza viene organizzata solo per vendere l'opzione preferita.
 
-Prima di inviare un executive summary chiediamoci:
-
-> “Se il destinatario leggesse soltanto il titolo e i primi cinque bullet, prenderebbe il messaggio giusto?”
-
-Se la risposta è no, il problema non è necessariamente nei dati.
-
-Potrebbe essere nella comunicazione.
-
-**L'executive summary non serve a ridurre l'analisi. Serve a rendere immediatamente accessibile la parte dell'analisi che cambia una decisione.**
+> **Un executive summary riuscito non racconta tutto. Conserva però tutte le informazioni che potrebbero rendere diversa la decisione.**
