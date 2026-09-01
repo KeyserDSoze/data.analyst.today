@@ -1,89 +1,168 @@
-## 8.6 DAG: disegnare il problema prima di stimarlo
+## 8.6 DAG: disegnare le assunzioni prima di scrivere la regressione
 
-Un Directed Acyclic Graph, o DAG, è un grafo orientato che rappresenta ipotesi causali tra variabili.
+Un **Directed Acyclic Graph (DAG)** è un modo compatto per rappresentare ipotesi causali tra variabili.
 
-Non serve essere causal scientist per usarlo bene. Per un Data Analyst può diventare soprattutto uno strumento di disciplina mentale.
+Per un Data Analyst il suo valore principale non è grafico.
 
-### Caso - La campagna di reactivation
+È epistemico:
 
-Un'app subscription vuole misurare l'effetto di una campagna email sul ritorno degli utenti inattivi.
+> **obbliga a dichiarare quali relazioni crediamo esistano prima che il modello le nasconda dentro un set di feature.**
 
-Le variabili principali sono:
+### Caso simulato/composito — Campagna di reactivation
 
-- engagement precedente;
-- probabilità di ricevere la campagna;
-- apertura dell'email;
+Una subscription app vuole stimare l'effetto di una campagna email sul ritorno degli utenti inattivi.
+
+Variabili:
+
+- engagement pre-campagna;
+- eleggibilità alla campagna;
+- email ricevuta;
+- apertura;
 - ritorno nell'app;
-- churn futuro.
+- churn successivo.
 
-Un primo DAG intuitivo potrebbe essere:
-
-```text
-engagement_precedente -> campagna
-engagement_precedente -> ritorno
-campagna -> apertura -> ritorno -> churn
-```
-
-Già questo schema fa emergere due questioni.
-
-Primo: l'engagement precedente è un possibile confondente del rapporto tra campagna e ritorno.
-
-Secondo: l'apertura dell'email è una conseguenza della campagna. Se vogliamo stimare l'effetto totale della campagna sul ritorno, controllare per apertura può essere sbagliato perché bloccherebbe parte del meccanismo attraverso cui la campagna produce effetto.
-
-### Variabili pre-trattamento e post-trattamento
-
-Questa distinzione è fondamentale.
-
-Le variabili pre-trattamento descrivono il mondo prima dell'intervento. Possono aiutarci a rendere i gruppi comparabili.
-
-Le variabili post-trattamento possono invece essere:
-
-- mediatori dell'effetto;
-- conseguenze indirette;
-- segnali generati dall'intervento.
-
-Inserirle automaticamente come controlli può cambiare la domanda causale che stiamo stimando.
-
-### Caso - Formazione commerciale
-
-Un'azienda vuole misurare l'effetto di un corso di vendita sul revenue trimestrale.
-
-Dopo il corso misura anche:
-
-- numero di chiamate;
-- numero di demo;
-- pipeline creata.
-
-Queste variabili sono probabilmente parte del meccanismo:
+Un DAG plausibile:
 
 ```text
-training -> più chiamate -> più demo -> più pipeline -> revenue
+engagement_pre -> email
+engagement_pre -> ritorno
+email -> apertura -> ritorno -> churn
+email -----------------> ritorno
 ```
 
-Se una regressione "controlla" per chiamate, demo e pipeline, rischia di rimuovere proprio i canali attraverso cui il corso potrebbe funzionare.
+Già il disegno rende visibili due cose.
 
-### Il DAG non dimostra che le frecce siano vere
+**Engagement pre-treatment** può aprire un backdoor path tra email e ritorno.
 
-Un DAG è una rappresentazione delle nostre assunzioni, non una prova empirica.
+**Apertura dell'email** è post-trattamento e può essere un mediatore.
 
-Il suo valore è rendere esplicite ipotesi che altrimenti rimarrebbero nascoste nel codice.
+Se vogliamo l'effetto totale dell'invio, controllare automaticamente per `open_email` cambia la domanda.
 
-Due analyst possono costruire DAG diversi. Questa non è una debolezza: rende visibile il disaccordo sul processo causale e permette di discuterlo con domain expert.
+### Il DAG viene prima della feature selection
 
-### Una procedura semplice
+Nel predictive modeling possiamo lasciare che una procedura selezioni variabili utili alla previsione.
 
-Prima di una stima causale:
+Nella causal inference la domanda è diversa:
 
-1. identifica trattamento e outcome;
-2. elenca le cause plausibili del trattamento;
-3. elenca le cause plausibili dell'outcome;
-4. collega le variabili con frecce temporaneamente e causalmente plausibili;
-5. separa ciò che avviene prima e dopo il trattamento;
-6. chiedi quali percorsi creano associazione non causale;
-7. decidi quali variabili controllare sulla base del problema, non solo della disponibilità nel database.
+> “Quali variabili devo condizionare — e quali devo evitare — per identificare l'effetto definito?”
 
-> **Un buon DAG non rende semplice la causalità. Rende visibili le assunzioni che altrimenti il modello nasconderebbe.**
+Questo richiede conoscenza del processo.
 
-## Riferimenti
+### Tre ruoli da non confondere
 
-- Guido W. Imbens, *Potential Outcome and Directed Acyclic Graph Approaches to Causality: Relevance for Empirical Practice in Economics*.
+**Confondente pre-trattamento**
+
+```text
+Z -> T
+Z -> Y
+```
+
+Può richiedere adjustment.
+
+**Mediatore**
+
+```text
+T -> M -> Y
+```
+
+Controllarlo può bloccare parte dell'effetto totale.
+
+**Collider**
+
+```text
+T -> C <- U -> Y
+```
+
+Condizionare su `C` può aprire un'associazione non causale.
+
+Queste tre strutture possono apparire tutte come “variabili correlate con treatment e outcome” in una tabella.
+
+Il DAG ci impedisce di trattarle allo stesso modo.
+
+### Caso simulato/composito — Training commerciale
+
+Un'azienda vuole stimare l'effetto di un corso sul revenue trimestrale.
+
+Possibile meccanismo:
+
+```text
+training -> chiamate -> demo -> pipeline -> revenue
+     \-----------------------------------> revenue
+```
+
+Se la domanda è:
+
+> “Qual è l'effetto totale del training?”
+
+controllare per chiamate, demo e pipeline rischia di rimuovere proprio parte del meccanismo.
+
+Se la domanda è invece:
+
+> “Quanto dell'effetto passa attraverso la pipeline?”
+
+entriamo in un problema di mediazione, con assunzioni ulteriori.
+
+### Disegnare anche ciò che non misuriamo
+
+Un errore comune è mettere nel DAG solo le colonne disponibili.
+
+Dovremmo invece inserire anche cause plausibili non osservate:
+
+```text
+U_motivazione -> training uptake
+U_motivazione -> revenue
+```
+
+Il fatto che `U_motivazione` non sia nel warehouse non la rende causalmente inesistente.
+
+Anzi, il DAG può mostrare esplicitamente perché una strategia di adjustment osservazionale non basta.
+
+### Il DAG non dimostra le frecce
+
+Un grafo è un modello del mondo, non una fotografia certa del mondo.
+
+Due analyst o domain expert possono proporre DAG differenti.
+
+Questa è una caratteristica utile: il disaccordo diventa visibile e discutibile **prima** della stima.
+
+Un buon processo è:
+
+1. costruire una prima versione con analyst e stakeholder;
+2. chiedere ai domain expert quali frecce mancano;
+3. distinguere conoscenza forte da ipotesi debole;
+4. verificare se DAG alternativi richiedono adjustment set diversi;
+5. documentare la versione usata per la causal claim.
+
+### DAG e tempo
+
+Le frecce devono rispettare una storia temporale plausibile.
+
+Se una variabile viene misurata dopo il trattamento, non può essere trattata come confondente preesistente senza una spiegazione molto specifica.
+
+Quando il processo è dinamico, può essere utile espandere il DAG nel tempo:
+
+```text
+usage_t-1 -> treatment_t -> usage_t+1 -> outcome_t+2
+     \-------------------------------> outcome_t+2
+```
+
+### Il DAG come parte del Causal Identification Brief
+
+Non serve sempre inserire un diagramma elegante nel report finale.
+
+Ma prima di una causal analysis seria dovremmo riuscire a rispondere:
+
+```text
+Quali cause comuni aprono backdoor path?
+Quali variabili sono mediatori?
+Dove possono esserci collider?
+Quali cause importanti non sono osservate?
+Quali variabili sono post-treatment?
+Esistono spillover tra unità?
+```
+
+> **Il DAG non rende vere le assunzioni. Le rende visibili, e questo è già un enorme miglioramento rispetto a lasciarle implicite nel codice.**
+
+### Riferimento
+
+- Stanford University, STATS 361, *Causal Inference*: il corso include potential outcomes, observational studies, treatment heterogeneity, mediation, regression discontinuity, interference e graphical models: https://bulletin.stanford.edu/courses/2214431
