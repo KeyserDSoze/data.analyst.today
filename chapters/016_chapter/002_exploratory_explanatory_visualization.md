@@ -1,135 +1,126 @@
-## 16.1 Visualizzazione esplorativa e visualizzazione esplicativa
-Non tutti i grafici hanno lo stesso scopo.
+## 16.1 Dalla visualizzazione esplorativa all'evidenza decisionale
 
-Durante l'analisi usiamo visualizzazioni per **scoprire**.
+Non tutti i grafici che ci aiutano a capire devono arrivare davanti a chi decide.
 
-Durante la comunicazione usiamo visualizzazioni per **spiegare**.
+Durante l'EDA produciamo **discovery artifacts**: servono a cercare pattern, smentire ipotesi, cambiare grain, verificare segmenti, confrontare definizioni e capire dove investigare.
 
-Confondere queste due fasi produce spesso slide piene di dettagli che riflettono il percorso mentale dell'analista, non il bisogno del pubblico.
+Durante la comunicazione costruiamo invece **decision artifacts**: servono a sostenere un passaggio preciso del Decision Record.
 
-## Esplorare significa lasciare spazio alle domande
+La differenza non è estetica. È epistemica.
 
-In EDA possiamo voler vedere:
+## Discovery artifacts: spazio di ricerca
+
+Nell'esplorazione è normale produrre:
 
 - distribuzioni;
-- segmenti;
-- outlier;
-- correlazioni;
-- serie temporali;
-- breakdown multipli;
-- versioni alternative dello stesso KPI.
+- segmentazioni;
+- scatter plot;
+- decine di breakdown;
+- versioni alternative di un KPI;
+- grafici che alla fine si rivelano inutili;
+- controlli che servono soprattutto a escludere spiegazioni.
 
-In questa fase è normale produrre decine di grafici.
+Questa abbondanza è spesso necessaria.
 
-Molti saranno inutili alla fine.
+Il problema nasce quando confondiamo **quanto lavoro abbiamo fatto** con **quanto materiale il pubblico deve vedere**.
 
-Non è uno spreco: servono a capire.
+## Decision artifacts: spazio di prova
 
-## Spiegare significa selezionare
+Un elemento entra nella Decision Communication Pack solo se svolge almeno una funzione esplicita:
 
-Quando dobbiamo presentare il risultato, la domanda cambia:
+| Ruolo | Domanda |
+|---|---|
+| Orient | Che cosa sta succedendo? |
+| Compare | Quale alternativa/segmento differisce? |
+| Diagnose | Dove si concentra il fenomeno? |
+| Decide | Quale trade-off o soglia cambia la scelta? |
+| Verify | Quale dettaglio consente di controllare il claim? |
 
-> “Qual è il minimo insieme di evidenze necessario perché il pubblico comprenda la conclusione e possa valutarla?”
+Un grafico che non riesce a completare una di queste frasi è probabilmente ancora un discovery artifact.
 
-Qui eliminare è spesso più importante che aggiungere.
+## Evidence promotion: non tutto ciò che troviamo merita la slide
 
-## Caso realistico: 27 grafici per rispondere a una domanda
+Tra discovery e decision serve un passaggio di **promozione dell'evidenza**.
 
-Un team e-commerce deve spiegare perché la conversione è diminuita dal 3,8% al 3,4%.
+Prima di portare un pattern nella comunicazione chiediamo:
 
-Durante l'analisi produce 27 visualizzazioni:
+1. la metrica è certificata o almeno definita?
+2. il grain è coerente con il claim?
+3. il pattern resiste a segmentazioni e controlli ragionevoli?
+4. esiste un problema di composizione o denominatore?
+5. l'incertezza può cambiarne il significato?
+6. il linguaggio proposto supera la forza del metodo?
+7. questa evidenza cambia davvero una decisione?
 
-- conversione per device;
-- browser;
-- paese;
-- canale;
-- landing page;
-- giorno della settimana;
-- ora;
-- new vs returning;
-- pagamento;
-- app version;
-- basket size;
-- categoria prodotto;
-- e molte altre.
+Solo dopo il pattern entra nel pack.
 
-Alla fine emerge una spiegazione molto più semplice:
+## Caso simulato/composito — 27 grafici, tre prove
 
-- il 78% del calo viene da iOS;
-- quasi tutto è nella versione 6.12;
-- il punto di rottura è il passaggio payment authentication;
-- Android e versioni iOS precedenti sono stabili.
+Un e-commerce vede la conversione scendere dal 3,8% al 3,4%.
 
-La presentazione efficace non mostra 27 grafici.
+Durante l'indagine il team produce 27 grafici: device, browser, paese, canale, landing, ora, new/returning, payment method, app version, basket size, categoria e altri breakdown.
 
-Ne mostra tre:
+Alla fine emergono quattro fatti robusti:
 
-1. decomposizione del delta per platform;
-2. conversione per app version;
-3. funnel con drop sul payment step.
+- circa il 78% del delta è su iOS;
+- il peggioramento è quasi interamente nella versione 6.12;
+- il drop si concentra tra `payment_started` e `payment_authorized`;
+- Android e le versioni iOS precedenti sono sostanzialmente stabili.
 
-Gli altri grafici restano come materiale di supporto.
+La Decision Communication Pack non contiene i 27 grafici.
 
-## Una regola utile: discovery artifacts vs decision artifacts
+Contiene:
 
-Possiamo distinguere:
+1. **decomposition del delta per piattaforma** — localizza il problema;
+2. **conversion per app version** — identifica la concentrazione del segnale;
+3. **funnel del payment step** — mostra dove si rompe il percorso;
+4. in appendix, i controlli che dimostrano che i principali segmenti alternativi non spiegano il fenomeno.
 
-### Discovery artifacts
+Il lavoro esplorativo non è stato buttato via. È diventato **provenance della selezione**.
 
-Servono all'analista.
+## Non presentare la cronologia dell'indagine
 
-Possono essere complessi, numerosi, iterativi e tecnici.
+Una presentazione analyst-first spesso dice:
 
-### Decision artifacts
+> “Prima abbiamo guardato il traffico, poi i paesi, poi i device, poi abbiamo provato...”
 
-Servono a chi deve decidere.
+Il decision maker raramente ha bisogno della cronologia.
 
-Devono essere selettivi, contestuali e orientati alla domanda.
+Ha bisogno della logica:
 
-Un notebook esplorativo è spesso un buon discovery artifact e un pessimo decision artifact.
+**decision question → headline → evidence → caveat → alternative → ask**.
 
-Una slide executive può essere un buon decision artifact e un pessimo strumento per fare EDA.
+La cronologia investigativa può essere utile in un post-mortem o in una peer review, non necessariamente nella pagina executive.
 
-## Non raccontare il percorso in ordine cronologico
+## Ogni visual deve avere una frase verificabile
 
-Un errore comune è presentare l'analisi nel modo in cui è stata eseguita:
+Per ogni elemento importante completiamo:
 
-> “Prima abbiamo guardato le vendite, poi i clienti, poi i canali, poi abbiamo fatto questo test...”
+> **“Questo visual serve a mostrare che...”**
 
-Il pubblico raramente ha bisogno della cronologia investigativa.
+Debole:
 
-Ha bisogno della struttura logica:
+> “Questo mostra la conversion per paese.”
 
-**cosa è successo → dove → perché pensiamo sia successo → quanto siamo sicuri → cosa proponiamo di fare**.
+Forte:
 
-## Il grafico esplicativo deve avere una frase
+> “Questo mostra che la Germania spiega circa due terzi del gap europeo, mentre gli altri mercati restano vicini alla baseline.”
 
-Una prova semplice:
+La seconda frase definisce un claim che il visual può sostenere o smentire.
 
-Per ogni visualizzazione importante dovremmo essere in grado di completare:
+## La regola della provenance
 
-> “Questo grafico serve a mostrare che...”
+Togliere grafici dalla pagina principale non deve rendere il ragionamento opaco.
 
-Se la risposta è vaga, probabilmente il grafico non ha ancora un ruolo chiaro.
+Per questo ogni decision artifact dovrebbe poter rimandare a:
 
-Esempio debole:
+- definizione metrica;
+- query/dataset;
+- periodo;
+- controlli principali;
+- eventuale appendix;
+- owner o documento analitico sorgente.
 
-> “Questo mostra le vendite per paese.”
+La sintesi è affidabile quando possiamo risalire dalla headline alla prova.
 
-Esempio forte:
-
-> “Questo mostra che la Germania spiega circa due terzi del calo europeo, mentre gli altri mercati sono sostanzialmente stabili.”
-
-La seconda formulazione contiene una tesi verificabile.
-
-## Separare evidenza e interpretazione
-
-Un grafico dovrebbe aiutare il pubblico a vedere l'evidenza.
-
-L'annotazione o il testo dovrebbe aiutare a capire l'interpretazione.
-
-Non dobbiamo nascondere il dato dietro la narrativa.
-
-Ma nemmeno obbligare il pubblico a ricostruire da solo il messaggio.
-
-**Una visualizzazione esplicativa non mostra tutto ciò che sappiamo. Mostra ciò che serve per capire la decisione.**
+> **La visualizzazione esplicativa non è il riassunto del percorso fatto dall'analista. È la selezione minima di evidenze necessarie per valutare una decisione.**
