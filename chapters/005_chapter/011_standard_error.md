@@ -1,84 +1,99 @@
-## 5.10 Errore standard: quanto è stabile una stima
+## 5.10 Standard error: quanto oscilla la nostra stima
 
-L'errore standard misura la variabilità di una statistica da campione a campione.
+Lo **standard error** misura la variabilità di una statistica tra possibili campioni ottenuti con lo stesso processo.
 
-Per una media, in condizioni standard:
+Per la media, sotto condizioni semplici di campionamento indipendente, una stima comune è:
 
 \[
-SE(\bar{x}) = \frac{s}{\sqrt{n}}
+SE(\bar{x}) \approx \frac{s}{\sqrt{n}}
 \]
 
-La formula è semplice. Le implicazioni sono profonde.
+La formula mostra una relazione fondamentale:
 
-A parità di variabilità dei dati, aumentando la dimensione del campione la stima diventa più stabile. Ma la precisione migliora con la radice quadrata di n, non linearmente.
+> a parità di variabilità del fenomeno, aumentando il campione la media stimata tende a diventare più precisa.
 
-Raddoppiare il campione non dimezza l'errore standard.
+Ma la precisione migliora con la **radice quadrata** di `n`.
 
-Per dimezzarlo, servono circa quattro volte le osservazioni.
+Raddoppiare il campione non dimezza lo standard error. Per dimezzarlo servono, in prima approssimazione, quattro volte le osservazioni.
 
-### Caso realistico: il KPI del piccolo mercato che cambia continuamente
+### Deviazione standard e standard error non sono sinonimi
 
-Una piattaforma di food delivery confronta il tempo medio di consegna in due città.
+La **deviazione standard** risponde a:
 
-Milano:
+> quanto variano le singole osservazioni?
 
-- 48.200 ordini al mese;
-- media: 31,4 minuti;
-- deviazione standard: 9,8 minuti.
+Lo **standard error** risponde a:
 
-Parma:
+> quanto varierebbe la statistica che sto stimando se ripetessi il campionamento?
 
-- 620 ordini al mese;
-- media: 29,9 minuti;
-- deviazione standard: 10,1 minuti.
+Un processo può avere tempi di consegna molto variabili e, grazie a milioni di ordini, una media conosciuta con grande precisione.
 
-A prima vista Parma sembra migliore.
+Oppure può avere osservazioni relativamente omogenee ma una media poco precisa perché abbiamo pochi casi.
 
-La settimana successiva:
+Questa distinzione è una delle più importanti del capitolo.
 
-- Milano: 31,2 minuti;
-- Parma: 33,1 minuti.
+### Caso simulato/composito — Milano e Parma
 
-Poi Parma scende a 30,4.
+Una piattaforma di food delivery confronta il tempo medio di consegna mensile.
 
-Il management inizia a chiedere spiegazioni operative ogni volta che il KPI di Parma si muove di due o tre minuti.
+**Milano**
 
-Ma il vero problema è che il KPI di Parma è molto più rumoroso perché è calcolato su un volume molto più piccolo.
+- `n = 48.200` ordini;
+- media = 31,4 minuti;
+- deviazione standard = 9,8 minuti.
 
-La stessa deviazione standard individuale produce una precisione della media molto diversa quando n cambia radicalmente.
+**Parma**
 
-### Rumore del processo e incertezza della stima non sono la stessa cosa
+- `n = 620` ordini;
+- media = 29,9 minuti;
+- deviazione standard = 10,1 minuti.
 
-La deviazione standard descrive quanto variano le singole osservazioni.
+Le deviazioni standard sono simili: le singole consegne hanno variabilità comparabile.
 
-L'errore standard descrive quanto varia la stima ottenuta dal campione.
+Ma la media di Parma è stimata su una base molto più piccola e quindi oscilla molto di più da periodo a periodo.
 
-Sono concetti collegati, ma non equivalenti.
+La settimana successiva Parma passa a 33,1 minuti; poi torna a 30,4. Il management cerca ogni volta una spiegazione operativa.
 
-Un processo può avere tempi di consegna molto variabili ma, se osserviamo milioni di ordini, conoscere con grande precisione la sua media.
+Una parte di quei movimenti può invece essere semplicemente la maggiore **sampling variability** di un mercato piccolo.
 
-Al contrario, un processo relativamente stabile può avere una media stimata con poca precisione se osserviamo pochissimi casi.
+### La formula semplice non vale automaticamente per ogni dataset
 
-### Il rischio delle classifiche aziendali
+`SE = s / √n` presuppone una struttura semplice. Nel lavoro reale possiamo avere:
 
-Molte classifiche interne ordinano punti vendita, agenti, stabilimenti o team sulla base di KPI calcolati su volumi molto diversi.
+- utenti con più eventi;
+- clienti raggruppati per azienda;
+- ordini dentro lo stesso store;
+- osservazioni serialmente correlate nel tempo;
+- campionamenti stratificati o clusterizzati;
+- pesi di survey.
 
-Questo tende a spingere le unità con pochi casi verso gli estremi della classifica.
+In questi casi 10.000 righe non equivalgono necessariamente a 10.000 osservazioni indipendenti.
 
-Non perché siano necessariamente le migliori o le peggiori, ma perché hanno più variabilità campionaria.
+Trattarle come tali può sottostimare l'incertezza.
 
-Un team con 20 opportunità commerciali può mostrare un win rate del 70% un mese e del 40% quello successivo. Un team con 4.000 opportunità difficilmente oscillerà così tanto senza un cambiamento reale.
+Questo è un principio che ricomparirà negli A/B test: **l'unità di analisi e l'unità di randomizzazione determinano quanta informazione indipendente abbiamo realmente**.
 
-### Una domanda da aggiungere alle dashboard
+### Le classifiche spingono i piccoli campioni agli estremi
 
-Ogni volta che confronti una metrica tra gruppi, chiediti:
+Se ordiniamo decine di unità per un KPI, quelle con pochi casi tenderanno più facilmente a comparire tra i valori estremi semplicemente perché le loro stime sono più rumorose.
 
-> Qual è il denominatore e quanto è stabile questa stima?
+Per questo un ranking professionale dovrebbe mostrare, quando utile:
 
-Il numero di osservazioni non deve essere nascosto dietro il KPI.
+- valore stimato;
+- denominatore;
+- intervallo di incertezza;
+- periodo di osservazione.
 
-Spesso è parte integrante del KPI stesso.
+Ordinare soltanto per la stima puntuale può trasformare rumore in reputazione.
 
-### Fonti
+### Dalla precisione all'intervallo
 
-[^nist-se]: NIST/SEMATECH e-Handbook of Statistical Methods, *Glossary*, voce “standard error”, https://www.itl.nist.gov/div898/handbook/glossary.htm
+Lo standard error è un ingrediente centrale degli intervalli di confidenza.
+
+La logica è:
+
+**stima puntuale + variabilità campionaria → intervallo di valori compatibili con il metodo**.
+
+Prima, però, dobbiamo capire perché in molti problemi la sampling distribution assume una forma abbastanza regolare da permetterci questo passaggio. È il ruolo del Central Limit Theorem.
+
+> **La dimensione del dataset non è la stessa cosa della quantità di informazione indipendente contenuta nel dataset.**
