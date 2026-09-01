@@ -91,13 +91,13 @@ processing_time: 10:08:43
 
 Se la metrica è “transazioni tra 10:00 e 10:05”, usare processing time può attribuire l'evento alla finestra sbagliata.
 
-Google Dataflow definisce la data freshness proprio come distanza tra processing time ed event time. citeturn694929search0
+Google Dataflow definisce la **data freshness** come la differenza tra il momento in cui un elemento viene elaborato e il timestamp dell'evento.[^dataflow-freshness]
 
 ### Watermark: quando crediamo che una finestra sia sufficientemente completa
 
 I dati streaming non arrivano necessariamente in ordine.
 
-Google Dataflow descrive il **watermark** come una soglia che rappresenta il punto oltre il quale il sistema si aspetta che i dati di una finestra siano arrivati. Se un evento relativo a quella finestra arriva dopo il watermark, è late data. citeturn694929search1turn694929search7
+Google Dataflow descrive il **watermark** come una soglia che indica quando il sistema si aspetta che i dati di una finestra siano arrivati. Se il watermark ha superato la fine della finestra e arriva un nuovo elemento con timestamp interno a quella finestra, quell'elemento è considerato late data.[^dataflow-streaming]
 
 Questo introduce una decisione che non esiste nello stesso modo nei batch finiti:
 
@@ -132,7 +132,7 @@ La Data Flow Architecture Map deve distinguere:
 
 ### Caso reale documentato — testare la non-deterministicità dell'arrivo
 
-Google raccomanda che i test delle pipeline streaming simulino dati early, on-time e late, perché le assunzioni sulla tempestività influenzano direttamente la correttezza. Dataflow/Apache Beam fornisce `TestStream` proprio per verificare il comportamento rispetto a watermark e lateness. citeturn694929search11
+Google raccomanda che i test delle pipeline streaming simulino dati early, on-time e late, perché le assunzioni sulla tempestività influenzano direttamente la correttezza. Dataflow e Apache Beam forniscono `TestStream` proprio per verificare il comportamento rispetto a watermark e lateness.[^dataflow-teststream]
 
 È una lezione generale:
 
@@ -187,3 +187,7 @@ Prima di chiedere real time:
 7. esiste un risultato finale riconciliato?
 
 > **Una buona architettura non minimizza la latenza. Minimizza il tempo tra un cambiamento rilevante e una decisione affidabile che può ancora fare la differenza.**
+
+[^dataflow-freshness]: Google Cloud Documentation, *Dataflow job metrics*, https://docs.cloud.google.com/dataflow/docs/guides/using-monitoring-intf
+[^dataflow-streaming]: Google Cloud Documentation, *Streaming pipelines*, https://docs.cloud.google.com/dataflow/docs/concepts/streaming-pipelines
+[^dataflow-teststream]: Google Cloud Documentation, *Develop and test Dataflow pipelines*, https://docs.cloud.google.com/dataflow/docs/guides/develop-and-test-pipelines
