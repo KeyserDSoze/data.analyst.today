@@ -1,45 +1,107 @@
-## 4.11 Outlier nell'EDA: errore, eccezione o informazione preziosa?
+## 4.11 Osservazioni influenti: quanto dipende il pattern da pochi casi?
 
-Un outlier è un'osservazione che si discosta fortemente dal comportamento prevalente. Ma questa definizione statistica non dice ancora cosa farne.
+Nel Capitolo 3 abbiamo affrontato gli outlier dal punto di vista della **data readiness**: un valore estremo è un errore, un caso impossibile oppure un evento raro ma reale?
 
-Un valore estremo può essere un errore di inserimento, un problema di pipeline, un evento raro ma reale, una nuova tipologia di cliente o il primo segnale di un cambiamento importante.
+Qui la domanda è diversa.
 
-### Caso: il cliente da 186.000 euro
+Supponiamo che il dato sia valido.
 
-Un'azienda B2B vende software in abbonamento. Il contratto annuale medio vale 18.400 euro, la mediana 12.900. Nel dataset compare un nuovo contratto da 186.000 euro.
+Vogliamo sapere:
 
-Un'analisi automatica lo segnala come outlier. Un analista inesperto potrebbe rimuoverlo per "pulire" la distribuzione.
+> **quanto le nostre statistiche e relazioni dipendono da poche osservazioni estreme?**
 
-Il contratto è invece corretto: è il primo enterprise agreement siglato con un gruppo internazionale che consolida 14 società controllate in un unico accordo.
+Un valore può essere perfettamente reale e avere comunque un'influenza enorme sulla media, sulla deviazione standard o sulla correlazione.
 
-Quell'outlier non sporca il dato. Racconta un cambiamento nel modello commerciale.
+### Caso simulato/composito — Il contratto enterprise che cambia la media
 
-### Caso opposto: 31 ore di sessione
+Una società SaaS ha questi dati annuali:
 
-In un'app mobile, la durata media delle sessioni cresce improvvisamente. Alcune sessioni durano 20, 26, 31 ore.
+```text
+ACV medio:   €21.600
+ACV mediano: €12.900
+```
 
-Il product team interpreta inizialmente il dato come forte crescita dell'engagement. L'analista verifica la strumentazione e scopre che una nuova versione dell'app non invia correttamente l'evento di chiusura quando passa in background.
+Nel periodo compare un nuovo contratto da **€186.000**.
 
-Qui l'outlier è un errore di misurazione.
+Il contratto è stato verificato ed è reale: un gruppo internazionale consolida 14 società in un unico accordo.
 
-### Un metodo prima di cancellare
+Non c'è nessun motivo di cancellarlo.
 
-Davanti a un valore estremo conviene chiedere:
+Ma l'analista vuole capire che ruolo svolge nella statistica:
 
-1. è tecnicamente possibile?
-2. è coerente con altre fonti?
-3. deriva da una nuova categoria o da un processo noto?
-4. influenza in modo sproporzionato la media o un modello?
-5. la decisione cambia includendolo o escludendolo?
+```text
+ACV medio con contratto enterprise:    €21.600
+ACV medio senza quel contratto:        €18.900
+mediana:                               €12.900
+```
 
-L'ultima domanda è spesso trascurata. Una buona analisi può mostrare entrambe le versioni.
+La differenza è informazione.
 
-Per esempio:
+Il valore medio del business è realmente aumentato grazie al nuovo tipo di contratto, ma la distribuzione del cliente "tipico" è cambiata molto meno.
 
-- ricavo medio cliente: 21.600 euro;
-- ricavo medio escludendo il contratto enterprise: 18.900 euro;
-- mediana: 12.900 euro.
+### Sensitivity analysis descrittiva
 
-In questo modo il lettore vede sia il dato complessivo sia la sensibilità della statistica al valore estremo.
+Una pratica utile è calcolare la statistica principale in più versioni plausibili:
 
-**Un outlier non è un ordine di cancellazione. È una richiesta di indagine.**
+- dataset completo;
+- senza il punto più influente;
+- mediana invece della media;
+- statistiche per segmento;
+- eventualmente una media troncata, quando ha una giustificazione.
+
+Non per scegliere la versione che ci piace.
+
+Per capire **quanto è robusta la storia**.
+
+Se la correlazione passa da `0,74` a `0,18` togliendo un singolo punto reale, dobbiamo dirlo. Quel punto può essere essenziale per il business, ma la frase "esiste una forte relazione generale" diventa difficile da difendere.
+
+### Outlier e punto influente non sono sinonimi
+
+Un'osservazione può essere estrema in una singola variabile e avere poca influenza sulla relazione che studiamo.
+
+Al contrario, un punto non particolarmente estremo in Y può avere un valore X molto distante dal resto e determinare quasi completamente una retta di regressione o una correlazione.
+
+Il quartetto di Anscombe mostra precisamente questo tipo di rischio.
+
+Per l'EDA la domanda non è soltanto:
+
+> quanto è lontano questo valore?
+
+ma:
+
+> **che cosa succede alla conclusione se questo valore non domina più il riepilogo?**
+
+### Box plot e z-score non sono ordini di cancellazione
+
+Nelle sezioni successive vedremo strumenti che possono segnalare osservazioni lontane dalla massa centrale.
+
+Una soglia IQR o uno z-score elevato descrivono una posizione relativa nella distribuzione.
+
+Non stabiliscono:
+
+- se il record sia corretto;
+- se debba essere escluso;
+- se rappresenti un nuovo segmento;
+- se sia economicamente irrilevante.
+
+Queste decisioni richiedono il contesto già costruito nella Data Readiness Review.
+
+### Comunicare la sensibilità
+
+Una frase rigorosa può essere:
+
+> L'AOV medio è €128, ma è fortemente influenzato da una piccola quota di ordini B2B ad alto valore. La mediana è €64 e, escludendo il top 1% per una sensitivity analysis, la media scende a €91. Gli ordini estremi sono validi e restano inclusi nei KPI economici.
+
+Qui non nascondiamo né il totale né la distribuzione.
+
+### Regola operativa
+
+Quando un insight dipende da osservazioni estreme:
+
+1. verifica che siano già state validate dal punto di vista del dato;
+2. misura quanto influenzano il risultato;
+3. osserva statistiche robuste o segmentate;
+4. non rimuoverle senza una regola sostantiva;
+5. comunica la sensibilità quando cambia l'interpretazione.
+
+> **Un valore reale non deve essere cancellato perché rende la statistica scomoda. Ma una statistica fragile non deve essere presentata come se descrivesse uniformemente tutta la popolazione.**
