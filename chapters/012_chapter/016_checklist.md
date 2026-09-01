@@ -1,88 +1,286 @@
-## 12.15 Checklist operativa: leggere un'architettura come un Data Analyst
+## 12.15 Data Flow Architecture Map: leggere il percorso del dato end-to-end
 
-Quando entri in un nuovo progetto dati, non serve diventare subito data engineer. Serve però costruire rapidamente una mappa mentale del sistema.
+Il deliverable di questo capitolo è una **Data Flow Architecture Map**.
 
-Usa questa checklist.
+Non deve contenere ogni servizio cloud, subnet o dettaglio infrastrutturale.
 
-### 1. Sorgenti
+Deve permettere a un Data Analyst di capire abbastanza bene il percorso del dato da sapere:
 
-- quali sistemi producono i dati?
-- sono OLTP, file, API, eventi, SaaS?
-- qual è la system of record per ogni entita'?
-- esistono copie o shadow source non ufficiali?
+- dove cercare un failure;
+- quale freshness aspettarsi;
+- quale layer interrogare;
+- chi è owner;
+- cosa succede quando qualcosa cambia o si rompe.
 
-### 2. Acquisizione
+### La struttura base
 
-- full load, incrementale o CDC?
-- batch o streaming?
-- quali chiavi identificano i cambiamenti?
-- come vengono gestiti delete e late-arriving events?
+```text
+SOURCE
+  ↓
+CAPTURE
+  ↓
+TRANSPORT
+  ↓
+STORAGE
+  ↓
+TRANSFORM
+  ↓
+SERVE
+  ↓
+CONSUME
+```
 
-### 3. Trasformazioni
+Per ogni nodo o passaggio annotiamo le proprietà seguenti.
 
-- dove avviene la logica business?
-- quali layer esistono: raw, curated, business?
-- quali trasformazioni sono riusabili?
-- come vengono testate?
+### 1. Source
 
-### 4. Orchestrazione
+```text
+system/entity:
+system of record:
+operational or analytical workload:
+history available:
+source owner:
+sensitivity:
+```
 
-- quali sono le dipendenze?
-- cosa succede se un task upstream ritarda?
-- esistono retry, checkpoint e backfill?
-- il downstream viene bloccato quando il dato è incompleto?
+Domande:
 
-### 5. Qualità e affidabilita'
+- dove nasce il fenomeno?
+- il source viene aggiornato o sovrascritto?
+- possiamo interrogare direttamente senza impattare operations?
 
-- esistono SLO di freshness e completeness?
-- chi riceve gli alert?
-- quali controlli sono automatici?
-- come viene misurata la qualità del dato, non solo la riuscita dei job?
+### 2. Capture
 
-### 6. Modello analitico
+```text
+mode: full / incremental / CDC / event
+capture frequency:
+initial snapshot:
+insert/update/delete support:
+source-side failure behavior:
+```
 
-- quali fact e dimension esistono?
-- qual è il grain delle fact?
-- come viene gestita la storia?
-- esiste una semantic layer?
-- le metriche sono centralizzate o replicate nei dashboard?
+Domande:
 
-### 7. Evoluzione
+- come sappiamo che qualcosa è cambiato?
+- catturiamo delete?
+- esiste un bootstrap iniziale?
 
-- esistono data contract?
-- cosa succede se cambia uno schema?
-- quali modifiche sono breaking?
-- come vengono versionate?
+### 3. Transport
 
-### 8. Lineage e governance
+```text
+batch / file / queue / stream:
+expected lag:
+ordering guarantee:
+delivery semantics:
+retry/replay:
+retention:
+```
 
-- posso risalire dalla metrica alla sorgente?
-- chi possiede dataset e definizioni?
-- quali dati sono sensibili?
-- quali accessi sono consentiti?
+Domande:
 
-### 9. Recovery
+- gli eventi possono duplicarsi?
+- possono arrivare fuori ordine?
+- quanto a lungo possiamo rigiocarli?
 
-- qual è l'ultimo stato valido?
-- il processo è idempotente?
-- come viene eseguito un backfill?
-- cosa succede ai record in errore?
+### 4. Storage
 
-### 10. Costi
+```text
+raw/source-aligned location:
+curated location:
+retention:
+partitioning/layout:
+schema evolution policy:
+last known good state:
+```
 
-- quali workload sono più costosi?
-- quali query scansiscono molti dati?
-- la freshness richiesta giustifica il costo?
-- esistono componenti sovradimensionati?
+Domande:
 
-### 11. Domanda finale
+- quale livello preserva la sorgente?
+- possiamo ricostruire i layer downstream?
+- qual è lo stato del dato in ciascun layer?
 
-Dopo aver raccolto queste informazioni, prova a descrivere il sistema in una frase:
+### 5. Transform
 
-> I dati nascono in ___, vengono acquisiti tramite ___, trasformati in ___, pubblicati tramite ___, con una freshness di ___ e controlli di qualità su ___.
+Qui richiamiamo l'**Analytical Data Contract** del Capitolo 11.
 
-Se non riesci a farlo, probabilmente la mappa del sistema non è ancora abbastanza chiara.
+```text
+model:
+input/output grain:
+key transformations:
+quality gates:
+update semantics:
+version:
+owner:
+```
 
-### Il principio da portare via
+Il Capitolo 12 aggiunge soprattutto:
 
-**L'analista non deve conoscere ogni dettaglio infrastrutturale, ma deve sapere abbastanza architettura da capire provenienza, trasformazioni, affidabilita', limiti e costo del dato che usa.**
+- quando la trasformazione può partire;
+- da quali dependency dipende;
+- cosa succede se fallisce;
+- come viene riprocessata.
+
+### 6. Serve
+
+```text
+serving interface:
+warehouse/mart/semantic/API:
+certification state:
+refresh/freshness:
+availability expectation:
+degraded behavior:
+```
+
+Domande:
+
+- qual è il punto consigliato per il consumer?
+- cosa vede se il refresh odierno fallisce?
+- può distinguere READY da STALE?
+
+### 7. Consume
+
+```text
+consumer:
+decision/use case:
+decision deadline:
+required freshness:
+required completeness:
+downstream action:
+```
+
+Questo è il punto da cui dovrebbero derivare gli SLO.
+
+L'architettura esiste per servire un consumer reale, non il contrario.
+
+### 8. Contract boundary
+
+Per ogni producer-consumer interface:
+
+```text
+schema/version:
+semantic expectations:
+compatibility policy:
+breaking-change process:
+```
+
+Distinguere sempre producer data contract e Analytical Data Contract.
+
+### 9. Reliability
+
+```text
+SLI:
+SLO:
+quality readiness gate:
+alert:
+error/degradation policy:
+```
+
+Non monitorare solo task success.
+
+Misurare ciò che il consumer percepisce:
+
+- freshness;
+- completeness;
+- availability;
+- reconciliation quando appropriata.
+
+### 10. Recovery
+
+```text
+last known good:
+retry policy:
+idempotency:
+checkpoint:
+replay source:
+backfill:
+RPO/RTO:
+recovery validation:
+```
+
+La recovery termina quando il dato è di nuovo affidabile, non quando il processo è semplicemente ripartito.
+
+### 11. Lineage
+
+```text
+upstream dependencies:
+downstream consumers:
+change history:
+impact-analysis capability:
+```
+
+Prendi un KPI critico e verifica di poter attraversare la mappa in entrambe le direzioni.
+
+### 12. Economics
+
+```text
+major cost driver:
+refresh/latency cost:
+utilization:
+complexity introduced:
+scale trigger:
+```
+
+La soluzione deve essere proporzionata al valore e al rischio della decisione.
+
+### Esempio compatto
+
+```text
+USE CASE
+operations late-delivery alert
+
+CONSUMER
+regional operations; decision window < 20 min
+
+SOURCE
+operational shipments DB
+
+CAPTURE
+CDC insert/update/delete
+
+TRANSPORT
+managed change stream; replay retention 7d
+
+STORAGE
+raw changes retained 30d
+curated shipment state retained historically
+
+TRANSFORM
+shipment state + promise model
+quality gate: expected region coverage >= 99%
+
+SERVE
+operations mart + alert API
+
+SLO
+95% events visible < 5 min
+99% region coverage < 15 min
+
+DEGRADED MODE
+show last update + affected region; suppress global alert if coverage below threshold
+
+RECOVERY
+replay from checkpoint; reconcile shipment counts against source
+
+OWNER
+Data Platform / Logistics Analytics
+```
+
+### Il test dei cinque minuti
+
+Dopo aver costruito la mappa, una persona nuova nel team dovrebbe riuscire in pochi minuti a rispondere a:
+
+1. da dove nasce il dato?
+2. quanto dovrebbe essere fresco?
+3. quale asset deve interrogare?
+4. quali upstream failure lo possono rendere inaffidabile?
+5. chi contattare quando succede?
+6. possiamo rigiocare o ricostruire la storia?
+7. quale consumer viene impattato da una modifica?
+
+Se queste risposte richiedono giorni di archeologia, la mappa non è ancora sufficiente.
+
+### La domanda finale
+
+> **Per questa decisione, sappiamo descrivere l'intero percorso del dato, le garanzie attese in ogni boundary e il comportamento del sistema quando una di quelle garanzie smette di essere vera?**
+
+> **Il Data Analyst non deve saper amministrare ogni componente della piattaforma. Deve saper leggere abbastanza bene il sistema da non confondere un numero disponibile con un numero pronto per essere creduto.**
