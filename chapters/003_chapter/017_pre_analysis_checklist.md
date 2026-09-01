@@ -1,75 +1,123 @@
-## 3.16 Checklist prima di fidarsi di un dataset
+## 3.16 Data Readiness Review: pronto, pronto con caveat o non pronto?
 
-Prima di iniziare un'analisi, fermati abbastanza a lungo da rispondere a queste domande.
+Una checklist è utile solo se conduce a una decisione.
 
-### Identità del dato
+Prima di iniziare l'analisi vera e propria, raccogliamo quindi le verifiche del capitolo in una **Data Readiness Review**.
 
-- Qual è l'unità di analisi?
-- Una riga rappresenta cosa?
-- Qual è la granularità?
-- Esiste una chiave univoca?
-- La chiave è veramente stabile nel tempo?
+L'obiettivo non è certificare che il dataset sia perfetto. È stabilire se le proprietà che contano per l'Analytical Brief sono comprese e sufficientemente affidabili.
 
-### Completezza
+### 1. Rappresentazione
 
-- Qual è il periodo coperto?
-- Mancano giorni, clienti, prodotti, regioni o canali?
-- Esistono buchi nella serie temporale?
-- I null sono concentrati in specifici segmenti?
+- Una riga rappresenta esattamente che cosa?
+- Qual è il grain dichiarato?
+- Il grain osservato coincide con quello dichiarato?
+- Quali misure sono additive a questo livello?
+- Esistono record che rappresentano versioni, eventi o rettifiche invece di entità distinte?
 
-### Duplicati
+### 2. Identità
 
-- La chiave attesa è davvero unica?
-- Esistono duplicati perfetti?
-- Esistono duplicati logici con ID diversi?
-- Un join potrebbe moltiplicare righe?
+- Qual è la chiave attesa?
+- È realmente unica nel perimetro corretto?
+- L'identificatore rappresenta persona, account, contratto o altro?
+- Può cambiare nel tempo?
+- Esistono false split o false merge plausibili?
+- Le relazioni principali producono record orfani?
 
-### Tempo
+### 3. Tempo
 
-- Quale timestamp rappresenta l'evento?
-- In quale timezone?
-- Gli aggiornamenti tardivi sono possibili?
-- I dati storici possono essere riscritti?
+- Il dataset descrive eventi, stati o snapshot?
+- Quale timestamp risponde alla domanda di business?
+- Quale timezone viene usata?
+- Esistono late-arriving data o backfill?
+- Quando un periodo può considerarsi sufficientemente completo?
+- Le definizioni temporali sono rimaste stabili?
 
-### Semantica
+### 4. Completezza e popolazione
 
-- Chi ha definito le colonne?
-- Esiste un glossario?
-- I valori hanno lo stesso significato in tutti i periodi?
-- Sono cambiate le regole di business?
+- Sono presenti tutti i periodi attesi?
+- Mancano interi segmenti, canali, regioni o sorgenti?
+- I null sono concentrati in popolazioni specifiche?
+- Esistono codici sentinella che nascondono missing?
+- Una trasformazione potrebbe aver escluso record legittimi?
 
-### Plausibilità
+### 5. Validità e plausibilità
 
-- Minimi e massimi sono plausibili?
-- Le distribuzioni hanno senso?
-- I volumi sono coerenti con il business?
-- Le metriche aggregate si riconciliano con fonti affidabili?
+- Minimi e massimi hanno senso?
+- Tipi, unità e domini sono espliciti?
+- Esistono valori impossibili?
+- Gli outlier più influenti sono stati investigati?
+- Le categorie sono coerenti tra sistemi e periodi?
 
-### Provenance
+### 6. Provenienza
 
-- Da quale sistema arriva il dato?
-- Quali trasformazioni ha subito?
-- Chi è l'owner?
-- Quando è stato aggiornato?
+- Qual è la sorgente primaria?
+- Quali trasformazioni critiche separano la sorgente dal dataset?
+- Esistono filtri o deduplicazioni implicite?
+- La logica può essere corretta retroattivamente?
+- Chi conosce o possiede la definizione?
 
-### Decisione
+### 7. Riconciliazione
 
-Infine, chiediti:
+- Totali e cardinalità tornano con almeno una fonte indipendente?
+- Le differenze residue sono spiegate?
+- È definita una tolleranza accettabile?
+- Sappiamo quale fonte è autorevole per ciascun uso?
 
-> Se questo dato fosse sbagliato del 5%, cambierebbe la decisione che sto per supportare?
+### 8. Impatto sulla decisione
 
-Se la risposta è sì, la validazione deve essere proporzionalmente più rigorosa.
+Questa è la parte che distingue il controllo del dato dalla semplice pulizia.
 
-### Caso simulato: una dashboard perfetta costruita sul mese sbagliato
+Per ogni issue importante chiedi:
 
-Un analyst prepara un report per confrontare il Black Friday con l'anno precedente. I grafici sono corretti, le query testate e gli importi riconciliati.
+> **Se questo problema fosse peggiore di quanto pensiamo, quale conclusione potrebbe cambiare?**
 
-Durante la review qualcuno nota però che l'anno precedente il Black Friday cadeva il 24 novembre, mentre il confronto era stato fatto usando semplicemente gli stessi giorni del mese corrente.
+E poi:
 
-Il dataset era corretto.
+> **Quanto deve essere affidabile questa proprietà per il rischio della decisione che stiamo supportando?**
 
-Il codice era corretto.
+Una mancanza del 5% può essere irrilevante per una metrica aggregata e inaccettabile se riguarda proprio il segmento su cui dobbiamo intervenire.
 
-Il confronto era sbagliato.
+### Il verdetto
 
-La checklist non serve quindi solo a trovare dati corrotti. Serve anche a verificare che il dato sia **adatto alla domanda**.
+Alla fine della review assegna uno stato esplicito.
+
+**PRONTO**
+
+Le proprietà critiche sono comprese, i controlli sono coerenti e le limitazioni residue non compromettono la domanda.
+
+**PRONTO CON CAVEAT**
+
+Il dato può essere usato, ma soltanto entro limiti documentati.
+
+Esempi:
+
+- escludere le ultime 24 ore per latenza;
+- non confrontare periodi precedenti a una migrazione;
+- evitare una segmentazione con missing non casuali;
+- riportare una sensibilità rispetto a una regola di deduplica.
+
+**NON PRONTO**
+
+Esiste un'incertezza sul dato abbastanza grande da rendere non difendibile la conclusione.
+
+In questo caso il deliverable dell'analista può essere proprio la diagnosi del problema e il piano necessario per rendere il dato utilizzabile.
+
+### Caso simulato — il Black Friday confrontato con il giorno sbagliato
+
+Un analyst prepara un report sul Black Friday. Query, importi e conteggi sono corretti.
+
+Durante la review emerge però che il confronto anno su anno usa gli stessi numeri di giorno del mese invece di allineare l'effettivo evento promozionale, che cadeva in date differenti.
+
+Il dataset è tecnicamente sano.
+
+Il confronto non è fit for purpose.
+
+Questo ricorda un punto decisivo:
+
+> **Data readiness non significa soltanto "il dato non è corrotto". Significa "il dato, così definito e confrontato, è adatto alla domanda".**
+
+La review chiude il ponte tra Capitolo 2 e Capitolo 3:
+
+**Analytical Brief → Data Readiness Review → Analisi**
+
+Quando questi primi due artefatti sono solidi, tutto ciò che viene dopo diventa più veloce e soprattutto più difendibile.
