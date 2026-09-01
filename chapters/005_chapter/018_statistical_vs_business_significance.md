@@ -1,88 +1,144 @@
-## 5.17 Significatività statistica e rilevanza business non sono la stessa cosa
+## 5.17 Significatività statistica e materialità: l'effetto deve essere grande abbastanza da contare
 
-Una delle competenze più importanti per un analyst è saper tenere separate due domande:
+Una delle competenze più importanti di un Data Analyst è tenere separate due domande:
 
-1. l'effetto osservato è distinguibile dalla variabilità casuale?
-2. l'effetto è abbastanza grande da cambiare una decisione?
+1. **Quanto è precisa e convincente l'evidenza statistica rispetto al modello?**
+2. **L'effetto è abbastanza grande da cambiare una decisione reale?**
 
-La prima domanda è statistica. La seconda è economica, operativa o strategica.
+La prima riguarda l'inferenza.
 
-Confonderle produce decisioni mediocri.
+La seconda riguarda economia, operazioni, strategia e vincoli.
 
-### Caso realistico: una campagna CRM "vincente"
+Confonderle produce due errori opposti:
 
-Una catena retail invia una nuova sequenza CRM a 2,8 milioni di clienti. Il tasso di riacquisto a 30 giorni passa dal 18,42% al 18,55%.
+- implementare effetti minuscoli soltanto perché il p-value è piccolo;
+- ignorare effetti potenzialmente importanti soltanto perché il campione non è ancora abbastanza preciso.
 
-La differenza è di 0,13 punti percentuali.
+### Caso simulato/composito — Una campagna CRM “vincente” che non paga il proprio costo
 
-Con un campione così grande, il risultato può risultare statisticamente molto convincente.
+Una catena retail invia una nuova sequenza CRM a 2,8 milioni di clienti.
 
-Il team marketing propone quindi di adottare la nuova sequenza su tutta la customer base.
+Il repeat purchase rate a 30 giorni passa:
 
-Ma il costo incrementale per cliente è 0,09 euro tra piattaforma, messaggistica e incentivo. Il margine medio generato dai riacquisti aggiuntivi non copre completamente il costo.
+- controllo: 18,42%;
+- nuova sequenza: 18,55%;
+- delta: **+0,13 punti percentuali**.
 
-Il test ha trovato un effetto. Il business ha trovato un investimento mediocre.
+Con una base così ampia il segnale può essere stimato con grande precisione.
 
-### Minimum Detectable Effect e Minimum Business-Relevant Effect
+Il team marketing propone il rollout.
 
-Un concetto utile è distinguere tra:
+Ma la nuova sequenza costa 0,09 € in più per cliente tra piattaforma, messaggistica e incentivo. Il margine incrementale prodotto dagli acquisti aggiuntivi non copre quel costo.
 
-- **Minimum Detectable Effect (MDE)**: l'effetto minimo che un esperimento, date dimensione campionaria e variabilità, è progettato per rilevare con una certa potenza;
-- **Minimum Business-Relevant Effect (MBRE)**: l'effetto minimo che giustificherebbe una decisione dal punto di vista del business.
+La statistica ha rilevato una differenza.
 
-I due numeri dovrebbero essere collegati.
+L'economia ha stabilito che, a quella dimensione, la differenza non crea valore.
 
-Se il business considera interessante solo un miglioramento di almeno +0,5 punti percentuali, progettare un test capace di rilevare variazioni di +0,05 può produrre grande precisione su effetti irrilevanti.
+> **Significativo non significa sufficiente.**
 
-### Caso realistico: ridurre i tempi di consegna
+### Effect size: quanto cambia realmente il fenomeno?
 
-Un'azienda logistica testa un nuovo algoritmo di routing.
+Quando riportiamo un risultato dobbiamo mostrare la dimensione dell'effetto in unità comprensibili.
 
-Su 420.000 consegne:
+Esempio:
 
-- media controllo: 41,8 ore;
-- media trattamento: 41,5 ore;
-- differenza: -0,3 ore, cioè 18 minuti;
-- p-value: molto piccolo.
+- conversione: 4,20% → 4,44%;
+- delta assoluto: **+0,24 pp**;
+- delta relativo: **+5,7%**.
 
-Statisticamente, il cambiamento è credibile.
+Dire soltanto “+5,7%” rende il cambiamento più impressionante. Dire soltanto “+0,24 pp” può nascondere il valore su una base enorme.
 
-Ma l'algoritmo aumenta il costo operativo di 0,47 euro per spedizione. I clienti non percepiscono differenze inferiori a circa due ore, e l'NPS non cambia in modo sostanziale.
+Una comunicazione corretta può mostrare entrambi e poi tradurli in:
 
-Dire "abbiamo migliorato significativamente i tempi di consegna" è statisticamente difendibile ma managerialmente fuorviante.
+- conversioni incrementali;
+- revenue;
+- contribution margin;
+- costo operativo;
+- eventuali effetti sui guardrail.
 
-### Effect size prima della celebrazione
+### Minimum Business-Relevant Effect
 
-Per interpretare un risultato servono almeno tre elementi:
+Prima di raccogliere i dati è utile definire una soglia del tipo:
 
-- grandezza dell'effetto;
-- incertezza sull'effetto;
-- costo o valore economico associato.
+> **Qual è il più piccolo effetto che renderebbe ragionevole cambiare comportamento?**
 
-Per esempio:
+Possiamo chiamarlo **Minimum Business-Relevant Effect**, o più genericamente *minimum effect of interest*.
 
-> La variante aumenta la conversione di +0,24 punti percentuali, con intervallo di confidenza 95% tra +0,07 e +0,41. Il break-even economico è +0,18 punti percentuali.
+Esempio:
 
-Questa frase contiene molta più informazione di:
+Un nuovo sistema costa 600.000 € l'anno. Sotto +0,18 punti percentuali di conversione non raggiunge il break-even atteso.
 
-> p = 0,012, risultato significativo.
+La soglia `+0,18 pp` diventa quindi molto più informativa dello zero statistico.
 
-### Decisioni sotto incertezza
+Se l'intervallo stimato è:
 
-Un intervallo di confidenza può attraversare la soglia economica rilevante. In quel caso il problema non è soltanto "statisticamente significativo o no". La domanda diventa:
+`+0,24 pp [CI 95%: +0,07 ; +0,41]`
 
-> Quanto è plausibile che il vero effetto sia abbastanza grande da giustificare il costo?
+abbiamo una situazione interessante:
 
-Anche in un'impostazione frequentista, guardare l'intervallo rispetto a soglie decisionali aiuta a capire se i dati consentono una scelta robusta.
+- l'effetto stimato supera il break-even;
+- l'intervallo include anche valori sotto il break-even;
+- i dati non rendono ancora completamente robusta la decisione economica.
 
-La American Statistical Association sottolinea che il p-value non misura la dimensione dell'effetto né l'importanza del risultato, e che decisioni di business non dovrebbero dipendere esclusivamente dal superamento di una soglia convenzionale.[^asa-business]
+Questa è una lettura molto più utile di:
 
-### Regola operativa
+> “p = 0,012, significativo”.
 
-Ogni volta che presenti un test, prova ad aggiungere una riga che risponda a questa domanda:
+### MDE e soglia business non sono la stessa cosa
 
-**Se questo effetto fosse esattamente della dimensione stimata, cambierebbe davvero ciò che facciamo?**
+Nei test incontreremo spesso il **Minimum Detectable Effect (MDE)**.
 
-Se la risposta è no, la significatività statistica non basta.
+È una proprietà del disegno statistico: quale effetto il test è pianificato per riuscire a rilevare con una certa potenza, date le assunzioni.
 
-[^asa-business]: American Statistical Association, *Statement on Statistical Significance and P-Values*, https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf
+La soglia business risponde invece a:
+
+> **Quale effetto ci interessa davvero?**
+
+Idealmente il disegno deve essere costruito in modo coerente con la decisione.
+
+Se il business non agirebbe sotto +0,5 pp, un test enorme progettato per rilevare +0,03 pp può trasformarsi in una macchina costosa per scoprire effetti irrilevanti.
+
+Il Capitolo 9 renderà operativa questa relazione tra MDE, power, sample size e durata.
+
+### Caso simulato/composito — Diciotto minuti statisticamente credibili
+
+Un'azienda logistica testa un algoritmo di routing su 420.000 consegne.
+
+- controllo: 41,8 ore;
+- nuova logica: 41,5 ore;
+- differenza: -0,3 ore = **18 minuti**.
+
+La stima è molto precisa.
+
+Ma l'algoritmo aumenta il costo di 0,47 € per spedizione e non produce differenze osservabili nelle metriche customer-facing rilevanti.
+
+Il risultato può essere reale e ancora non meritare rollout.
+
+Al contrario, se quei 18 minuti riducessero sistematicamente il numero di consegne oltre una soglia SLA molto costosa, la stessa effect size potrebbe avere enorme valore.
+
+Il valore non vive nell'unità statistica. Vive nel **meccanismo decisionale**.
+
+### La matrice che dovrebbe accompagnare ogni effetto
+
+| Elemento | Domanda |
+|---|---|
+| Effect size | Quanto cambia? |
+| Confidence interval | Quanto è precisa la stima? |
+| Baseline | Rispetto a quale livello? |
+| Soglia business | Quanto dovrebbe cambiare per contare? |
+| Volumi | Quante unità economiche coinvolge? |
+| Costi | Quanto costa ottenere l'effetto? |
+| Guardrail | Che cosa peggiora altrove? |
+| Reversibilità | Quanto costa sbagliare rollout? |
+
+L'ASA ricorda esplicitamente che il p-value non misura la dimensione dell'effetto né l'importanza pratica del risultato.[^asa-business]
+
+Per questo una frase professionale dovrebbe assomigliare a:
+
+> **“Stimiamo un miglioramento di +0,24 pp, CI 95% +0,07/+0,41. Il break-even è +0,18 pp. L'effetto medio stimato è economicamente interessante, ma l'intervallo include anche scenari sotto la soglia: la decisione dipende dal costo dell'attesa, dalla reversibilità e dagli altri guardrail.”**
+
+Questa frase non nasconde l'incertezza e non rinuncia alla decisione.
+
+> **La statistica ci dice quanto bene conosciamo l'effetto. Il business decide quanto grande deve essere l'effetto per meritare un'azione.**
+
+[^asa-business]: American Statistical Association, *Statement on Statistical Significance and P-Values*: https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf
