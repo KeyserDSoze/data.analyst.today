@@ -1,195 +1,184 @@
-## 12.8 Caso studio: l'azienda che aveva tutti i dati ma nessuna verità condivisa
+## 12.8 Caso reale documentato: Virgin Media O2 e la semplificazione di un data estate complesso
 
-**LumenCommerce** è un retailer omnicanale con 1,4 miliardi di euro di fatturato, 180 negozi fisici, e-commerce, app mobile e programma loyalty.
+I casi architetturali diventano facilmente racconti astratti pieni di scatole e frecce.
 
-La crescita è stata rapida. L'architettura dati, invece, è cresciuta per aggiunte successive.
+Il percorso di **Virgin Media O2 (VMO2)** è utile perché mostra un problema più concreto: quando un'organizzazione cresce, si fonde e accumula piattaforme, il costo non è soltanto infrastrutturale. Aumentano anche silos, dipendenze, tempi di delivery e difficoltà nel rendere il dato disponibile in modo coerente.
 
-### Il problema iniziale
+Google Cloud documenta il percorso di VMO2 dopo la fusione tra Virgin Media e O2: l'organizzazione si trovò a gestire molteplici data warehouse, data lake e piattaforme legacy, con problemi di scalabilità, performance, costi e accessibilità del dato.
 
-Il CEO chiede una domanda apparentemente semplice:
+Fonte principale:
+https://cloud.google.com/customers/virgin-media-o2-data-platform-migration
 
-> Qual è il valore reale del cliente omnicanale rispetto a quello solo online o solo negozio?
+### Il punto di partenza: molti sistemi, molti failure boundary
 
-Tre settimane dopo non esiste ancora una risposta condivisa.
+Prima della modernizzazione, il data estate comprendeva diversi stack costruiti in anni differenti.
 
-Il team scopre che:
-
-- gli ordini e-commerce sono in PostgreSQL;
-- i POS inviano file ogni notte;
-- il loyalty system usa un customer ID differente;
-- i resi negozio possono riferirsi a ordini online;
-- gli eventi app arrivano in streaming;
-- Finance riceve dati dall'ERP;
-- Marketing ha un proprio database con attribution e campagne;
-- cinque dashboard Power BI costruiscono metriche con logiche diverse.
-
-L'azienda possiede tutti i dati necessari. Ma non possiede ancora una **catena analitica affidabile**.
-
-## Prima architettura: integrazione punto-punto
-
-Nel tempo erano nate pipeline specifiche:
+Il problema architetturale può essere letto così:
 
 ```text
-POS → Finance report
-E-commerce DB → Marketing dashboard
-CRM → Loyalty dashboard
-App events → Product dashboard
-ERP → CFO workbook
+multiple operational systems
+        ↓
+multiple legacy integration stacks
+        ↓
+separate warehouses / Hadoop platforms
+        ↓
+different analytical consumers
 ```
 
-Ogni caso funziona isolatamente.
+Ogni piattaforma aggiungeva:
 
-Il problema emerge quando bisogna combinare domini.
+- capacità da gestire;
+- competenze specialistiche;
+- contratti e licenze;
+- percorsi di ingestion differenti;
+- silos;
+- failure boundary separati.
 
-Un cliente può essere:
+VMO2 descrive esplicitamente il legacy on-premises come poco agile e costoso, con impatto sul time-to-market e sulla presenza di data silo.
+
+### Non una migrazione unica, ma più transizioni
+
+Il caso documenta un programma pluriennale con più migrazioni importanti.
+
+Tra le piattaforme coinvolte compaiono:
+
+- Hadoop/Hortonworks;
+- Netezza;
+- Teradata;
+- pipeline mobile network;
+- altri workload legacy.
+
+Questa è una lezione importante per l'analista:
+
+> **le architetture aziendali reali raramente passano in un weekend da “vecchio” a “nuovo”. Per anni possono esistere percorsi paralleli con garanzie e latenze differenti.**
+
+Durante una transizione dobbiamo sapere quale percorso alimenta ogni decisione.
+
+### Il raw data come punto di semplificazione
+
+VMO2 descrive un'evoluzione verso BigQuery come nucleo del nuovo ambiente, con l'obiettivo di integrare i dati e ridurre i silos.
+
+Nel caso study viene riportato:
+
+> portare i raw data in BigQuery e usarli per costruire capacità sia di data lake sia di data warehouse ha semplificato significativamente l'architettura.
+
+Per il nostro framework, questo significa creare un punto più uniforme tra:
 
 ```text
-customer_id = 93822
-loyalty_id = L-773811
-email_hash = 9f8...
-app_user_id = u_442901
+capture
+→ durable storage
+→ processing
+→ analytical products
 ```
 
-Senza identity resolution non esiste davvero un "cliente omnicanale" analizzabile.
+Non perché un solo prodotto risolva automaticamente ogni semantica, ma perché riduce il numero di percorsi infrastrutturali incompatibili da governare.
 
-## Ridisegnare partendo dalle decisioni
+### Capacità e costo: risultati documentati
 
-Il team evita di iniziare scegliendo la tecnologia.
+Google Cloud riporta che la migrazione di pipeline relative ai dati della rete mobile verso BigQuery e Dataflow ha aumentato la capacità dati del **400%** e ridotto il **TCO del 30%** rispetto alla piattaforma precedente per quel percorso di modernizzazione.
 
-Definisce prima i requisiti:
+Il case study riporta inoltre una riduzione del TCO di circa il 30% per piattaforme on-premises equivalenti nel percorso complessivo.
 
-1. Finance richiede numeri riconciliabili giornalmente.
-2. Operations richiede vendite quasi real time ogni 15 minuti.
-3. Marketing richiede customer journey e campagne.
-4. Product richiede eventi granulari dell'app.
-5. Data Science vuole storia sufficientemente dettagliata per modelli.
-6. Tutti devono usare una definizione coerente di cliente, ordine, vendita netta e reso.
+Questi numeri sono risultati dichiarati nel caso pubblico, non valori simulati.
 
-## La nuova struttura concettuale
+Ma la lezione del libro non è:
 
-Viene progettato un flusso a livelli:
+> “usa BigQuery e risparmierai il 30%”.
+
+La lezione è:
+
+> **consolidare workload e ridurre infrastruttura duplicata può cambiare contemporaneamente capacità, costi e velocità di delivery, ma il risultato dipende dal contesto specifico.**
+
+### Real time dove crea valore
+
+VMO2 cita BigQuery e Dataflow per analisi granulari e insight in tempo reale utili, tra le altre cose, a:
+
+- performance di rete;
+- compliance;
+- customer experience;
+- trend emergenti.
+
+Questo è coerente con la regola della sezione precedente: non serve rendere ogni dato real time. La bassa latenza ha senso dove modifica un processo operativo.
+
+Un close finanziario e un segnale di network performance possono quindi vivere nella stessa piattaforma ma avere SLO differenti.
+
+### Unificazione infrastrutturale non significa una sola semantica
+
+Anche dopo aver consolidato storage e compute, restano problemi analitici come:
+
+- identity resolution;
+- metric definitions;
+- historical classification;
+- data ownership;
+- access policy.
+
+Il Capitolo 11 continua quindi a essere necessario.
+
+Un data platform unificato risolve soprattutto:
 
 ```text
-SORGENTI
-POS / e-commerce / loyalty / ERP / app / ads
-                    ↓
-INGESTION
-batch + streaming
-                    ↓
-RAW / BRONZE
-copia fedele delle sorgenti
-                    ↓
-CURATED / SILVER
-identity resolution
-standardizzazione date e valute
-validazione e deduplication
-ordini e resi riconciliati
-                    ↓
-BUSINESS / GOLD
-fact_orders
-fact_returns
-fact_customer_activity
-dim_customer
-dim_product
-dim_store
-dim_date
-                    ↓
-SEMANTIC LAYER
-net_sales
-active_customer
-omnichannel_customer
-repeat_purchase
-                    ↓
-CONSUMO
-BI / notebooks / ML / alerts
+where/how data flows
 ```
 
-## Un errore evitato: usare tutto in streaming
-
-La prima proposta tecnica prevedeva streaming quasi ovunque.
-
-L'analisi dei requisiti mostra invece che non serve.
-
-- Eventi app: streaming.
-- Vendite e-commerce per operations: aggiornamento 5–15 minuti.
-- POS: micro-batch durante la giornata.
-- ERP: giornaliero.
-- Finance close: batch riconciliato.
-
-Questa scelta riduce complessità e costi senza peggiorare alcuna decisione.
-
-## Il nuovo customer model
-
-La parte più difficile non è infrastrutturale ma semantica.
-
-Il team costruisce una tabella di identity mapping con livelli di confidenza.
-
-Esempio:
+non automaticamente:
 
 ```text
-canonical_customer_id = C184930
-loyalty_id            = L773811
-online_account_id     = O230911
-app_user_id           = U442901
-match_method          = authenticated_link
-confidence            = high
+what every business concept means
 ```
 
-Per i guest checkout senza identificazione certa, l'azienda evita di forzare match probabilistici nei KPI finanziari.
+### Il secondo caso VMO2: data contracts
 
-Questo abbassa leggermente il numero apparente di clienti omnicanale, ma aumenta l'affidabilità.
+Nel 2025 VMO2 e Google Cloud hanno documentato anche un approccio ai **data contracts** per data products e AI: contratti machine-readable usati come quality and assurance layer affinché i dataset pubblicati siano documentati, affidabili e pronti al consumo.
 
-## Il risultato analitico
+Fonte:
+https://cloud.google.com/blog/products/data-analytics/vmo2-uses-data-contracts-to-build-scalable-ai-and-data-products
 
-Dopo il nuovo modello, il team calcola il valore cliente a 12 mesi.
+Riprenderemo questo punto nella sezione 12.12.
 
-| Segmento | Clienti | Revenue media 12m | Margine medio 12m |
-|---|---:|---:|---:|
-| Solo negozio | 1,82M | €284 | €91 |
-| Solo online | 1,14M | €318 | €96 |
-| Omnicanale | 0,46M | €711 | €206 |
+È interessante perché mostra l'evoluzione naturale:
 
-A prima vista l'omnicanale sembra molto più prezioso.
+```text
+consolidare la piattaforma
+→ rendere esplicite le interfacce tra producer e consumer
+```
 
-Ma il Capitolo 8 ci ricorda di non saltare dalla correlazione alla causalità.
+### Costruire la Data Flow Architecture Map del caso
 
-I clienti omnicanale potrebbero essere già i clienti più coinvolti.
+Una versione semplificata del percorso VMO2 può essere letta così:
 
-Il risultato viene quindi usato per:
+```text
+SOURCES
+legacy platforms / network / business systems
+        ↓
+CAPTURE & MIGRATION
+multiple migration and ingestion paths
+        ↓
+STORAGE / COMPUTE
+consolidation around Google Cloud / BigQuery
+        ↓
+PROCESSING
+BigQuery / Dataflow / related managed services
+        ↓
+DATA PRODUCTS & SERVING
+shared analytical products / data sharing
+        ↓
+CONSUMERS
+analytics / operational insights / AI / business teams
+```
 
-- segmentazione;
-- prioritizzazione;
-- formulazione di un'ipotesi;
-- progettazione di esperimenti per capire se facilitare il secondo canale aumenta realmente valore e retention.
+Per ogni nodo rimangono domande operative:
 
-L'architettura ha reso possibile l'analisi. Non ha creato causalità.
+- chi è owner?
+- quale workload è già migrato?
+- quale percorso legacy è ancora attivo?
+- quale freshness promette?
+- come vengono versionate le interfacce?
+- cosa succede durante una failure o una migrazione?
 
-## Benefici dopo sei mesi
+### La lezione del caso
 
-LumenCommerce misura:
+L'architettura non è soltanto un diagramma “target state”.
 
-- tempo medio per produrre un nuovo KPI cross-channel: da 9 giorni a 2,5;
-- dashboard con definizioni revenue locali: da 17 a 3, con piano di migrazione;
-- incidenti mensili da duplicazioni ingestion: da 8 a 1;
-- query dirette sui database operativi: -71%;
-- tempo medio per identificare upstream cause di un KPI errato: da ore/giorni a meno di 40 minuti nei dataset con lineage completa.
+È anche la capacità di governare la transizione tra stati diversi senza perdere affidabilità.
 
-Non tutto viene centralizzato.
-
-I team mantengono libertà esplorativa nei workspace, ma le metriche executive devono derivare da dataset certificati.
-
-## La lezione
-
-L'architettura non viene valutata dal numero di servizi cloud presenti nel diagramma.
-
-Viene valutata dalla sua capacità di rendere più affidabile e meno costoso il percorso:
-
-**evento operativo → dato → trasformazione → significato → analisi → decisione**.
-
-La domanda più importante per un Data Analyst non è:
-
-> Usiamo un warehouse o un lakehouse?
-
-È:
-
-> Per questa decisione, quale percorso ha fatto il dato e quali assunzioni sono state introdotte lungo il percorso?
+> **Una piattaforma moderna crea valore quando riduce il numero di percorsi fragili tra sorgente e decisione, rende più semplice ricostruire la provenienza e permette a workload diversi di ottenere il livello di capacità e latenza di cui hanno realmente bisogno.**
