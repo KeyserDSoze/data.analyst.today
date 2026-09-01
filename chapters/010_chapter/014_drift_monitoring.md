@@ -1,146 +1,222 @@
-## 10.14 Drift e monitoring: un modello non resta valido per sempre
+## 10.14 Monitoring: il modello può restare online mentre la decisione smette di funzionare
 
-La validazione non finisce quando il modello entra in produzione.
+Il deployment non congela il mondo.
 
-Un modello può essere eccellente al momento del deployment e deteriorarsi mesi dopo perché cambia il mondo su cui opera.
+Dopo il lancio possono cambiare:
 
-Questo fenomeno viene spesso riassunto con il termine **drift**.
+- dati;
+- popolazione;
+- base rate;
+- relazione tra feature e target;
+- pipeline di serving;
+- soglie operative;
+- efficacia dell'intervento;
+- capacità del team che usa gli score.
+
+Per questo "monitorare il modello" è troppo stretto. Dobbiamo monitorare il **sistema predittivo**.
+
+### Cinque livelli diversi
+
+È utile separare almeno:
+
+1. **data quality** — schema, missing, categorie, freshness;
+2. **training-serving parity / data drift** — ciò che il modello vede è ancora coerente con training e serving atteso?
+3. **score behavior** — distribuzione degli score, volumi sopra soglia, coverage;
+4. **predictive quality** — ranking, calibration, errori quando arrivano le label;
+5. **decision outcome** — la policy alimentata dal modello continua a creare valore?
+
+Un alert a un livello non implica automaticamente failure agli altri.
 
 ### Data drift e concept drift
 
-È utile distinguere due idee.
+**Data drift**: cambia la distribuzione di input o popolazione.
 
-**Data drift**: cambia la distribuzione delle feature in ingresso.
+Esempi:
 
-Esempio:
-
-- età media dei clienti diversa;
+- più traffico mobile;
 - nuovi mercati;
-- nuovi device;
-- diversa composizione del traffico;
-- comportamento di acquisto mutato.
+- mix clienti differente;
+- nuove categorie prodotto.
 
-**Concept drift**: cambia la relazione tra feature e target.
+**Concept drift**: cambia il rapporto tra informazioni e target.
 
-Una variabile che prima prevedeva bene il churn può perdere valore perché il comportamento del cliente o il prodotto sono cambiati.
+Esempio: un calo di utilizzo che un tempo anticipava churn diventa normale dopo il lancio di un piano stagionale.
 
-### Caso simulato: Horizon Travel e il modello che invecchia in sei mesi
+Questa distinzione è utile, ma in produzione spesso non osserviamo subito il concept drift perché il target arriva in ritardo.
 
-Horizon Travel usa un modello per prevedere cancellazioni di prenotazioni alberghiere.
+### Caso simulato/composito — Horizon Travel
 
-Al momento del lancio:
+Horizon Travel prevede cancellazioni alberghiere.
 
-- AUC: 0,84;
-- precision sul top 10% di rischio: 42%;
-- calibration buona.
+Al lancio:
+
+- ROC-AUC: 0,84;
+- precision top 10%: 42%;
+- calibration coerente.
 
 Sei mesi dopo:
 
-- AUC: 0,75;
+- ROC-AUC: 0,75;
 - precision top 10%: 27%;
 - probabilità sovrastimate.
 
-Che cosa è successo?
+Nel frattempo sono cambiati:
 
-Nel frattempo l'azienda ha:
+- policy di cancellazione gratuita;
+- mobile share;
+- mercati;
+- paid channels;
+- loyalty program.
 
-- introdotto una nuova politica di cancellazione gratuita;
-- aumentato il traffico mobile;
-- aperto due nuovi mercati;
-- cambiato la composizione dei canali paid;
-- modificato il programma loyalty.
+Non esiste un solo "drift" da correggere. È cambiato il sistema di generazione dei dati e probabilmente anche il significato predittivo di alcune feature.
 
-Il modello non è “rotto” in senso tecnico.
+### Caso reale documentato — Google e il training-serving skew
 
-È diventato meno rappresentativo del processo reale.
+Le *Rules of Machine Learning* di Google riportano che sistemi ML di produzione in Google hanno sofferto di **training-serving skew** con impatto negativo sulla performance.
 
-### Monitorare soltanto le feature non basta
+Google distingue, tra le altre cose:
 
-Puoi osservare drift nelle feature senza sapere subito se la performance è peggiorata.
+- differenza tra training e holdout;
+- differenza tra holdout e dati del giorno successivo;
+- differenza tra next-day e live serving.
 
-Viceversa, la performance può deteriorarsi anche con feature apparentemente stabili se cambia il rapporto tra feature e target.
+Una grande discrepanza nell'ultimo passaggio può indicare un problema di engineering, perché lo stesso esempio dovrebbe produrre lo stesso comportamento se training e serving applicano la stessa logica.
 
-Un sistema di monitoring dovrebbe quindi distinguere almeno:
+Google raccomanda di misurare esplicitamente lo skew e di avvicinare il più possibile training e serving.
 
-1. qualità dei dati;
-2. distribuzione delle feature;
-3. distribuzione degli score;
-4. calibration;
-5. performance predittiva quando il target diventa disponibile;
-6. metriche business downstream.
+Fonte: https://developers.google.com/machine-learning/guides/rules-of-ml/
 
-### Il ritardo del target
+Questo è un caso importante perché mostra che un modello può degradare senza che l'algoritmo sia cambiato: basta che cambi il modo in cui le feature vengono prodotte.
 
-In molti casi non conosci subito la verità.
+### Label delay: quando non sappiamo ancora se stiamo sbagliando
 
-Per esempio, se prevedi churn a 90 giorni, devi aspettare prima di poter misurare la performance reale del modello sui nuovi clienti.
+Se prevediamo churn a 60 giorni, le label complete arrivano almeno 60 giorni dopo.
 
-Nel frattempo puoi monitorare segnali anticipatori:
+Nel frattempo possiamo monitorare proxy:
 
-- score distribution;
 - missing rate;
-- nuove categorie;
-- PSI o altre misure di shift;
-- volumi per segmento;
-- tassi di intervento.
+- feature distributions;
+- categorie nuove;
+- score distribution;
+- percentuale sopra soglia;
+- volume per segmento;
+- training-serving skew;
+- model age.
 
-Ma questi indicatori sono proxy.
+Ma dobbiamo chiamarli con il loro nome: **early warning**, non prova di performance.
 
-Non sostituiscono la verifica finale sulla performance.
+Quando le label maturano, dobbiamo tornare a:
 
-### Caso simulato: SecureNet e il falso allarme di drift
+- ranking/discrimination;
+- precision/recall agli operating point;
+- calibration;
+- error distribution;
+- performance per segmenti.
 
-SecureNet monitora un modello antifrode.
+### Drift non significa automaticamente retraining
 
-Dopo una campagna marketing, il valore medio delle transazioni aumenta del 18% e il monitor segnala forte data drift.
+Un monitor segnala che il valore medio delle transazioni è salito del 18%.
 
-Il team pensa che il modello stia degradando.
+Possibili reazioni:
 
-Quando arrivano le label, però:
+1. retrain immediato;
+2. rollback;
+3. investigazione.
 
-- recall stabile;
-- precision stabile;
-- calibration quasi invariata.
+La terza è spesso la migliore prima mossa.
 
-Il drift nelle feature era reale, ma non aveva ancora compromesso la capacità predittiva.
+Il data drift può essere reale mentre performance e calibration restano stabili.
 
-Questo mostra perché drift non significa automaticamente failure.
+Al contrario, il modello può deteriorarsi senza un enorme shift marginale nelle singole feature perché cambia una relazione multivariata o il base rate.
 
-### Monitoring della decisione, non solo del modello
+Le regole di retraining devono quindi collegare segnali, performance e costo operativo, non una soglia universale di PSI.
 
-Se il modello alimenta un processo operativo, bisogna monitorare anche ciò che succede dopo.
+### Score drift e capacity drift
 
-Per esempio:
+Supponiamo che il threshold sia 0,45 e generi normalmente 2.000 alert/settimana.
 
-```text
-score di churn
-→ lista clienti a rischio
-→ contatto del customer success
-→ offerta retention
-→ costo dell'intervento
-→ churn evitato
-```
+Dopo un cambio di pricing gli score aumentano e gli alert diventano 5.500.
 
-Anche con performance statistica stabile, il valore può peggiorare se:
+Anche prima di sapere se la discrimination sia peggiorata abbiamo un problema reale:
 
-- il team non riesce a contattare i clienti;
-- il trattamento perde efficacia;
-- il costo dell'incentivo sale;
-- la capacità operativa diminuisce.
+- il team può gestirne 2.000;
+- la policy non è più eseguibile nello stesso modo.
 
-### Metodo operativo
+Il sistema deve scegliere se:
 
-Un modello in produzione dovrebbe avere almeno:
+- alzare temporaneamente la soglia;
+- passare a top-K;
+- aumentare capacità;
+- ricalibrare;
+- rivedere il modello.
 
-- owner chiaro;
-- frequenza di monitoraggio;
-- metriche statistiche;
-- metriche operative;
-- soglie di attenzione;
-- procedura di retraining;
-- possibilità di rollback;
-- documentazione delle modifiche.
+Questa è **decision drift**: la relazione tra score e processo operativo non è più quella prevista.
 
-Il deployment non è la fine del progetto.
+### Feedback loop
 
-È l'inizio della fase in cui il modello deve dimostrare di sopravvivere alla realtà.
+Quando il modello cambia chi riceve un'azione, cambia anche i dati futuri.
+
+Esempio:
+
+`churn score → retention call → alcuni clienti non churnano → nuove label`
+
+Se valutiamo ingenuamente il modello sulla popolazione trattata, un cliente ad alto rischio che non churna grazie all'intervento può sembrare un falso positivo.
+
+La pipeline di monitoring deve quindi sapere:
+
+- chi è stato score-ato;
+- chi è stato selezionato;
+- chi ha ricevuto davvero il trattamento;
+- quale policy era attiva;
+- se esiste un holdout o altra strategia per stimare l'efficacia della decisione.
+
+Prediction, experimentation e causalità tornano a incontrarsi.
+
+### Real-world metrics oltre AUC
+
+Google sottolinea nelle proprie guide sui sistemi ML di produzione che migliorare una metrica del modello, come AUC, non dimostra automaticamente un miglioramento dell'esperienza reale. Servono metriche downstream separate.
+
+Fonte: https://developers.google.com/machine-learning/crash-course/production-ml-systems/monitoring
+
+Per un churn model possiamo monitorare:
+
+- model: AUC, calibration, precision@K;
+- operations: contact rate, time-to-contact, capacity utilization;
+- treatment: offer acceptance;
+- business: incremental churn saved, margin netto, customer experience.
+
+### Monitoring contract
+
+La Predictive Decision Card dovrebbe indicare almeno:
+
+| Layer | Metrica | Frequenza | Soglia/trigger | Owner | Azione |
+|---|---|---|---|---|---|
+| data | missing feature core | giornaliera | > 2% | data owner | investigate |
+| serving | training-serving skew | giornaliera | material shift | ML/data | freeze release |
+| score | top-K composition | settimanale | shift segmento | analyst | diagnose |
+| performance | precision@2000 | mensile | < 30% | model owner | recalibrate/retrain |
+| calibration | reliability | mensile | systematic bias | model owner | recalibrate |
+| business | net value/action | mensile | sotto baseline | business owner | review policy |
+
+### Retraining non è manutenzione automatica
+
+Retrain può essere:
+
+- calendar-based;
+- performance-triggered;
+- drift-triggered;
+- event-triggered dopo cambi di prodotto/policy;
+- continuo, in sistemi adatti.
+
+Ma un retraining automatico su dati contaminati dal feedback loop può peggiorare il problema.
+
+Prima di automatizzarlo servono:
+
+- label policy;
+- data lineage;
+- evaluation gate;
+- champion/challenger o rollback;
+- versione del modello;
+- monitoring post-deployment.
+
+> **Un modello non fallisce solo quando AUC scende. Fallisce quando dati, score, policy o operations smettono di produrre la decisione affidabile per cui era stato costruito.**
