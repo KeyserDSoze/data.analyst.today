@@ -1,25 +1,58 @@
-## 14.9 AI per forecasting e modeling: generare modelli non significa validare previsioni
-L'AI può costruire in pochi minuti una pipeline che un tempo richiedeva ore: pulizia, feature engineering, split, training, metriche e grafici. Il rischio è confondere la velocità di costruzione con la qualità del modello.
+## 14.9 AI per forecasting e modeling: rendere economica la ricerca senza rendere economica la validazione
 
-Supponiamo che un'azienda retail chieda:
+I Capitoli 7 e 10 hanno già definito come valutare forecast e modelli predittivi.
 
-> “Prevedi le vendite delle prossime otto settimane per 12.000 SKU.”
+Qui il problema è specifico dell'AI-assisted workflow:
 
-Un agente può provare automaticamente decine di modelli e restituire una leaderboard. Se il miglior risultato ha MAPE 8,2%, sembra naturale dichiararlo vincitore.
+> **cosa succede quando generare cento pipeline, feature set e varianti di modello costa quasi quanto generarne una?**
 
-Ma prima dobbiamo sapere:
+La risposta non è soltanto “possiamo provare di più”.
 
-- lo split è temporale?
-- esiste leakage da promozioni future già note nel dataset?
-- gli SKU intermittenti sono trattati correttamente?
-- il modello funziona anche durante festività e campagne?
-- l'errore è accettabile dal punto di vista economico?
-- le prediction interval sono calibrate?
-- stiamo ottimizzando una metrica che riflette davvero il costo di stockout e overstock?
+È anche:
 
-## Caso realistico: il forecast che migliora e peggiora il business
+> **aumenta la pressione sul validation design, perché diventa molto più facile adattarsi accidentalmente al test che dovrebbe valutarci.**
 
-Un distributore di elettronica utilizza un agente AI per ottimizzare il forecast settimanale.
+### Il rischio della ricerca automatizzata
+
+Supponiamo di voler prevedere otto settimane di vendite per 12.000 SKU.
+
+Un agente può provare:
+
+- diverse trasformazioni;
+- feature calendar;
+- lag alternativi;
+- modelli statistici;
+- gradient boosting;
+- modelli gerarchici;
+- ensemble;
+- molti iperparametri.
+
+Se ogni variante viene confrontata sullo stesso holdout, quell'holdout smette progressivamente di essere indipendente.
+
+Non perché i suoi target entrino direttamente nel training, ma perché **le nostre scelte vengono ottimizzate contro di esso**.
+
+### Regola: separare generator, selector ed evaluator
+
+Un workflow maturo distingue tre funzioni.
+
+```text
+Generator
+→ propone feature, modelli e configurazioni
+
+Selector
+→ sceglie candidati su validation/backtest
+
+Evaluator
+→ valuta il candidato finale su dati non usati nella ricerca
+```
+
+Per task importanti, l'Evaluator dovrebbe essere il più indipendente possibile dal processo che ha generato la soluzione.
+
+Questa è una forma di **holdout sovereignty**: una parte dell'evidenza deve restare fuori dal ciclo di ottimizzazione.
+
+### Caso simulato/composito — il forecast “migliore” che peggiora il planning
+
+Un distributore di elettronica usa un agente per ottimizzare il forecast settimanale.
 
 Vecchio sistema:
 
@@ -27,47 +60,177 @@ Vecchio sistema:
 - stockout rate: 6,1%;
 - inventory days: 41.
 
-Nuovo modello AI:
+Nuovo candidato:
 
 - MAE: 13,2;
 - stockout rate: 7,0%;
 - inventory days: 46.
 
-Statisticamente il forecast è migliore. Operativamente il sistema è peggiore.
+Il modello migliora la metrica media ma peggiora due outcome operativi.
 
-L'indagine mostra che il modello migliora soprattutto sugli SKU ad alto volume, ma sottostima sistematicamente i prodotti a domanda intermittente e il planning engine reagisce aumentando safety stock su categorie a bassa marginalità.
+L'analisi degli errori mostra che:
 
-Il problema non era il training. Era l'interazione tra forecast, segmentazione degli SKU e regole di inventory policy.
+- il miglioramento è concentrato sugli SKU ad alto volume;
+- la domanda intermittente resta fragile;
+- il planning engine reagisce in modo asimmetrico agli errori;
+- il costo di overforecast e underforecast non è lo stesso.
 
-## AI come laboratorio di modelli
+La conclusione corretta non è:
 
-Un uso maturo dell'AI è trattarla come un laboratorio che propone rapidamente alternative:
+> “il nuovo modello è peggiore perché aumenta gli inventory days.”
 
-1. baseline naive;
-2. modello semplice interpretabile;
-3. modello più complesso;
-4. confronto temporale;
-5. analisi errori per segmento;
-6. stress test su periodi anomali;
-7. valutazione economica;
-8. monitoraggio post-deployment.
+È:
 
-L'agente può automatizzare gran parte di questi passaggi. L'analista deve decidere quali test sono necessari e cosa significhi “abbastanza buono”.
+> “la metrica con cui abbiamo selezionato il modello non rappresenta sufficientemente la funzione di costo del sistema decisionale downstream.”
 
-## Modeling senza culto della leaderboard
+### Il Modeling Delegation Contract
 
-Il modello migliore offline può non essere quello migliore in produzione. Possibili ragioni:
+Quando deleghiamo model search all'AI, la Control Sheet dovrebbe contenere:
 
-- costi di inferenza;
-- latenza;
-- dati non disponibili online;
-- fragilità al drift;
-- difficoltà di spiegazione;
-- impossibilità di monitorare le feature;
-- capacità operativa insufficiente per agire sui risultati.
+```text
+prediction/forecast decision:
+prediction time:
+horizon:
+feature availability as-of:
+baseline:
+training window:
+validation/backtest design:
+untouched final holdout:
+allowed model families:
+search budget:
+primary metric:
+business loss / guardrails:
+segment diagnostics:
+uncertainty/calibration requirement:
+deployment constraints:
+monitoring plan:
+```
 
-**L'AI rende economico provare molti modelli. Proprio per questo dobbiamo diventare più severi nel decidere quali meritino di essere usati.**
+Il modello può proporre alternative soltanto dentro questi vincoli.
 
-### Fonte
+### Baseline prima della ricerca
 
-- NIST AI RMF, measurement and evaluation: https://www.nist.gov/itl/ai-risk-management-framework
+La velocità dell'AI rende ancora più importante una baseline semplice.
+
+Per forecasting potrebbe essere:
+
+- last value;
+- seasonal naive;
+- moving average;
+- forecast operativo corrente.
+
+Per classification/regression:
+
+- prevalence/base rate;
+- regola business attuale;
+- regressione semplice;
+- score esistente.
+
+Se il nuovo sistema non batte una baseline sul criterio che conta davvero, la complessità aggiunta non ha guadagnato il diritto di entrare in produzione.
+
+### Feature generation: la disponibilità `as-of` resta non negoziabile
+
+Un agente può inventare feature molto predictive e inutilizzabili.
+
+Esempio:
+
+```text
+feature: refund_confirmed_next_48h
+```
+
+può spiegare perfettamente un outcome passato.
+
+Ma se il prediction time è prima del refund, quella feature non esiste ancora.
+
+Ogni feature generata dovrebbe quindi avere un attributo:
+
+```text
+available_at_prediction_time: yes / no / uncertain
+```
+
+`uncertain` non significa “proviamo comunque”.
+
+Significa **BLOCK finché la lineage temporale non viene chiarita**.
+
+### Error analysis prima della leaderboard
+
+Una leaderboard media nasconde struttura.
+
+L'AI dovrebbe essere obbligata a produrre almeno:
+
+- errore per segmento rilevante;
+- periodi peggiori;
+- tail behavior;
+- failure cases;
+- confronto con baseline;
+- stabilità tra fold/backtest;
+- sensibilità a feature e data window;
+- eventuale calibration o interval coverage.
+
+Perché il modello sbaglia è spesso più utile di sapere che è primo di 0,3 punti su una metrica media.
+
+### Un modello offline non è ancora una policy
+
+Anche un candidato predittivo valido deve attraversare il resto della Predictive Decision Card del Capitolo 10:
+
+```text
+score
+→ threshold/top-K
+→ capacity
+→ intervention
+→ outcome
+→ monitoring
+```
+
+L'AI può ottimizzare un ranking perfetto e produrre zero valore se l'organizzazione non ha capacità di intervenire, se l'azione è inefficace o se il serving non replica le feature del training.
+
+### Forecast: point estimate non basta
+
+Se il forecast entra in una decisione di inventory, cash o capacity, chiediamo anche:
+
+- prediction interval;
+- coverage per horizon;
+- errori per regime;
+- comportamento nei periodi promozionali;
+- revisioni tardive delle feature;
+- scenario in cui il modello degrada.
+
+Un agente che produce soltanto il valore centrale sta nascondendo una parte della decisione.
+
+### Quando l'AI deve fermare la model search
+
+La ricerca non deve continuare finché compare un numero migliore.
+
+Stop condition possibili:
+
+- improvement sotto soglia materiale;
+- budget compute/costo esaurito;
+- nessun candidato batte baseline in modo robusto;
+- performance migliora ma guardrail peggiorano;
+- il test finale è stato consultato troppe volte e deve essere ricostruito;
+- i dati non rappresentano il deployment target;
+- il business non può agire sul vantaggio predittivo.
+
+### Fonte di governance
+
+Il NIST AI RMF e il profilo Generative AI insistono sulla misurazione e valutazione nel contesto d'uso e lungo il lifecycle, non sulla sola performance di laboratorio.
+
+Fonte: https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
+
+### Campo della AI Analysis Control Sheet
+
+```text
+model-search delegated?:
+search budget:
+baseline:
+validation/backtest:
+final untouched evidence:
+leakage/as-of checks:
+primary + business metrics:
+segment failure analysis:
+uncertainty/calibration:
+deployment constraints:
+release gate:
+```
+
+> **L'AI rende economico costruire candidati. Proprio per questo dobbiamo proteggere con maggiore disciplina l'evidenza che decide quale candidato merita fiducia.**
