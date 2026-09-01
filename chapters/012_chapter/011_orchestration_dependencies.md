@@ -1,135 +1,208 @@
-## 12.10 Orchestrazione e dipendenze: una pipeline è un sistema, non una query
+## 12.10 Orchestrazione: dipendere dalla readiness, non soltanto dall'orologio
 
-Una trasformazione SQL può essere corretta e fallire comunque come prodotto dati se viene eseguita nel momento sbagliato, prima che una sorgente sia aggiornata o senza che un passaggio precedente sia terminato.
+Una pipeline può contenere trasformazioni corrette e pubblicare comunque un risultato sbagliato se un task parte prima che i suoi input siano realmente pronti.
 
-Questa è la funzione dell'**orchestrazione**: coordinare task, dipendenze, tempi, retry e fallimenti.
+L'**orchestrazione** coordina:
 
-### Caso realistico: Meridian Foods
+- dipendenze;
+- readiness;
+- esecuzione;
+- retry;
+- failure;
+- backfill;
+- pubblicazione downstream.
 
-Meridian Foods aggiorna ogni mattina un dashboard commerciale alle 07:00.
+La distinzione centrale è:
 
-Il flusso è composto da:
+> **scheduling dice quando provare a partire; orchestration dice quando è sicuro procedere.**
 
-1. estrazione ERP;
-2. caricamento ordini;
-3. caricamento resi;
-4. aggiornamento dimensione clienti;
-5. calcolo margine;
-6. refresh semantic model;
-7. refresh dashboard.
+### Caso simulato/composito — Meridian Foods e il job puntuale che legge dati vecchi
 
-Per mesi il processo funziona con job indipendenti schedulati a orari fissi:
+Meridian Foods ha questo calendario:
 
 ```text
 ERP export      04:00
 orders load     04:30
 returns load    04:40
-customers       04:50
+customer load   04:50
 margin model    05:10
 BI refresh      06:00
 ```
 
-Poi una mattina l'ERP termina alle 05:05 per un rallentamento.
+Per mesi funziona.
 
-Il job `orders load`, partito comunque alle 04:30, legge il file del giorno precedente.
+Una mattina l'ERP termina alle 05:05.
 
-Il dashboard delle 07:00 è tecnicamente "verde" ma contiene dati parzialmente vecchi.
+`orders load` parte comunque alle 04:30 e trova ancora l'estrazione precedente.
 
-### Scheduling non è orchestrazione
+Tutti i job finiscono `SUCCESS`.
 
-Un semplice calendario dice **quando provare a partire**.
+Il dashboard è puntuale e vecchio.
 
-Un orchestratore dovrebbe anche sapere:
+Il problema è che il sistema usa:
 
-- da cosa dipende un task;
-- se gli input sono pronti;
-- cosa fare se un task fallisce;
-- quante volte ritentare;
-- quando fermare il downstream;
-- come notificare il problema;
-- come riprendere senza duplicare dati.
+```text
+clock readiness
+```
 
-La differenza è sostanziale.
+al posto di:
 
-### DAG: pensare in dipendenze
+```text
+data readiness
+```
 
-Molti orchestratori rappresentano una pipeline come un **Directed Acyclic Graph (DAG)**.
+### DAG: rendere esplicita la causalità operativa della pipeline
+
+Un Directed Acyclic Graph può rappresentare:
+
+```text
+orders --------\
+returns --------> net_revenue_model → semantic_model → dashboard
+customers -----/
+```
+
+Il punto non è il disegno.
+
+È la regola:
+
+> `net_revenue_model` può partire soltanto quando gli input richiesti hanno raggiunto uno stato valido per quella partizione o finestra.
+
+### Completion non significa quality-ready
+
+Un task upstream può tecnicamente terminare anche se:
+
+- ha ricevuto solo 24 file su 28;
+- ha quarantinato il 18% delle righe;
+- è quattro ore in ritardo;
+- ha prodotto zero record per una regione.
+
+Quindi la dependency condition può includere non soltanto:
+
+```text
+job_status = SUCCESS
+```
+
+ma anche:
+
+```text
+freshness OK
+completeness OK
+schema OK
+critical invariants OK
+```
+
+Questo collega orchestrazione e SLO del dato.
+
+### Retry: automatico non significa innocuo
+
+Un timeout di rete può meritare un retry.
+
+Una schema incompatibility probabilmente richiede intervento.
+
+Un task che ha scritto metà output e poi fallisce può essere pericoloso da ritentare se non è idempotente.
+
+Per ogni task dobbiamo sapere:
+
+```text
+can retry safely? sì/no
+writes atomically? sì/no
+checkpoint available? sì/no
+replay duplicates? possible/impossible
+```
+
+### Idempotenza e publish boundary
+
+Un pattern utile è separare:
+
+```text
+compute candidate output
+→ validate
+→ publish/replace atomically
+```
+
+In questo modo un failure intermedio non rende visibile metà dataset come se fosse la nuova versione ufficiale.
+
+Quando l'atomicità completa non è disponibile, servono checkpoint e stati espliciti.
+
+### Backfill: l'orchestrazione nel passato
+
+Se scopriamo che una business rule era sbagliata dal 1 maggio al 14 giugno, il sistema deve poter eseguire:
+
+```text
+recompute 2026-05-01 ... 2026-06-14
+```
+
+senza:
+
+- duplicare dati;
+- sovrascrivere partizioni non coinvolte;
+- utilizzare sorgenti incoerenti con il periodo;
+- aggiornare i consumer prima che l'intero backfill sia validato.
+
+Il backfill non è una funzione di emergenza opzionale. È parte della capacità di correggere l'evidenza storica.
+
+### Partition readiness
+
+In pipeline grandi può essere utile ragionare per partizione o finestra.
 
 Esempio:
 
 ```text
-              orders ----\
-                         -> revenue_model -> semantic_model -> dashboard
-              returns ---/
-
-customers ----------------/
+country=IT/date=2026-08-31 READY
+country=FR/date=2026-08-31 READY
+country=DE/date=2026-08-31 MISSING
 ```
 
-Il vantaggio concettuale è che il sistema non dice soltanto "esegui alle 05:00". Dice:
+A questo punto il consumer deve sapere se può:
 
-> esegui `revenue_model` solo quando `orders`, `returns` e `customers` sono completati correttamente.
+- pubblicare IT/FR separatamente;
+- attendere DE;
+- pubblicare globale con warning;
+- bloccare tutto.
 
-### Caso: retry senza idempotenza
+Questa è una decisione di prodotto, non solo di orchestratore.
 
-Un task fallisce dopo aver scritto meta' dei dati. L'orchestratore lo ritenta automaticamente.
+### Failure propagation
 
-Se il task usa un semplice `INSERT`, il secondo tentativo può duplicare la parte già scritta.
-
-Il retry, quindi, non è sempre una soluzione innocua.
-
-Serve progettare task:
-
-- idempotenti;
-- transazionali quando possibile;
-- con checkpoint;
-- con upsert/merge coerenti;
-- con stati chiaramente osservabili.
-
-### Backfill
-
-Un'altra responsabilita' importante è il **backfill**: ricalcolare periodi storici quando cambia una regola o quando un job precedente era errato.
-
-Supponiamo che il margine netto sia stato calcolato male per 45 giorni.
-
-Un sistema maturo deve permettere di ricalcolare:
+Ogni nodo della Data Flow Architecture Map dovrebbe avere una policy:
 
 ```text
-2026-05-01 -> 2026-06-14
+upstream fails
+→ downstream BLOCK / DEGRADE / USE LAST KNOWN GOOD
 ```
 
-senza rompere il dato corrente e senza duplicazioni.
+Per un dashboard executive potrebbe essere meglio mostrare:
 
-### Cosa deve capire un Data Analyst
+```text
+Dati aggiornati al 31 agosto 07:00 — refresh odierno non completo
+```
 
-Quando un numero manca o cambia improvvisamente, la causa può non essere nella query finale.
+piuttosto che pubblicare silenziosamente dati parziali.
 
-Può essere:
+### Campo della Data Flow Architecture Map
 
-- una dipendenza non completata;
-- un input vecchio;
-- un retry incompleto;
-- un backfill parziale;
-- una pipeline downstream partita troppo presto.
+Per ogni task critico annotiamo:
 
-Quindi una buona domanda non è solo:
+```text
+upstream dependencies:
+readiness condition:
+run trigger:
+retry policy:
+idempotent? sì/no
+checkpoint/publish boundary:
+downstream behavior on failure:
+backfill support:
+owner:
+```
 
-> La query è giusta?
+### Regola operativa
 
-ma anche:
+Quando un numero è in ritardo o anomalo, non chiediamo soltanto:
 
-> Quali processi devono essere completati prima che questo numero sia affidabile?
+> la query finale è corretta?
 
-### Metodo operativo
+Chiediamo anche:
 
-Per ogni dataset critico documentare almeno:
+> **Quali precondizioni dovevano essere vere prima che questa query fosse autorizzata a pubblicare il risultato?**
 
-- sorgenti;
-- task upstream;
-- dipendenze;
-- orario atteso;
-- retry policy;
-- comportamento in caso di failure;
-- ownership;
-- procedura di backfill.
-
-**Una pipeline affidabile non è una collezione di script. È una sequenza esplicita di dipendenze e garanzie.**
+> **Una pipeline affidabile non è una sequenza di job che partono all'ora giusta. È una sequenza di stati validi che autorizzano il downstream a procedere.**
