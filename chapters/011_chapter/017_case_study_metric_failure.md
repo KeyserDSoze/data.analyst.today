@@ -1,176 +1,331 @@
-## 11.16 Caso studio: il KPI giusto costruito sul modello sbagliato
+## 11.16 Caso end-to-end: il contribution margin corretto costruito sul modello sbagliato
 
-**AsterRetail** è un gruppo e-commerce e retail con 11 paesi, 4 canali di vendita e circa 9 milioni di ordini l'anno.
+### Caso simulato/composito — AsterRetail
 
-Il management vuole introdurre un KPI apparentemente semplice:
+AsterRetail vende elettronica e piccoli elettrodomestici in undici Paesi europei, attraverso e-commerce, marketplace e negozi fisici.
 
-> **Repeat Purchase Rate a 90 giorni**
+Il management vuole decidere quali categorie spingere nel prossimo trimestre.
 
-La metrica deve misurare la quota di nuovi clienti che effettuano almeno un secondo acquisto entro 90 giorni dal primo.
+Il KPI scelto è:
 
-Dopo due settimane il team analytics pubblica il dashboard.
+> **Contribution Margin per categoria**
 
-Il risultato sorprende:
-
-- Italia: 31,8%;
-- Francia: 29,6%;
-- Germania: 18,4%;
-- Spagna: 27,9%.
-
-La Germania sembra avere un problema enorme di retention.
-
-Il Country Manager propone immediatamente un budget promozionale aggiuntivo di €900.000.
-
-### Primo controllo: il grain
-
-La tabella usata dal dashboard è `order_items`.
-
-Una riga rappresenta una riga prodotto, non un ordine.
-
-Il team aveva usato:
-
-```sql
-COUNT(*)
-```
-
-in alcuni passaggi intermedi per contare gli acquisti.
-
-Un ordine con quattro prodotti veniva quindi trattato come quattro eventi.
-
-Correzione:
-
-```sql
-COUNT(DISTINCT order_id)
-```
-
-oppure, meglio, costruzione di un modello a grain ordine prima dell'analisi.
-
-Il KPI tedesco sale da 18,4% a 21,1%.
-
-Problema ancora presente.
-
-### Secondo controllo: identità cliente
-
-AsterRetail consente:
-
-- account registrato;
-- guest checkout;
-- acquisto in negozio con loyalty card;
-- marketplace esterno.
-
-Il campo `customer_id` è nullo per molti guest checkout.
-
-In Germania il guest checkout è molto più diffuso.
-
-Il modello iniziale escludeva implicitamente i guest perché faceva un `INNER JOIN` con la dimensione clienti.
-
-Questo produceva due effetti:
-
-1. alcuni primi acquisti sparivano;
-2. alcuni secondi acquisti non venivano riconciliati con il primo.
-
-Dopo identity resolution e un `LEFT JOIN` coerente, il repeat rate tedesco sale al 25,7%.
-
-### Terzo controllo: la data del primo acquisto
-
-Il team aveva definito il primo acquisto usando `order_created_at`.
-
-Per i negozi fisici, però, i dati arrivano al warehouse in batch e `created_at` viene valorizzato con la data di ingestion, non con la data reale dello scontrino.
-
-In alcuni casi il secondo acquisto online appare quindi temporalmente precedente al primo acquisto retail.
-
-La correzione usa una `purchase_event_date` normalizzata per canale.
-
-Nuovo repeat rate Germania: 27,4%.
-
-### Quarto controllo: storico del paese
-
-Il dashboard segmenta per paese usando `dim_customer.country` corrente.
-
-I clienti che si trasferiscono vengono quindi riclassificati retroattivamente.
-
-Non è il problema principale, ma introduce instabilità.
-
-Il team passa a `country_at_first_purchase`, ricostruito point-in-time.
-
-Germania: 27,1%.
-
-### Quinto controllo: resi e cancellazioni
-
-La metrica considera come secondo acquisto un ordine poi completamente cancellato.
-
-In Germania il tasso di cancellazione è leggermente più alto a causa di un metodo di pagamento locale.
-
-Dopo aver definito un acquisto valido come ordine con almeno un importo netto positivo dopo cancellazioni e refund:
-
-- Italia: 28,7%;
-- Francia: 27,9%;
-- Germania: 26,5%;
-- Spagna: 27,2%.
-
-La Germania non è più un outlier drammatico.
-
-### Il problema non era una query
-
-Durante l'indagine vengono trovati cinque problemi distinti:
-
-1. grain errato;
-2. join che eliminava clienti;
-3. semantica temporale incoerente;
-4. attributi dimensionali non point-in-time;
-5. definizione incompleta di acquisto valido.
-
-Nessuno di questi problemi avrebbe necessariamente prodotto un errore SQL.
-
-### Il modello finale
-
-Il team crea tre modelli riusabili:
+La definizione business concordata è:
 
 ```text
-fct_orders_valid
-    una riga per ordine valido
-
-customer_first_purchase
-    una riga per cliente con data/canale/paese di acquisizione
-
-customer_repeat_90d
-    una riga per cliente con flag repeat entro 90 giorni
+net revenue
+- cost of goods sold
+- payment fees
+- variable fulfillment cost
+- allocated outbound shipping cost
 ```
 
-La metrica finale diventa:
+Il primo dashboard produce:
 
-```sql
-SELECT
-    acquisition_country,
-    AVG(CASE WHEN repeated_within_90d THEN 1.0 ELSE 0.0 END) AS repeat_rate_90d
-FROM customer_repeat_90d
-GROUP BY 1;
+| Categoria | Contribution margin % |
+|---|---:|
+| Smart Home | 29,8% |
+| Audio | 25,6% |
+| Gaming | 24,9% |
+| Small Appliances | 18,1% |
+
+Il management propone di ridurre investimenti su Small Appliances e spostare budget verso Smart Home.
+
+Prima della decisione, il team costruisce l'**Analytical Data Contract** della metrica.
+
+### 1. Qual è il grain del fenomeno economico?
+
+Il dashboard parte da `orders`, una riga per ordine.
+
+Ma:
+
+- revenue e COGS vivono a livello `order_line`;
+- refund possono essere parziali e riferirsi a singole linee;
+- shipping cost può essere a livello spedizione;
+- payment fee vive a livello transazione;
+- categoria prodotto vive nella dimensione prodotto.
+
+Un solo ordine può contenere tre categorie.
+
+Attribuire l'intero margine dell'ordine a una sola categoria scelta arbitrariamente è già semanticamente sbagliato.
+
+Il grain economico di partenza diventa:
+
+> **una riga per linea d'ordine valida**.
+
+### 2. Il join con i pagamenti moltiplica le linee
+
+Alcuni ordini hanno:
+
+- autorizzazione;
+- cattura;
+- retry;
+- refund.
+
+La query originale unisce `order_lines` direttamente a `payment_transactions` tramite `order_id`.
+
+Un ordine con quattro linee e tre transazioni genera fino a dodici righe.
+
+Revenue e COGS vengono ripetuti.
+
+Il team costruisce prima:
+
+```text
+payment_fees_by_order
+una riga per order_id
 ```
 
-Semplice, perché la complessità semantica è stata spostata nei modelli appropriati.
+con la sola fee economicamente rilevante aggregata per ordine.
 
-### La decisione di business cambia
+Poi decide come allocarla sulle linee.
 
-Il budget promozionale da €900.000 non viene approvato sulla base del presunto gap tedesco.
+### 3. Una misura a livello ordine richiede una policy di allocazione
 
-L'analisi successiva mostra invece un problema più specifico:
+Le payment fee sono note per ordine, ma il KPI è per categoria.
 
-- clienti acquisiti da paid social in Germania: repeat 21%;
-- organic: 30%;
-- CRM/referral: 34%.
+Serve una policy.
 
-Il team sposta quindi l'indagine dal paese al mix di acquisizione e alla qualità delle cohort.
+Il contract stabilisce:
 
-### La lezione
+```text
+payment fee allocation:
+proporzionale al net revenue della linea sul net revenue valido dell'ordine
+```
 
-Quando una metrica importante sembra sorprendente, non chiedere subito:
+Per ogni ordine:
 
-> "Quale spiegazione business troviamo?"
+```text
+SUM(line_payment_fee_allocated) = order_payment_fee
+```
 
-Prima chiedere:
+Questo diventa un invariante testabile.
 
-> "Il modello dati rappresenta davvero il fenomeno che crediamo di misurare?"
+### 4. Lo shipping cost è ancora più complesso
 
-La sequenza corretta è:
+Un ordine può essere diviso in due spedizioni.
 
-**definizione → grain → identità → tempo → join → qualità → metrica → interpretazione → decisione**.
+Una spedizione può contenere più linee e categorie.
+
+La tabella `shipments` non è quindi direttamente compatibile con `order_lines`.
+
+Il team crea una bridge:
+
+```text
+bridge_shipment_order_line
+shipment_id
+order_line_id
+shipped_units
+allocation_weight
+```
+
+La policy scelta per il caso è allocare il costo di spedizione in proporzione alle unità spedite ponderate per una classe volumetrica del prodotto.
+
+Non è l'unica policy possibile.
+
+Il punto è che ora è esplicita e riconciliabile:
+
+```text
+SUM(line_shipping_cost_allocated)
+=
+SUM(shipment_cost)
+```
+
+entro una tolleranza di arrotondamento.
+
+### 5. I refund arrivano dopo la vendita
+
+La prima versione del modello incrementale processa soltanto gli ordini creati nelle ultime 24 ore.
+
+I refund, però, arrivano spesso giorni o settimane dopo.
+
+Il risultato:
+
+- revenue recente corretta;
+- net revenue storico progressivamente sovrastimato;
+- categorie con resi tardivi apparentemente troppo profittevoli.
+
+Il team modifica l'update semantics:
+
+```text
+change detection = order_line.updated_at OR refund.updated_at
+lookback = 45 giorni
+late cases oltre finestra = coda di reconciliation/backfill
+```
+
+### 6. La categoria corrente riscrive il passato
+
+Durante l'anno AsterRetail riorganizza il catalogo.
+
+Alcuni dispositivi passano da:
+
+```text
+Electronics → Smart Home
+```
+
+Se il report storico usa `dim_product.category` corrente, vendite precedenti alla riclassificazione vengono spostate retroattivamente.
+
+Il management pensa che Smart Home sia cresciuta molto più di quanto sia realmente accaduto sotto la classificazione dell'epoca.
+
+Per la domanda corrente viene deciso:
+
+> analizzare ogni vendita nella categoria valida alla data dell'ordine.
+
+Il modello usa quindi la versione point-in-time della dimensione prodotto.
+
+### 7. Valute: quale tasso di cambio?
+
+Il gruppo opera in più valute.
+
+Il dashboard originale converte tutti gli importi con il cambio corrente.
+
+Questo rende instabile la storia.
+
+Il contract specifica:
+
+```text
+reporting currency: EUR
+FX policy: monthly accounting rate valid for recognized revenue month
+```
+
+Una diversa domanda, per esempio cash economics, potrebbe richiedere una policy diversa.
+
+### 8. I test del modello
+
+Prima della pubblicazione vengono eseguiti invarianti su più livelli.
+
+**Grain**
+
+```text
+order_line_id unico nel modello economico finale
+```
+
+**Join**
+
+```text
+nessun aumento inatteso di order_line_id distinti
+```
+
+**Refund**
+
+```text
+allocated refund per order_line = refund economico sorgente
+```
+
+**Payment fees**
+
+```text
+somma fee allocate per ordine = fee ordine
+```
+
+**Shipping**
+
+```text
+somma costi allocati per spedizione = costo spedizione
+```
+
+**Dimension history**
+
+```text
+ogni order_line ha esattamente una versione prodotto valida alla order_date
+```
+
+**Reconciliation**
+
+```text
+recognized net revenue warehouse vs Finance entro tolleranza concordata
+```
+
+### 9. La classifica cambia
+
+Dopo la ricostruzione:
+
+| Categoria | Dashboard iniziale | Modello validato |
+|---|---:|---:|
+| Smart Home | 29,8% | 23,7% |
+| Audio | 25,6% | 24,8% |
+| Gaming | 24,9% | 22,9% |
+| Small Appliances | 18,1% | 22,4% |
+
+Small Appliances non era strutturalmente la categoria peggiore.
+
+Era penalizzata da:
+
+- allocazione shipping incoerente;
+- classificazioni di prodotto correnti;
+
+mentre Smart Home era favorita da:
+
+- refund tardivi non ancora rientrati;
+- riclassificazione storica di prodotti;
+- duplicazioni legate ai pagamenti.
+
+### 10. La decisione cambia
+
+Il management non esegue il riallocamento generalizzato del budget.
+
+La decisione diventa più specifica:
+
+1. intervenire su prodotti Smart Home con refund e return cost elevati;
+2. testare packaging e carrier su specifiche sottocategorie bulky;
+3. mantenere investimenti su Small Appliances ad alto contribution margin netto;
+4. certificare il nuovo modello come sorgente condivisa per Finance, Merchandising e BI.
+
+### L'Analytical Data Contract finale
+
+```text
+business question:
+contribution margin per categoria di vendita
+
+grain:
+una riga per order_line_id valido
+
+business keys:
+order_id, order_line_id, product_id
+
+time semantics:
+order date per attribuzione commerciale
+recognized revenue month per FX accounting
+
+product dimension:
+point-in-time alla order_date
+
+metric components:
+net revenue
+COGS
+allocated payment fee
+allocated variable fulfillment cost
+allocated outbound shipping
+
+allocation invariants:
+fees e shipping devono riconciliarsi ai totali sorgente
+
+update semantics:
+record mutabili, refund tardivi, lookback + reconciliation
+
+quality gates:
+uniqueness, join coverage, allocation conservation, Finance reconciliation
+
+service envelope:
+refresh giornaliero entro 07:30
+
+owner:
+Analytics Engineering + Finance metric owner
+```
+
+### La lezione del caso
+
+Nessuno dei failure mode principali richiedeva SQL sintatticamente invalido.
+
+Erano errori di rappresentazione:
+
+- grain;
+- cardinalità;
+- allocazione;
+- tempo;
+- storia dimensionale;
+- incrementalità;
+- riconciliazione.
+
+Quando questi elementi vengono risolti, la query finale del KPI può essere relativamente semplice.
+
+> **La complessità che merita di esistere va spostata in modelli, contratti e test riusabili. Non duplicata silenziosamente in ogni query che consuma il dato.**
