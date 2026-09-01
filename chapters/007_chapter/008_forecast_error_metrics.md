@@ -1,90 +1,177 @@
-## 7.7 Misurare l'errore di previsione: MAE, RMSE, MAPE e il problema della metrica sbagliata
+## 7.7 Misurare l'errore: accuracy statistica e costo decisionale
 
-Un forecast non va giudicato chiedendo se ha "indovinato". Va giudicato rispetto a una funzione di errore coerente con la decisione che dobbiamo prendere.
+Un forecast non è “giusto” o “sbagliato”. Produce errori di dimensione e direzione diverse in momenti diversi.
 
-Supponiamo che una catena retail preveda la domanda giornaliera di un prodotto in dieci punti vendita. Per uno store la domanda reale nei cinque giorni successivi è:
+La scelta della metrica stabilisce **quali errori consideriamo più importanti**.
 
-| Giorno | Reale | Forecast |
-|---|---:|---:|
-| Lun | 100 | 95 |
-| Mar | 120 | 130 |
-| Mer | 90 | 84 |
-| Gio | 110 | 108 |
-| Ven | 80 | 92 |
+Per questo MAE, RMSE, MAPE o MASE non sono semplicemente modi alternativi di mostrare lo stesso risultato.
 
-L'errore di forecast è la differenza tra valore osservato e valore previsto. Da qui possiamo costruire metriche diverse.
+### Forecast error e residuo non sono la stessa cosa
 
-### MAE: errore medio assoluto
+Hyndman e Athanasopoulos distinguono chiaramente:
 
-Il **Mean Absolute Error** considera la dimensione assoluta degli errori:
+- **residuo** — errore calcolato sui dati usati per stimare il modello;
+- **forecast error** — differenza tra valore futuro osservato e previsione prodotta senza aver visto quel valore.[^fpp-accuracy]
 
-\[
-MAE = \frac{1}{n}\sum |y_t - \hat{y}_t|
-\]
+La performance decisionale deve essere valutata sui secondi.
 
-Nel nostro esempio gli errori assoluti sono 5, 10, 6, 2 e 12. Il MAE è quindi 7 unità.
+Un modello può adattarsi perfettamente al training set e prevedere male il futuro.
 
-Il vantaggio è immediato: possiamo dire al responsabile supply chain che, in media, il forecast sbaglia di circa sette pezzi al giorno.
+### MAE: quanto sbagliamo nella scala del business
 
-### RMSE: quando gli errori grandi devono pesare di più
+Il **Mean Absolute Error** è la media dell'errore assoluto.
 
-Il **Root Mean Squared Error** eleva al quadrato gli errori prima di calcolare la media:
+Se per cinque giorni gli errori sono 5, 10, 6, 2 e 12 unità, il MAE è 7.
 
-\[
-RMSE = \sqrt{\frac{1}{n}\sum (y_t - \hat{y}_t)^2}
-\]
+È facile da spiegare:
 
-Questo rende la metrica più sensibile agli errori grandi.
+> il forecast sbaglia mediamente di circa sette pezzi al giorno.
 
-È utile quando uno scostamento molto grande è molto più costoso di più scostamenti piccoli. Per esempio, in un magazzino automatizzato un errore di 100 pallet può essere molto più problematico di dieci errori da 10 pallet.
+È particolarmente utile quando un errore di una unità ha un significato relativamente costante.
 
-### MAPE: intuitivo, ma non innocuo
+### RMSE: dare più peso agli errori grandi
 
-Il **Mean Absolute Percentage Error** esprime l'errore in percentuale rispetto al valore reale.
+Il **Root Mean Squared Error** penalizza maggiormente gli errori grandi perché usa il quadrato dello scostamento prima di fare la media.
 
-È spesso apprezzato dai manager perché sembra intuitivo: "il forecast sbaglia in media dell'8%".
+Può essere coerente con processi in cui pochi errori estremi sono molto dannosi.
 
-Ma il MAPE ha problemi seri quando il valore reale è zero o vicino a zero. Se una serie contiene giorni con domanda 0, 1 o 2 unità, una differenza piccola può produrre percentuali enormi o non definite.
+Ma attenzione: usare RMSE non significa automaticamente modellare il vero costo economico. Significa soltanto scegliere una funzione che cresce più rapidamente dell'errore assoluto.
 
-Questo rende il MAPE particolarmente pericoloso per SKU a bassa rotazione, ticket rari, incidenti, frodi, conversioni di micro-segmenti e molte altre serie aziendali reali.
+Se il costo reale di stock-out è fortemente asimmetrico, serve ancora una funzione di loss business.
 
-### Caso realistico: il modello migliore sulla dashboard era il peggiore per il magazzino
+### MAPE: percentuale intuitiva, fragilità reale
 
-Una società di ricambi industriali confronta due modelli di forecast per 3.400 SKU.
+Il **Mean Absolute Percentage Error** è popolare perché produce frasi facili:
 
-Il team data science presenta:
+> errore medio 8%.
 
-| Modello | MAPE |
-|---|---:|
+Ma quando il valore reale è zero o vicino a zero, il MAPE diventa indefinito o enorme. Hyndman e Athanasopoulos evidenziano questo problema e notano anche altri limiti delle percentage errors.[^fpp-accuracy]
+
+È quindi fragile per:
+
+- SKU slow mover;
+- frodi rare;
+- incidenti;
+- vendite di nuovi prodotti;
+- piccoli segmenti;
+- serie intermittenti.
+
+### MASE: confrontare serie diverse contro una baseline
+
+Il **Mean Absolute Scaled Error** scala gli errori usando l'errore di una previsione naïve calcolata sul training set. Per serie stagionali, il benchmark può essere seasonal naïve.[^fpp-accuracy]
+
+Il vantaggio è importante:
+
+- è scale-free;
+- può confrontare serie con unità e volumi diversi;
+- conserva un'interpretazione relativa alla baseline.
+
+In modo intuitivo:
+
+- `MASE < 1` → il modello batte, in media, il benchmark usato per la scala;
+- `MASE > 1` → il modello fa peggio.
+
+Non sostituisce la metrica business, ma impedisce di celebrare un modello che non supera una regola elementare.
+
+### Bias: sbagliare sempre dalla stessa parte
+
+Due modelli possono avere lo stesso MAE e comportamento molto diverso.
+
+Modello A alterna sovrastime e sottostime.
+
+Modello B sottostima quasi sempre.
+
+Per una supply chain, un bias negativo persistente può generare stock-out continui anche se l'errore assoluto medio è discreto.
+
+Per questo è utile monitorare anche il **mean forecast error** o altra misura della direzione sistematica degli errori.
+
+### Caso simulato/composito — Il modello migliore in dashboard e peggiore in magazzino
+
+Una società di ricambi industriali confronta due modelli su 3.400 SKU.
+
+| Modello | MAPE medio |
+| --- | ---: |
 | A | 11,2% |
 | B | 9,4% |
 
-Il modello B sembra migliore.
+B sembra migliore.
 
-Il responsabile operations, però, segnala che dopo il rollout aumentano gli stock-out dei componenti ad alto valore.
+Dopo il rollout, però, aumentano gli stock-out dei componenti ad alto valore.
 
-L'analisi successiva mostra che il modello B migliora molto su migliaia di SKU a basso volume, ma commette pochi errori enormi su una quarantina di componenti critici. Il MAPE medio premia il modello, mentre il costo economico degli errori peggiora.
+L'analisi mostra che B migliora molto su migliaia di SKU a basso volume ma commette pochi errori molto costosi su circa quaranta componenti critici.
 
-Quando il team introduce una valutazione pesata per margine, criticità e costo di stock-out, il modello A risulta preferibile.
+Il MAPE medio assegna a ogni osservazione un peso che non riflette la criticità economica.
 
-La lezione è più generale:
+Quando il team valuta:
 
-> **La metrica di forecast non deve riflettere soltanto la statistica. Deve riflettere anche il costo decisionale dell'errore.**
+- costo di stock-out;
+- margine;
+- lead time;
+- criticità del ricambio;
 
-### Una metrica non basta quasi mai
+il modello A diventa preferibile.
 
-In pratica conviene osservare almeno:
+### Accuracy per segmento
 
-- errore assoluto medio;
-- distribuzione degli errori;
-- bias medio, per capire se il modello tende a sovrastimare o sottostimare;
-- performance per segmento;
-- performance per orizzonte di forecast;
-- confronto con una baseline semplice;
-- costo business associato agli errori.
+Una sola metrica globale può nascondere failure mode importanti.
 
-Hyndman e Athanasopoulos distinguono chiaramente gli errori di forecast dai residui e sottolineano che MAE, RMSE e MAPE hanno proprietà differenti; in particolare il MAPE può diventare instabile o indefinito quando i valori reali sono nulli o vicini a zero.
+Conviene almeno segmentare per:
 
-### Riferimenti
+- volume;
+- valore economico;
+- horizon;
+- geografia;
+- prodotto;
+- promozione vs periodo normale;
+- forecastability della serie.
 
-- Hyndman, R.J. & Athanasopoulos, G., *Forecasting: Principles and Practice*, 3rd edition, sezione "Evaluating point forecast accuracy": https://otexts.com/fpp3/accuracy.html
+Un modello può essere eccellente sui fast mover e inutile sugli intermittent-demand item.
+
+Questo non implica necessariamente due algoritmi diversi. Implica almeno due diagnosi diverse.
+
+### Accuracy non è la stessa cosa di decision quality
+
+Supponiamo che una previsione di domanda sia usata per ordinare stock.
+
+Il costo può essere:
+
+`loss = costo_stockout × unità_mancanti + costo_overstock × unità_eccesso`
+
+Se stock-out e overstock hanno costi diversi, minimizzare MAE non coincide necessariamente con minimizzare la loss economica.
+
+La decisione potrebbe richiedere un quantile della distribuzione prevista, non la media.
+
+Questa è la connessione tra forecasting e decisione: **la metrica statistica descrive l'errore; la funzione di loss descrive ciò che quell'errore fa al business.**
+
+### Non scegliere la metrica dopo aver visto chi vince
+
+Un rischio pratico è calcolare sei metriche e presentare quella che favorisce il modello preferito.
+
+La metrica primaria dovrebbe essere collegata alla decisione **prima** del confronto finale.
+
+Possiamo comunque riportare più metriche, ma con ruoli chiari:
+
+- metrica primaria di selezione;
+- metriche diagnostiche;
+- loss economica;
+- guardrail.
+
+### Scheda di accuracy
+
+Il Temporal Decision Brief dovrebbe includere:
+
+```text
+Metrica primaria:
+Perché è coerente con la decisione:
+Baseline di confronto:
+MAE / RMSE / MASE / altro:
+Bias:
+Performance per horizon:
+Performance per segmenti critici:
+Worst-case / P90-P95 dell'errore:
+Business loss:
+```
+
+> **Il forecast non va ottimizzato per il numero che lo fa sembrare migliore. Va ottimizzato per gli errori che il business non può permettersi.**
+
+[^fpp-accuracy]: Hyndman, R.J. & Athanasopoulos, G., *Forecasting: Principles and Practice*, 3rd ed., “Evaluating point forecast accuracy”, https://otexts.com/fpp3/accuracy.html
