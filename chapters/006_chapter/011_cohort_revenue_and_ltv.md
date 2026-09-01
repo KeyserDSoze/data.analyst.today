@@ -1,84 +1,150 @@
-## 6.10 Cohort revenue e LTV: non tutte le coorti valgono allo stesso modo
+## 6.10 Cohort value e LTV: seguire il valore, non solo la presenza
 
-La retention comportamentale dice se gli utenti restano. Ma il business spesso deve sapere anche **quanto valore economico genera ogni coorte nel tempo**.
+Retention e churn descrivono persistenza e perdita. Ma due coorti con la stessa retention possono avere valore economico molto diverso.
 
-Una coorte può trattenere molti utenti e produrre poca revenue. Un'altra può avere meno utenti ma ticket medio, frequenza d'acquisto o margine molto più alti.
+Per questo il lifecycle dovrebbe essere letto anche in termini di **valore cumulato**.
 
-Per questo è utile costruire una vista di **cohort revenue**: per ogni coorte di acquisizione, misurare la revenue cumulata dopo 30, 60, 90, 180 giorni o qualunque orizzonte sia coerente con il business.
+Una vista semplice e potente consiste nel seguire, per coorte di acquisizione, quanto revenue, margine o contribution profit viene generato dopo 30, 60, 90, 180 giorni.
 
-### Caso: ModaLab e il canale che sembrava troppo costoso
+Prima di costruire un modello sofisticato di LTV, spesso conviene guardare ciò che le coorti hanno realmente prodotto.
 
-ModaLab è un e-commerce fashion. Il team performance confronta due canali:
+### Caso simulato/composito: ModaLab e il canale che sembrava troppo costoso
 
-- paid social;
-- referral program.
-
-A prima vista il referral sembra nettamente migliore:
+**ModaLab** è un e-commerce fashion. Il team performance confronta paid social e referral.
 
 | Canale | CAC medio | Primo ordine medio |
-|---|---:|---:|
+| --- | ---: | ---: |
 | Paid social | 41 € | 72 € |
 | Referral | 23 € | 69 € |
 
-Il CFO propone di ridurre paid social perché il rapporto tra primo ordine e CAC è peggiore.
+Guardando soltanto CAC e primo ordine, referral sembra nettamente migliore.
 
-L'analista costruisce invece le coorti e osserva la revenue cumulata per cliente.
+L'analista costruisce però le coorti e segue la revenue cumulata per cliente:
 
-| Canale | Revenue 30 gg | Revenue 90 gg | Revenue 180 gg |
-|---|---:|---:|---:|
+| Canale | Revenue D30 | Revenue D90 | Revenue D180 |
+| --- | ---: | ---: | ---: |
 | Paid social | 78 € | 146 € | 238 € |
 | Referral | 73 € | 112 € | 151 € |
 
-I clienti paid social costano di più all'inizio, ma tendono a comprare categorie ad alta frequenza e tornano più spesso.
+Paid social costa di più all'inizio, ma le sue coorti acquistano più frequentemente nei mesi successivi.
 
-Quando il confronto viene fatto sul margine lordo cumulato, il quadro cambia ancora:
+Quando il team passa dalla revenue al margine lordo cumulato, la differenza resta:
 
-- paid social: 91 € di margine a 180 giorni;
+- paid social: 91 € a 180 giorni;
 - referral: 63 €.
 
-La decisione non è più “paid social costa troppo”. Diventa “quanto siamo disposti a pagare oggi per una coorte che genera più valore nei prossimi sei mesi?”.
+La domanda cambia da:
 
-### Lifetime Value
+> quale canale ha il CAC più basso?
 
-Il **Customer Lifetime Value (LTV o CLV)** tenta di sintetizzare il valore economico atteso generato da un cliente durante la relazione con l'azienda.
+A:
 
-Esistono molte formule. In un modello semplice:
+> quanto capitale siamo disposti a spendere oggi per acquisire una coorte che produce più margine nei mesi successivi?
 
-\[
-LTV \approx margine\ medio\ per\ periodo \times durata\ media\ della\ relazione
-\]
+### Valore osservato e LTV previsto non sono la stessa cosa
 
-Ma questa formula può essere troppo grezza quando retention, frequenza d'acquisto e margini cambiano nel tempo.
+È utile distinguere due concetti.
 
-Un approccio più analitico è calcolare il valore cumulato osservato per coorte e, solo dopo aver compreso il pattern, valutare se stimare il valore futuro.
+**Observed cohort value** — valore realmente prodotto fino a un certo orizzonte.
 
-### Revenue LTV non significa profit LTV
+**Predicted LTV** — stima del valore futuro che la coorte dovrebbe produrre oltre ciò che abbiamo già osservato.
 
-Un errore comune è chiamare LTV la revenue cumulata senza sottrarre costi variabili, resi, incentivi o costi di servizio.
+Il primo è descrittivo. Il secondo richiede un modello e quindi assunzioni.
 
-Per ModaLab, due coorti producono entrambe 220 € di revenue a 180 giorni, ma una ha:
+Confonderli rende un forecast simile a un fatto già avvenuto.
 
-- return rate del 9%;
-- margine lordo del 48%;
-- quasi nessun voucher.
+### Revenue, gross margin e contribution margin
 
-L'altra ha:
+La parola “LTV” viene spesso usata per quantità economicamente diverse.
 
-- return rate del 24%;
-- margine lordo del 36%;
-- forte uso di coupon.
+Una coorte può produrre 300 € di revenue ma avere:
 
-I due “LTV” non sono economicamente equivalenti.
+- molti resi;
+- costi di fulfilment elevati;
+- incentivi;
+- fee di pagamento;
+- supporto costoso;
+- forti sconti.
 
-### Cosa deve controllare l'analista
+Per ModaLab due coorti generano entrambe 220 € di revenue a 180 giorni.
 
-Prima di presentare un LTV, bisogna sapere:
+La prima ha return rate 9% e margine lordo 48%. La seconda ha return rate 24%, margine 36% e forte uso di coupon.
 
-- se è osservato o previsto;
-- se è revenue, margine o contribution profit;
-- qual è l'orizzonte temporale;
-- come viene gestito il churn;
-- se i costi di acquisizione sono inclusi;
-- se le coorti sono mature abbastanza per essere confrontate.
+Chiamare entrambe “LTV 220 €” nasconde la differenza che conta per la decisione.
 
-Un LTV con una formula elegante e una definizione vaga è spesso meno utile di una semplice tabella di revenue cumulata per coorte, costruita bene.
+### Cohort maturity: non confrontare futuro con passato
+
+Una coorte acquisita un mese fa ha avuto un solo mese per generare valore. Una coorte di un anno fa ne ha avuti dodici.
+
+Confrontare il valore cumulato “fino a oggi” senza allineare l'età produce quasi sempre un risultato inutile.
+
+Le coorti devono essere confrontate alla stessa maturità:
+
+- D30 contro D30;
+- M3 contro M3;
+- M12 contro M12.
+
+Questo sembra elementare, ma diventa meno ovvio quando le dashboard mostrano una sola colonna di `lifetime_revenue`.
+
+### Il problema delle coorti non mature nei modelli LTV
+
+Se il business è nuovo o il comportamento è cambiato, le coorti recenti non hanno ancora mostrato il loro intero lifecycle.
+
+Per prevederne il valore futuro possiamo usare:
+
+- pattern di coorti più mature;
+- modelli di retention/survival;
+- frequenza d'acquisto;
+- margine atteso;
+- scenario analysis.
+
+Ma la qualità del LTV previsto dipende dalla stabilità di queste relazioni.
+
+Un cambio di pricing, prodotto, acquisition mix o retention può rendere poco trasferibile il passato.
+
+### Payback period: una domanda spesso più operativa del LTV
+
+In molti business la domanda decisiva non è soltanto quanto vale un cliente “in tutta la vita”, ma **quando recuperiamo il costo di acquisizione**.
+
+Se una coorte ha CAC di 80 € e genera contribution margin cumulato:
+
+- D30: 22 €;
+- D90: 51 €;
+- D180: 86 €;
+
+il payback avviene tra tre e sei mesi.
+
+Una seconda coorte può avere LTV finale maggiore ma richiedere diciotto mesi per recuperare il CAC. Per un'azienda con vincoli di cassa, la differenza è enorme.
+
+### LTV/CAC non è una legge universale
+
+Rapporti come `LTV/CAC` possono essere utili, ma diventano pericolosi quando numeratore e denominatore non sono costruiti con definizioni compatibili.
+
+Prima di usare il rapporto bisogna sapere:
+
+- LTV su revenue o margine?
+- CAC include sales e marketing allocati oppure solo media spend?
+- quale orizzonte temporale?
+- il LTV è osservato o previsto?
+- il CAC è medio o marginale?
+- le due quantità appartengono alla stessa coorte?
+
+Un rapporto elegante non corregge due definizioni incoerenti.
+
+### Dalla retention al valore
+
+Una Lifecycle Diagnostic Map dovrebbe quindi tenere insieme almeno tre dimensioni:
+
+- **presenza** — il cliente rimane?
+- **comportamento** — continua a ottenere/creare valore?
+- **economics** — quanto valore economico genera nel tempo?
+
+Questa è la differenza tra seguire utenti e seguire un business.
+
+### La domanda operativa
+
+Prima di presentare un LTV, completa questa frase:
+
+> Stiamo stimando ______ per la coorte ______, su un orizzonte di ______, usando ______ come misura economica; la parte fino a ______ è osservata, la parte successiva è prevista.
+
+Se non riusciamo a distinguerlo, il numero è probabilmente troppo ambiguo per sostenere una decisione.
