@@ -1,23 +1,42 @@
-## 16.2 Scegliere il grafico in base alla domanda
-La scelta del grafico dovrebbe partire dalla relazione che vogliamo far vedere, non dalla libreria di visualizzazioni disponibile.
+## 16.2 Scegliere la forma in base al compito cognitivo
 
-Prima viene la domanda.
+La domanda corretta non è:
 
-Poi la struttura del dato.
+> “Quale grafico è più bello?”
 
-Solo dopo il tipo di grafico.
+né:
 
-## Confrontare grandezze
+> “Quale visual offre il tool?”
 
-Se la domanda è:
+È:
 
-> “Quale categoria vende di più?”
+> **“Quale confronto deve diventare facile da percepire, e quale errore di lettura dobbiamo evitare?”**
 
-un bar chart è spesso più leggibile di una torta.
+La forma viene dopo la decision question, il grain e il tipo di relazione.
 
-Perché?
+## Un Visual Encoding Contract
 
-Perché il nostro sistema visivo confronta con maggiore precisione lunghezze allineate su una stessa scala rispetto ad angoli e aree.
+Per ogni visual importante possiamo dichiarare quattro cose:
+
+1. **task** — che cosa deve fare il lettore con gli occhi;
+2. **encoding** — posizione, lunghezza, area, colore, linea, testo;
+3. **reference** — baseline, target, zero, periodo o gruppo di confronto;
+4. **failure mode** — quale interpretazione sbagliata è più probabile.
+
+| Domanda | Forma spesso utile | Facilita | Failure mode tipico |
+|---|---|---|---|
+| Quale gruppo è più grande? | barre ordinate | confronto di magnitudine | asse troncato |
+| Come cambia nel tempo? | linea | trend, turning point | finestra cherry-picked |
+| Come è distribuito? | istogramma / boxplot / percentile | forma e code | media usata come sintesi totale |
+| Due variabili si muovono insieme? | scatter | relazione e dispersione | correlazione letta come causalità |
+| Come cambia la composizione? | stacked / 100% stacked / small multiples | quota o mix | confondere quota e volume |
+| Dove si perde una popolazione? | funnel / step conversion | drop-off | denominatori incompatibili |
+| Quanto siamo lontani da un target? | valore + delta + trend | distanza dalla soglia | gauge senza scala utile |
+| Devo leggere valori precisi? | tabella | lookup | heatmap decorativa |
+
+## Confrontare grandezze: lunghezze allineate prima di angoli e aree
+
+Se dobbiamo confrontare categorie, barre ordinate su una scala comune sono spesso più leggibili di una torta.
 
 Esempio:
 
@@ -28,117 +47,97 @@ Esempio:
 | Sports | €9,8M |
 | Electronics | €9,6M |
 
-In una torta, distinguere 10,9 da 9,8 richiede più sforzo.
+Il compito è distinguere valori relativamente vicini. La lunghezza su una baseline comune rende quel confronto diretto.
 
-In barre ordinate, la differenza è immediata.
+## Tempo: chart type corretto, grain sbagliato
 
-## Mostrare un trend
+### Caso simulato/composito — Il mese stabile che nasconde il weekend
 
-Per una serie temporale, la linea è spesso la scelta naturale.
+Una piattaforma food delivery mostra ordini mensili quasi invariati.
 
-Ma anche qui dobbiamo chiederci:
+Il line chart è tecnicamente corretto.
 
-- qual è la frequenza?
-- il dato è continuo o intermittente?
-- dobbiamo confrontare una o più serie?
-- la stagionalità conta?
-- serve una baseline?
+Passando al dato giornaliero emerge però che:
 
-## Caso realistico: il grafico mensile che nasconde il problema settimanale
+- lunedì–giovedì gli ordini crescono;
+- venerdì–domenica diminuiscono;
+- i due movimenti si compensano nell'aggregato mensile.
 
-Una piattaforma food delivery osserva ordini mensili sostanzialmente stabili.
+Il failure mode non era il grafico.
 
-Il grafico mensile non mostra nulla di particolare.
+Era il **grain temporale**.
 
-Passando al livello giornaliero emerge che:
+> **Una forma visiva corretta non salva una domanda rappresentata alla granularità sbagliata.**
 
-- lunedì–giovedì gli ordini sono cresciuti;
-- venerdì–domenica sono diminuiti sensibilmente;
-- la crescita weekday compensa quasi esattamente il calo weekend.
+## Distribuzioni: quando il centro nasconde la coda
 
-Il problema non era il chart type.
+Delivery time medio: 2,4 giorni.
 
-Era il grain temporale.
+Se il 90° percentile è 6,8 giorni, il problema può vivere nella coda e non nel cliente medio.
 
-La visualizzazione più elegante del mondo non corregge una granularità inadatta alla domanda.
+La Decision Communication Pack deve quindi scegliere la forma in base alla decisione:
 
-## Mostrare una distribuzione
+- media + percentile se conta il service level;
+- boxplot se dobbiamo confrontare gruppi;
+- distribuzione se la forma stessa è il messaggio.
 
-Quando media e totale non bastano, possiamo usare:
+## Relazione: visivamente forte non significa causalmente forte
 
-- histogram;
-- boxplot;
-- density plot;
-- percentile chart.
+Uno scatter plot può rendere una correlazione estremamente convincente.
 
-Esempio: delivery time medio di 2,4 giorni.
+Proprio per questo titolo e annotazioni devono rispettare il claim level.
 
-Sembra ottimo.
+Meglio:
 
-Ma se il 90° percentile è 6,8 giorni, il problema di customer experience potrebbe essere concentrato nella coda.
+> “Gli account con maggiore adoption mostrano NRR più alta”
 
-## Mostrare una relazione
+che:
 
-Uno scatter plot aiuta a vedere:
+> “L'adoption aumenta la NRR”
 
-- relazione;
-- dispersione;
-- cluster;
-- outlier;
-- eteroschedasticità.
+se non abbiamo un disegno causale adeguato.
 
-Ma attenzione: una nuvola inclinata non dimostra causalità.
+## Composizione: quota e volume non sono intercambiabili
 
-Un grafico può rendere una correlazione visivamente potente e quindi psicologicamente più convincente di quanto meriti.
+Un 100% stacked bar risponde bene a:
 
-## Mostrare una composizione
+> “Come cambia il mix?”
 
-Per la composizione possiamo usare:
+ma può nascondere che il totale si è dimezzato.
 
-- stacked bar;
-- 100% stacked bar;
-- small multiples;
-- area chart in casi specifici.
+Se volume e composizione sono entrambi decision-critical, mostriamoli separatamente o con due livelli coordinati.
 
-La scelta dipende da cosa conta:
+## Funnel: una sequenza richiede una popolazione coerente
 
-- valore assoluto;
-- quota percentuale;
-- evoluzione nel tempo;
-- confronto tra gruppi.
+Un funnel ha senso soltanto se gli step appartengono a una sequenza definita e i denominatori sono compatibili.
 
-## Mostrare un funnel
+Se `checkout_started` conta sessioni e `payment_success` conta ordini, la forma può sembrare perfetta mentre la conversione non ha un significato stabile.
 
-Un funnel visuale ha senso se esiste davvero una sequenza di passaggi e la popolazione è coerente.
+Il visual contract eredita quindi il semantic contract dei capitoli precedenti.
 
-Un funnel esteticamente perfetto costruito con denominatori incompatibili può essere completamente fuorviante.
+## Target: spesso basta meno
 
-## Mostrare target e performance
+Per mostrare performance rispetto a una soglia spesso sono sufficienti:
 
-Per KPI rispetto a target, spesso bastano:
-
-- valore attuale;
+- valore corrente;
 - target;
-- delta assoluto;
-- delta percentuale;
-- trend recente.
+- delta;
+- trend;
+- eventuale uncertainty band.
 
-Non serve sempre un gauge.
+Un gauge occupa molto spazio e spesso aggiunge poco.
 
-Un gauge occupa molto spazio per comunicare una singola relazione.
+## La domanda finale
 
-## La domanda guida
+Prima di disegnare chiediamoci:
 
-Prima di scegliere il grafico, chiediamoci:
+> **“Se il destinatario avesse cinque secondi, quale relazione deve percepire correttamente?”**
 
-1. voglio confrontare?
-2. voglio mostrare un trend?
-3. voglio mostrare distribuzione?
-4. voglio mostrare relazione?
-5. voglio mostrare composizione?
-6. voglio mostrare percorso/funnel?
-7. voglio mostrare performance rispetto a target?
+Poi controlliamo che scala, denominatore, baseline e titolo non gli facciano percepire una relazione diversa.
 
-Il grafico è la risposta visiva a una di queste domande.
+> **Il chart type non è una preferenza estetica. È una scelta sul compito cognitivo che rendiamo facile e sull'errore che dobbiamo rendere difficile.**
 
-**Il chart type non è una preferenza estetica. È una scelta su quale struttura rendere percettivamente evidente.**
+### Fonti
+
+- Office for National Statistics, *Data visualisation guidance — Axes and gridlines*: https://service-manual.ons.gov.uk/data-visualisation/guidance/axes-and-gridlines
+- Government Analysis Function, *Accessible charts: a checklist of the basics*: https://analysisfunction.civilservice.gov.uk/policy-store/accessible-charts-a-checklist-of-the-basics/
