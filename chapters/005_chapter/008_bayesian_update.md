@@ -1,168 +1,146 @@
-## 5.7 Intuizione bayesiana: aggiornare ciò che crediamo quando arriva nuova evidenza
+## 5.7 Intuizione bayesiana: aggiornare ciò che riteniamo plausibile
 
-Il ragionamento bayesiano parte da un'idea semplice: **prima di osservare una nuova informazione abbiamo una certa convinzione; dopo averla osservata, dovremmo aggiornarla**.
+Il ragionamento bayesiano parte da un'idea semplice:
 
-In forma compatta:
+> **prima di osservare una nuova evidenza abbiamo una certa valutazione; dopo averla osservata dovremmo aggiornarla in modo proporzionato alla forza dell'evidenza.**
+
+La formula di Bayes è:
 
 \[
 P(A|B)=\frac{P(B|A)P(A)}{P(B)}
 \]
 
-La formula di Bayes permette di invertire una probabilità condizionata e combina tre elementi:
+Combina:
 
-- una probabilità iniziale, o *prior*;
-- quanto l'evidenza è compatibile con l'ipotesi, cioè la *likelihood*;
-- una probabilità aggiornata, o *posterior*.
+- una probabilità iniziale, o **prior**;
+- quanto l'evidenza osservata è compatibile con l'ipotesi, la **likelihood**;
+- la probabilità aggiornata, o **posterior**.
 
-NIST presenta la formula di Bayes proprio come un modo per esprimere la probabilità condizionata di un evento in funzione della probabilità inversa e della probabilità di base.[^1]
+NIST presenta la formula di Bayes come relazione tra una probabilità condizionata, la probabilità inversa e la probabilità di base.[^nist-bayes]
 
-### Caso realistico: un alert antifrode non significa frode
+La sezione 5.2 ci ha già mostrato perché la base rate conta. Qui facciamo il passo successivo: usiamo nuove evidenze per **rivedere una valutazione precedente**, invece di ripartire ogni volta da zero.
 
-Riprendiamo un sistema di pagamento.
+### Caso simulato/composito — Un crollo della conversione e quattro ipotesi
 
-Supponiamo che:
+Una piattaforma e-commerce vede il checkout conversion rate scendere dal 4,1% al 3,2% in meno di un'ora.
 
-- lo 0,5% delle transazioni sia realmente fraudolento;
-- il sistema segnali il 92% delle frodi;
-- il 3% delle transazioni legittime venga segnalato comunque.
+Il team formula quattro ipotesi:
 
-Una transazione genera un alert.
+1. problema di tracking;
+2. cambiamento nel mix di traffico;
+3. bug della nuova release;
+4. problema del payment provider.
 
-Qual è la probabilità che sia davvero una frode?
+Negli ultimi 40 incidenti con un pattern iniziale simile, le cause erano state approssimativamente:
 
-Partiamo da 100.000 transazioni.
+| Causa | Frequenza storica |
+|---|---:|
+| Tracking / telemetry | 40% |
+| Traffic mix / campagne | 25% |
+| Product bug | 20% |
+| Payment provider | 15% |
 
-Frodi reali:
+Queste frequenze non sono verità universali. Sono un possibile **prior operativo**: prima di ulteriori evidenze, tracking è semplicemente una causa storicamente più frequente.
 
-\[
-100.000 \times 0,005 = 500
-\]
+### Prima evidenza: gli ordini reali sono scesi
 
-Alert corretti:
+Finance e il database transazionale confermano che non è soltanto un problema di tracking.
 
-\[
-500 \times 0,92 = 460
-\]
+L'ipotesi 1 perde molto peso.
 
-Transazioni legittime:
+Non è necessario dire che la sua probabilità diventa zero. Ma la nuova evidenza è poco compatibile con “solo telemetry”.
 
-\[
-99.500
-\]
+### Seconda evidenza: il problema è quasi esclusivamente su iOS
 
-Falsi positivi:
+Web e Android sono stabili. Su iOS il calo è forte.
 
-\[
-99.500 \times 0,03 = 2.985
-\]
+L'ipotesi di traffic mix generale diventa meno plausibile. Product bug sale di priorità.
 
-Alert complessivi:
+### Terza evidenza: il calo inizia con la versione 8.42
 
-\[
-460+2.985=3.445
-\]
+La segmentazione per app version mostra:
 
-La probabilità che un alert corrisponda a una frode reale è quindi:
+- iOS 8.41: conversione normale;
+- iOS 8.42: forte perdita nel passaggio payment → confirmation.
 
-\[
-\frac{460}{3.445}\approx13,4\%
-\]
+Ora l'evidenza è molto più compatibile con una regressione specifica della release che con un problema generale del payment provider.
 
-L'alert aumenta enormemente il rischio rispetto allo 0,5% iniziale, ma non porta la probabilità al 92%.
+Il team controlla i log e trova un errore nella gestione delle carte salvate introdotto proprio nella 8.42.
 
-Il prior conta.
+### Questo è Bayesian thinking anche senza calcolare il posterior
 
-### Il prior non è un'opinione arbitraria
+Nel caso non abbiamo costruito un modello bayesiano completo con distribuzioni formali.
 
-Nel lavoro analitico un prior può essere basato su:
+Abbiamo però seguito la logica:
+
+**prior → nuova evidenza → rivalutazione relativa delle ipotesi → nuova evidenza → ulteriore aggiornamento**.
+
+È una disciplina molto diversa da:
+
+> “Ho avuto una prima intuizione e ora cerco dati che la confermino.”
+
+Un buon aggiornamento deve consentire a un'ipotesi favorita inizialmente di perdere peso quando i dati la contraddicono.
+
+### Il prior non è un'opinione resa matematica
+
+Un prior può derivare da:
 
 - storico dello stesso processo;
-- dati di un segmento comparabile;
-- benchmark;
-- esperienza precedente formalizzata;
-- una distribuzione volutamente ampia quando abbiamo poca informazione.
+- dati di segmenti comparabili;
+- risultati di studi precedenti;
+- conoscenza di dominio formalizzata;
+- una distribuzione volutamente ampia quando sappiamo poco.
 
-Il punto non è “credere” senza dati.
+Il prior deve essere **difendibile e aggiornabile**.
 
-Il punto è riconoscere che raramente partiamo davvero da zero.
+Se scegliamo un prior soltanto perché rende il risultato finale più vicino a ciò che desideriamo, non stiamo usando Bayes per imparare: lo stiamo usando per decorare una conclusione già scelta.
 
-### Caso realistico: un nuovo prodotto che parte fortissimo
+### Evidenza nuova: valore osservato e quantità di informazione
 
-Una piattaforma subscription lancia un nuovo piano premium.
+Supponiamo che un nuovo piano abbia conversion rate storico atteso vicino al 12%.
 
-Nei primi 20 visitatori della landing page, 8 acquistano.
+Nei primi 20 visitatori osserviamo 8 acquisti: 40%.
 
-Conversion rate osservato:
+È un segnale interessante, ma venti osservazioni contengono poca informazione. Inoltre potrebbero provenire da early adopter molto selezionati.
 
-\[
-40\%
-\]
+Se osserviamo invece 8.000 acquisti su 20.000 visitatori comparabili, la stessa percentuale del 40% ha un peso completamente diverso.
 
-Il product manager propone immediatamente di aumentare il budget media perché il vecchio piano converte intorno al 12%.
+Quindi una buona domanda non è soltanto:
 
-L'analista è più prudente.
+> “Qual è il dato nuovo?”
 
-Venti osservazioni sono poche. Inoltre i primi visitatori provengono da una mailing list di clienti ad alto engagement.
+ma:
 
-L'evidenza è positiva, ma non sufficiente per comportarsi come se il vero conversion rate fosse certamente 40%.
+> **“Quanta informazione nuova contiene rispetto a ciò che sapevamo già?”**
 
-Il ragionamento bayesiano suggerisce esattamente questo atteggiamento: il dato nuovo aggiorna fortemente le nostre aspettative, ma l'intensità dell'aggiornamento dipende da quanta informazione avevamo prima e da quanta evidenza nuova abbiamo raccolto.
+### Bayesian thinking e AI
 
-### Evidenza forte ed evidenza debole
+Un sistema AI può generare rapidamente venti possibili spiegazioni di un'anomalia.
 
-Se un processo storico mostra un failure rate dell'1% su due milioni di eventi e in una mattina osserviamo 2 failure su 50 eventi, il 4% osservato merita attenzione, ma non dobbiamo automaticamente dichiarare che il nuovo failure rate è 4%.
+La generazione di ipotesi, però, non assegna loro la stessa plausibilità.
 
-Se invece osserviamo 4.000 failure su 100.000 eventi, il nuovo dato ha un peso completamente diverso.
-
-L'evidenza non è soltanto il valore osservato. È anche la sua quantità e affidabilità.
-
-### Bayesian thinking senza fare Bayesian statistics
-
-Un analyst può applicare questa intuizione anche senza costruire un modello bayesiano formale.
-
-Prima di una nuova analisi può scrivere:
-
-- cosa mi aspetto sulla base di ciò che so già?
-- quale evidenza mi farebbe cambiare idea?
-- quanto è forte la nuova evidenza?
-- sto ignorando il base rate?
-
-Queste domande migliorano il ragionamento anche in analisi descrittive normali.
-
-### AI e aggiornamento delle ipotesi
-
-Un LLM può generare dieci spiegazioni plausibili per un'anomalia.
-
-Questo non rende le dieci ipotesi equivalenti.
-
-L'analista deve assegnare priorità sulla base di:
+L'analista deve usare:
 
 - frequenza storica;
 - compatibilità con il dominio;
-- evidenza già disponibile;
-- costo della verifica;
-- capacità dell'ipotesi di spiegare simultaneamente più segnali.
+- evidenza disponibile;
+- capacità esplicativa;
+- costo e velocità della verifica;
 
-Poi deve aggiornare la propria valutazione quando arrivano nuovi dati.
+per decidere quali ipotesi testare prima e come aggiornarle.
 
-Usata in questo modo, l'AI aiuta a esplorare lo spazio delle ipotesi; il ragionamento probabilistico impedisce di trattare ogni spiegazione generata come ugualmente plausibile.
+Questo collega il Capitolo 5 al principio di **Al timone**: l'AI può ampliare lo spazio delle ipotesi; la responsabilità di pesare evidenza e revisione delle convinzioni rimane umana.
 
-### La lezione
+### La domanda finale
 
-La probabilità non è statica.
+Il ragionamento bayesiano non chiede:
 
-Quando arriva nuova evidenza, una buona analisi dovrebbe cambiare ciò che riteniamo plausibile.
+> “Avevo ragione o torto fin dall'inizio?”
 
-La domanda non è:
+Chiede:
 
-> “Avevo ragione o torto?”
+> **“Data ciò che sapevo prima e ciò che ho osservato adesso, quanto deve cambiare ciò che considero plausibile?”**
 
-È:
+È una delle competenze più profonde dell'analisi: essere abbastanza strutturati da avere un'ipotesi e abbastanza disciplinati da cambiarla.
 
-> “Quanto dovrebbe cambiare la mia convinzione alla luce di ciò che ho appena osservato?”
-
-Questo è uno dei passaggi più importanti dal reporting al vero ragionamento analitico.
-
----
-
-[^1]: NIST/SEMATECH, *Assessing Product Reliability - Bayes Formula*: https://www.itl.nist.gov/div898/handbook/apr/section1/apr1a.htm
+[^nist-bayes]: NIST/SEMATECH, *Assessing Product Reliability — Bayes Formula*: https://www.itl.nist.gov/div898/handbook/apr/section1/apr1a.htm
