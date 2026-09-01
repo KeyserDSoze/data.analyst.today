@@ -1,38 +1,38 @@
-## 5.2 Probabilità condizionata: il contesto cambia il rischio
+## 5.2 Probabilità condizionata: il rischio cambia quando cambia il contesto
 
-Molte probabilità utili nel business sono **condizionate**.
+Molte probabilità utili nel business non sono marginali, ma **condizionate**.
 
-Non chiediamo semplicemente:
+Non chiediamo soltanto:
 
-**“Qual è la probabilità di churn?”**
+> “Qual è la probabilità di churn?”
 
 Chiediamo:
 
-**“Qual è la probabilità di churn dato che il cliente non ha effettuato login negli ultimi 21 giorni?”**
+> “Qual è la probabilità di churn **dato che** il cliente non ha effettuato login negli ultimi 21 giorni?”
 
 Oppure:
 
-**“Qual è la probabilità di reso dato che il prodotto appartiene alla categoria calzature?”**
+> “Qual è la probabilità di reso **dato che** il prodotto appartiene alla categoria calzature?”
 
-La probabilità condizionata di \(A\) dato \(B\) si scrive:
+La probabilità condizionata di `A` dato `B` si può leggere così:
+
+> **tra tutti i casi in cui B è vero, quanto spesso osserviamo A?**
+
+La formula è:
 
 \[
 P(A|B)=\frac{P(A \cap B)}{P(B)}
 \]
 
-quando \(P(B)>0\).
+quando `P(B) > 0`.
 
-La formula dice una cosa molto intuitiva: restringiamo il nostro universo ai casi in cui \(B\) è vero e, dentro quel sottoinsieme, misuriamo quanto spesso avviene \(A\).
+Il calcolo è semplice. La parte difficile è ricordare che **cambiando il denominatore cambia la domanda**.
 
-### Caso realistico: il churn che sembrava casuale
+### Caso simulato/composito — Il churn che sembrava diffuso
 
-Un'azienda SaaS B2B ha 18.400 clienti attivi e un churn annualizzato intorno al 9%.
+Una società SaaS B2B ha 18.400 clienti attivi. Il churn complessivo sembra distribuito su tutta la base.
 
-Il management considera il churn relativamente diffuso e chiede al team analytics di costruire un modello predittivo.
-
-Prima del modello, l'analista costruisce una tabella semplice.
-
-Divide i clienti in base all'attività degli ultimi trenta giorni:
+Prima di costruire un modello predittivo, l'analista segmenta i clienti in base all'attività degli ultimi 30 giorni.
 
 | Attività ultimi 30 giorni | Clienti | Churn nei 90 giorni successivi |
 |---|---:|---:|
@@ -41,127 +41,95 @@ Divide i clienti in base all'attività degli ultimi trenta giorni:
 | Bassa | 3.200 | 17,9% |
 | Nessuna attività | 1.200 | 41,5% |
 
-Il churn complessivo nasconde una struttura enorme.
+Il rischio cambia radicalmente quando conosciamo il livello di utilizzo.
 
-La probabilità di churn cambia radicalmente quando conosciamo il livello di utilizzo.
+Possiamo quindi dire:
 
-In particolare:
-
-\[
-P(Churn|Nessuna\ attività) \approx 41,5\%
-\]
+`P(Churn | Nessuna attività) ≈ 41,5%`
 
 mentre:
 
-\[
-P(Churn|Alta\ attività) \approx 2,4\%
-\]
+`P(Churn | Attività alta) ≈ 2,4%`.
 
-Il management non ha ancora un modello sofisticato, ma ha già una leva operativa molto più utile: monitorare il deterioramento dell'engagement.
+Questo non dimostra che la bassa attività **causi** il churn. Può essere un segnale precoce di insoddisfazione, una conseguenza di un problema già in corso o entrambe le cose.
 
-### Il denominatore cambia
+Ma la probabilità condizionata ha comunque trasformato un rischio aggregato in una struttura molto più informativa.
 
-Supponiamo che 1.000 clienti abbiano aperto almeno tre ticket di supporto in un mese e che 180 di loro abbiano poi churnato.
+### La probabilità inversa è un'altra domanda
+
+Supponiamo che 1.000 clienti abbiano aperto almeno tre ticket in un mese e che 180 facciano churn nei 90 giorni successivi.
 
 Allora:
 
-\[
-P(Churn|3+\ ticket)=18\%
-\]
+`P(Churn | 3+ ticket) = 18%`.
 
-Ma se 180 clienti churnati su 900 totali avevano tre o più ticket, allora:
+Supponiamo anche che, tra tutti i 900 clienti che hanno fatto churn, 180 avessero aperto almeno tre ticket.
 
-\[
-P(3+\ ticket|Churn)=20\%
-\]
+Allora:
 
-Le due probabilità non sono la stessa cosa.
+`P(3+ ticket | Churn) = 20%`.
 
-Questo è uno degli errori più frequenti anche nelle conversazioni manageriali.
+Le due frasi possono sembrare quasi equivalenti in una riunione. Non lo sono.
 
-“Il 20% dei churner aveva molti ticket” non implica che “chi ha molti ticket ha il 20% di probabilità di churn”.
+- “Il 20% dei churner aveva molti ticket” guarda **indietro partendo dai churner**.
+- “Il 18% dei clienti con molti ticket farà churn” guarda **in avanti partendo dai clienti con ticket**.
 
-Il denominatore è diverso.
+Confondere `P(A|B)` con `P(B|A)` è uno degli errori più comuni nel ragionamento probabilistico.
 
-### Il problema della base rate
+### Il base-rate problem: un alert accurato può avere molti falsi positivi
 
-Immaginiamo un sistema che identifica transazioni potenzialmente fraudolente.
+Consideriamo un caso simulato di fraud detection.
 
-La frode reale riguarda soltanto lo 0,4% delle transazioni.
+La frode reale riguarda lo **0,4%** delle transazioni.
 
-Il sistema ha:
+Un sistema ha:
 
-- sensibilità del 95%;
-- tasso di falsi positivi del 2%.
+- sensibilità: 95%;
+- false-positive rate: 2%.
 
-Una transazione viene segnalata.
+Una transazione viene segnalata. Quanto è probabile che sia davvero fraudolenta?
 
-Quanto è probabile che sia realmente fraudolenta?
+L'intuizione può suggerire un valore vicino al 95%.
 
-L'intuizione può suggerire una probabilità vicina al 95%.
+Usiamo invece **frequenze naturali** su 100.000 transazioni:
 
-Ma consideriamo 100.000 transazioni.
+| Gruppo | Casi | Segnalati |
+|---|---:|---:|
+| Frodi reali | 400 | 380 |
+| Transazioni legittime | 99.600 | 1.992 |
+| **Totale alert** |  | **2.372** |
 
-Frodi reali: 400.
+Tra 2.372 alert, soltanto 380 sono frodi reali.
 
-Il sistema identifica correttamente circa 380 di queste.
+Quindi:
 
-Transazioni legittime: 99.600.
+`P(Frode | Alert) ≈ 380 / 2.372 ≈ 16%`.
 
-Il 2% viene segnalato erroneamente: circa 1.992 transazioni.
-
-Totale segnalazioni:
-
-\[
-380+1.992=2.372
-\]
-
-La quota di frodi reali tra le segnalazioni è quindi circa:
-
-\[
-\frac{380}{2.372}\approx16\%
-\]
-
-Un alert può essere molto informativo e allo stesso tempo avere una precisione apparentemente bassa, semplicemente perché l'evento di partenza è raro.
+Il sistema può avere un'ottima capacità di intercettare le frodi e, allo stesso tempo, produrre molti falsi positivi perché la frode è molto rara.
 
 Questo è il **base-rate problem**.
 
-### Perché è importante per l'AI e i modelli predittivi
+### Perché le frequenze naturali aiutano
 
-Gli stessi errori compaiono quando valutiamo modelli di machine learning.
+Percentuali come “sensibilità 95%” e “false-positive rate 2%” sono corrette ma facili da combinare male mentalmente.
 
-Un modello può avere accuracy del 99% e risultare quasi inutile se l'evento che vogliamo individuare avviene nello 0,5% dei casi.
+Tradurre il problema in un gruppo concreto — per esempio 100.000 transazioni — rende visibili i denominatori.
 
-Per questo non basta chiedere:
+È una tecnica molto utile anche fuori dalla frode:
 
-**“Quanto è accurato il modello?”**
+- screening;
+- alert di sicurezza;
+- churn prediction;
+- lead scoring;
+- anomaly detection;
+- sistemi di qualità.
 
-Dobbiamo capire:
+### Un ponte verso Bayes e i modelli predittivi
 
-- prevalenza dell'evento;
-- falsi positivi;
-- falsi negativi;
-- precision e recall;
-- costo economico delle due tipologie di errore.
+La base rate è ciò che il ragionamento bayesiano formalizzerà nella sezione 5.7: una nuova evidenza deve essere interpretata insieme alla probabilità di partenza.
 
-La probabilità condizionata non è quindi un capitolo preparatorio alla statistica. È già un modo operativo di pensare.
+Nel Capitolo 10 ritroveremo lo stesso problema attraverso precision, recall, calibration e scelta della soglia.
 
-### Regola mentale
+Per ora basta una regola mentale:
 
-Ogni volta che leggiamo una frase del tipo:
-
-> “Tra i clienti che fanno X, succede spesso Y”
-
-proviamo a scriverla esplicitamente come:
-
-\[
-P(Y|X)
-\]
-
-Poi chiediamoci se qualcuno sta, volontariamente o meno, trasformandola nella probabilità inversa:
-
-\[
-P(X|Y)
-\]
-
-Sono domande diverse.
+> **Ogni volta che qualcuno dice “tra quelli che fanno X, molti fanno Y”, scrivi esplicitamente `P(Y|X)` e controlla che non stia usando come prova la probabilità inversa `P(X|Y)`.**
