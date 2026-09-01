@@ -1,59 +1,138 @@
-## 17.11 Caso finale: una decisione, molte tecniche
-I problemi reali raramente arrivano etichettati come “regressione”, “A/B test”, “forecasting” o “causal inference”.
+## 17.11 Caso finale: “La crescita è sana?”
 
-Arrivano così:
+### Caso simulato/composito: OrbisMarket
 
-> “Perché stiamo perdendo margine e cosa dobbiamo fare?”
+OrbisMarket è un marketplace europeo con circa 9 milioni di ordini annui.
 
-## Caso composito: OrbisMarket
+Nel Q3 il board riceve questi numeri:
 
-OrbisMarket è un marketplace europeo con 9 milioni di ordini annui.
+- GMV: `+7%`;
+- net revenue: `+4%`;
+- contribution margin: `-13%`;
+- repeat purchase rate: `-3,4 pp`;
+- delivery complaints: `+22%`;
+- nuovi seller: `+31%`;
+- marketing spend: `+18%`.
 
-Nel Q3:
+Il CEO non chiede:
 
-- GMV: +7%;
-- net revenue: +4%;
-- contribution margin: -13%;
-- repeat purchase rate: -3,4 pp;
-- delivery complaints: +22%.
+> “Quale tecnica dobbiamo usare?”
 
-Tre funzioni propongono tre spiegazioni:
+Chiede:
 
-- Marketing: “il problema è il mix di clienti acquisiti”;
-- Operations: “il problema è la logistica”;
-- Commercial: “i seller stanno alzando i prezzi”.
+> **“La crescita è sana, e cosa dobbiamo cambiare prima del prossimo trimestre?”**
 
-L'analista non sceglie una spiegazione. Costruisce una sequenza di verifiche.
+Prima di leggere oltre, proviamo a fermarci.
 
-## Step 1 — Data quality e semantica
+Con questi soli numeri potremmo immaginare molte storie:
 
-Prima di interpretare il -13%:
+- customer acquisition di qualità peggiore;
+- seller mix più debole;
+- logistica deteriorata;
+- sconti eccessivi;
+- refund in crescita;
+- costi di pagamento;
+- nuova contabilizzazione;
+- crescita volutamente meno profittevole ma strategicamente sensata;
+- più cause contemporaneamente.
 
-- riconcilia contribution margin con Finance;
-- controlla il grain ordine/riga/spedizione;
-- verifica refund e cancellation timing;
-- confronta event date e accounting date;
-- controlla nuovi seller fee e carrier surcharge.
+La maturità analitica consiste nel non innamorarsi della prima spiegazione disponibile.
 
-Scopre che circa 1,5 pp del calo apparente derivano da un cambio di timing nella contabilizzazione di alcuni rimborsi.
+## Routing iniziale
 
-Il deterioramento resta reale, ma è più piccolo del primo alert.
+Il Capstone Routing Canvas viene compilato prima di aprire SQL.
 
-## Step 2 — Decomposition
+| Elemento | Scelta |
+|---|---|
+| Decisione | quali leve correggere e quali investimenti mantenere nel Q4 |
+| Failure cost | tagliare crescita sana oppure continuare a scalare un meccanismo economicamente distruttivo |
+| Claim necessario | diagnostico su driver principali; causale sulle leve che richiedono interventi costosi |
+| Tempo | 10 giorni per il board, 72 ore per una prima triage |
+| Reversibilità | diversa per marketing, seller policy, capacità logistica e pricing |
+| Switching question | quale evidenza ci farebbe scegliere una leva diversa? |
 
-Il delta residuo viene scomposto in:
+### Deliverable candidati
+
+Non vengono attivati automaticamente tutti gli artefatti del libro.
+
+Il team seleziona inizialmente:
+
+1. **Analytical Brief**;
+2. **Data Readiness Review**;
+3. **EDA Evidence Map**;
+4. **Lifecycle Diagnostic Map**;
+5. **Analytical Data Contract** per contribution margin;
+6. **Decision Record**.
+
+Gli altri restano condizionali.
+
+Per esempio, il **Causal Identification Brief** entra soltanto se una decisione importante dipende da una relazione che i dati descrittivi non possono sostenere.
+
+## 1. Definire “crescita sana”
+
+La prima discussione con il management produce una definizione operativa.
+
+Una crescita è considerata sufficientemente sana se:
+
+- il contribution profit assoluto non viene eroso oltre la soglia approvata;
+- la customer economics delle nuove coorti converge verso target;
+- service quality non deteriora oltre guardrail;
+- la crescita non dipende da incentivi che richiedono spesa crescente per unità di risultato;
+- eventuali sacrifici di margine sono intenzionali, misurati e reversibili.
+
+Questa definizione è importante perché evita di trasformare “GMV cresce” o “margin % scende” in verdetti automatici.
+
+## 2. Data Readiness Review: il primo -13% non è ancora una verità decisionale
+
+Prima di interpretare il contribution margin:
+
+- Finance e Analytics riconciliano definizione e periodo;
+- viene controllato il grain ordine/riga/spedizione;
+- si verificano refund e cancellation timing;
+- si confrontano event date e accounting date;
+- si controllano nuovi seller fee e carrier surcharge;
+- si verifica se il marketing cost è incluso nello stesso modo dei trimestri precedenti.
+
+Emerge un cambio di timing nella contabilizzazione di alcuni refund.
+
+Circa `1,5 pp` del deterioramento apparente derivano da comparabilità contabile, non da peggioramento economico corrente.
+
+Il problema resta reale.
+
+Ma il primo numero non aveva ancora il diritto di sostenere la conclusione iniziale.
+
+### Stop rule
+
+> **Nessun piano di taglio o investimento viene approvato usando il -13% grezzo.**
+
+## 3. Decomposition: quali componenti stanno consumando margine?
+
+Il delta residuo viene decomposto in:
 
 - product margin;
 - discount;
 - shipping subsidy;
-- refunds;
+- refund;
 - payment cost;
-- customer support cost;
-- seller incentives.
+- support cost;
+- seller incentive;
+- marketing acquisition cost dove rilevante.
 
-I driver principali sono shipping subsidy e refunds.
+I driver principali risultano:
 
-## Step 3 — Segmentation e cohort analysis
+1. shipping subsidy;
+2. refund;
+3. mix verso seller e categorie con cost-to-serve più alto.
+
+Gli sconti contribuiscono, ma non dominano.
+
+Questa fase produce una visualizzazione con ruolo `orient`: un contribution-margin bridge.
+
+## 4. Segmentazione: dove si concentra il deterioramento?
+
+Il team non cerca il segmento con il grafico più spettacolare.
+
+Costruisce una Evidence Map coerente con le ipotesi.
 
 Il deterioramento è concentrato in:
 
@@ -62,110 +141,232 @@ Il deterioramento è concentrato in:
 - due aree metropolitane;
 - seller entrati dopo una recente espansione del catalogo.
 
-Le coorti nuove hanno repeat rate più basso, ma anche livelli di servizio peggiori.
+Le nuove coorti hanno repeat rate inferiore, ma anche delivery service peggiore.
 
-Quindi “qualità del marketing” e “logistica” non sono spiegazioni indipendenti.
+Quindi due spiegazioni inizialmente concorrenti — “marketing porta clienti peggiori” e “la logistica sta peggiorando” — possono essere collegate.
 
-## Step 4 — Funnel e behavioral analysis
+Il customer mix e la qualità del servizio non sono necessariamente fenomeni indipendenti.
 
-Il funnel post-acquisto mostra:
+## 5. Lifecycle Diagnostic Map: il problema continua dopo il checkout
 
-ordine → spedizione → consegna → eventuale reclamo → secondo acquisto.
+Il team osserva il percorso:
 
-Il calo di retention è molto più forte tra clienti che ricevono la prima consegna oltre la promessa.
+**ordine → spedizione → consegna → eventuale reclamo/refund → secondo acquisto**
 
-Ma questa correlazione non dimostra causalità: clienti, categorie e aree possono differire.
+La retention a 60 giorni è molto peggiore tra clienti che ricevono la prima consegna oltre la promessa.
 
-## Step 5 — Causal reasoning
+Questo è un finding importante.
+
+Non è ancora un effetto causale.
+
+Le aree con consegne peggiori possono avere:
+
+- categorie diverse;
+- seller diversi;
+- customer mix diverso;
+- ordini più pesanti;
+- promise date differenti.
+
+A questo punto il claim richiesto dalla decisione diventa più forte.
+
+Se vogliamo spendere milioni in capacità o cambiare il routing, dobbiamo capire se migliorare delivery reliability può plausibilmente cambiare anche economics e repeat purchase.
+
+## 6. Causal Identification Brief: solo ora entra la causalità
 
 Il team cerca variation utile.
 
-Una modifica operativa è stata introdotta gradualmente solo in alcuni hub.
+Una modifica operativa al consolidamento degli ordini è stata introdotta gradualmente in alcuni hub ma non in altri nello stesso momento.
 
-L'analista costruisce un confronto quasi-sperimentale tra hub simili prima e dopo il rollout, verificando trend pre-intervento e composizione.
+Questo crea un'opportunità quasi-sperimentale.
 
-L'evidenza suggerisce che il nuovo schema di consolidamento abbia aumentato il tempo di consegna di circa 0,8 giorni negli ordini bulky e ridotto il repeat purchase a 60 giorni di circa 2,1 pp nel segmento più esposto.
+Il team verifica:
 
-L'analista evita comunque una formulazione troppo forte: il design è utile ma non perfetto.
+- pre-trend;
+- composizione degli hub;
+- timing rollout;
+- cambi concorrenti;
+- spillover;
+- definizione dell'esposizione;
+- robustezza a specifiche alternative.
 
-## Step 6 — Forecasting e capacità
+L'evidenza suggerisce che il nuovo schema abbia:
 
-Operations propone di aggiungere capacità ovunque.
+- aumentato delivery time di circa `0,8 giorni` negli ordini bulky più esposti;
+- ridotto repeat purchase a 60 giorni di circa `2,1 pp` nel segmento più esposto.
+
+Il team non scrive:
+
+> “Abbiamo dimostrato che la logistica causa tutto il churn.”
+
+Scrive:
+
+> **“Il disegno quasi-sperimentale sostiene un effetto materialmente negativo del nuovo consolidamento su delivery time e repeat purchase nel segmento più esposto, pur con limiti di identificazione residui.”**
+
+Il claim rimane proporzionato al design.
+
+## 7. Temporal Decision Brief: quanto problema richiede capacità?
+
+Operations propone una risposta semplice:
+
+> “Aggiungiamo capacità ovunque.”
 
 Il forecast mostra però che i picchi sono concentrati in finestre e hub specifici.
 
-Un aumento generalizzato di capacità costerebbe €6,8M annui.
+Una capacità fissa generalizzata costerebbe circa `€6,8M` annui.
 
-Una combinazione di capacità flessibile, routing e soglie di volume ha costo atteso molto inferiore.
+Una combinazione di:
 
-## Step 7 — Experimentation
+- capacità flessibile;
+- routing alternativo;
+- soglie di volume;
+- promise date più realistiche;
 
-Il team testa due interventi:
+ha costo atteso molto inferiore.
 
-A. surcharge sugli ordini bulky sotto una certa soglia;
-B. promise date più realistica + routing alternativo.
+Il forecast entra quindi solo quando la domanda decisionale lo richiede: **quanta capacità, dove e quando?**
 
-L'obiettivo primario non è semplicemente conversione checkout.
+## 8. Experiment Contract: separare una buona idea da una buona policy
 
-È contribution margin per visitatore, con guardrail su conversione, cancellazioni, delivery time e repeat purchase.
+Il team identifica due interventi testabili:
 
-La variante B riduce leggermente la conversione iniziale ma migliora delivery reliability e margine atteso per cliente.
+### A — Surcharge selettivo
 
-## Step 8 — Decision economics
+Sugli ordini bulky sotto una determinata soglia economica.
 
-Il team confronta tre opzioni:
+### B — Promise date realistica + routing alternativo
 
-| Opzione | Costo annuo stimato | Effetto atteso | Reversibilità |
-|---|---:|---|---|
-| Capacità fissa generalizzata | €6,8M | alta protezione picchi | bassa |
-| Capacità flessibile + routing | €2,9M | effetto mirato | media-alta |
-| Solo surcharge | €0,4M | protegge margine ma rischia conversione | alta |
+Con gestione diversa degli ordini ad alto rischio di ritardo.
 
-La scelta finale combina routing/capacità flessibile con surcharge selettivo e promise date più realistica.
+Primary metric:
 
-## Step 9 — Comunicazione
+**contribution margin per visitatore**.
 
-L'executive summary non dice:
+Guardrail:
 
-> “La retention è calata per la logistica.”
+- checkout conversion;
+- cancellation;
+- delivery time;
+- refund;
+- repeat purchase;
+- customer complaint.
 
-Dice:
+La variante B riduce leggermente la conversione iniziale ma migliora delivery reliability e valore atteso per cliente.
 
-> “Dopo aver corretto un effetto contabile, il deterioramento del contribution margin è concentrato negli ordini bulky e nelle nuove coorti di due aree metropolitane. L'evidenza più forte collega una parte del problema al nuovo consolidamento logistico, che aumenta i ritardi nei segmenti più esposti. Un rollout mirato di routing alternativo e capacità flessibile ha miglior rapporto impatto/costo rispetto all'espansione generalizzata. Raccomandiamo rollout progressivo, con surcharge selettivo e monitoraggio di delivery reliability, contribution margin e repeat purchase.”
+Questo è un esempio importante: una variante può “perdere” una metrica locale e migliorare il sistema complessivo.
 
-## Step 10 — Misurazione dopo la decisione
+## 9. Decision economics: le alternative reali
+
+Il Decision Record confronta:
+
+| Opzione | Costo annuo stimato | Effetto atteso | Reversibilità | Rischio principale |
+|---|---:|---|---|---|
+| Capacità fissa generalizzata | €6,8M | alta protezione picchi | bassa | overcapacity |
+| Capacità flessibile + routing | €2,9M | effetto mirato | medio-alta | execution complexity |
+| Solo surcharge | €0,4M | protegge margine | alta | conversion/customer perception |
+| Status quo | ~€0 diretto | nessuna correzione | alta | deterioramento continua |
+
+La scelta non è una singola opzione pura.
+
+Il team raccomanda:
+
+- capacità flessibile e routing nei nodi esposti;
+- promise date più realistica;
+- surcharge selettivo soltanto dove l'economia lo giustifica;
+- stop condition su conversion e customer complaints;
+- monitoraggio di repeat purchase e contribution margin.
+
+## 10. Decision Communication Pack
+
+La prima pagina del board non contiene dieci tecniche.
+
+Contiene una decisione.
+
+### Headline
+
+> **“Dopo aver corretto un effetto contabile, il deterioramento del margine è concentrato negli ordini bulky e nelle nuove coorti di due aree. L'evidenza più forte collega una parte materiale del problema al nuovo consolidamento logistico. Un intervento mirato su routing, capacità flessibile e promise date ha rapporto impatto/costo migliore della capacità generalizzata.”**
+
+### Evidence hierarchy
+
+1. margin bridge;
+2. concentration map;
+3. lifecycle evidence;
+4. quasi-experimental estimate con caveat;
+5. capacity scenarios;
+6. experiment result;
+7. option economics.
+
+### Decision requested
+
+Approvare rollout progressivo del pacchetto mirato e non l'espansione fissa generalizzata.
+
+### Switching condition
+
+Rivalutare se:
+
+- l'effetto operativo non si replica;
+- costi flessibili superano soglia;
+- repeat purchase non migliora;
+- conversion loss da surcharge supera il beneficio economico;
+- il mix Q4 cambia sostanzialmente.
+
+## 11. Outcome review: separare decision quality e outcome luck
 
 Dopo otto settimane:
 
-- on-time delivery: +6,7 pp;
-- contribution margin bulky: +3,2 pp;
-- support contacts: -11%;
-- repeat purchase nel segmento target: +1,5 pp;
-- conversion checkout: -0,3 pp.
+- on-time delivery: `+6,7 pp`;
+- contribution margin bulky: `+3,2 pp`;
+- support contacts: `-11%`;
+- repeat purchase nel segmento target: `+1,5 pp`;
+- checkout conversion: `-0,3 pp`.
 
-La decisione non ha ottimizzato ogni metrica.
+Il sistema non ottimizza ogni metrica.
 
-Ha migliorato il sistema complessivo.
+Migliora il trade-off complessivo che il Decision Record aveva dichiarato rilevante.
 
-## Cosa abbiamo usato davvero?
+Il team effettua comunque una review distinta:
 
-Nel caso sono entrati:
+### Qualità della decisione ex ante
 
-- data quality;
-- SQL e semantic reasoning;
-- decomposition;
-- segmentation;
-- cohorts;
-- funnel;
-- causal inference;
-- forecasting;
-- experimentation;
-- unit economics;
-- decision analysis;
-- storytelling.
+- alternative considerate?
+- evidenza proporzionata?
+- downside espliciti?
+- switching condition definite?
 
-Nessuna tecnica era “il capitolo giusto”.
+### Outcome ex post
 
-Il problema ha richiesto una catena.
+- i meccanismi si sono mossi come previsto?
+- quali assunzioni erano sbagliate?
+- cosa aggiornare nel modello mentale?
 
-> **La maturità analitica appare quando smettiamo di chiedere quale tecnica usare e iniziamo a chiedere quale sequenza di evidenze serve per prendere una decisione migliore.**
+Una buona decisione può avere un outcome sfavorevole per shock imprevisti. Una cattiva decisione può essere fortunata.
+
+Il capstone deve insegnare entrambe le distinzioni.
+
+## 12. Quali deliverable abbiamo usato davvero?
+
+Nel caso OrbisMarket entrano:
+
+- Analytical Brief;
+- Analytical Data Contract;
+- Data Readiness Review;
+- EDA Evidence Map;
+- Lifecycle Diagnostic Map;
+- Causal Identification Brief;
+- Temporal Decision Brief;
+- Experiment Contract;
+- Uncertainty Brief;
+- Decision Record;
+- Decision Communication Pack.
+
+Non entrano automaticamente:
+
+- Predictive Decision Card;
+- Tooling Decision Record;
+- Data Flow Architecture Map;
+- AI Analysis Control Sheet.
+
+Potrebbero diventare necessari in una diversa implementazione, ma non servono per rendere difendibile la decisione descritta.
+
+Questa è la lezione finale del capitolo.
+
+> **La maturità analitica non appare quando riusciamo a usare molte tecniche. Appare quando sappiamo quale sequenza di evidenze serve, quale claim possiamo sostenere e quale lavoro sarebbe soltanto complessità aggiuntiva.**
