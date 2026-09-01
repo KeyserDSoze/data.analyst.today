@@ -1,180 +1,320 @@
 # Capitolo 18 — Costruire un sistema analitico che scala
 
-Una buona analisi risolve una domanda.
+## 18.0 Quando un'analisi smette di essere un progetto e diventa un servizio
 
-Un buon sistema analitico evita che la stessa domanda debba essere risolta da zero ogni settimana.
+Una buona analisi risolve una decisione.
 
-Questa distinzione sembra banale, ma segna il passaggio tra un team che produce insight e un'organizzazione che riesce a utilizzare dati in modo affidabile nel tempo.
+Un buon sistema analitico evita che la stessa decisione debba essere ricostruita da zero ogni settimana.
 
-Un analista può costruire una query impeccabile, una dashboard utile o un modello che migliora una decisione. Ma se il risultato dipende da passaggi manuali, definizioni non documentate, file locali, controlli informali e conoscenza custodita nella testa di una sola persona, il valore creato resta fragile.
+Questo capitolo comincia esattamente dove termina il capstone.
 
-Scalare non significa semplicemente aggiungere tecnologia.
+Nel Capitolo 17 abbiamo imparato a selezionare il minimo percorso di evidenza necessario per una decisione complessa.
 
-Significa rendere un processo:
+Ora la domanda cambia:
 
-- ripetibile;
-- osservabile;
-- verificabile;
-- comprensibile;
-- governabile;
-- modificabile senza rompere tutto;
-- utilizzabile da persone diverse da chi lo ha costruito.
+> **Che cosa succede quando quella decisione torna ogni giorno, ogni lunedì o a ogni chiusura mensile?**
 
-Il problema quindi non è solo:
+Se continuiamo a risolverla come un progetto ad hoc, il costo cresce con l'organizzazione.
 
-> “Come automatizziamo questa analisi?”
+L'analista diventa un collo di bottiglia.
+
+La conoscenza resta nella memoria di poche persone.
+
+Le eccezioni si accumulano in query locali e fogli di calcolo.
+
+Le metriche divergono.
+
+E quando il sistema fallisce, spesso lo scopre per primo il business.
+
+Scalare significa trasferire una capacità analitica ricorrente dalla **memoria personale** a un **contratto operativo esplicito**.
+
+Non significa soltanto automatizzarla.
+
+## Il salto di natura
+
+Consideriamo due situazioni.
+
+### Situazione A — analisi occasionale
+
+Un'azienda valuta se entrare in un nuovo mercato.
+
+L'analista costruisce:
+
+- dataset;
+- scenari;
+- Decision Record;
+- presentazione.
+
+La decisione viene presa.
+
+Il lavoro può essere archiviato.
+
+Non è necessario trasformare ogni query in infrastruttura permanente.
+
+### Situazione B — processo ricorrente
+
+Ogni lunedì alle 08:30 il leadership team decide:
+
+- forecast commerciale;
+- capacità operativa;
+- rischi di churn;
+- azioni su margin e cash.
+
+Se il report non arriva, arriva tardi o cambia definizione senza preavviso, il processo decisionale viene compromesso.
+
+Non stiamo più parlando di un documento.
+
+Stiamo parlando di un **servizio analitico interno**.
+
+E un servizio ha proprietà che un'analisi ad hoc può non avere:
+
+- utenti riconoscibili;
+- criticality;
+- owner;
+- livello di affidabilità atteso;
+- dipendenze;
+- change policy;
+- supporto;
+- incident management;
+- costo di esercizio;
+- lifecycle.
+
+## Il deliverable del capitolo: Analytics Operating Contract
+
+Il centro del capitolo sarà l'**Analytics Operating Contract**.
+
+Non è un contratto legale.
+
+È la scheda con cui rendiamo esplicito che cosa significa **operare** un prodotto analitico.
+
+Una versione completa può contenere:
+
+```text
+recurring decision / use case
+→ criticality tier
+→ product boundary
+→ consumers
+→ decision / business owner
+→ metric / semantic owner
+→ technical / product owner
+→ source-of-truth contract
+→ reliability SLO
+→ freshness / completeness / correctness indicators
+→ test gates
+→ observability
+→ incident severity + escalation
+→ fallback / degraded mode
+→ version / change policy
+→ backfill / replay policy
+→ self-service interface
+→ access / governance
+→ cost-to-serve
+→ adoption / decision-value metrics
+→ AI-agent ownership if applicable
+→ review cadence
+→ deprecation / retirement criteria
+```
+
+Il contratto risponde a una domanda molto concreta:
+
+> **“Se questa capacità deve continuare a funzionare senza il suo autore originale, che cosa dobbiamo rendere esplicito?”**
+
+## Non tutto merita lo stesso livello operativo
+
+Il primo errore del capitolo sarebbe trattare ogni dashboard come se fosse un sistema bancario critico.
+
+L'affidabilità costa.
+
+Servono:
+
+- test;
+- monitoring;
+- supporto;
+- ridondanza;
+- recovery;
+- change control;
+- capacità umana.
+
+Per questo introduciamo i **criticality tier**.
+
+Un esempio semplice:
+
+| Tier | Uso | Esempio | Aspettativa |
+|---|---|---|---|
+| T0 — Exploratory | analisi personale/ad hoc | notebook EDA | best effort |
+| T1 — Team | decisioni locali ricorrenti | dashboard settimanale di team | owner + test base + freshness visibile |
+| T2 — Business-critical | processo decisionale rilevante | revenue review, capacity plan | SLO, incident process, controlled change |
+| T3 — High-consequence | regolatorio/finanziario/operativo ad alto impatto | closing, payout, risk decision feed | controlli rigorosi, reconciliation, fallback, audit trace |
+
+Questi livelli non sono uno standard universale.
+
+Servono a rendere visibile un principio:
+
+> **la disciplina operativa deve essere proporzionata al costo del fallimento.**
+
+Microsoft, nella roadmap di adozione di Fabric, distingue esplicitamente livelli differenti di ownership e governance in base a scope e criticità: self-service personale/team, managed self-service ed enterprise non richiedono gli stessi controlli. La stessa documentazione sottolinea che una soluzione considerata essenziale per il decision making richiede separazione tra sviluppo e produzione, change management controllato, aspettative di supporto chiare e governance più rigorosa.
+
+Fonte: https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-maturity-levels
+
+## Il confine con il Capitolo 12
+
+Il Capitolo 12 chiedeva:
+
+> “Da dove passa il dato e con quali garanzie?”
+
+Il Capitolo 18 chiede:
+
+> **“Chi risponde del servizio analitico nel tempo, quale affidabilità promette, come cambia e che cosa accade quando fallisce?”**
+
+Possiamo avere un'architettura tecnicamente elegante e un operating model pessimo.
+
+Oppure una pipeline semplice, ma ben posseduta, osservabile e proporzionata alla decisione.
+
+Qui ci interessa soprattutto il secondo livello.
+
+## Il confine con il Capitolo 13
+
+Il Capitolo 13 decideva quale strumento o ambiente fosse proporzionato al workflow.
+
+Qui il tool è secondario.
+
+Un Analytics Operating Contract può governare:
+
+- un modello SQL;
+- un foglio controllato;
+- una semantic layer;
+- una dashboard;
+- un API data product;
+- un modello ML;
+- una pipeline con agenti AI.
+
+La domanda non è “qual è lo stack moderno?”.
 
 È:
 
-> **“Quale parte di questa analisi merita di diventare infrastruttura decisionale?”**
+> **“Qual è il costo totale di mantenere questa promessa analitica?”**
 
-## Dal progetto al prodotto analitico
+## Il confine con il Capitolo 14
 
-Immaginiamo un'azienda SaaS che ogni lunedì misura:
+Il Capitolo 14 governa l'esecuzione AI-assisted:
 
-- pipeline commerciale;
-- ARR;
-- churn;
-- NRR;
-- activation;
-- support backlog;
-- forecast trimestrale.
+- context boundary;
+- permission boundary;
+- verification;
+- eval;
+- human control.
 
-All'inizio un analyst scarica tre file, esegue una query, aggiorna un workbook e prepara una slide.
+Il Capitolo 18 aggiunge un'altra prospettiva:
 
-Funziona.
+> **chi mantiene l'agente dopo il go-live?**
 
-Poi l'azienda cresce.
+Un agente ricorrente può avere:
 
-Il CFO vuole il dato alle 8:00.
+- owner che lascia l'azienda;
+- prompt o policy non aggiornati;
+- credenziali troppo ampie;
+- dipendenze che cambiano;
+- output che nessuno controlla più;
+- costi che crescono;
+- consumer che continuano a fidarsi.
 
-Il VP Sales vuole drill-down per regione.
+Questo è un problema di **operational lifecycle**, non di prompting.
 
-Customer Success usa una definizione diversa di churn.
+## Caso simulato/composito: il weekly report che diventa infrastruttura
 
-Il team Product vuole distinguere logo retention e revenue retention.
+Una società B2B SaaS, **MercuryOne**, produce ogni lunedì un executive revenue pack.
 
-Una modifica CRM rompe la logica del forecast.
-
-L'analista che costruiva il report va in ferie.
-
-Quello che sembrava un report diventa improvvisamente un sistema critico.
-
-La domanda cambia.
-
-Non basta più chiedere se il calcolo è corretto oggi.
-
-Dobbiamo chiedere:
-
-- chi possiede la metrica?
-- chi possiede la pipeline?
-- quali dati sono fonte autorevole?
-- quali test devono passare?
-- quanto può essere vecchio il dato?
-- come scopriamo che qualcosa si è rotto?
-- chi viene avvisato?
-- come gestiamo una modifica semantica?
-- come ricostruiamo il passato?
-- cosa succede se una sorgente non arriva?
-
-Queste non sono domande accessorie.
-
-Sono parte della qualità analitica.
-
-## Il sistema operativo dell'analytics
-
-Un sistema analitico maturo può essere pensato come una catena:
-
-**Sorgenti → Contratti → Trasformazioni → Test → Metriche → Prodotti analitici → Decisioni → Feedback**
-
-con una seconda catena trasversale:
-
-**Ownership → Osservabilità → Governance → Versionamento → Incident management**
-
-Se manca la seconda catena, la prima può funzionare per mesi e fallire proprio quando diventa importante.
-
-## Scalare non significa automatizzare tutto
-
-Un errore frequente è trasformare ogni analisi in pipeline.
-
-Non tutto lo merita.
-
-Un'analisi una tantum su un'acquisizione, una nuova categoria o una crisi operativa può restare esplorativa.
-
-Un processo invece tende a meritare industrializzazione quando è:
-
-- ricorrente;
-- business-critical;
-- utilizzato da più team;
-- soggetto a errori manuali;
-- abbastanza stabile semanticamente;
-- abbastanza costoso da ricostruire ogni volta.
-
-Una buona domanda è:
-
-> **“Se questa analisi smettesse di funzionare domani, chi se ne accorgerebbe e quale decisione verrebbe compromessa?”**
-
-Più seria è la risposta, più serve pensare in termini di sistema.
-
-## Caso realistico: il weekly report che diventa infrastruttura
-
-Una società B2B da 180 milioni di euro di ARR produce ogni lunedì un executive revenue report.
-
-Per due anni il processo è manuale.
-
-Un senior analyst:
+All'inizio un senior analyst impiega quattro ore:
 
 1. esporta opportunità dal CRM;
-2. legge dati di billing;
-3. ricostruisce ARR e pipeline;
-4. applica correzioni note;
-5. aggiorna il file del CFO.
+2. legge billing;
+3. riconcilia ARR;
+4. applica eccezioni enterprise;
+5. aggiorna forecast e file del CFO.
 
-Tempo medio: quattro ore.
+Il processo funziona bene per due anni.
 
-Errori significativi: rari.
+Poi il senior analyst cambia azienda.
 
-Sembra efficiente.
-
-Poi il senior analyst lascia l'azienda.
-
-Il nuovo team scopre che:
+Il team scopre che:
 
 - la definizione di expansion ARR non è documentata;
-- alcune eccezioni enterprise sono codificate in formule Excel;
-- una tabella di mapping territori vive su un drive personale;
-- il report non ha test automatici;
-- nessuno sa quale timestamp determina il cut-off settimanale;
-- Sales e Finance usano versioni diverse dello stesso numero.
+- tre eccezioni enterprise vivono in formule Excel;
+- il mapping dei territori è in un file personale;
+- il cut-off settimanale non è scritto;
+- la pipeline automatizzata non ha reconciliation con Finance;
+- Sales e Finance usano due snapshot diversi;
+- nessuno sa chi deve essere avvisato se il dato non arriva entro le 08:00.
 
-Il problema non era la competenza del vecchio analyst.
+Il problema non è che il vecchio processo fosse manuale.
 
-Era che il sistema dipendeva dalla sua memoria.
+Il problema è che una capacità diventata **business-critical** era ancora operata come conoscenza personale.
 
-La soluzione non è semplicemente “rifare tutto in SQL”.
+## Industrializzare non significa riscrivere tutto
 
-Il redesign richiede:
+MercuryOne potrebbe reagire così:
 
-- definizione condivisa delle metriche;
-- ownership business;
-- trasformazioni versionate;
-- controlli di riconciliazione;
-- freshness target;
-- alerting;
-- documentazione delle eccezioni;
-- semantic layer comune;
-- runbook per incidenti.
+> “Portiamo tutto sul nuovo lakehouse.”
 
-Il report smette di essere un file.
+Ma non è ancora la domanda giusta.
 
-Diventa un prodotto analitico.
+Prima serve sapere:
 
-## Una definizione operativa
+- quale decisione supporta il prodotto;
+- quali metriche sono authoritative;
+- quale precisione/freshness serve davvero;
+- chi decide una modifica semantica;
+- come degradare se una sorgente manca;
+- quali errori devono bloccare il report;
+- quali possono essere segnalati come caveat;
+- quanto vale mantenere il sistema.
 
-In questo capitolo chiameremo **sistema analitico** un insieme di dati, trasformazioni, metriche, controlli, ownership e interfacce progettato per supportare decisioni ricorrenti con un livello di affidabilità esplicito.
+Solo dopo queste risposte l'architettura può essere progettata in modo proporzionato.
 
-La tecnologia può cambiare.
+## Il lifecycle del prodotto analitico
 
-Il principio no.
+Un prodotto analitico attraversa fasi:
 
-> **Una singola analisi crea conoscenza. Un sistema analitico rende quella conoscenza riutilizzabile senza perdere controllo sul significato.**
+```text
+explore
+→ prove value
+→ operationalize
+→ scale
+→ maintain
+→ evolve
+→ deprecate
+→ retire
+```
+
+Molte organizzazioni progettano bene soltanto le prime quattro.
+
+È così che si riempiono di:
+
+- dashboard zombie;
+- tabelle obsolete;
+- metriche duplicate;
+- pipeline senza owner;
+- modelli che nessuno osa eliminare;
+- costi infrastrutturali che nessuno collega più a un valore.
+
+Il retirement non è pulizia cosmetica.
+
+È parte della capacità di scalare.
+
+## La tesi del capitolo
+
+Il sistema operativo dell'analytics può essere riassunto con due catene.
+
+### Catena del prodotto
+
+**Sources → Contracts → Transformations → Tests → Metrics → Analytical Product → Decision → Feedback**
+
+### Catena operativa
+
+**Criticality → Ownership → SLO → Observability → Change → Incident → Cost → Adoption → Review → Retirement**
+
+La prima produce informazione.
+
+La seconda mantiene il diritto di fidarsi di quell'informazione nel tempo.
+
+> **Scalare l'analytics non significa automatizzare una risposta. Significa rendere mantenibile la promessa che quella risposta continuerà ad avere lo stesso significato, la qualità necessaria e un owner quando qualcosa cambierà.**
