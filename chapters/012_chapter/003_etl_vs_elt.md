@@ -1,117 +1,191 @@
-## 12.2 ETL vs ELT: dove trasformiamo il dato e perché
+## 12.2 ETL ed ELT: decidere dove trasformare senza perdere replayability
 
-ETL significa **Extract, Transform, Load**.
+ETL ed ELT vengono spesso presentati come due scuole contrapposte.
 
-ELT significa **Extract, Load, Transform**.
+Per un Data Analyst è più utile considerarli come una domanda architetturale:
 
-La differenza sembra piccola, ma cambia il modo in cui costruiamo e governiamo la pipeline.
+> **In quale punto del flusso applichiamo una trasformazione e quale versione del dato conserviamo per poterla verificare o rifare?**
 
 ### ETL
 
-Nel modello ETL classico:
+Nel pattern classico:
 
-1. estraiamo i dati dalle sorgenti;
-2. li trasformiamo prima di caricarli nella destinazione analitica;
-3. carichiamo il risultato già curato.
+```text
+Extract
+→ Transform
+→ Load
+```
 
-Questo approccio è stato molto comune quando storage e capacità di calcolo erano costosi e il data warehouse doveva ricevere dati già conformati.
+una parte significativa della trasformazione avviene prima del caricamento nella destinazione analitica.
 
 ### ELT
 
-Con ELT:
+Nel pattern:
 
-1. estraiamo i dati;
-2. li carichiamo rapidamente in una piattaforma analitica;
-3. eseguiamo le trasformazioni usando la capacità di calcolo della piattaforma stessa.
+```text
+Extract
+→ Load
+→ Transform
+```
 
-La crescita del cloud, dello storage economico e dei motori analitici scalabili ha reso ELT molto comune.
+il dato viene prima portato nella piattaforma analitica e poi trasformato usando il compute disponibile lì.
 
-## Non è una guerra di acronimi
+La crescita di object storage, warehouse cloud e motori scalabili ha reso questo secondo pattern molto comune.
 
-ETL ed ELT non sono ideologie. Sono pattern.
+Ma l'acronimo non è la decisione importante.
 
-La scelta dipende da:
+### Le responsabilità da separare
 
-- volume;
-- latenza;
-- sicurezza;
-- costi;
-- capacità del motore di destinazione;
-- necessità di conservare il raw;
-- requisiti normativi;
-- competenze del team.
+Una pipeline può essere letta meglio come:
 
-### Caso realistico: il campo che nessuno aveva previsto
+```text
+capture
+→ preserve
+→ validate
+→ conform
+→ apply business logic
+→ serve
+```
 
-**MareaPay**, fintech europea, estrae dati da un provider di pagamenti. La prima pipeline ETL conserva soltanto i campi necessari ai report del momento:
+Alcune trasformazioni devono avvenire presto:
 
-- transaction_id;
-- amount;
-- currency;
-- status.
+- rimozione/tokenizzazione di dati che non possiamo conservare;
+- controlli di formato necessari per ricevere il dato;
+- decryption in boundary controllati;
+- policy di compliance.
 
-Sei mesi dopo il team antifrode scopre che il provider trasmetteva anche:
+Altre possono essere posticipate:
 
-- device fingerprint;
+- deduplicazione business;
+- identity resolution;
+- join tra domini;
+- dimensional modeling;
+- metriche.
+
+### Caso simulato/composito — MareaPay e il campo eliminato troppo presto
+
+MareaPay riceve payload da un provider di pagamenti.
+
+La prima pipeline conserva soltanto:
+
+```text
+transaction_id
+amount
+currency
+status
+```
+
+perché sono gli unici campi necessari ai report iniziali.
+
+Sei mesi dopo il team antifrode scopre che il payload originale conteneva anche:
+
 - authentication method;
-- risk signals;
+- device signal;
+- risk attributes;
 - timestamp intermedi.
 
-Quei campi erano stati eliminati prima del caricamento.
+La trasformazione pre-load li aveva eliminati.
 
-Per ricostruire la storia bisogna richiedere un costoso backfill al provider, che conserva solo 90 giorni di dettaglio.
+Il provider mantiene il dettaglio storico solo per una finestra limitata.
 
-Il problema non è che ETL sia sbagliato. Il problema è che l'architettura aveva eliminato troppo presto informazione potenzialmente utile.
+La nuova domanda non può più essere ricostruita interamente.
 
-Una soluzione moderna potrebbe conservare una copia raw e costruire sopra versioni curate.
+L'errore non dimostra che ETL sia sbagliato.
 
-## Conservare raw non significa usare raw
+Dimostra che una trasformazione irreversibile è stata applicata **prima di aver deciso quale capacità di replay era necessaria**.
 
-Questo punto è cruciale.
+### Raw retention come opzione di recovery
 
-Conservare il dato grezzo può aiutare per:
+Conservare una versione raw o source-aligned può aiutare a:
 
-- audit;
-- reprocessing;
-- debugging;
-- nuove esigenze;
-- cambiamenti nella logica di business.
+- riprocessare dopo un bug;
+- applicare nuova logica;
+- auditare una trasformazione;
+- recuperare campi non usati inizialmente;
+- verificare schema changes.
 
-Ma il raw non dovrebbe automaticamente diventare il layer da cui ogni analista costruisce dashboard.
+Ma:
 
-Se ognuno interpreta direttamente eventi grezzi, ritorniamo al problema delle definizioni locali.
+> **conservare raw non significa servire raw agli analyst.**
 
-### Pipeline mentale
+Il raw layer ottimizza replay e fedeltà alla sorgente. Il curated/serving layer ottimizza affidabilità analitica.
 
-Una pipeline robusta spesso separa:
+Sono responsabilità diverse.
 
-**acquisizione → conservazione → validazione → conformazione → business logic → serving**.
+### Caso reale documentato — separare ingestion e trasformazione
 
-Non importa se i prodotti utilizzati si chiamano ETL, ELT, dataflow, notebook, pipeline o transformation framework. Quello che conta è che ogni passaggio abbia una responsabilità chiara.
+Le linee guida attuali di Databricks per pipeline affidabili raccomandano di separare ingestion e trasformazioni downstream, così un failure della business logic non impedisce necessariamente di continuare a far atterrare i dati sorgente. Questo crea un failure boundary utile: possiamo conservare ciò che è arrivato e riprocessarlo quando il codice viene corretto.
 
-## Quando una trasformazione dovrebbe avvenire presto?
+Fonte: https://docs.databricks.com/aws/en/ldp/best-practices
 
-Alcune trasformazioni possono essere necessarie prima dello storage analitico:
+Il pattern è generale:
 
-- rimozione o tokenizzazione di dati sensibili;
-- decryption controllata;
-- filtri imposti da compliance;
-- validazione tecnica minima;
-- conversione di formati non supportati.
+```text
+source
+→ durable landing
+→ transformation
+```
 
-Altre trasformazioni possono essere più appropriate dopo il caricamento:
+riduce il rischio che un bug downstream provochi contemporaneamente perdita del dato in ingresso.
 
-- join tra sorgenti;
-- deduplication;
-- business logic;
-- metriche;
-- dimensional modeling;
-- aggregazioni.
+### Reversibilità della trasformazione
 
-### Domanda operativa per l'analista
+Per ogni step chiediamo:
 
-Quando utilizzi una tabella trasformata chiediti:
+> Se questa logica è sbagliata, posso ricostruire il risultato corretto?
 
-> Posso risalire al dato precedente alla trasformazione, capire la logica applicata e ricostruire il risultato?
+Una trasformazione è più recuperabile se abbiamo:
 
-Se la risposta è no, la pipeline è più difficile da verificare.
+- input conservato;
+- codice/versione;
+- parametri/cut-off;
+- metadata di ingestion;
+- capacità di backfill.
+
+È meno recuperabile se sovrascrive l'unica copia esistente.
+
+### Privacy: raw non significa conservare tutto per sempre
+
+Replayability ha anche un costo e un limite.
+
+Non è una giustificazione per conservare indefinitamente ogni dato.
+
+Dobbiamo bilanciare:
+
+- audit/reprocessing;
+- minimizzazione dei dati;
+- retention;
+- sicurezza;
+- costo;
+- requisiti normativi.
+
+Il Capitolo 18 riprenderà questi trade-off a livello di governance.
+
+### Campo della Data Flow Architecture Map
+
+Per ogni transformation boundary annotiamo:
+
+```text
+input preserved? sì/no
+transformation location:
+irreversible operations:
+retention:
+replay source:
+backfill capability:
+code/version reference:
+failure blocks capture? sì/no
+```
+
+### Regola operativa
+
+ETL vs ELT è una scorciatoia terminologica.
+
+Le domande professionali sono:
+
+1. dove viene applicata la trasformazione?
+2. quali dati vengono persi in modo irreversibile?
+3. possiamo riprocessare?
+4. la failure della trasformazione blocca l'ingestion?
+5. quale layer è appropriato per il consumo analitico?
+
+> **Una buona pipeline non conserva tutto indiscriminatamente. Conserva abbastanza stato e provenienza da poter correggere il passato quando scopriamo che la logica di ieri era sbagliata.**
