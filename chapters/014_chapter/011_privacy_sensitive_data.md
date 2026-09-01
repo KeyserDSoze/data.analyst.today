@@ -1,75 +1,250 @@
-## 14.10 Privacy e dati sensibili: non tutto ciò che l'AI può vedere deve essere mostrato all'AI
-L'AI-assisted analytics rende molto semplice copiare una tabella, un estratto di log o un dataset dentro un sistema generativo e chiedere: “trova qualcosa di interessante”. Questa facilità crea un nuovo rischio operativo: il dato può essere condiviso prima ancora che qualcuno si chieda se sia appropriato farlo.
+## 14.10 Privacy e dati sensibili: progettare il data boundary prima del prompt
 
-La prima domanda non è quindi:
+L'AI-assisted analytics rende estremamente facile prendere un estratto di dati, incollarlo in un sistema generativo e chiedere:
 
-> “L'AI sa analizzare questo dataset?”
+> “Trova i pattern più importanti.”
 
-ma:
+Questa facilità può invertire l'ordine professionale corretto.
 
-> “L'AI è autorizzata a ricevere questo dataset, in questa forma, per questo scopo?”
+La prima domanda non è:
 
-## Minimizzazione prima della potenza
+> “Il modello sa analizzare questo dataset?”
 
-Un analista dovrebbe chiedersi:
+È:
 
-- servono davvero nomi e indirizzi email?
-- basta un identificativo pseudonimo?
-- è necessario includere testo libero dei ticket?
-- possiamo aggregare prima di inviare?
-- quali colonne contengono dati personali o commercialmente sensibili?
-- il sistema AI utilizzato è approvato dall'organizzazione?
-- dove vengono elaborati e conservati i dati?
-- quali log e audit trail rimangono?
+> **“Per quale scopo stiamo trattando questi dati, quali dati sono davvero necessari e quale sistema è autorizzato a riceverli?”**
 
-## Caso realistico: i ticket del customer care
+Questa sezione non è una guida legale. È una disciplina operativa per evitare che l'AI allarghi silenziosamente la superficie dei dati usati dall'analisi.
 
-Un team vuole usare un LLM per classificare automaticamente 180.000 ticket e capire le principali cause di insoddisfazione.
+### Purpose limitation prima della curiosità analitica
 
-Il primo prototipo esporta:
+La Commissione europea riassume tra i principi del GDPR:
+
+- **purpose limitation** — il trattamento deve avere uno scopo specifico;
+- **data minimisation** — vanno trattati solo i dati adeguati, pertinenti e necessari a quello scopo;
+- **storage limitation**;
+- **integrity and confidentiality**;
+- **accountability**.
+
+Fonti:
+
+- European Commission, *Principles of the GDPR*: https://commission.europa.eu/law/law-topic/data-protection/information-business-and-organisations/principles-gdpr_en
+- European Commission, *Obligations — Data protection by design and by default*: https://commission.europa.eu/law/law-topic/data-protection/information-business-and-organisations/obligations_en
+
+La conseguenza pratica per l'analista è importante:
+
+> **“potrebbe essere utile al modello” non è una giustificazione sufficiente per includere una colonna.**
+
+### Il Data Exposure Review
+
+Prima di inviare dati a un sistema AI, classifichiamo ciò che il workflow vorrebbe usare.
+
+| Categoria | Domanda operativa |
+|---|---|
+| Identificatori diretti | servono davvero nome, email, telefono, account number? |
+| Quasi-identificatori | combinazioni di età, località, ruolo o timestamp possono re-identificare? |
+| Testo libero | contiene dati personali, segreti, note interne o informazioni non strutturate inattese? |
+| Dati sensibili / speciali | esiste una ragione e un processo autorizzato per trattarli? |
+| Dati commerciali riservati | il sistema e il canale sono approvati per riceverli? |
+| Credenziali / token / secret | devono essere esclusi dal contesto e gestiti fuori dal prompt? |
+| Dati non necessari | possiamo eliminarli prima dell'elaborazione? |
+
+Il risultato non è “privacy sì/no”.
+
+È un **data boundary esplicito**.
+
+### Caso simulato/composito — classificare 180.000 ticket senza esporre tutto
+
+Un team Customer Experience vuole classificare 180.000 ticket per capire le principali cause di insoddisfazione.
+
+Il primo export contiene:
 
 - nome cliente;
 - email;
 - numero d'ordine;
 - testo completo del ticket;
 - note interne dell'operatore;
-- categoria prodotto.
-
-Per l'analisi tematica, nome ed email non servono. In molti casi non serve neppure il numero d'ordine. Le note interne possono contenere informazioni che non dovrebbero essere inviate al sistema scelto.
-
-Una progettazione più matura costruisce una vista dedicata:
-
-- `ticket_id` pseudonimizzato;
-- testo ripulito da pattern sensibili dove possibile;
-- macro-categoria prodotto;
+- categoria prodotto;
 - paese;
-- data;
-- outcome del ticket.
+- esito della richiesta.
 
-Lo stesso problema analitico viene risolto con una superficie di rischio molto più piccola.
+Per il clustering tematico, nome ed email non servono.
 
-## Least privilege anche per gli agenti
+Spesso non serve nemmeno il numero d'ordine.
 
-Un agente che può interrogare il warehouse non dovrebbe necessariamente poter vedere tutto il warehouse.
+Le note interne possono inoltre contenere informazioni non necessarie al task.
 
-L'accesso ideale segue il principio del minimo privilegio:
+Una vista dedicata espone invece:
 
-- dataset strettamente necessari;
-- permessi read-only quando bastano;
-- separazione tra ambienti di sviluppo e produzione;
-- approvazione umana per azioni irreversibili;
-- logging delle interrogazioni e delle azioni;
-- blocchi espliciti su dati particolarmente sensibili.
+```text
+ticket_id pseudonimizzato
+clean_text
+macro_categoria_prodotto
+paese
+mese
+outcome
+```
 
-Questo diventa ancora più importante quando gli agenti possono usare tool, inviare messaggi, modificare file o eseguire query.
+con un processo separato per redigere pattern sensibili dal testo libero quando necessario.
 
-## La privacy non è una casella finale
+La qualità dell'analisi tematica può restare quasi invariata mentre la superficie di esposizione diminuisce drasticamente.
 
-Se il workflow viene progettato senza considerare privacy e sicurezza, aggiungere un controllo alla fine è spesso troppo tardi. Microsoft, nella propria guida per agenti responsabili, tratta privacy, sicurezza, trasparenza e accountability come decisioni da incorporare fin dall'architettura e raccomanda human approval per azioni difficili da invertire o che coinvolgono persone, denaro o compliance.
+### Pseudonimizzato non significa anonimo
 
-**L'AI non cambia il principio fondamentale: utilizzare un dato perché è disponibile non significa avere una ragione legittima per utilizzarlo.**
+Sostituire `customer_id` con un token non trasforma automaticamente il dataset in dato anonimo.
 
-### Fonti
+Se altri attributi consentono di ricondurre ragionevolmente il record a una persona, il rischio resta.
 
-- Microsoft Learn, Responsible AI for agents: https://learn.microsoft.com/en-us/agents/center-of-excellence/responsible-ai
-- NIST AI RMF Generative AI Profile: https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
+L'EDPB, nel Parere 28/2024 sui modelli AI, sottolinea che la valutazione dell'anonimato richiede un'analisi caso per caso e considera, tra le altre cose, la probabilità di identificazione diretta o indiretta e di estrazione di dati personali dal modello.
+
+Fonti:
+
+- EDPB, *Opinion 28/2024*: https://www.edpb.europa.eu/documents/opinion-of-the-board-art-64/opinion-282024-on-certain-data-protection-aspects-related-to_en
+- sintesi EDPB: https://www.edpb.europa.eu/news/edpb-opinion-on-ai-models-gdpr-principles-support-responsible-ai_en
+
+Per il Data Analyst la regola è semplice: **pseudonimizzazione è una misura di riduzione del rischio, non un lasciapassare universale**.
+
+### Minimizzare prima di trasferire
+
+Quando possibile, spostiamo il calcolo verso il dato e portiamo al modello solo ciò che serve.
+
+Invece di inviare:
+
+```text
+2 milioni di transazioni con identificatori individuali
+```
+
+potremmo inviare:
+
+```text
+aggregati per segmento
+metriche diagnostiche
+campione autorizzato
+schema + profilo statistico
+query result già minimizzato
+```
+
+Questa scelta può migliorare contemporaneamente:
+
+- privacy;
+- costo;
+- velocità;
+- leggibilità del contesto;
+- verificabilità.
+
+### Least privilege per gli agenti
+
+Un agente collegato al warehouse non dovrebbe ereditare automaticamente i privilegi del suo sviluppatore.
+
+Il principio operativo è:
+
+```text
+identity separata
+→ dataset allowlist
+→ colonne/viste necessarie
+→ read-only di default
+→ azioni write esplicitamente autorizzate
+→ credenziali revocabili
+→ audit log
+```
+
+Microsoft, nel modello di responsabilità condivisa per agenti AI, indica esplicitamente tra le responsabilità del deployer identità, least privilege, autorizzazione delle azioni, supervisione umana e governance dei dati.
+
+Fonte: https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility-ai-agent
+
+Microsoft documenta inoltre pattern di least privilege per agent identity, allowlist delle azioni, audit log e revoca.
+
+Fonte: https://learn.microsoft.com/en-us/security/zero-trust/sfi/least-privilege-for-ai-agents
+
+### Testo libero: il dato che nasconde altri dati
+
+Una tabella strutturata mostra almeno le colonne che contiene.
+
+Il testo libero è più insidioso.
+
+Un ticket, una nota CRM o una trascrizione può contenere:
+
+- email;
+- indirizzi;
+- dettagli sanitari;
+- informazioni finanziarie;
+- password copiate per errore;
+- segreti aziendali;
+- dati su terze persone.
+
+Per questo “la colonna `ticket_text` è autorizzata” non basta.
+
+Serve chiedersi cosa può contenere **dentro i valori**.
+
+### Terze parti e sistema approvato
+
+Prima di usare un servizio esterno vanno chiariti, secondo i processi dell'organizzazione:
+
+- quale prodotto/tenant stiamo usando;
+- quali data-handling terms si applicano;
+- dove e come vengono elaborati i dati;
+- quali retention/logging sono previsti;
+- se i dati possono essere usati per scopi ulteriori;
+- quali controlli amministrativi esistono;
+- chi ha approvato il caso d'uso.
+
+Il Data Analyst non deve improvvisare una valutazione legale del fornitore.
+
+Deve sapere **quando il workflow supera il proprio perimetro e richiede Security, Privacy, Legal o DPO**.
+
+### Data protection by design, non filtro finale
+
+La Commissione europea descrive la protezione dei dati by design/by default come misure integrate fin dalle prime fasi, incluso trattare per default solo i dati necessari e limitarne l'accessibilità.
+
+Questo si traduce bene in AI analytics:
+
+```text
+purpose
+→ minimum dataset
+→ approved environment
+→ least-privilege access
+→ transformation/redaction
+→ model interaction
+→ output review
+→ retention/deletion policy
+```
+
+Aggiungere una nota “non condividere dati sensibili” alla fine del progetto è troppo tardi.
+
+### Caso ad alto rischio: quando fermarsi prima dell'analisi
+
+Se un analyst riceve una richiesta come:
+
+> “Carica tutte le exit interview e identifica quali dipendenti potrebbero lasciare l'azienda.”
+
+non dovrebbe iniziare ottimizzando il prompt.
+
+Prima deve chiarire:
+
+- finalità del trattamento;
+- categorie di dati presenti;
+- autorizzazione;
+- necessità e proporzionalità;
+- ruolo umano nella decisione;
+- eventuali obblighi specifici dell'organizzazione e della giurisdizione.
+
+La competenza professionale include anche riconoscere che **alcuni problemi richiedono governance prima dell'analytics**.
+
+### Campo della AI Analysis Control Sheet
+
+```text
+processing purpose:
+data owner:
+approved AI environment:
+data categories:
+minimum fields required:
+redaction/pseudonymisation:
+agent identity:
+read/write scope:
+third-party transfer?:
+retention/logging:
+privacy/security approval required?:
+output restrictions:
+```
+
+> **La potenza dell'AI non è una ragione per ampliare il dataset. Un workflow maturo dimostra prima quale minima evidenza serve e costruisce il confine dei dati intorno a quello scopo.**
