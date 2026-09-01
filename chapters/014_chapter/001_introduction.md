@@ -1,123 +1,277 @@
 # Capitolo 14 — AI-assisted analytics: accelerare senza perdere rigore
 
-L'intelligenza artificiale generativa sta cambiando rapidamente il lavoro analitico. Oggi un analista può chiedere a un assistente AI di scrivere SQL, generare Python, spiegare una query, proporre visualizzazioni, riassumere una tabella, suggerire ipotesi, documentare un modello e persino orchestrare una sequenza di attività.
+Il Capitolo 0 ha fissato una regola che qui non ripeteremo da zero:
 
-Questo non elimina il lavoro dell'analista. Sposta il punto in cui si concentra il valore.
+> **l'esecuzione può essere delegata; la responsabilità di capire ciò che consegniamo no.**
 
-Quando il costo della sintassi diminuisce, aumentano di importanza:
+Il Capitolo 13 ha aggiunto un secondo elemento: l'AI riduce il costo di costruire query, codice, automazioni e documentazione.
 
-- la qualità della domanda;
-- la semantica delle metriche;
-- la qualità dei dati;
-- la verifica dell'output;
-- la scelta del metodo;
-- il controllo delle assunzioni;
-- il giudizio sul fatto che una conclusione sia sufficientemente affidabile per una decisione.
+Questo capitolo affronta quindi la domanda successiva:
 
-Un modello generativo può produrre una query elegante che risponde alla domanda sbagliata. Può creare una regressione perfettamente eseguibile su un target contaminato. Può riassumere con sicurezza un pattern che dipende da un join duplicante. Può inventare colonne plausibili che non esistono. Può scegliere la data sbagliata in un modello semantico e restituire un risultato formalmente coerente ma business-wise errato.
+> **come progettiamo un workflow AI-assisted in cui la maggiore velocità non riduca la qualità dell'evidenza?**
 
-Per questo il principio del capitolo è:
+Il problema non è soltanto che un modello possa “allucinare”.
 
-> **AI-assisted analytics non significa delegare il giudizio. Significa comprimere il costo dell'esecuzione e reinvestire il tempo risparmiato in verifica, interpretazione e decisione.**
+Un sistema AI può produrre output perfettamente plausibili e tecnicamente validi che falliscono perché:
 
-## Un caso realistico: il query assistant che "salva" tre ore e quasi costa €400.000
+- hanno ricevuto contesto insufficiente;
+- usano il dataset sbagliato;
+- interpretano male una metrica;
+- hanno permessi troppo ampi;
+- propagano un errore da uno step al successivo;
+- trasformano un'ipotesi in una spiegazione;
+- producono una recommendation più forte dell'evidenza;
+- non lasciano una traccia sufficiente per ricostruire cosa è successo.
 
-Una marketplace company vuole sapere perché il Gross Merchandise Value del Sud Europa è sceso del 7,2% nell'ultima settimana.
+Per questo la nuova unità di lavoro non sarà il **prompt**.
 
-Un analyst chiede a un assistente AI:
+Sarà il **workflow controllato**.
 
-> "Scrivi una query SQL che confronti GMV per paese e categoria rispetto alla settimana precedente e identifichi i driver principali."
+## 14.0 Dalla generazione alla catena di controllo
 
-L'assistente genera in pochi secondi una query complessa con CTE, window functions e ranking dei contributi.
+Per un'analisi importante useremo questa sequenza:
 
-La query gira senza errori. Il risultato mostra che la categoria Electronics in Spagna è responsabile di quasi metà del calo.
+```text
+task
+→ context
+→ permission boundary
+→ generation
+→ verification
+→ evaluation
+→ escalation
+→ decision
+→ audit trail
+```
 
-Il team commerciale prepara una campagna promozionale da €400.000.
+Ogni passaggio risponde a una domanda diversa.
 
-Prima del lancio, però, un secondo analyst nota che la query usa `order_created_at` mentre il KPI ufficiale GMV del finance team usa `payment_captured_at`. Durante quella settimana un problema di PSP aveva spostato molti pagamenti al giorno successivo.
+### Task
 
-Usando la data corretta, il calo reale è soltanto dell'1,4% e il driver principale non è Electronics ma un ritardo operativo in Portogallo.
+Che cosa stiamo delegando?
 
-L'AI aveva scritto SQL corretto. Il problema era semantico.
+```text
+scrivere codice
+riassumere un output
+proporre ipotesi
+esplorare dati
+eseguire query
+preparare una recommendation
+```
 
-Questa distinzione accompagnerà tutto il capitolo:
+### Context
 
-**correttezza sintattica ≠ correttezza analitica ≠ correttezza decisionale**
+Quali fatti e definizioni può usare il sistema?
 
-## Dalla copilota all'agente
+- schema;
+- grain;
+- metriche certificate;
+- glossary;
+- date;
+- popolazione;
+- vincoli del dominio;
+- esempi verificati.
 
-Possiamo pensare a tre livelli di uso dell'AI nel lavoro analitico.
+### Permission boundary
 
-### Livello 1 — Assistente
+Che cosa può **fare**, non soltanto che cosa può leggere?
 
-L'AI aiuta in attività locali:
+```text
+read-only query?
+creare file?
+scrivere su database?
+inviare messaggi?
+modificare dashboard?
+avviare workflow?
+```
 
-- spiega una formula;
-- suggerisce SQL;
-- corregge un errore Python;
-- propone un grafico;
-- riscrive una documentazione.
+### Generation
 
-### Livello 2 — Copilota analitico
+Quale artefatto deve produrre?
 
-L'AI partecipa a una sequenza di ragionamento:
+### Verification
 
-- interpreta la richiesta;
-- propone un piano;
-- genera codice;
-- confronta risultati;
-- suggerisce verifiche;
-- prepara un summary.
+Quali controlli indipendenti devono passare prima che l'output sia trattato come evidenza?
 
-### Livello 3 — Workflow agentico
+### Evaluation
 
-L'AI può usare strumenti e compiere più passi:
+Come misuriamo nel tempo se il workflow funziona sul tipo di task reale per cui viene usato?
 
-1. interrogare un semantic model;
-2. eseguire query;
-3. controllare anomalie;
-4. produrre un report;
-5. confrontare il risultato con una baseline;
-6. richiedere approvazione umana prima di un'azione.
+### Escalation
 
-Più aumenta l'autonomia, più devono aumentare controlli, logging, limiti, test e governance.
+Quando il sistema deve fermarsi e chiedere intervento umano?
 
-## Perché il semantic layer diventa ancora più importante
+### Decision
 
-La generazione naturale di query non riduce il bisogno di semantica condivisa. Lo aumenta.
+Quale decisione può supportare l'output e quale invece rimane fuori scope?
 
-Microsoft documenta che Copilot in Power BI dipende fortemente dalla preparazione del semantic model: nomi, descrizioni, relazioni, misure, organizzazione e linguistic modeling influenzano direttamente la qualità delle risposte. La documentazione avverte anche che output inaccurate o misleading restano possibili e che gli utenti devono valutare criticamente i risultati.
+### Audit trail
 
-In altre parole, l'AI non elimina il problema della semantica. Lo rende più visibile.
+Possiamo ricostruire input, contesto, versione, tool call, output, verifiche e approvazione?
 
-Se un'organizzazione ha cinque definizioni diverse di "cliente attivo", un assistente AI non può inventare quale sia quella corretta per il board.
+Questa catena è il vero oggetto del capitolo.
 
-## La nuova unità di lavoro dell'analista
+## Caso simulato/composito — SQL perfetto, campagna sbagliata
 
-Nel lavoro tradizionale la sequenza era spesso:
+Un marketplace vede GMV del Sud Europa a -7,2% settimana su settimana.
 
-**domanda → query → risultato → slide**
+Un assistente riceve:
 
-Con l'AI diventa più utile pensare a:
+> “Trova i driver del calo per paese e categoria.”
 
-**domanda → contesto → specifica → generazione → verifica → stress test → interpretazione → decisione**
+Genera rapidamente una query complessa e identifica Electronics in Spagna come principale contributore.
 
-La qualità della specifica e della verifica diventa centrale.
+Il commerciale prepara una promozione da €400.000.
+
+Prima dell'approvazione un analyst esegue la reconciliation con il KPI certificato e scopre che la query usa `order_created_at`, mentre la metrica ufficiale usa `payment_captured_at`.
+
+Durante quella settimana un problema del payment processor aveva spostato molte capture al giorno successivo.
+
+Con la semantica corretta:
+
+- il delta è molto più piccolo;
+- la composizione geografica cambia;
+- la promozione non è più giustificata dall'evidenza disponibile.
+
+L'errore non era:
+
+```text
+AI non sa scrivere SQL
+```
+
+Era:
+
+```text
+context insufficiente
++ nessuna reconciliation obbligatoria
++ decisione preparata prima del verification gate
+```
+
+Questa distinzione sarà ricorrente:
+
+**output plausibile ≠ evidenza verificata ≠ decisione autorizzata**.
+
+## Perché la semantica diventa infrastruttura per l'AI
+
+La natural-language analytics non elimina la necessità di modelli semantici ben preparati.
+
+Microsoft oggi avverte esplicitamente che usare Copilot con semantic model non preparati può produrre output di bassa qualità, inaccurati o fuorvianti.[^ms-semantic]
+
+Per questo Power BI ha introdotto strumenti come:
+
+- AI data schemas;
+- AI instructions;
+- descrizioni;
+- **verified answers**.
+
+Le verified answers permettono agli autori del modello di associare domande importanti a risposte curate e validate, così che alcuni intenti non dipendano ogni volta da una nuova generazione.[^ms-verified]
+
+La lezione generale è più importante del prodotto:
+
+> **per alcune domande ricorrenti ad alto valore, è meglio recuperare una risposta governata che rigenerare ogni volta il significato da zero.**
+
+## NIST: generative AI come problema di risk management e evaluation
+
+Il NIST AI RMF Generative AI Profile è costruito proprio sull'idea che i rischi della GenAI debbano essere identificati, misurati e gestiti lungo design, sviluppo, uso ed evaluation, in modo proporzionato al contesto.[^nist-genai]
+
+Questo ci impedisce due estremi.
+
+**Estremo 1**
+
+> Non fidarti mai dell'AI.
+
+È troppo generico per essere operativo.
+
+**Estremo 2**
+
+> Se il modello è bravo, possiamo automatizzare.
+
+È altrettanto generico.
+
+La domanda matura è:
+
+> **per questo task, con questo impatto, quale grado di autonomia e quale evidenza di affidabilità sono sufficienti?**
+
+## AI Analysis Control Sheet
+
+Il deliverable canonico del capitolo sarà la **AI Analysis Control Sheet (AACS)**.
+
+Una versione compatta può essere:
+
+```text
+AI ANALYSIS CONTROL SHEET
+
+Task:
+Decision supported:
+Risk tier:
+Human owner:
+
+Allowed context:
+Certified data / metrics:
+Known ambiguity:
+
+Allowed tools:
+Read permissions:
+Write/action permissions:
+Forbidden actions:
+
+Expected output:
+Required evidence:
+Required checks:
+Independent reconciliation:
+
+Eval set / acceptance criteria:
+Known failure modes:
+Escalation / stop conditions:
+
+Model / system version:
+Prompt/instructions version:
+Tool/query/code artifacts:
+Reviewer / approver:
+Final claim allowed:
+```
+
+Non ogni richiesta richiede questa forma completa.
+
+Ma più un output AI può cambiare una decisione reale, più questi campi dovrebbero smettere di essere impliciti.
+
+## Il ruolo del prompt
+
+Il prompt resta importante, ma cambia status.
+
+Non è una formula magica.
+
+È una parte della specifica del workflow.
+
+Un prompt eccellente non compensa:
+
+- una fonte sbagliata;
+- permessi eccessivi;
+- assenza di test;
+- metriche incoerenti;
+- evaluation inesistente;
+- escalation non definita.
+
+Per questo il capitolo non insegnerà “trucchi per parlare con l'AI”.
+
+Insegnerà a progettare **contesto, controlli e responsabilità**.
 
 ## Obiettivo del capitolo
 
-Alla fine del capitolo dovresti essere in grado di:
+Alla fine il lettore dovrebbe saper:
 
-- formulare prompt analitici robusti;
-- usare AI per SQL, Python e documentazione senza delegare la semantica;
-- riconoscere hallucination e semantic errors;
-- verificare numeri e codice generati;
-- usare AI per EDA e debugging;
-- costruire workflow human-in-the-loop;
-- capire quando un agentic workflow è utile e quando è eccessivo;
-- distinguere velocità di produzione da affidabilità della conclusione.
+- trasformare un task ambiguo in una specifica verificabile;
+- delimitare contesto e permessi;
+- usare AI per codice, EDA, debugging e comunicazione mantenendo evidence gates;
+- distinguere confabulation, semantic error e narrative overreach;
+- progettare human-in-the-loop e agentic workflow;
+- costruire eval basate sui task reali;
+- gestire privacy e dati sensibili;
+- versionare istruzioni, artefatti ed execution trace;
+- definire stop/escalation conditions;
+- stabilire quale claim l'evidenza consente davvero.
 
-### Fonti
+> **L'AI rende economica la generazione. Il lavoro professionale consiste nel rendere economica anche la verifica senza renderla superficiale.**
 
-- NIST, *Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile*, https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
-- Microsoft Learn, *Use Copilot with semantic models in Power BI*, https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
+[^ms-semantic]: Microsoft Learn, *Use Copilot with semantic models in Power BI*, https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
+[^ms-verified]: Microsoft Learn, *Prepare your data for AI - Verified answers*, https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai-verified-answers
+[^nist-genai]: NIST, *Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile*, https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
