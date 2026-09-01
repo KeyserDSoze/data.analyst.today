@@ -43,21 +43,21 @@ La CI costruisce automaticamente Markdown aggregato, DOCX e PDF a ogni modifica 
 
 ### Ultima build validata
 
-Dopo la revisione editoriale dei Capitoli 0–4:
+Dopo la revisione editoriale dei Capitoli 0–5:
 
 - **20 capitoli**;
 - **321 file Markdown**;
-- **177.341 parole stimate**;
-- **1.272.763 caratteri**;
-- **120 URL esterni distinti**;
-- **780 pagine PDF**;
+- **180.385 parole stimate**;
+- **1.297.633 caratteri**;
+- **123 URL esterni distinti**;
+- **794 pagine PDF**;
 - build Markdown, DOCX e PDF completata con successo.
 
 Il numero di pagine non è una metrica editoriale da massimizzare. Può salire o scendere durante la revisione: alcuni passaggi vengono compressi perché ridondanti, altri vengono resi più chiari con esempi, tabelle, casi operativi e fonti reali più forti.
 
 ### Da completare prima della release tipografica
 
-- rendering professionale delle formule matematiche attualmente scritte con notazione LaTeX;
+- rendering professionale delle formule matematiche ancora scritte con notazione LaTeX;
 - indice/TOC con numeri di pagina nella versione impaginata;
 - verifica della resa di tabelle molto larghe;
 - controllo di widows/orphans, code block lunghi e page break;
@@ -94,9 +94,9 @@ La struttura è valida e le sorgenti risultano normalizzate.
 
 Resta **un solo warning globale**:
 
-- notazione matematica/LaTeX presente in **23 file**, da gestire nella pipeline tipografica.
+- notazione matematica/LaTeX presente in **19 file**, da gestire nella pipeline tipografica.
 
-Il numero è sceso da 25 a 23 durante la revisione del Capitolo 4, perché alcune formule semplici sono state sostituite con notazione testuale più leggibile. Non va però perseguita una rimozione meccanica del LaTeX quando la formula matematica trae reale beneficio dalla tipografia.
+Il numero è sceso progressivamente da 25 a 19 durante la revisione: formule semplici sono state rese leggibili in notazione testuale quando il typesetting non aggiungeva valore; le formule che hanno reale funzione didattica restano invece in sorgente matematica.
 
 Per una release candidata:
 
@@ -109,7 +109,7 @@ dovrà terminare senza warning editoriali bloccanti.
 
 ## 4. Formule matematiche
 
-Nel manoscritto sono presenti formule in blocchi del tipo:
+Nel manoscritto restano formule in blocchi del tipo:
 
 ```text
 \[
@@ -155,8 +155,9 @@ Ogni caso reale importante deve avere:
 
 - Nessun link nel manoscritto contiene `utm_source=chatgpt.com`.
 - Le revisioni mantengono la preferenza per documentazione ufficiale e fonti primarie.
-- Il Capitolo 3 usa il Government Data Quality Framework britannico come riferimento per fitness for purpose e dimensioni di qualità e include il Mars Climate Orbiter come caso reale documentato sulla semantica delle unità.
-- Il Capitolo 4 usa NIST per EDA, scatter plot, time series, smoothing e box plot; include il quartetto di Anscombe come caso reale/documentato sulla necessità di visualizzare le distribuzioni e il caso Berkeley 1973 come esempio storico di composizione e Simpson's paradox.
+- Il Capitolo 3 usa il Government Data Quality Framework britannico e include il Mars Climate Orbiter come caso reale documentato sulla semantica delle unità.
+- Il Capitolo 4 usa NIST per EDA, scatter plot, time series, smoothing e box plot; include il quartetto di Anscombe e il caso Berkeley 1973 per composizione e Simpson's paradox.
+- Il Capitolo 5 usa NIST per distribuzioni, CLT e confidence intervals; AAPOR per sampling, margin of sampling error e fonti di errore nelle survey; ASA per l'interpretazione del p-value; include il **Literary Digest 1936** come caso reale documentato sul fallimento di una grande numerosità ottenuta con un meccanismo di selezione inadeguato.
 
 ### Da fare prima della release
 
@@ -182,20 +183,19 @@ Obiettivo della revisione:
 
 | Capitolo | Stato editoriale | Nota |
 |---|---|---|
-| 0 — Al timone | **Revisionato** | Ridisegnato come manifesto operativo: orchestrazione, accountability, verification by design, stop condition, deskilling, trust levels, caso multi-agent, manifesto finale. |
-| 1 — Tutto è cambiato. Il problema è rimasto lo stesso | **Revisionato** | Eliminata la duplicazione con Ch. 0; fissata una sola catena analitica canonica; cinque tipi di domanda; caso vendite riscritto e marcato simulato/composito; rimandi ai capitoli specialistici. |
-| 2 — Dal problema di business al problema analitico | **Revisionato** | Il capitolo converge su un unico deliverable: l'Analytical Brief. Decision specification, stakeholder map, metric roles, hypothesis register, scope, baseline, segmentation plan, data requirements, Value of Information e stop rule sono campi coerenti dello stesso piano. Caso Velora Home riscritto e marcato simulato/composito. |
-| 3 — Capire il dato prima di analizzarlo | **Revisionato** | Riorganizzato come indagine di data readiness: record/grain → identità → tempo → qualità → missing/duplicati/outlier → unità → profiling → lineage → riconciliazione → contract/check automatici → verdetto PRONTO / CON CAVEAT / NON PRONTO. Caso end-to-end sostituito con ProntoVeloce per evitare sovrapposizione col Ch. 2; aggiunti Government Data Quality Framework e caso reale Mars Climate Orbiter. |
-| 4 — Statistica descrittiva ed Exploratory Data Analysis | **Revisionato** | Trasformato da catalogo di statistiche in processo di controllo dell'interpretazione: centro → dispersione → code/forma → confronti e Simpson → workflow EDA → relazioni → tempo → sensitivity → z-score/box plot → categorie → denominatori → comparabilità → caso MercatoHub. Output canonico: **EDA Evidence Map** con osservato, struttura, robustezza, ipotesi, non dimostrato e prossimo metodo. |
-| 5–19 | **Da revisionare** | Procedere in ordine, controllando anche sovrapposizioni inter-capitolo. |
+| 0 — Al timone | **Revisionato** | Manifesto operativo: orchestrazione, accountability, verification by design, stop condition, deskilling, trust levels, caso multi-agent e manifesto finale. |
+| 1 — Tutto è cambiato. Il problema è rimasto lo stesso | **Revisionato** | Eliminata duplicazione con Ch. 0; una sola catena analitica canonica; cinque tipi di domanda; caso vendite marcato simulato/composito; rimandi specialistici. |
+| 2 — Dal problema di business al problema analitico | **Revisionato** | Converge sull'**Analytical Brief**: decision specification, stakeholder map, metric roles, hypothesis register, scope, baseline, segmentation plan, data requirements, Value of Information e stop rule. |
+| 3 — Capire il dato prima di analizzarlo | **Revisionato** | Indagine di data readiness: record/grain → identità → tempo → qualità → missing/duplicati/outlier → unità → profiling → lineage → riconciliazione → contract/check automatici → verdetto **PRONTO / CON CAVEAT / NON PRONTO**. Caso ProntoVeloce e Mars Climate Orbiter. |
+| 4 — Statistica descrittiva ed Exploratory Data Analysis | **Revisionato** | Processo di controllo dell'interpretazione: centro → dispersione → code/forma → confronti/Simpson → relazioni → tempo → sensitivity → denominatori/comparabilità → caso MercatoHub. Deliverable: **EDA Evidence Map**. |
+| 5 — Probabilità, campionamento e incertezza | **Revisionato** | Rifondato come capitolo dell'incertezza. Distingue variabilità del processo e incertezza della stima; probabilità/condizionamento/dipendenza → distribuzioni/expected value/Bayes → sampling/sampling distribution/SE/CLT/CI → sample size → hypothesis test/p-value → Type I-II/power → materialità → multiple testing. Deliverable: **Uncertainty Brief**. Caso reale Literary Digest; ASA come riferimento centrale sul p-value. |
+| 6–19 | **Da revisionare** | Procedere in ordine, controllando anche sovrapposizioni inter-capitolo. |
 
 ## 8. Sovrapposizioni concettuali da governare
 
 Le ripetizioni principali devono diventare richiami intenzionali.
 
 ### Capitolo 0 / 14 / 19 — AI
-
-Ruolo:
 
 - **0 — Al timone:** mentalità, responsabilità, delega, supervisione;
 - **14 — AI-assisted analytics:** uso operativo, eval, privacy, auditability, workflow;
@@ -205,60 +205,61 @@ Regola: non rispiegare integralmente il manifesto del Capitolo 0 nei capitoli su
 
 ### Capitolo 1 / 2 — domanda analitica
 
-Ruolo:
-
 - **1:** mentalità di base, cinque tipi di domanda e catena analitica canonica;
 - **2:** trasformare formalmente la richiesta in un Analytical Brief operativo.
 
 ### Capitolo 2 / 3 — specifica e readiness
 
-Ruolo:
+- **2:** dichiarare quali dati, popolazioni, metriche e confronti servono;
+- **3:** verificare che i dati disponibili rappresentino davvero quelle proprietà.
 
-- **2:** dichiarare quali dati, popolazioni, metriche e confronti servono per rispondere;
-- **3:** verificare che i dati disponibili rappresentino davvero quelle proprietà e stabilire se siano pronti per l'analisi.
-
-Catena editoriale:
+Catena:
 
 **Analytical Brief → Data Readiness Review → Analisi**.
 
 ### Capitolo 3 / 4 — qualità vs esplorazione
 
-Ruolo:
+- **3:** “questo valore/record è valido per l'uso previsto?”;
+- **4:** “dato che è valido, quanto influenza struttura e conclusione?”.
 
-- **3:** stabilire se un valore estremo, una chiave, una definizione o un timestamp rendono il dato valido per l'uso previsto;
-- **4:** una volta che il dato è utilizzabile, studiare distribuzione, composizione e sensibilità della conclusione.
+### Capitolo 4 / 5 — pattern vs incertezza inferenziale
 
-Esempio di confine:
+- **4 — EDA:** che cosa mostra il campione osservato e quanto è robusto il pattern alle letture alternative?
+- **5 — Inferenza:** quanto è precisa la stima, che cosa possiamo generalizzare oltre il campione e quali fonti di incertezza non sono incluse nel modello statistico?
 
-- Ch. 3: **“questo outlier è un fatto reale o un errore?”**
-- Ch. 4: **“quanto cambia la mia conclusione se questo fatto reale è molto influente?”**
+Deliverable:
 
-### Capitolo 4 / 5 / 7 / 8 — pattern, incertezza, tempo e causalità
+**EDA Evidence Map → Uncertainty Brief**.
 
-Ruolo:
+### Capitolo 5 / 9 — inferenza vs experimentation
 
-- **4 — EDA:** che cosa mostra il campione osservato e quanto è robusto il pattern?
-- **5 — Probabilità e inferenza:** quanto è incerta la stima e che cosa possiamo generalizzare oltre il campione?
-- **7 — Serie temporali:** quale struttura temporale, baseline o previsione è appropriata?
-- **8 — Causalità:** quale effetto attribuibile a un intervento o esposizione possiamo sostenere?
+- **5:** significato di effect size, CI, p-value, Type I/II, power, sample size e multiple testing;
+- **9:** progettazione e conduzione di esperimenti reali: randomizzazione, unità, SRM, contaminazione, novelty, peeking, stopping, CUPED, metriche, rollout/rollback.
 
-Regola: l'EDA può generare ipotesi, ma non deve usurpare il lavoro dell'inferenza o della causalità.
+Regola: il Capitolo 5 insegna a leggere l'evidenza; il 9 insegna a costruire un esperimento affidabile che produca quell'evidenza.
 
-### Capitolo 2 / 15 — decisione
+### Capitolo 5 / 10 — probabilità vs modelli predittivi
 
-Ruolo:
+- **5:** probabilità condizionata, base rate, calibrazione concettuale e incertezza della stima;
+- **10:** score predittivi, discrimination, calibration, precision/recall, threshold, leakage, drift e deployment.
 
-- **2:** specificare decision owner, alternative, soglie note e profondità dell'analisi prima di eseguirla;
-- **15:** trasformare evidenza e incertezza in raccomandazione, expected value e decisione.
+### Capitolo 5 / 15 — incertezza vs decisione
+
+- **5:** quantificare incertezza, effect size e precisione;
+- **15:** combinare evidenza, economia, scenari, expected value, soglie e reversibilità in una raccomandazione.
+
+### Capitolo 4 / 7 / 8 — tempo e causalità
+
+- **4:** tempo come dimensione esplorativa e baseline descrittiva;
+- **7:** time-series structure, anomaly detection e forecasting;
+- **8:** identificazione causale e controfattuale.
 
 ### Capitolo 3 / 11 / 12 / 18 — qualità, semantica, governance
 
-Ruolo:
-
-- **3:** verificare fitness for purpose del dato dal punto di vista dell'analista;
-- **11:** formalizzare grain, join, trasformazioni e metriche in SQL/modeling;
-- **12:** capire l'architettura che produce e trasporta il dato;
-- **18:** trasformare qualità, ownership, contract e osservabilità in capacità organizzativa scalabile.
+- **3:** fitness for purpose dal punto di vista dell'analista;
+- **11:** grain, join, trasformazioni e metriche in SQL/modeling;
+- **12:** architettura che produce e trasporta il dato;
+- **18:** qualità, ownership, contract e observability come capacità organizzativa scalabile.
 
 ## 9. Arco narrativo complessivo
 
@@ -266,21 +267,19 @@ La sequenza resta coerente:
 
 **mentalità → domanda → dati → statistica → comportamento → tempo → causalità → esperimenti → modelli → SQL → architettura → strumenti → AI → decisione → comunicazione → casi completi → scala → futuro**.
 
-Nei primi cinque capitoli il percorso operativo è ora particolarmente esplicito:
+Nei primi sei capitoli il percorso operativo è ora esplicito:
 
-**Analytical Brief → Data Readiness Review → EDA Evidence Map → Inferenza**.
+**Analytical Brief → Data Readiness Review → EDA Evidence Map → Uncertainty Brief → analisi del lifecycle**.
 
-Il Capitolo 0 funziona come contratto mentale iniziale e il Capitolo 19 chiude tornando al tema della responsabilità e delle competenze che restano preziose.
+Il Capitolo 6 dovrà trasformare segmenti, coorti, funnel, activation, retention, churn e reactivation in un unico sistema di lettura del comportamento nel tempo, senza ripetere EDA generale né anticipare causalità e predictive modeling.
 
 ## 10. Lunghezza
 
-Non usare il numero di capitoli come proxy della lunghezza.
-
 La misura corrente viene dalla pipeline reale.
 
-Dopo i Capitoli 0–4 revisionati il PDF è di **780 pagine**. La revisione può quindi continuare liberamente a comprimere ripetizioni o ad ampliare esempi e casi che aumentano la comprensione senza alcun rischio rispetto all'obiettivo minimo di 400+ pagine.
+Dopo i Capitoli 0–5 revisionati il PDF è di **794 pagine**. La revisione può quindi continuare liberamente a comprimere ripetizioni o ad ampliare esempi e casi che aumentano la comprensione senza alcun rischio rispetto all'obiettivo minimo di 400+ pagine.
 
-L'obiettivo non è preservare un numero massimo di pagine. È massimizzare **densità di valore per pagina**.
+L'obiettivo è massimizzare **densità di valore per pagina**, non il page count.
 
 ## 11. Elementi editoriali ancora mancanti
 
@@ -324,4 +323,4 @@ Poi controllo manuale di:
 
 Il contenuto principale del libro è strutturalmente completo.
 
-La revisione editoriale ha completato i **Capitoli 0, 1, 2, 3 e 4**. Il lavoro successivo continua dal Capitolo 5, con un obiettivo preciso: separare bene probabilità, campionamento, intervalli di confidenza e test d'ipotesi dall'EDA del Capitolo 4 e dall'experimentation del Capitolo 9. Il Capitolo 5 deve diventare il capitolo dell'**incertezza**, non una collezione di formule statistiche.
+La revisione editoriale ha completato i **Capitoli 0–5**. Il lavoro successivo continua dal Capitolo 6, con il compito di unificare segmentazione, coorti, funnel, activation, retention, churn, survival, reactivation e LTV in una sola logica di **lifecycle analysis**.
