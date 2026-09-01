@@ -1,159 +1,195 @@
-## 12.7 Lineage e governance: sapere da dove viene il numero
+## 12.7 Lineage: trasformare il flusso in una dependency map
 
-Quando un numero finisce in una decisione importante, dovremmo essere in grado di rispondere a una domanda semplice:
+La Data Flow Architecture Map descrive il percorso logico del dato.
 
-> Da dove viene?
-
-Questa domanda apre il tema della **data lineage**.
-
-La lineage descrive il percorso del dato attraverso il sistema:
+La **lineage** rende quel percorso interrogabile:
 
 ```text
 source
   ↓
 ingestion
   ↓
-raw table
+raw/curated models
   ↓
-transformation
+serving layer
   ↓
-curated model
-  ↓
-semantic metric
-  ↓
-dashboard / notebook / API
+dashboard / API / ML / agent
 ```
 
-Una buona lineage permette di capire non solo il percorso, ma anche quali oggetti dipendono da quali trasformazioni.
+Per un analyst, il valore principale non è vedere un diagramma elegante.
 
-## Caso realistico: il KPI cambiato senza saperlo
+È poter rispondere rapidamente a domande come:
 
-**NordRail**, azienda di trasporto, modifica la logica con cui classifica un viaggio come "cancellato".
+- da quale sorgente nasce questo KPI?
+- quale trasformazione lo modifica?
+- se questa tabella cambia, quali dashboard sono impattate?
+- quale upstream failure spiega il dato incompleto?
+- dove devo iniziare la root-cause analysis?
 
-Prima:
+### Caso reale documentato — lineage come troubleshooting
+
+Microsoft Purview descrive la data lineage come il lifecycle del dato dalla sua origine attraverso i passaggi del data estate e cita tra i principali use case il troubleshooting, la ricerca della root cause nelle pipeline e il debugging.
+
+Fonte: https://learn.microsoft.com/en-us/azure/purview/concept-data-lineage
+
+Questo è esattamente il ruolo che ci interessa nel capitolo.
+
+### Caso simulato/composito — NordRail e il KPI che cambia senza un guasto operativo
+
+NordRail modifica una trasformazione:
 
 ```text
+prima:
 status = CANCELLED
-```
 
-Dopo:
-
-```text
+poi:
 status IN (CANCELLED, ABORTED_AFTER_DEPARTURE)
 ```
 
-La modifica viene applicata in una tabella intermedia.
+Due settimane dopo il cancellation rate appare molto più alto.
 
-Due settimane dopo il tasso di cancellazione sembra peggiorare del 14%.
+Senza lineage, l'indagine parte da:
 
-Il management interpreta il dato come deterioramento operativo.
+- treni;
+- regioni;
+- staffing;
+- manutenzione.
 
-Con lineage e versioning, l'analista vede immediatamente che il salto coincide con una modifica nella trasformazione. Senza lineage, il team passa tre giorni a cercare guasti operativi inesistenti.
-
-## Governance non significa burocrazia infinita
-
-Data governance viene spesso percepita come un insieme di approvazioni e divieti.
-
-Una governance utile, invece, risponde a domande concrete:
-
-- chi è owner del dato?
-- chi può accedervi?
-- quali campi sono sensibili?
-- quali dataset sono certificati?
-- quale qualità ci aspettiamo?
-- quali SLA esistono?
-- chi approva una modifica semantica?
-- quanto a lungo conserviamo il dato?
-- come tracciamo l'impatto di una modifica?
-
-## Catalogo, glossary e certificazione
-
-Tre oggetti concettualmente diversi aiutano molto.
-
-### Data catalog
-
-Aiuta a trovare asset tecnici:
-
-- tabelle;
-- viste;
-- file;
-- pipeline;
-- dashboard;
-- modelli.
-
-### Business glossary
-
-Definisce termini come:
-
-- customer;
-- active account;
-- net revenue;
-- churn;
-- order;
-- fiscal month.
-
-### Certified datasets
-
-Indicano quali asset sono raccomandati per determinati usi.
-
-Un analyst dovrebbe poter distinguere tra:
+Con lineage e change history il team vede che:
 
 ```text
-raw_orders_v2_backup
+executive_cancellation_rate
+        ↑
+semantic measure
+        ↑
+gold_trip_status
+        ↑
+status_normalization_v34  ← change deployed
 ```
 
-e
-```text
-gold.fact_orders_certified
-```
+Il salto non dimostra che il nuovo dato sia sbagliato. Dimostra che **la metrica non è più direttamente comparabile con la storia precedente senza dichiarare il cambio di definizione**.
 
-senza dover chiedere ogni volta a tre colleghi.
+### Upstream lineage e downstream impact
 
-## Governance e velocità
+La stessa mappa deve funzionare in due direzioni.
 
-Una governance ben progettata può **aumentare** la velocità analitica.
+**Upstream tracing**
 
-Se un analyst sa già:
+> Da dove arriva questo numero?
 
-- dove trovare il dato;
-- quale tabella è affidabile;
-- chi è l'owner;
-- cosa significa ogni campo;
-- quali limiti esistono;
+**Downstream impact analysis**
 
-passa meno tempo a investigare infrastruttura e più tempo ad analizzare il problema.
+> Chi si rompe o cambia significato se modifico questo asset?
 
-## Caso realistico: il dato sensibile copiato per comodità
-
-In una società assicurativa alcuni analyst esportano tabelle con dati personali in file locali perché l'ambiente centrale è lento e poco documentato.
-
-La risposta superficiale sarebbe:
-
-> vietiamo gli export.
-
-La risposta architetturale è più completa:
-
-- creare viste pseudonimizzate per analytics;
-- applicare access control per ruolo;
-- migliorare performance e discoverability;
-- definire policy di retention;
-- tracciare gli accessi;
-- educare gli utenti sul perché delle restrizioni.
-
-La governance efficace deve considerare il comportamento reale degli utenti. Se l'ambiente governato è inutilizzabile, le persone cercheranno scorciatoie.
-
-### Principio operativo
-
-Per ogni dataset critico dovremmo poter rispondere almeno a:
+Esempio:
 
 ```text
-owner?
-source?
-refresh?
-quality checks?
-sensitivity?
-certified for what?
-downstream dependencies?
+customer_country semantics change
+         ↓
+customer mart
+         ↓
+revenue by country
+         ↓
+board dashboard
+         ↓
+territory planning model
 ```
 
-Se nessuno sa rispondere, quel dataset non è davvero governato.
+Questo rende una schema/semantic change molto più gestibile.
+
+### Column-level lineage: utile quando il dataset è grande
+
+Sapere che una dashboard dipende da una tabella da 300 colonne può non bastare.
+
+Per alcuni use case serve capire che:
+
+```text
+board.margin_pct
+```
+
+dipende precisamente da:
+
+```text
+fact_order_lines.net_revenue
+fact_order_lines.cogs
+shipment_cost_allocated
+```
+
+La granularità necessaria dipende dal rischio e dalla complessità.
+
+Non serve costruire column-level lineage perfetta per ogni tabella esplorativa.
+
+### Lineage non è automaticamente governance
+
+La lineage ci dice **come gli asset sono collegati**.
+
+Non risponde da sola a:
+
+- chi può accedere;
+- quale asset è certificato;
+- chi approva una modifica;
+- quanto a lungo conserviamo i dati.
+
+Questi sono temi di governance che torneranno soprattutto nel Capitolo 18.
+
+Qui annotiamo soltanto ciò che serve al funzionamento della mappa:
+
+- owner;
+- sensitivity se rilevante;
+- certification state;
+- dependency.
+
+### Il problema della lineage incompleta
+
+Una parte significativa del lavoro analitico può vivere fuori dalla piattaforma ufficiale:
+
+```text
+warehouse
+→ CSV export
+→ spreadsheet locale
+→ slide del board
+```
+
+La lineage automatica può fermarsi al CSV.
+
+Per questo una mappa tecnica perfetta non elimina la necessità di conoscere i veri consumer decisionali.
+
+I dataset più critici richiedono anche disciplina d'uso.
+
+### Lineage e incident response
+
+Quando un KPI è anomalo, una sequenza efficace può essere:
+
+```text
+1. consumer / semantic layer
+2. final model
+3. upstream transforms
+4. ingestion/capture
+5. source
+```
+
+oppure partire dal punto in cui freshness/volume ha iniziato a divergere.
+
+Senza dipendenze visibili, ogni incidente diventa archeologia.
+
+### Campo della Data Flow Architecture Map
+
+Per ogni asset critico annotiamo:
+
+```text
+upstream dependencies:
+downstream consumers:
+transformation/version:
+owner:
+certification state:
+last change:
+lineage coverage:
+```
+
+### Regola operativa
+
+Una buona prova di maturità è prendere un KPI executive e chiedere:
+
+> **Riusciamo a tornare dalla cifra mostrata sullo schermo fino alle sorgenti e, nella direzione opposta, sappiamo chi deve essere avvisato se una di quelle sorgenti cambia?**
+
+> **La lineage è utile quando trasforma il percorso del dato da conoscenza tribale in una dependency map utilizzabile per debugging, impact analysis e recovery.**
