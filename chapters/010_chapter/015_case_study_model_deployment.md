@@ -1,172 +1,225 @@
-## 10.15 Caso studio: il modello eccellente offline che perde valore in produzione
+## 10.15 Caso end-to-end: OrbitCom, dal buon modello offline al sistema decisionale che cambia il proprio futuro
 
-### Contesto
+> **Caso simulato/composito.** Azienda, numeri e circostanze sono costruiti a fini didattici combinando failure mode comuni nei sistemi predittivi in produzione.
 
-**OrbitCom** è un operatore telecom con circa 3,8 milioni di clienti consumer.
+OrbitCom è un operatore telecom con 3,8 milioni di clienti consumer.
 
-L'azienda vuole ridurre il churn volontario nei 60 giorni successivi.
+Il management parte con una richiesta apparentemente semplice:
 
-Il team costruisce un modello che assegna ogni settimana una probabilità di churn a ciascun cliente.
+> **"Costruiamo un modello che preveda il churn."**
 
-L'obiettivo operativo è semplice:
+La review analitica la trasforma in una prediction task precisa.
 
-- selezionare i clienti più a rischio;
-- inviarli al team retention;
-- offrire un intervento mirato;
-- ridurre le disdette.
+### Predictive specification
 
-### La fase offline
+**Decisione**  
+Prioritizzare la capacità del team retention senza superare il volume che può essere gestito con qualità.
 
-Il modello viene sviluppato su 18 mesi di storico.
+**Prediction unit**  
+Cliente consumer attivo.
 
-Feature principali:
+**Prediction time**  
+Ogni lunedì alle 05:00.
 
-- variazione dell'utilizzo dati;
-- numero di reclami;
-- ritardi di pagamento;
-- qualità rete percepita;
-- chiamate al supporto;
+**Target**  
+Cancellazione volontaria nei successivi 60 giorni.
+
+**Action capacity**  
+Massimo 25.000 contatti/settimana.
+
+**Baseline**  
+Regola esistente basata su reclami recenti, payment issues e calo utilizzo.
+
+Questa specifica cambia il progetto: non ci serve il miglior classifier astratto. Ci serve un ranking utile nei primi 25.000 casi e una pipeline che resti valida ogni lunedì.
+
+### Feature availability review
+
+Le feature candidate includono:
+
+- tenure;
+- variazione utilizzo dati;
+- reclami chiusi e aperti prima del prediction time;
+- payment failures storici;
+- outage sperimentati;
 - variazione della spesa;
-- anzianità cliente;
-- upgrade/downgrade recenti;
-- utilizzo dell'app;
-- presenza di offerte concorrenti rilevate da survey.
+- downgrade già avvenuti;
+- app usage;
+- device;
+- piano tariffario.
 
-Performance sul test temporale:
+Una feature iniziale, `last_retention_offer_result`, viene esclusa: in molti casi l'offerta viene fatta **dopo** che il rischio è già stato identificato e troppo vicino al churn event.
 
-| Metrica | Valore |
-|---|---:|
-| ROC-AUC | 0,87 |
-| PR-AUC | 0,39 |
-| precision top 5% | 44% |
-| recall top 5% | 31% |
+Un'altra, `competitor_offer_declared`, proviene da survey compilate soltanto da una parte dei clienti ed è mantenuta come feature sperimentale con coverage monitorata.
 
-Il risultato viene considerato eccellente.
+### Validation design
 
-Il business stima che, se il modello identifica correttamente clienti che stanno per abbandonare, una chiamata proattiva può salvare una quota significativa del valore.
+OrbitCom ha cambiato pricing e acquisition mix durante l'ultimo anno.
 
-### Il primo mese di produzione
+Il team evita quindi di affidarsi soltanto a random split.
 
-Dopo quattro settimane, il team retention contatta circa 38.000 clienti.
+Usa:
 
-La precision osservata sembra coerente con le attese.
+- train sui periodi più vecchi;
+- validation su periodo successivo;
+- test out-of-time sugli ultimi mesi maturi;
+- analisi separata su nuovi clienti e clienti con tenure > 12 mesi.
 
-Il progetto viene dichiarato un successo.
+Confronta tre sistemi:
 
-### Tre mesi dopo
+| Modello | ROC-AUC test | PR-AUC | Precision@25k | Note |
+|---|---:|---:|---:|---|
+| regola esistente | 0,69 | 0,17 | 24% | baseline operativa |
+| logistic regression | 0,82 | 0,31 | 38% | interpretabile |
+| gradient boosting | 0,87 | 0,39 | 44% | modello candidato |
 
-Le metriche iniziano però a peggiorare:
+Il boosting migliora davvero il punto operativo: nei 25.000 clienti che il team può gestire concentra più churn futuri della baseline.
 
-| Metrica | Offline | Mese 1 | Mese 3 |
+### Leakage test
+
+Il team esegue una review `as-of` delle feature.
+
+Trova due problemi:
+
+1. uno snapshot CRM storico era ricostruito usando `current account status`;
+2. una feature di ticket severity poteva essere aggiornata retroattivamente dopo la chiusura del ticket.
+
+Dopo la ricostruzione corretta la ROC-AUC scende da 0,90 a 0,87.
+
+Il calo viene classificato come miglioramento della credibilità, non come regressione del progetto.
+
+### Calibration e threshold
+
+Il modello ordina bene, ma tende a sovrastimare il rischio dei clienti più nuovi.
+
+Il team mantiene il ranking globale ma introduce una procedura di calibration validata separatamente e controlla reliability per tenure.
+
+La policy non usa threshold 0,5.
+
+Usa:
+
+> **top 25.000 account eleggibili per expected risk/value, con ulteriori guardrail business.**
+
+La capacità operativa è quindi parte della policy fin dall'inizio.
+
+### Model score non significa treatment effect
+
+A questo punto il team potrebbe commettere l'errore centrale del Capitolo 8:
+
+> "Se il modello identifica bene chi churnerà, allora chiamare quei clienti salverà il churn."
+
+Non segue.
+
+Un cliente può essere:
+
+- ad alto rischio ma irrecuperabile;
+- a medio rischio e molto persuadibile;
+- ad alto valore ma poco sensibile all'intervento;
+- destinato a non churnare anche senza chiamata.
+
+OrbitCom crea quindi, tra gli account eleggibili alla retention policy, un **holdout sperimentale** compatibile con vincoli etici e commerciali per misurare l'incremental effect del programma.
+
+Prediction decide **chi è a rischio**. Experimentation misura **che cosa produce la policy**.
+
+### Primo mese di produzione
+
+Nel primo mese:
+
+- scoring pipeline stabile;
+- precision@25k vicina al test;
+- contact rate 91%;
+- capacity quasi pienamente utilizzata;
+- calibration nei range previsti.
+
+Il progetto viene classificato come production-ready, ma non "finito".
+
+### Tre mesi dopo: quattro problemi diversi
+
+Le metriche cambiano:
+
+| Metrica | Test offline | Mese 1 | Mese 3 |
 |---|---:|---:|---:|
 | ROC-AUC | 0,87 | 0,85 | 0,77 |
-| precision top 5% | 44% | 41% | 28% |
-| churn rate nel top 5% | 46% | 43% | 30% |
+| precision@25k | 44% | 41% | 29% |
+| contact rate | — | 91% | 63% |
+| quota nuovi clienti nel top-K | 18% | 21% | 37% |
 
-Il team sospetta un problema del modello.
+Il team evita di dire semplicemente "il modello è peggiorato" e separa quattro diagnosi.
 
-Ma l'analisi mostra almeno quattro cause diverse.
+#### 1. Population/data drift
 
-### Problema 1 — è cambiata la popolazione
+Una campagna acquisisce molti clienti giovani, mensili e mobile-first, poco rappresentati nel training.
 
-Una nuova campagna aggressiva ha portato molti clienti più giovani, con contratti mensili e forte utilizzo digitale.
+#### 2. Concept/calibration drift
 
-Questi utenti erano poco rappresentati nel training set.
+Un nuovo piano con roaming incluso cambia il significato di `domestic_data_usage_drop`. Il ranking si deteriora e le probabilità diventano troppo alte in alcuni segmenti.
 
-Le distribuzioni di:
+#### 3. Operational degradation
 
-- età;
-- tenure;
-- device;
-- canale di acquisizione;
-- frequenza di login;
+Il team retention perde capacità durante una riorganizzazione. Il contact rate scende al 63% e molti clienti vengono raggiunti tardi.
 
-sono cambiate sensibilmente.
+#### 4. Feedback loop
 
-È **data drift**.
+I clienti ad alto score ricevono interventi. Se alcuni non churnano grazie alla policy, le label future riflettono anche l'effetto del sistema stesso.
 
-### Problema 2 — è cambiata la relazione tra segnali e churn
+Senza tracciare assignment, exposure e treatment, retraining e performance monitoring diventano ambigui.
 
-Nel periodo storico, un forte calo di utilizzo era un segnale potente di abbandono.
-
-Dopo l'introduzione di un nuovo piano con roaming incluso, molti clienti riducono temporaneamente il traffico domestico senza voler disdire.
-
-Il vecchio pattern “calo utilizzo → churn” si indebolisce.
-
-È **concept drift**.
-
-### Problema 3 — il modello modifica il processo che sta osservando
-
-I clienti ad alto rischio vengono contattati.
-
-Quindi il loro churn osservato non rappresenta più il churn che avrebbero avuto senza intervento.
-
-Il deployment genera un feedback loop.
-
-Se il trattamento funziona, alcuni clienti ad alto score non churnano proprio perché il modello li ha identificati.
-
-Valutare ingenuamente il modello sulla popolazione trattata può quindi sottostimare il rischio reale che aveva previsto.
-
-### Problema 4 — capacità operativa
-
-Il team retention può gestire circa 25.000 contatti alla settimana.
-
-Il modello ne produce 42.000 sopra la soglia scelta.
-
-Ne consegue che:
-
-- alcuni clienti vengono contattati tardi;
-- altri non vengono contattati;
-- gli operatori accelerano le chiamate;
-- la qualità dell'intervento scende.
-
-La performance del **sistema decisionale** peggiora anche se una parte del problema non è nel modello.
-
-### La diagnosi corretta
-
-Il team separa finalmente quattro livelli:
+### La dashboard viene divisa in quattro layer
 
 ```text
-data quality
-↓
-model performance
-↓
-operational execution
-↓
-business outcome
+DATA
+feature freshness · missing · training-serving skew · population mix
+
+MODEL
+ranking · precision@25k · calibration · score distribution
+
+OPERATIONS
+selected · contacted · time-to-contact · capacity · treatment delivered
+
+OUTCOME
+churn · incremental effect vs holdout · value saved · cost · customer guardrails
 ```
 
-Viene creato un monitoraggio distinto per ciascun livello.
+Questa separazione evita di attribuire al modello un problema del call center o, al contrario, di usare problemi operativi per nascondere un deterioramento predittivo.
 
-### La soluzione
+### Retraining: non basta premere un pulsante
 
-OrbitCom modifica il processo:
+OrbitCom definisce:
 
-1. retraining mensile con rolling window;
-2. validation temporale su periodi recenti;
-3. calibration separata per nuovi clienti e clienti storici;
-4. soglia scelta in funzione della capacità reale del team;
-5. gruppo di controllo randomizzato tra clienti eleggibili;
-6. monitoraggio del trattamento, non solo dello score;
-7. dashboard di drift per canale, tenure e piano tariffario;
-8. rollback automatico se precision e calibration superano soglie di deterioramento concordate.
+- retraining candidate mensile;
+- champion/challenger evaluation su out-of-time recente;
+- gate su calibration e precision@25k;
+- verifica training-serving parity;
+- rollback se il challenger non supera la baseline concordata;
+- versionamento feature/model/policy;
+- holdout per valutare la retention policy separatamente dal risk model.
 
-### Il punto più importante
+Un nuovo modello viene promosso solo se migliora la decisione prevista, non perché usa dati più recenti.
 
-Il modello non aveva semplicemente “perso accuracy”.
+### La decisione finale cambia forma
 
-Era cambiato il sistema in cui operava.
+La domanda iniziale era:
 
-Il problema iniziale era stato formulato come:
+> "Chi farà churn?"
 
-> prevedere il churn.
+Il sistema maturo deve rispondere invece a più domande coordinate:
 
-Ma la vera decisione era:
+1. chi è a rischio entro 60 giorni?
+2. quanto è affidabile lo score nella popolazione corrente?
+3. chi entra nei 25.000 slot operativi?
+4. chi viene realmente contattato?
+5. quale intervento produce valore incrementale?
+6. il costo e la customer experience restano accettabili?
+7. quando modello o policy devono essere fermati, ricalibrati o ridisegnati?
 
-> quali clienti dobbiamo contattare, con quale intervento, con quale priorità e con quale capacità operativa per massimizzare churn evitato e valore economico?
+### La lezione del caso
 
-Questa seconda domanda richiede molto più di un buon classifier.
+Un modello può fallire in almeno quattro modi differenti:
 
-Richiede dati, modello, causalità, operations e misurazione.
+- **prediction failure** — non ordina o stima più bene;
+- **data/serving failure** — le feature non rappresentano più ciò su cui è stato validato;
+- **policy failure** — threshold/ranking generano un'azione sbagliata o ingestibile;
+- **treatment failure** — l'azione non produce più abbastanza effetto incrementale.
 
-Ed è esattamente qui che il Data Analyst smette di essere un produttore di score e diventa progettista del processo decisionale.
+Chiamare tutto "model performance" rende la diagnosi peggiore.
+
+> **Il prodotto predittivo non è il file del modello. È la catena che trasforma dati disponibili oggi in una priorità, una decisione, un'azione e una misura del risultato futuro.**
