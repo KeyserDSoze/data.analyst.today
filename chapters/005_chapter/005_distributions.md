@@ -1,131 +1,124 @@
-## 5.4 Distribuzioni di probabilità: non esiste soltanto la media
+## 5.4 Distribuzioni di probabilità: un modello degli esiti possibili
 
-Una distribuzione di probabilità descrive come si distribuisce l'incertezza tra i possibili valori di una variabile.
+Una distribuzione di probabilità non è soltanto una curva con un nome. È una descrizione di **quali valori può assumere un processo incerto e con quale peso relativo**.
 
-Questa frase può sembrare astratta, ma nel lavoro analitico è estremamente concreta.
+Questo permette di rispondere a domande che una media da sola non può risolvere:
 
-Supponiamo di avere due campagne marketing con lo stesso numero medio di conversioni: 100 al giorno.
+- quanto è probabile superare una soglia?
+- quanto è plausibile osservare un risultato estremo?
+- quanto varia il numero di eventi attorno al valore atteso?
+- quale coda negativa dobbiamo dimensionare operativamente?
 
-La prima produce quasi sempre tra 95 e 105 conversioni.
+Il punto editoriale di questa sezione è quindi semplice:
 
-La seconda alterna giornate da 40 conversioni a giornate da 170.
+> **una distribuzione è utile quando traduce il meccanismo del processo in assunzioni controllabili.**
 
-La media è identica. Il rischio operativo è completamente diverso.
+### Discreto e continuo
 
-La distribuzione ci permette di vedere ciò che la media nasconde.
-
-### Variabili discrete e continue
-
-Una variabile casuale discreta assume valori separati:
+Una variabile casuale **discreta** assume valori separati, per esempio:
 
 - numero di ordini;
-- numero di churn;
+- numero di conversioni;
 - numero di guasti;
-- numero di clienti che convertono.
+- numero di clienti che fanno churn.
 
-Una variabile continua può assumere, almeno idealmente, qualunque valore in un intervallo:
+Una variabile **continua** può assumere, almeno idealmente, qualsiasi valore in un intervallo:
 
 - tempo di consegna;
 - importo di una transazione;
-- temperatura di un sensore;
+- temperatura;
 - durata di una sessione.
 
-Questa distinzione aiuta a scegliere il modello distributivo appropriato.
+La distinzione aiuta a capire quale famiglia di modelli può essere plausibile, ma non basta da sola a scegliere una distribuzione.
 
-### Caso realistico: una campagna che “dovrebbe” generare 250 conversioni
+### Caso simulato/composito — “Ci aspettiamo 250 conversioni”
 
-Un marketplace invia una campagna email a 10.000 clienti.
+Un marketplace invia una campagna a 10.000 clienti. Il conversion rate atteso per una popolazione comparabile è 2,5%.
 
-Il conversion rate storico è 2,5%.
+Il marketing manager conclude:
 
-Il marketing manager dice:
+> “Quindi faremo circa 250 conversioni.”
 
-> “Quindi ci aspettiamo 250 conversioni.”
+`10.000 × 2,5% = 250` è il valore atteso, non il risultato garantito.
 
-È corretto come valore atteso, ma non significa che il risultato sarà esattamente 250.
+Se semplifichiamo il processo assumendo che:
 
-Se trattiamo ogni cliente come una prova con due esiti — conversione o non conversione — e assumiamo probabilità individuale costante e indipendenza tra le prove, il numero di conversioni può essere modellato con una distribuzione binomiale.
+1. ogni cliente abbia due esiti rilevanti, converte/non converte;
+2. le 10.000 prove siano sufficientemente indipendenti;
+3. la probabilità di conversione sia approssimativamente costante;
 
-NIST descrive la binomiale proprio come il modello per il numero di successi in \(n\) prove con due esiti mutuamente esclusivi e probabilità di successo \(p\) costante.[^1]
+allora il numero di conversioni può essere modellato con una **binomiale**.
 
-Nel nostro esempio:
+NIST descrive la distribuzione binomiale proprio come modello del numero di successi in `n` prove con due esiti e probabilità `p` costante.[^nist-binomial]
 
-\[
-X \sim Binomiale(n=10.000,p=0,025)
-\]
+Nel nostro caso:
 
-Il valore atteso è:
+`X ~ Binomiale(n = 10.000, p = 0,025)`.
 
-\[
-E[X]=np=250
-\]
+Il valore atteso è 250 e la deviazione standard è circa 15,6 conversioni.
 
-La deviazione standard è circa:
+Un risultato di 236 conversioni è quindi inferiore all'atteso, ma non è automaticamente evidenza di una campagna “rotta”. Fa parte del tipo di oscillazione che il modello considera plausibile.
 
-\[
-\sqrt{np(1-p)} \approx 15,6
-\]
+La domanda professionale non è:
 
-Un risultato di 236 conversioni non è quindi necessariamente un fallimento della campagna. Può essere perfettamente compatibile con la variabilità casuale del processo.
+> “Abbiamo centrato esattamente 250?”
 
-Questa distinzione è fondamentale quando valutiamo performance giornaliere, campagne, funnel e test.
+ma:
 
-### Ma le assunzioni reggono davvero?
+> **“Quanto è insolito il risultato osservato rispetto alla variabilità che ci aspettiamo dal processo?”**
 
-Il modello binomiale richiede condizioni che nel mondo reale possono non essere vere.
+### Il modello è un contratto di assunzioni
 
-La probabilità di conversione potrebbe non essere uguale per tutti i clienti.
+Nella campagna reale, l'ipotesi binomiale può essere approssimativa.
 
-I clienti potrebbero influenzarsi tra loro.
+La probabilità di conversione può variare tra clienti. Alcuni appartengono a segmenti molto più propensi all'acquisto. Più persone della stessa azienda possono influenzarsi. La campagna può essere inviata in orari differenti.
 
-La campagna potrebbe essere inviata in orari diversi.
+Il modello può restare utile, ma solo se ricordiamo che:
 
-Parte del pubblico potrebbe essere composto da clienti molto più propensi ad acquistare.
+> **il nome della distribuzione comprime un insieme di assunzioni sul processo.**
 
-Il modello può comunque essere utile, ma dobbiamo ricordare che è una semplificazione.
+Quando quelle assunzioni falliscono in modo importante, anche una formula eseguita perfettamente risponde al modello sbagliato.
 
-### Distribuzione normale
+### La normale: importante, ma spesso nel posto sbagliato
 
-La distribuzione normale è uno dei modelli più utilizzati in statistica.
+La distribuzione normale ha un ruolo centrale nella statistica. NIST ricorda che molte procedure inferenziali la utilizzano e che il Central Limit Theorem spiega perché emerge frequentemente nelle **distribuzioni campionarie**.[^nist-normal]
 
-È simmetrica, unimodale e descritta da due parametri principali: media e deviazione standard. NIST ricorda che la normale ha un ruolo centrale sia nella teoria sia nelle applicazioni statistiche e che il Teorema del Limite Centrale spiega parte della sua importanza.[^2]
+Questo non significa che ogni variabile di business debba essere normale.
 
-Ma non tutti i dati sono normali.
+Importi, tempi di attesa, revenue per cliente e lifetime value possono essere fortemente asimmetrici o avere code pesanti.
 
-Tempi di attesa, importi di acquisto, redditi e lifetime value sono spesso asimmetrici.
+Una distinzione che ci servirà più avanti è:
 
-Applicare automaticamente la normale a qualsiasi variabile perché “è quella classica” può generare stime sbagliate nelle code.
+> **la distribuzione dei dati originali e la distribuzione di una statistica campionaria non sono la stessa cosa.**
 
-### Caso realistico: il costo medio di un sinistro
+Un AOV individuale può essere fortemente asimmetrico mentre, sotto condizioni appropriate e con campioni abbastanza grandi, la distribuzione della media campionaria può diventare approssimativamente normale.
 
-Una compagnia assicurativa osserva un costo medio per sinistro di 1.850 euro.
+Questa è una delle idee centrali del Central Limit Theorem, che affronteremo nella sezione 5.11.
 
-Un modello ingenuo tratta il costo come quasi normale.
+### Caso simulato/composito — La coda che determina la decisione
 
-Ma la distribuzione reale è fortemente asimmetrica:
+Una compagnia assicurativa osserva molti sinistri da poche centinaia di euro e un numero ridotto di sinistri estremamente costosi.
 
-- molti sinistri tra 300 e 900 euro;
-- una quota più piccola tra 2.000 e 10.000 euro;
-- rarissimi sinistri sopra 100.000 euro.
+La media può essere 1.850 €, ma il processo è fortemente asimmetrico.
 
-La media è trainata dalla coda destra.
+Per il team che deve dimensionare riserve e capitale non basta stimare correttamente il centro. Conta la probabilità della **coda destra**.
 
-Un modello normale sottostima drasticamente la probabilità di costi estremi.
+Un modello che descrive bene la media ma sottostima drasticamente gli eventi estremi può essere peggiore, per quella decisione, di un modello meno elegante ma più realistico sulle code.
 
-La scelta della distribuzione non è quindi una formalità tecnica: può cambiare riserve, pricing e valutazione del rischio.
+### Una piccola mappa, non un catalogo da memorizzare
 
-### Una distribuzione non è un'etichetta da assegnare
+Nel lavoro dell'analista incontreremo spesso idee come:
 
-NIST sottolinea che le distribuzioni sono usate per intervalli, test e simulazioni, ma che le assunzioni distributive devono essere adeguate al dataset e alla tecnica utilizzata.[^3]
+| Processo | Modello che può essere utile | Domanda |
+|---|---|---|
+| un singolo esito sì/no | Bernoulli | accade oppure no? |
+| numero di successi su `n` prove | Binomiale | quanti successi? |
+| conteggio di eventi su un'esposizione | Poisson, in condizioni appropriate | quanti eventi nel periodo/spazio? |
+| errori o sampling distribution | Normale, in molte condizioni | quanto oscilla una stima? |
 
-Questo porta a una regola semplice:
+Questa tabella non è una regola automatica. È un promemoria per chiedere:
 
-**prima osserviamo la forma dei dati; poi scegliamo il modello.**
+> **Quale processo sto rappresentando e quali assunzioni devo poter difendere?**
 
-Non il contrario.
-
----
-
-[^1]: NIST/SEMATECH, *Binomial Distribution*: https://itl.nist.gov/div898/handbook/eda/section3/eda366i.htm
-[^2]: NIST/SEMATECH, *Normal Distribution*: https://www.itl.nist.gov/div898/handbook/eda/section3/eda3661.htm
-[^3]: NIST/SEMATECH, *Probability Distributions*: https://www.itl.nist.gov/div898/handbook/eda/section3/eda36.htm
+[^nist-binomial]: NIST/SEMATECH, *Binomial Distribution*: https://itl.nist.gov/div898/handbook/eda/section3/eda366i.htm
+[^nist-normal]: NIST/SEMATECH, *Normal Distribution*: https://www.itl.nist.gov/div898/handbook/eda/section3/eda3661.htm
