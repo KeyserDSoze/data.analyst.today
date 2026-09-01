@@ -1,131 +1,179 @@
-## 4.6 Un workflow pratico per l'Exploratory Data Analysis
+## 4.6 Un workflow pratico per l'EDA: dalla domanda al registro delle ipotesi
 
-L'EDA non dovrebbe essere una sequenza casuale di grafici. Deve essere un processo disciplinato.
+L'EDA non dovrebbe essere una sequenza casuale di `groupby`, correlazioni e grafici.
 
-Un buon workflow può essere organizzato in sei passaggi.
+Nel Capitolo 3 abbiamo già verificato che il dato sia utilizzabile. Qui partiamo quindi da un dataset **pronto o pronto con caveat** e da una domanda definita nell'Analytical Brief.
 
-### 1. Capire la domanda
+Il compito dell'EDA è restringere progressivamente lo spazio del problema senza confondere un pattern con una spiegazione.
 
-Prima di aprire il dataset, scrivere in una frase cosa vogliamo capire.
+### Passo 1 — Dichiarare il fenomeno che vogliamo descrivere
+
+Scriviamo una domanda abbastanza precisa da guidare l'esplorazione.
+
+Per esempio:
+
+> **Il renewal rate trimestrale è sceso dall'81% al 74%: dove si concentra il cambiamento e quali caratteristiche lo accompagnano?**
+
+Notare il linguaggio: non chiediamo ancora "che cosa lo ha causato?".
+
+### Passo 2 — Costruire il quadro aggregato
+
+Prima di segmentare tutto, descriviamo il fenomeno principale:
+
+- livello corrente;
+- baseline;
+- variazione assoluta e relativa;
+- volume del numeratore e del denominatore;
+- eventuale andamento temporale;
+- distribuzione, se la metrica deriva da una variabile continua.
+
+Questo crea il punto di riferimento a cui torneremo dopo ogni drill-down.
+
+### Passo 3 — Descrivere le distribuzioni importanti
+
+Per le variabili numeriche osserviamo:
+
+- centro;
+- dispersione;
+- percentili;
+- forma;
+- code;
+- sensibilità a osservazioni influenti.
+
+Per le categoriche osserviamo:
+
+- frequenze;
+- proporzioni;
+- categorie dominanti;
+- composizione tra gruppi e periodi.
+
+Il punto non è calcolare tutto ciò che il software offre. È capire quali proprietà possono cambiare l'interpretazione del fenomeno.
+
+### Passo 4 — Segmentare con una ragione
+
+Scegliamo dimensioni motivate dal processo o dall'Analytical Brief:
+
+- piano;
+- canale;
+- mercato;
+- coorte;
+- prodotto;
+- tenure;
+- device;
+- tipologia di cliente.
+
+Per ogni segmentazione chiediamo:
+
+> **Se il pattern fosse molto diverso qui, cambierebbe la prossima decisione o la nostra ipotesi?**
+
+Se la risposta è no, la segmentazione potrebbe essere soltanto rumore analitico.
+
+### Passo 5 — Cercare relazioni, non cause
+
+Dopo aver compreso le singole variabili, osserviamo:
+
+- differenze tra gruppi;
+- scatter plot;
+- correlazioni;
+- tabelle di contingenza;
+- pattern condizionati;
+- evoluzione temporale.
+
+Ogni relazione interessante dovrebbe generare almeno una spiegazione alternativa.
 
 Esempio:
 
-**"Perché il tasso di rinnovo degli abbonamenti è sceso dal 81% al 74% negli ultimi quattro mesi?"**
+> I clienti con più ticket hanno churn maggiore.
 
-### 2. Verificare la struttura del dataset
+Possibili letture:
 
-Controllare:
+- i problemi che generano ticket aumentano il churn;
+- i clienti già a rischio contattano più spesso il supporto;
+- un segmento più complesso genera sia più ticket sia più churn;
+- la relazione dipende dall'anzianità del cliente.
 
-- numero di righe e colonne;
-- grain;
-- chiavi;
-- periodo coperto;
-- missing values;
-- duplicati;
-- definizioni delle variabili.
+L'EDA costruisce lo spazio delle ipotesi. Non sceglie ancora il vincitore.
 
-### 3. Descrivere le variabili singolarmente
+### Passo 6 — Stressare il pattern
 
-Per le numeriche:
+Prima di chiamare qualcosa "insight", ripetiamo il confronto in modi plausibili:
 
-- media;
-- mediana;
-- percentili;
-- dispersione;
-- distribuzione;
-- outlier.
+- media vs mediana;
+- periodi alternativi;
+- con e senza settimane eccezionali;
+- gruppi aggregati vs segmentati;
+- valori assoluti vs tassi;
+- con e senza osservazioni molto influenti;
+- diverse definizioni coerenti con il caveat noto.
 
-Per le categoriche:
+Se il risultato cambia completamente per una scelta ragionevole, il pattern è **fragile**.
 
-- frequenze;
-- quote percentuali;
-- categorie rare;
-- valori inattesi.
+Questa fragilità va conservata, non nascosta.
 
-### 4. Segmentare
+### Passo 7 — Tenere un registro delle ipotesi
 
-Confrontare il fenomeno per dimensioni plausibili:
+Un output utile può essere una tabella come questa:
 
-- paese;
-- canale;
-- piano;
-- coorte;
-- prodotto;
-- device;
-- customer tenure;
-- periodo.
+| Osservazione | Ipotesi candidata | Evidenza a favore | Spiegazioni alternative | Prossimo controllo |
+|---|---|---|---|---|
+| churn concentrato nei nuovi SMB | onboarding insufficiente | completion più bassa | acquisition mix | confronto per canale/coorte |
+| P95 delivery alto nel weekend | capacity insufficiente | volumi +35% | mix geografico | segmentare per area |
 
-### 5. Cercare relazioni
+Questo impedisce di perdere la distinzione tra fatti e interpretazioni durante l'esplorazione.
 
-Una volta compresi i singoli campi possiamo cercare pattern tra variabili: correlazioni, differenze tra gruppi, trend temporali e combinazioni inattese.
+### Caso simulato/composito — Il rinnovo SaaS
 
-### 6. Annotare domande, non solo risultati
+Una piattaforma SaaS per studi professionali ha **18.200 clienti** e vede il renewal rate trimestrale scendere dall'81% al 74%.
 
-L'EDA produce spesso più domande che risposte.
+**Piano:**
 
-Questo non è un fallimento.
+```text
+Enterprise:   92% → 91%
+Professional: 84% → 82%
+Basic:        76% → 63%
+```
 
-È esattamente il suo scopo.
+**Tenure, dentro Basic:**
 
-## Caso completo: il rinnovo SaaS
+```text
+>12 mesi: 78% → 76%
+6–12 mesi: 73% → 70%
+<6 mesi: 74% → 52%
+```
 
-Una piattaforma SaaS per studi professionali ha 18.200 clienti attivi. Il renewal rate trimestrale è sceso dall'81% al 74%.
+**Canale, Basic con meno di 6 mesi:**
 
-La prima dashboard mostra un calo distribuito apparentemente su tutto il portafoglio.
+```text
+organic:     69%
+referral:    72%
+paid search: 48%
+affiliate:   44%
+```
 
-L'analista esegue l'EDA.
+Le coorti più deboli coincidono con una promozione del 60% sui primi tre mesi.
 
-### Primo taglio: piano commerciale
+La conclusione EDA corretta non è:
 
-- Enterprise: 92% → 91%
-- Professional: 84% → 82%
-- Basic: 76% → 63%
+> Lo sconto causa churn.
 
-Il problema è soprattutto nel Basic.
+È:
 
-### Secondo taglio: customer tenure
+> Il deterioramento aggregato è concentrato nelle coorti Basic recenti acquisite via paid e affiliate durante la promozione; il ritorno al prezzo pieno è una spiegazione candidata, insieme a differenze nel customer fit e nel mix di acquisizione.
 
-Nel piano Basic:
+La domanda successiva diventa molto più precisa:
 
-- clienti da oltre 12 mesi: 78% → 76%
-- clienti da 6-12 mesi: 73% → 70%
-- clienti da meno di 6 mesi: 74% → 52%
+> **Quali differenze tra le coorti promozionali e quelle comparabili spiegano il minor rinnovo, e quale disegno permetterebbe di distinguere selezione da effetto della promozione?**
 
-Ora il problema è ancora più circoscritto.
+A quel punto l'EDA ha fatto il proprio lavoro.
 
-### Terzo taglio: canale di acquisizione
+### Quando fermare l'EDA
 
-Tra i clienti Basic con meno di 6 mesi:
+L'esplorazione può continuare per sempre. Dovremmo fermarci quando:
 
-- organic: 69%
-- referral: 72%
-- paid search: 48%
-- affiliate: 44%
+- sappiamo dove si concentra il fenomeno;
+- i principali pattern sono stati stressati;
+- abbiamo separato fatti e ipotesi;
+- le spiegazioni concorrenti più importanti sono esplicite;
+- il prossimo passo richiede un metodo diverso: inferenza, esperimento, causalità o modello.
 
-### Quarto taglio: mese di acquisizione
-
-Il crollo coincide con due coorti acquisite durante una promozione aggressiva con sconto del 60% sui primi tre mesi.
-
-A questo punto l'analista non conclude ancora che "lo sconto causa churn".
-
-Formula invece una nuova ipotesi:
-
-> la promozione potrebbe aver acquisito clienti con fit peggiore o aspettative diverse, producendo un calo del rinnovo quando il prezzo torna normale.
-
-L'EDA ha trasformato un problema enorme e vago in una domanda molto più precisa.
-
-Da:
-
-**"Perché il renewal rate è sceso?"**
-
-A:
-
-**"Perché le coorti Basic acquisite tramite paid e affiliate durante la promozione mostrano un rinnovo molto inferiore dopo il ritorno al prezzo pieno?"**
-
-Ora possiamo progettare un'analisi diagnostica più seria.
-
-### La lezione
-
-L'EDA non è il punto finale dell'analisi.
-
-È il processo con cui impariamo abbastanza sul dataset e sul fenomeno da porre domande migliori.
+> **L'output dell'EDA non è "ho guardato i dati". È una rappresentazione più precisa di ciò che sappiamo e delle domande che meritano il prossimo investimento analitico.**
