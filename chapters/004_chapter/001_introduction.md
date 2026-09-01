@@ -1,33 +1,77 @@
 # Capitolo 4 - Statistica descrittiva ed Exploratory Data Analysis
 
-> Prima di modellare, prevedere o spiegare, bisogna imparare a guardare davvero i dati.
+> Prima di spiegare un fenomeno, dobbiamo imparare a descriverlo senza distruggerne la struttura.
 
-La statistica descrittiva non è una collezione di formule. È un linguaggio per sintetizzare distribuzioni, confrontare gruppi, individuare anomalie e capire se ciò che osserviamo merita un approfondimento.
+Nel Capitolo 3 abbiamo stabilito se i dati fossero abbastanza affidabili per essere usati. Adesso il problema cambia.
 
-L'Exploratory Data Analysis, o EDA, è il momento in cui l'analista prova a capire che forma ha il fenomeno prima di costruire una spiegazione definitiva.
+Abbiamo un dataset che ha superato una **Data Readiness Review**. Sappiamo che cosa rappresentano le righe, quali sono le chiavi, quale tempo stiamo osservando e quali caveat restano. Possiamo finalmente fare una domanda diversa:
 
-In questo capitolo useremo casi simulati ma realistici: e-commerce, logistica, customer support, SaaS e retail. L'obiettivo non è imparare a calcolare una media in astratto, ma capire quando una media aiuta e quando inganna.
+> **Che forma ha il fenomeno nei dati?**
 
-## Caso di apertura: il tempo medio di consegna è migliorato
+La statistica descrittiva serve a comprimere migliaia o milioni di osservazioni in quantità interpretabili: medie, mediane, percentili, tassi, misure di dispersione. L'Exploratory Data Analysis, o **EDA**, impedisce però che quella compressione cancelli proprio la struttura che dovremmo capire.
 
-Una società di logistica comunica al management che il tempo medio di consegna è passato da 3,8 a 3,1 giorni in un trimestre.
+NIST descrive l'EDA come un approccio che usa soprattutto tecniche grafiche per massimizzare la comprensione del dataset, scoprirne la struttura, individuare anomalie e verificare assunzioni prima di imporre un modello formale.[^nist-eda]
 
-La notizia sembra positiva.
+La parola importante è **esplorare**.
 
-Poi un'analista segmenta i dati per area geografica e scopre che:
+Non significa generare grafici senza una domanda. Significa osservare il fenomeno da più angolazioni e separare con disciplina tre livelli:
 
-- le consegne urbane sono passate da 2,1 a 1,8 giorni;
-- le consegne rurali sono passate da 5,6 a 6,4 giorni;
-- la quota di ordini urbani sul totale è cresciuta dal 58% al 74%.
+1. **ciò che vediamo**;
+2. **ciò che potrebbe spiegarlo**;
+3. **ciò che non abbiamo ancora dimostrato**.
 
-La media complessiva è migliorata soprattutto perché è cambiato il mix degli ordini.
+### Un riassunto può essere corretto e comunque insufficiente
 
-La domanda cambia immediatamente da:
+Immaginiamo una società di logistica che comunichi:
 
-**"Abbiamo migliorato la logistica?"**
+```text
+tempo medio di consegna
+trimestre precedente: 3,8 giorni
+trimestre corrente:   3,1 giorni
+```
 
-a:
+La conclusione spontanea è: il servizio è migliorato.
 
-**"Abbiamo davvero migliorato il processo o stiamo semplicemente servendo una popolazione diversa?"**
+Segmentando per area emerge però:
 
-Questa è la mentalità dell'EDA: non accettare il primo riassunto disponibile come se fosse la realtà intera.
+```text
+urbano:  2,1 → 1,8 giorni
+rurale:  5,6 → 6,4 giorni
+quota ordini urbani: 58% → 74%
+```
+
+Il totale migliora, ma una parte importante della variazione dipende anche dal **mix** degli ordini. Il dato medio non era falso. Era una compressione che nascondeva due dinamiche differenti.
+
+Questo capitolo insegnerà a resistere alla tentazione di trasformare il primo numero disponibile in una storia.
+
+### Caso reale documentato — quattro dataset quasi uguali nei numeri, diversissimi nei grafici
+
+Un esempio classico è il **quartetto di Anscombe**, pubblicato da Francis Anscombe nel 1973 e ripreso dal NIST come dimostrazione del ruolo dell'EDA.
+
+I quattro dataset hanno praticamente gli stessi riepiloghi principali: stessa media di `X`, stessa media di `Y`, stessa retta di regressione, deviazione residua quasi identica e correlazione circa `0,816`. Se guardassimo soltanto quei numeri, potremmo considerarli equivalenti.
+
+Gli scatter plot mostrano invece quattro strutture molto diverse: una relazione lineare plausibile, una relazione curva, un dataset dominato da un outlier e un caso in cui un singolo punto ad alta leva determina quasi tutta la relazione.[^nist-anscombe]
+
+La lezione non è che le statistiche sintetiche siano inutili.
+
+È che **ogni sintesi perde informazione**, e l'analista deve sapere quale informazione rischia di perdere.
+
+### Il percorso del capitolo
+
+Procederemo così:
+
+**centro → dispersione → code → forma → confronti → relazioni → tempo → robustezza → composizione → sintesi operativa**
+
+Alla fine, un buon output di EDA non sarà una galleria di grafici. Sarà una mappa del fenomeno:
+
+- quali pattern sono solidi;
+- quali dipendono dalla composizione;
+- quali sono guidati da pochi punti;
+- quali cambiano con la baseline;
+- quali spiegazioni sono plausibili;
+- quale evidenza manca per passare da descrizione a spiegazione.
+
+> **L'EDA non deve produrre la storia più convincente. Deve impedire che una storia prematura sopravviva al confronto con i dati.**
+
+[^nist-eda]: NIST/SEMATECH, *Exploratory Data Analysis*. https://www.itl.nist.gov/div898/handbook/eda/eda_d.htm
+[^nist-anscombe]: NIST/SEMATECH, *An EDA/Graphics Example*. https://www.itl.nist.gov/div898/handbook/eda/section1/eda16.htm
