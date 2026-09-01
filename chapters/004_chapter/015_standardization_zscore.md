@@ -1,81 +1,120 @@
-## 4.14 Standardizzare per confrontare: lo z-score
+## 4.14 Z-score: confrontare una posizione rispetto al proprio contesto
 
-Confrontare numeri espressi su scale diverse è uno dei problemi più comuni nell'analisi esplorativa. Un valore di 82 può essere alto, basso o perfettamente normale: dipende dalla distribuzione da cui proviene.
+Un valore assoluto non ci dice quanto sia insolito rispetto alla popolazione da cui proviene.
 
-Lo **z-score** risponde a una domanda semplice:
+`82` può essere alto, basso o perfettamente ordinario.
 
-> Quanto è distante questa osservazione dalla media, espressa in deviazioni standard?
+Lo **z-score** esprime la distanza di un'osservazione dalla media in unità di deviazione standard:
 
-La formula è:
+```text
+z = (valore - media) / deviazione standard
+```
 
-\[
-z = \frac{x - \mu}{\sigma}
-\]
+Se `z = 0`, il valore coincide con la media.
 
-Dove `x` è il valore osservato, `μ` la media e `σ` la deviazione standard.
+Se `z = +2`, si trova due deviazioni standard sopra la media.
 
-Uno z-score pari a `0` indica un valore uguale alla media. Uno z-score pari a `+2` indica un valore due deviazioni standard sopra la media. Uno z-score pari a `-1,5` indica un valore una deviazione standard e mezza sotto la media.
+Se `z = -1,5`, si trova una deviazione standard e mezza sotto.
 
-### Caso: quali negozi stanno davvero performando in modo anomalo?
+Il vantaggio è che la scala originale scompare e possiamo ragionare sulla **posizione relativa**.
 
-Una catena retail, che chiameremo **Northstar Retail**, gestisce 84 negozi. Il management vuole identificare i punti vendita con performance eccezionalmente alte o basse.
+### Caso simulato/composito — Il negozio più piccolo che risultò tra i migliori
 
-Il primo report ordina i negozi per fatturato mensile. In cima compare Milano Centro con 1,84 milioni di euro; in fondo Aosta con 210 mila euro.
+**Northstar Retail** gestisce 84 negozi molto diversi per superficie e mercato.
 
-La conclusione iniziale sembra ovvia: Milano è il negozio migliore, Aosta il peggiore.
+Un ranking per fatturato mensile produce:
 
-Ma i negozi hanno dimensioni, bacini d'utenza e superfici molto differenti. Il team decide allora di osservare il fatturato per metro quadrato all'interno di gruppi omogenei di negozi.
+```text
+Milano Centro: €1,84M
+Aosta:         €0,21M
+```
 
-Nel segmento dei negozi urbani grandi:
+Chiamare Milano "migliore" e Aosta "peggiore" confonde dimensione e performance.
 
-- media: 1.420 €/m²;
-- deviazione standard: 160 €/m²;
-- Milano Centro: 1.650 €/m².
+Il team confronta quindi il fatturato per metro quadrato **all'interno di gruppi di negozi comparabili**.
 
-Lo z-score di Milano è circa:
+Grandi negozi urbani:
 
-\[
-(1650 - 1420) / 160 = 1,44
-\]
+```text
+media = €1.420/m²
+SD    = €160/m²
+Milano Centro = €1.650/m²
+z ≈ +1,44
+```
 
-È un risultato molto buono, ma non straordinario.
+Piccoli negozi di provincia:
 
-Nel segmento dei piccoli negozi di provincia:
+```text
+media = €910/m²
+SD    = €70/m²
+Aosta = €1.075/m²
+z ≈ +2,36
+```
 
-- media: 910 €/m²;
-- deviazione standard: 70 €/m²;
-- Aosta: 1.075 €/m².
+Aosta ha il fatturato assoluto più basso, ma rispetto al proprio peer group è molto più eccezionale.
 
-Lo z-score di Aosta è:
+### La popolazione di riferimento viene prima della formula
 
-\[
-(1075 - 910) / 70 \approx 2,36
-\]
+Possiamo calcolare uno z-score su qualsiasi insieme numerico.
 
-Il negozio con il fatturato assoluto più basso è, rispetto al proprio contesto, uno dei migliori dell'intera rete.
+Questo non rende automaticamente sensato l'insieme.
 
-### Standardizzare non significa rendere tutto confrontabile
+Se standardizziamo insieme:
 
-Lo z-score è utile solo se il confronto ha senso. Standardizzare fatturati di negozi profondamente diversi non elimina automaticamente le differenze strutturali.
+- flagship cittadini;
+- outlet;
+- negozi aeroportuali;
+- piccoli store turistici;
 
-Prima della formula viene sempre la domanda:
+la media e la deviazione standard descrivono un miscuglio di processi differenti.
 
-**Qual è la popolazione di riferimento corretta?**
+Il risultato sarà matematicamente valido e analiticamente debole.
 
-Uno z-score calcolato sull'intera rete potrebbe mischiare flagship store, outlet, piccoli punti vendita turistici e negozi aeroportuali. Il risultato sarebbe matematicamente corretto ma analiticamente debole.
+La domanda corretta è:
 
-### Z-score e anomalie
+> **rispetto a quale popolazione voglio definire questo valore come alto o basso?**
 
-È comune usare soglie come `|z| > 2` o `|z| > 3` per segnalare valori insoliti. Non sono leggi universali.
+### Z-score elevato non significa automaticamente "probabilità quasi zero"
 
-Se la distribuzione è fortemente asimmetrica, multimodale o presenta code pesanti, media e deviazione standard possono descriverla male. In questi casi percentili, IQR o metodi robusti possono essere più appropriati.
+È comune associare soglie come `|z| > 2` o `|z| > 3` a osservazioni rare.
 
-Un buon analista non chiede soltanto:
+Questa interpretazione probabilistica richiede assunzioni sulla distribuzione, in particolare quando vogliamo usare le proprietà della distribuzione normale.
 
-> Quanto è grande lo z-score?
+Nell'EDA non dobbiamo trasformare una soglia pratica in una legge universale.
 
-Chiede anche:
+Distribuzioni fortemente asimmetriche, multimodali o a code pesanti possono produrre molti z-score elevati senza che i valori siano errori.
 
-> La distribuzione rende sensato usare lo z-score?
+### Standardizzazione e comparabilità non sono sinonimi
 
-Questa distinzione diventerà ancora più importante quando parleremo di probabilità e inferenza statistica.
+Lo z-score risolve una parte del problema di scala.
+
+Non risolve:
+
+- composizione diversa;
+- causalità;
+- differenze temporali;
+- metriche definite in modo differente;
+- peer group mal scelti.
+
+Serve quindi come **strumento descrittivo**, non come certificato di equità del confronto.
+
+### Quando è utile
+
+Esempi:
+
+- confrontare performance relative dentro peer group;
+- evidenziare valori che meritano ispezione esplorativa;
+- mettere variabili su una scala comune per alcune visualizzazioni o modelli;
+- osservare quanto un valore corrente sia distante dal comportamento storico, se la baseline è appropriata.
+
+### Quando preferire strumenti robusti
+
+Se la distribuzione è molto asimmetrica o dominata da code lunghe, può essere più informativo usare:
+
+- mediana;
+- percentili;
+- IQR;
+- ranking percentili;
+- trasformazioni motivate dal fenomeno.
+
+> **Uno z-score dice quanto un valore è lontano dal centro della distribuzione di riferimento. La parte più importante della frase è “distribuzione di riferimento”.**
