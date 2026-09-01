@@ -1,75 +1,124 @@
-## 8.2 Correlazione e causalità: quando un pattern non basta
+## 8.2 Correlazione, previsione e causalità: tre domande diverse
 
-La correlazione misura associazione. Non spiega, da sola, perché due variabili si muovono insieme.
+Una relazione osservata può essere utile senza essere causale.
 
-Tre meccanismi diversi possono generare una correlazione osservata:
+Questo è importante perché nel lavoro dell'analista convivono almeno tre obiettivi differenti:
 
-1. `X` influenza `Y`;
-2. `Y` influenza `X`;
-3. una terza variabile influenza entrambe.
+- **descrivere:** quali variabili si muovono insieme?
+- **prevedere:** quali segnali anticipano l'outcome?
+- **intervenire:** che cosa cambierebbe l'outcome se modificassimo una specifica esposizione?
 
-In pratica possono coesistere più meccanismi.
+Confondere questi obiettivi produce decisioni sbagliate anche quando i numeri sono corretti.
 
-### Caso - Più chiamate al customer care, più churn
+### Caso simulato/composito — Più chiamate al supporto, più churn
 
-Una società telco osserva che i clienti che contattano il customer care almeno tre volte in un mese hanno un churn del 22%, contro il 6% degli altri.
+Una telco osserva:
 
-Il direttore operations propone di ridurre il numero di contatti consentiti:
+| Clienti | Churn 60 giorni |
+|---|---:|
+| almeno 3 chiamate al supporto | 22% |
+| meno di 3 chiamate | 6% |
 
-> "Ogni chiamata aumenta il rischio che il cliente se ne vada."
+Il numero di chiamate è un ottimo **segnale di rischio**.
 
-Ma questa interpretazione scambia un segnale per una causa.
+Ma sarebbe pericoloso concludere:
 
-I clienti chiamano perché hanno problemi: fatture errate, copertura, disservizi o modem difettosi. È plausibile che il problema iniziale aumenti sia il numero di contatti sia il churn.
+> “Riduciamo le chiamate consentite, così ridurremo il churn.”
 
-Uno schema causale più credibile è:
+Un meccanismo plausibile è:
 
-`problema di servizio -> chiamate al supporto`
+```text
+problema di servizio -> più chiamate
+problema di servizio -> churn
+```
 
-`problema di servizio -> churn`
+Il supporto potrebbe persino attenuare il churn rispetto al controfattuale senza assistenza.
 
-Le chiamate sono associate al churn senza esserne necessariamente la causa principale.
+La stessa variabile può quindi essere:
 
-Anzi, un supporto efficace potrebbe ridurre il churn rispetto a ciò che sarebbe accaduto senza assistenza.
+- forte predittore;
+- debole spiegazione causale;
+- pessima leva di intervento.
 
-### Predittivo e causale possono essere entrambi utili
+### Quattro modi in cui nasce un'associazione
 
-Se l'obiettivo è costruire un sistema di early warning, il numero di chiamate può essere un ottimo predittore anche senza essere una causa.
+Quando `X` e `Y` sono associati, tra le spiegazioni plausibili ci sono:
 
-Se invece vogliamo decidere se ridurre, aumentare o modificare il supporto, serve una domanda causale.
+1. `X -> Y`;
+2. `Y -> X`;
+3. `Z -> X` e `Z -> Y` — confounding;
+4. selezione o condizionamento che crea l'associazione nel campione osservato.
 
-Questa distinzione è fondamentale:
+Possono inoltre coesistere più percorsi contemporaneamente.
 
-> **Una variabile può essere molto utile per prevedere un outcome e completamente sbagliata come leva di intervento.**
+Per questo il coefficiente di correlazione non contiene, da solo, la direzione delle frecce.
 
-### Caso - Sconto e valore cliente
+### “X viene prima di Y” è necessario, ma non sufficiente
 
-Un retailer scopre che i clienti che usano molti coupon hanno LTV superiore del 31%.
+Perché `X` causi `Y`, l'esposizione deve precedere l'outcome rilevante.
 
-Una conclusione possibile è: aumentare i coupon aumenta il lifetime value.
+Ma la precedenza temporale non basta.
 
-Ma l'EDA mostra che i coupon vengono inviati soprattutto ai membri loyalty, che acquistavano già più frequentemente prima dell'iscrizione al programma.
+Se il deterioramento del cliente inizia a gennaio, la chiamata di retention avviene a febbraio e il churn a marzo, la chiamata precede il churn ma è stata provocata da un rischio già presente.
 
-Inoltre i clienti ad alto valore ricevono più comunicazioni e quindi hanno più occasioni di usare coupon.
+Il tempo aiuta a escludere storie impossibili. Non identifica da solo il controfattuale.
 
-La correlazione osservata incorpora almeno:
+### Caso simulato/composito — Coupon e LTV
 
-- selezione nel programma loyalty;
-- frequenza di acquisto preesistente;
-- intensità di marketing;
-- possibile effetto causale del coupon.
+Un retailer scopre che chi utilizza almeno quattro coupon l'anno ha LTV superiore del 31%.
 
-Separare queste componenti è il problema causale.
+Possibili spiegazioni:
 
-### Domande da fare prima di usare il verbo "causare"
+- i coupon aumentano davvero frequenza e retention;
+- i clienti loyalty, già più attivi, ricevono più coupon;
+- chi compra più spesso ha semplicemente più occasioni di utilizzare coupon;
+- il marketing invia più offerte agli utenti ad alto valore;
+- una combinazione delle precedenti.
 
-Quando vediamo una relazione forte, chiediamoci:
+L'EDA ha trovato un pattern utile.
 
-- quale meccanismo potrebbe collegare le due variabili?
-- la direzione causale potrebbe essere inversa?
-- esistono variabili comuni che spiegano entrambe?
-- come sono stati selezionati i soggetti osservati?
-- la relazione esisteva già prima dell'intervento?
-- che cosa accadrebbe a `Y` se modificassimo deliberatamente `X`?
+Il predictive model potrebbe usare `coupon_usage` con successo.
 
-L'ultima domanda è quella decisiva. La causalità riguarda interventi, non soltanto osservazioni.
+Ma per decidere se **inviare più coupon** serve una domanda causale separata.
+
+### Una prova mentale: sostituire “associato” con “intervenire”
+
+Quando una dashboard mostra una relazione, prova a trasformare la frase.
+
+Da:
+
+> “Gli utenti con tre workflow hanno retention più alta.”
+
+A:
+
+> “Se inducissimo utenti comparabili a creare tre workflow, la loro retention aumenterebbe.”
+
+La seconda frase richiede evidenza molto più forte.
+
+Questa prova mentale è semplice ma potente: rivela immediatamente quando stiamo passando da descrizione a intervento senza un identification argument.
+
+### Claim ladder
+
+Durante il capitolo useremo una scala di linguaggio:
+
+**Livello 1 — Descrittivo**
+
+> “X e Y sono associati.”
+
+**Livello 2 — Predittivo**
+
+> “X migliora la previsione di Y fuori campione.”
+
+**Livello 3 — Causale condizionato**
+
+> “Sotto queste assunzioni e con questo design, la stima è compatibile con un effetto causale di X su Y.”
+
+**Livello 4 — Decisionale**
+
+> “Per questa popolazione e questo trattamento, l'effetto stimato è abbastanza grande e preciso da giustificare questa azione.”
+
+Non ogni analisi deve arrivare al livello 4.
+
+La maturità consiste anche nel fermarsi al livello che l'evidenza sostiene.
+
+> **Un'associazione può essere preziosa. Diventa pericolosa quando le chiediamo di rispondere a una domanda di intervento che il disegno non può sostenere.**
