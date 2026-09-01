@@ -1,88 +1,109 @@
-## 5.8 Campionamento: quando non osserviamo tutta la popolazione
+## 5.8 Campionamento: la popolazione che osserviamo determina ciò che possiamo inferire
 
-Nella vita reale l'analista raramente dispone di una popolazione perfettamente osservata. A volte i dati esistono solo per un sottoinsieme. A volte la raccolta completa sarebbe troppo lenta o costosa. A volte il processo stesso produce osservazioni solo su una parte dei casi.
+Quando vogliamo dire qualcosa su una popolazione più ampia a partire da un sottoinsieme di osservazioni, il modo in cui quel sottoinsieme è entrato nei dati diventa parte integrante dell'analisi.
 
-Il campionamento non è quindi un dettaglio statistico. È una parte del disegno dell'analisi.
+Il campionamento non risponde soltanto alla domanda:
 
-Supponiamo che una catena retail con 1.240 punti vendita voglia stimare il tempo medio che un cliente trascorre in coda alla cassa. Installare sensori e osservatori in ogni negozio per un mese sarebbe costoso. Il team decide quindi di misurare 80 negozi.
+> **Quanti casi osserviamo?**
 
-Il primo impulso potrebbe essere: scegliamo gli 80 negozi che ci rispondono più velocemente.
+Risponde soprattutto a:
 
-È una pessima idea.
+> **Quale relazione esiste tra i casi osservati e la popolazione su cui vogliamo concludere?**
 
-I negozi più disponibili potrebbero essere quelli con processi migliori, manager più organizzati e minore pressione operativa. Il campione diventerebbe comodo ma non necessariamente rappresentativo.
+### Popolazione target, sampling frame e campione non sono la stessa cosa
 
-### Caso realistico: il sondaggio che diceva che il nuovo prodotto piaceva al 91%
+Supponiamo che una catena retail con 1.240 punti vendita voglia stimare il tempo medio di attesa alla cassa.
 
-Un'azienda di servizi finanziari lancia una nuova app mobile. Dopo due settimane invia una survey direttamente dentro l'app agli utenti che hanno effettuato almeno tre accessi.
+- **Popolazione target:** tutti i negozi e i clienti che vogliamo descrivere.
+- **Sampling frame:** l'insieme di negozi che possiamo effettivamente selezionare e misurare.
+- **Campione:** i negozi e i periodi che osserviamo davvero.
 
-Rispondono 4.800 persone.
+Se scegliamo gli 80 store che rispondono per primi alla richiesta del team analytics, il campione è comodo ma il meccanismo di selezione può favorire negozi con manager più organizzati, processi migliori o minore pressione operativa.
 
-Il 91% dichiara di essere soddisfatto.
+La statistica successiva non può rendere casuale una selezione che non lo era.
 
-Il dato viene presentato al management come prova del successo del lancio.
+### Caso reale documentato — Il Literary Digest e i milioni di risposte che non bastarono
 
-Il problema emerge un mese dopo: il tasso di attivazione degli utenti invitati era solo del 48%, e una parte rilevante degli utenti che avevano aperto l'app una sola volta non era mai arrivata alla survey.
+Uno degli esempi storici più memorabili di questo problema è il sondaggio elettorale del **Literary Digest** del 1936 negli Stati Uniti.
 
-La popolazione di interesse era:
+Il magazine distribuì milioni di schede e ricevette circa **due milioni di risposte**. Il risultato prevedeva una vittoria netta di Alf Landon su Franklin D. Roosevelt.
 
-> tutti gli utenti invitati a usare la nuova app.
+La previsione fu clamorosamente sbagliata: Roosevelt vinse le elezioni.
 
-Il campione osservato era invece:
+Pew Research Center, ricostruendo la storia del campionamento moderno, osserva che i nominativi del Digest provenivano soprattutto da fonti come registri automobilistici ed elenchi telefonici, che non rappresentavano uniformemente la popolazione del periodo. Sottolinea inoltre che anche altri fattori contribuirono all'errore e che indagini basate su campioni molto più piccoli ma meglio progettati ottennero risultati più accurati.[^pew-digest]
 
-> utenti abbastanza attivi da aver effettuato almeno tre accessi e abbastanza motivati da completare una survey.
+AAPOR ricorda lo stesso episodio come uno dei fallimenti che contribuirono all'affermazione dei metodi di campionamento più rigorosi.[^aapor-nps]
 
-Le 4.800 risposte non erano poche. Il problema non era la dimensione del campione. Era **chi poteva entrare nel campione**.
+Il messaggio per il Data Analyst è potentissimo:
 
-Questo è un principio fondamentale:
+> **milioni di osservazioni non compensano automaticamente un meccanismo di selezione distorto.**
 
-**un campione grande può essere molto preciso nel descrivere la popolazione sbagliata.**
+### Caso simulato/composito — Il 91% di utenti soddisfatti
 
-### Random non significa automaticamente rappresentativo
+Una società finanziaria lancia una nuova app. Dopo due settimane mostra una survey solo agli utenti che hanno effettuato almeno tre accessi.
 
-Un campione casuale semplice assegna a ogni unità della popolazione una probabilità nota di essere selezionata. È un buon punto di partenza, ma non risolve ogni problema.
+Rispondono 4.800 persone e il 91% si dichiara soddisfatto.
 
-Se la popolazione contiene segmenti molto diversi, può essere utile stratificare.
+Il numero è statisticamente preciso per i **rispondenti raggiunti da quel meccanismo**.
 
-Nel caso dei negozi, per esempio, potremmo dividere la popolazione per:
+Ma la popolazione sulla quale il management vuole concludere è più ampia: tutti gli utenti invitati a utilizzare la nuova app.
 
-- dimensione del punto vendita;
+Gli utenti che hanno aperto l'app una sola volta, quelli che hanno abbandonato durante l'attivazione e quelli che non sono riusciti a completare il setup non hanno quasi possibilità di entrare nel campione.
+
+Il problema non è `n = 4.800`.
+
+È il percorso:
+
+**utente invitato → attiva l'app → effettua almeno tre accessi → vede la survey → decide di rispondere**.
+
+Ogni freccia può selezionare un sottoinsieme diverso dalla popolazione target.
+
+### Random sampling: utile, non magico
+
+In un campione probabilistico le unità hanno probabilità di selezione note secondo il disegno adottato. Questo ci fornisce una base molto più solida per quantificare l'incertezza di campionamento.
+
+Ma anche un buon disegno può richiedere stratificazione o pesi quando la popolazione è eterogenea.
+
+Nel caso dei negozi potremmo stratificare per:
+
 - area geografica;
-- formato urbano o extraurbano;
-- volume di transazioni;
-- presenza o assenza di casse self-service.
+- dimensione;
+- volume;
+- formato urbano/extraurbano;
+- presenza di self-checkout.
 
-Poi potremmo campionare all'interno di ogni strato.
+L'obiettivo non è far assomigliare il campione alla popolazione su ogni colonna disponibile. È assicurarsi che il disegno rappresenti adeguatamente le dimensioni che possono essere importanti per la stima.
 
-Questo evita che 80 negozi selezionati casualmente finiscano, per puro caso, con l'essere quasi tutti piccoli punti vendita del Nord.
+### Sampling error e bias sono problemi differenti
 
-### Il bias non scompare aumentando n
+Il **sampling error** nasce dal fatto che campioni diversi producono stime leggermente diverse.
 
-Se il metodo di campionamento è distorto, aumentare il numero di osservazioni non elimina il bias.
+Il **bias di selezione, coverage o nonresponse** nasce invece quando il processo di osservazione rende alcune parti della popolazione sistematicamente più o meno rappresentate.
 
-Possiamo intervistare 100.000 clienti, ma se intervistiamo solo quelli che hanno rinnovato il contratto non stiamo misurando la soddisfazione di tutti i clienti.
+Aumentare `n` riduce il primo in molte condizioni. Non elimina automaticamente il secondo.
 
-Il campionamento deve quindi essere pensato prima della formula.
+AAPOR insiste proprio sulla necessità di distinguere il margine di campionamento dalle altre componenti dell'errore di survey.[^aapor-standards]
 
-La domanda corretta non è soltanto:
+### La scheda di campionamento
 
-> Quante osservazioni abbiamo?
+Prima di generalizzare da un campione, documenta:
 
-ma anche:
+```text
+Popolazione target:
+Sampling frame:
+Unità di campionamento:
+Metodo di selezione:
+Periodo di raccolta:
+Tasso / meccanismo di risposta:
+Segmenti potenzialmente sottorappresentati:
+Pesi o aggiustamenti applicati:
+Popolazione alla quale è realmente difendibile generalizzare:
+```
 
-> Da quale meccanismo sono state generate queste osservazioni e chi è rimasto fuori?
+Questa scheda vale più di molti decimali aggiuntivi.
 
-### Una regola pratica per l'analista
+> **L'inferenza non parte dalla formula dell'intervallo. Parte dal percorso con cui le osservazioni sono entrate nel campione.**
 
-Prima di utilizzare un campione, scrivi esplicitamente quattro cose:
-
-1. popolazione target;
-2. frame di campionamento, cioè l'insieme da cui puoi effettivamente estrarre;
-3. metodo di selezione;
-4. principali modi in cui una parte della popolazione può essere esclusa.
-
-Questa breve disciplina evita molti errori che nessun test statistico successivo potrà correggere.
-
-### Fonti
-
-[^nist-clt]: NIST/SEMATECH e-Handbook of Statistical Methods, *Normal Distribution and Central Limit Theorem*, https://www.itl.nist.gov/div898/handbook/eda/section3/eda3661.htm
+[^pew-digest]: Pew Research Center, *Sample Surveys and the 1940 Census*: https://www.pewresearch.org/social-trends/2012/04/02/sample-surveys-and-the-1940-census/
+[^aapor-nps]: AAPOR, *Report of the Task Force on Non-Probability Sampling*: https://aapor.org/wp-content/uploads/2022/11/NPS_TF_Report_Final_7_revised_FNL_6_22_13-1.pdf
+[^aapor-standards]: AAPOR, *Transparency Initiative*: https://aapor.org/standards-and-ethics/transparency-initiative/
