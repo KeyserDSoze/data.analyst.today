@@ -1,51 +1,116 @@
-## 11.3 Window functions: confrontare senza distruggere il dettaglio
+## 11.3 Window functions: aggiungere contesto senza perdere il grain
 
-Le funzioni finestra sono uno dei punti in cui SQL diventa particolarmente potente per l'analisi, perché permettono di calcolare aggregazioni relative senza perdere il grain originale.
+Le window functions sono particolarmente importanti per un Data Analyst perché permettono di calcolare informazioni relative a un gruppo **senza collassare le righe del dataset**.
 
-Con `GROUP BY`, se partiamo da una riga per ordine e raggruppiamo per cliente, otteniamo una riga per cliente.
+PostgreSQL descrive esplicitamente questa differenza: una window function opera su righe correlate alla riga corrente, ma a differenza di una normale aggregazione non raggruppa quelle righe in un solo output. Le righe mantengono la propria identità.
 
-Con una window function possiamo invece mantenere una riga per ordine e aggiungere, per esempio:
+Questo ci dà un criterio semantico molto utile:
 
-- totale speso dal cliente;
-- ranking dell'ordine;
-- valore dell'ordine precedente;
-- media mobile;
-- quota sul totale;
-- cumulato progressivo.
+- `GROUP BY` cambia il grain;
+- una window function, in generale, aggiunge contesto mantenendo il grain dell’output.
 
-### Caso simulato — Luma Fashion e il cliente che “sta spendendo di più”
+Fonte: https://www.postgresql.org/docs/current/tutorial-window.html
 
-Luma Fashion vuole individuare clienti il cui valore d'ordine sta crescendo.
+### Caso simulato/composito — Luma Fashion e il cliente che “stava spendendo di più”
 
-Una semplice query aggregata per mese mostra che una cliente, `C10482`, ha speso:
+Luma Fashion vuole individuare clienti con valore economico crescente.
+
+Una cliente, `C10482`, mostra revenue mensile:
 
 - aprile: €420;
 - maggio: €610;
 - giugno: €790.
 
-Il CRM decide di inserirla in un segmento premium.
+Il CRM propone di spostarla nel segmento premium.
 
-Analizzando gli ordini singoli con `LAG`, emerge però un quadro diverso:
+Prima della decisione l’analista guarda gli ordini in sequenza:
 
 ```sql
 SELECT
     customer_id,
     order_date,
+    order_id,
     order_value,
     LAG(order_value) OVER (
         PARTITION BY customer_id
-        ORDER BY order_date
+        ORDER BY order_date, order_id
     ) AS previous_order_value
 FROM orders;
 ```
 
-Il mese di giugno contiene un solo ordine da €790, seguito da un reso quasi totale di €720 registrato il mese successivo.
+Giugno contiene un unico ordine da €790 seguito da un reso quasi totale di €720 registrato il mese successivo.
 
-La crescita mensile era reale dal punto di vista della fatturazione lorda, ma non dal punto di vista del valore economico netto del cliente.
+La crescita della fatturazione lorda esiste, ma non equivale automaticamente a crescita del valore netto del cliente.
 
-La window function non risolve automaticamente il problema, ma rende più facile analizzare la sequenza degli eventi senza perdere dettaglio.
+La window function non “scopre la verità”. Permette però di mantenere il dettaglio dell’evento mentre aggiungiamo il contesto della storia dello stesso cliente.
 
-### Ranking e top-N per gruppo
+### `PARTITION BY` definisce la popolazione di confronto
+
+Considera:
+
+```sql
+AVG(order_value) OVER (
+    PARTITION BY customer_id
+)
+```
+
+La domanda incorporata è:
+
+> quanto vale questo ordine rispetto alla storia degli ordini dello stesso cliente?
+
+Se usiamo invece:
+
+```sql
+AVG(order_value) OVER (
+    PARTITION BY country
+)
+```
+
+la domanda diventa:
+
+> quanto vale questo ordine rispetto agli ordini dello stesso Paese?
+
+`PARTITION BY` non è quindi semplice sintassi. Definisce **il gruppo di riferimento**.
+
+### `ORDER BY` definisce la storia
+
+Con funzioni come `LAG`, `LEAD`, running total e ranking, l’ordine non è un dettaglio.
+
+Se due eventi condividono lo stesso timestamp e non esiste un tie-break deterministico, questa query:
+
+```sql
+LAG(status) OVER (
+    PARTITION BY order_id
+    ORDER BY event_at
+)
+```
+
+può non avere una definizione univoca della sequenza.
+
+In processi event-driven è spesso necessario aggiungere:
+
+- event sequence;
+- ingestion id;
+- transaction id;
+- timestamp con precisione sufficiente.
+
+Il contratto temporale deve dire **che cosa significa “prima”**.
+
+### `ROW_NUMBER`, `RANK` e `DENSE_RANK`: la policy sui pari merito
+
+Valori: 100, 100, 90.
+
+- `ROW_NUMBER`: 1, 2, 3;
+- `RANK`: 1, 1, 3;
+- `DENSE_RANK`: 1, 1, 2.
+
+La scelta dipende dalla decisione.
+
+Se dobbiamo assegnare esattamente tre slot promozionali, `ROW_NUMBER` richiede un tie-break esplicito.
+
+Se vogliamo rappresentare performance equivalenti, `RANK` o `DENSE_RANK` possono essere semanticamente più corretti.
+
+### Ranking top-N: prima si definisce il grain, poi si ordina
 
 Per trovare i tre prodotti con più revenue in ogni categoria:
 
@@ -62,7 +127,7 @@ WITH product_revenue AS (
         *,
         ROW_NUMBER() OVER (
             PARTITION BY category_id
-            ORDER BY revenue DESC
+            ORDER BY revenue DESC, product_id
         ) AS rn
     FROM product_revenue
 )
@@ -71,91 +136,76 @@ FROM ranked
 WHERE rn <= 3;
 ```
 
-Questo pattern è utile perché separa chiaramente due grain:
+La sequenza è importante:
 
-1. una riga per prodotto-categoria;
-2. ranking all'interno della categoria.
+1. `product_revenue` cambia il grain a una riga per categoria-prodotto;
+2. `ROW_NUMBER` mantiene quel grain e aggiunge una posizione relativa.
 
-### `ROW_NUMBER`, `RANK` e `DENSE_RANK`
+Questo è esattamente il modo in cui dovremmo leggere una trasformazione analitica: **dove cambia il grain e dove no?**
 
-La differenza emerge in presenza di pari merito.
-
-Valori: 100, 100, 90.
-
-- `ROW_NUMBER`: 1, 2, 3;
-- `RANK`: 1, 1, 3;
-- `DENSE_RANK`: 1, 1, 2.
-
-La scelta non è estetica. Dipende dalla domanda business.
-
-Se dobbiamo assegnare esattamente tre slot promozionali, `ROW_NUMBER` può essere necessario, con una regola di tie-break esplicita.
-
-Se vogliamo classificare performance equivalenti, `RANK` o `DENSE_RANK` possono essere più coerenti.
-
-### Running total e cumulative metrics
+### Running total e informazione disponibile “fino a quel momento”
 
 ```sql
 SUM(net_revenue) OVER (
     PARTITION BY customer_id
-    ORDER BY order_date
+    ORDER BY order_date, order_id
     ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-) AS lifetime_revenue_to_date
+) AS revenue_to_date
 ```
 
-Questa metrica risponde a una domanda temporale precisa: quanto revenue cumulato aveva generato il cliente **fino a quel momento**?
+Questa colonna rappresenta il revenue cumulato disponibile **fino alla riga corrente**.
 
-È molto diversa dal lifetime revenue finale associato retroattivamente a tutti gli eventi passati.
+È diversa dal lifetime revenue finale copiato retroattivamente su tutti gli eventi del cliente.
 
-La distinzione è cruciale quando costruiamo feature per modelli predittivi: usare informazioni future crea leakage.
+La distinzione diventa critica per feature predittive e analisi storiche: il secondo approccio può introdurre informazione futura e leakage.
 
-### Medie mobili
+### Il frame è parte della metrica
+
+Una media mobile come:
 
 ```sql
 AVG(daily_orders) OVER (
     ORDER BY date
     ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
-) AS moving_avg_7d
+)
 ```
 
-Una media mobile di sette righe non coincide necessariamente con sette giorni se mancano date.
+usa sette **righe**, non necessariamente sette giorni di calendario.
 
-Se la serie contiene solo giorni in cui esiste almeno un ordine, sei righe precedenti potrebbero coprire dieci giorni di calendario.
+Se la tabella non contiene giorni a volume zero, sette righe possono coprire dieci o dodici giorni.
 
-Ancora una volta: la sintassi può essere corretta e la semantica sbagliata.
+### Caso simulato/composito — GridPay e la crescita creata dai giorni mancanti
 
-### Caso simulato — GridPay e il falso aumento delle transazioni
+GridPay monitora il volume giornaliero con una media mobile a sette righe.
 
-GridPay monitora il volume giornaliero con una media mobile a sette righe. Durante un problema di ingestione, due domeniche non vengono caricate perché hanno volume molto basso.
+A causa di un problema di ingestione, due domeniche a basso volume non vengono caricate.
 
-La media mobile sale artificialmente.
+La moving average sale.
 
-Il team inizialmente interpreta il movimento come crescita organica.
+Il team interpreta inizialmente il movimento come crescita organica.
 
-La soluzione non è cambiare la window function, ma costruire prima una calendar spine completa e fare un `LEFT JOIN` degli eventi sulle date attese.
+Il problema non si risolve cambiando funzione finestra. Serve costruire prima una **calendar spine** completa e rappresentare anche i giorni senza eventi.
 
-### Regola operativa
+La serie analitica deve dichiarare se l’assenza di una riga significa:
 
-Le window functions sono particolarmente utili quando la domanda contiene parole come:
+- zero;
+- dato mancante;
+- giorno non eleggibile;
+- pipeline non aggiornata.
 
-- precedente;
-- successivo;
-- cumulato;
-- ultimo;
-- primo;
-- ranking;
-- quota;
-- media mobile;
-- rispetto al gruppo;
-- rispetto alla storia dello stesso soggetto.
+Sono quattro semantiche diverse.
 
-Ma prima di usarle dobbiamo sempre definire:
+### Window contract
 
-- `PARTITION BY`: qual è il gruppo analitico?
-- `ORDER BY`: qual è l'ordine temporale o logico?
-- frame: quali righe entrano davvero nel calcolo?
+Per ogni window function importante, l’Analytical Data Contract dovrebbe rendere espliciti:
 
----
+| Campo | Domanda |
+|---|---|
+| grain input/output | resta una riga per che cosa? |
+| partition | qual è il gruppo di confronto? |
+| order | qual è la sequenza e come gestiamo i pari timestamp? |
+| frame | quali righe entrano nel calcolo? |
+| time completeness | le unità temporali mancanti sono rappresentate? |
+| as-of safety | stiamo usando solo informazione disponibile fino a quel momento? |
 
-**Riferimento**
-
-PostgreSQL Documentation, *Window Functions*: https://www.postgresql.org/docs/current/tutorial-window.html
+> **Una window function è potente non perché evita un `GROUP BY`, ma perché permette di aggiungere contesto senza perdere l’identità analitica della riga.**
