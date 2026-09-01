@@ -1,92 +1,138 @@
-## 8.1 Il controfattuale: la domanda che non possiamo osservare direttamente
+## 8.1 Il controfattuale: definire l'alternativa prima di misurare l'effetto
 
-Per misurare un effetto causale vorremmo osservare due risultati per la stessa unità:
+Per una stessa unità vorremmo osservare due mondi:
 
-- che cosa accade se riceve il trattamento;
-- che cosa accade se non lo riceve.
+- risultato se riceve il trattamento;
+- risultato se non lo riceve.
 
-Nel linguaggio dei *potential outcomes* possiamo indicare questi due risultati come:
+Nel linguaggio dei *potential outcomes*:
 
-- `Y(1)` = risultato con trattamento;
-- `Y(0)` = risultato senza trattamento.
+- `Y(1)` = outcome sotto trattamento;
+- `Y(0)` = outcome sotto controllo.
 
-L'effetto causale individuale sarebbe:
+L'effetto individuale sarebbe:
 
 `Y(1) - Y(0)`
 
-Il problema fondamentale è che per la stessa unità osserviamo soltanto uno dei due risultati.
+Ma per una stessa unità e nello stesso momento ne osserviamo soltanto uno.
 
-### Caso - Il coupon da 20 euro
+Questo è il **fundamental problem of causal inference**: il controfattuale individuale manca per definizione.
 
-Un retailer invia un coupon da 20 € a 50.000 clienti. Entro trenta giorni:
+### Caso simulato/composito — Il coupon da 20 euro
 
-- il 24% dei clienti con coupon effettua un acquisto;
-- tra i clienti senza coupon il tasso medio di acquisto è il 15%.
+Un retailer invia un coupon a 50.000 clienti. Entro trenta giorni:
 
-Una lettura superficiale attribuirebbe al coupon un incremento di 9 punti percentuali.
+- conversione tra i destinatari: 24%;
+- conversione tra i non destinatari: 15%.
 
-Ma il marketing team ha selezionato per la campagna i clienti che avevano visitato il sito almeno tre volte nelle ultime due settimane.
+Il `+9 pp` è una differenza osservata.
 
-Questi clienti avevano già una propensione all'acquisto maggiore.
+Non possiamo ancora chiamarla effetto causale.
 
-La domanda giusta non è:
+Il marketing ha scelto i destinatari tra clienti con almeno tre visite recenti. Quindi il gruppo trattato aveva già un intento di acquisto maggiore.
 
-> Quanto acquistano i clienti che ricevono il coupon rispetto agli altri?
+La domanda causale non è:
 
-La domanda giusta è:
+> “Quanto acquistano i destinatari rispetto agli altri?”
 
-> Quanto avrebbero acquistato quegli stessi clienti se non avessero ricevuto il coupon?
+È:
 
-Quel secondo risultato è il controfattuale.
+> **“Quanto avrebbero acquistato quei clienti se, a parità del resto, non avessero ricevuto il coupon?”**
 
-### Perché il "prima e dopo" spesso non basta
+### Anche il prima/dopo ha un controfattuale implicito
 
-Il team prova allora un'altra analisi:
+Supponiamo che la conversione dei clienti target fosse 17% prima e 24% dopo.
 
-- conversion rate dei clienti target nei 30 giorni precedenti: 17%;
-- conversion rate nei 30 giorni successivi al coupon: 24%.
+Un'analisi `24% - 17% = +7 pp` assume implicitamente che, senza coupon, la conversione sarebbe rimasta al 17%.
 
-Differenza: +7 punti.
+Ma nel frattempo può essere iniziato Natale, può essere cambiato il catalogo, può essere aumentato il traffico o il prezzo può essere sceso.
 
-Ancora una volta, non è sufficiente.
+Il “prima” non è automaticamente il controfattuale del “dopo”.
 
-Nel periodo successivo è iniziata la stagione natalizia. Il traffico organico è aumentato, il catalogo promozionale è cambiato e molti clienti avrebbero acquistato comunque.
+### L'estimand decide quale controfattuale serve
 
-Un confronto prima/dopo attribuisce al trattamento anche tutto ciò che è cambiato nel tempo.
+Non esiste un unico “effetto del trattamento”.
 
-### Un buon controfattuale è un buon confronto
+Possiamo voler stimare:
 
-L'inferenza causale può essere vista come una disciplina per costruire gruppi o situazioni comparabili.
+- **ATE — Average Treatment Effect:** effetto medio nella popolazione target;
+- **ATT — Average Treatment Effect on the Treated:** effetto medio sulle unità che hanno effettivamente ricevuto il trattamento;
+- **CATE — Conditional Average Treatment Effect:** effetto medio in un sottogruppo definito;
+- un effetto locale, per esempio vicino a una soglia;
+- un effetto su una specifica versione del trattamento.
 
-Un confronto è credibile quando, in assenza dell'intervento, i gruppi avrebbero avuto risultati simili o dinamiche comparabili.
+Queste quantità rispondono a decisioni diverse.
 
-La randomizzazione è potente proprio perché, in media, rende il trattamento indipendente dalle caratteristiche preesistenti. Quando non possiamo randomizzare, dobbiamo cercare altre strategie di identificazione.
+Se un programma di retention è oggi offerto solo ad account recuperabili, l'ATT può essere molto diverso dall'ATE che otterremmo estendendolo a tutti.
 
-### Effetto medio, non magia individuale
+### Trattamento e alternativa devono essere ben definiti
 
-Spesso non possiamo sapere se il coupon ha causato l'acquisto del singolo cliente. Possiamo però stimare l'effetto medio su una popolazione:
+“Customer Success” non è un trattamento abbastanza preciso.
 
-`ATE = E[Y(1) - Y(0)]`
+Potrebbe significare:
 
-Oppure l'effetto medio sui trattati:
+- una telefonata di 15 minuti;
+- tre sessioni tecniche;
+- un account manager dedicato;
+- un voucher;
+- una combinazione di interventi.
 
-`ATT = E[Y(1) - Y(0) | trattamento = 1]`
+Se unità diverse ricevono versioni molto diverse, la causal claim diventa ambigua.
 
-Questa distinzione non è accademica. Un programma può funzionare bene sui clienti che oggi lo ricevono ma molto meno se esteso a tutta la base clienti.
+Una specifica più utile è:
 
-### Caso - Incentivo alla riattivazione
+```text
+Unità: account SMB
+Trattamento: sessione tecnica di 45 minuti entro 7 giorni
+Alternativa: onboarding standard senza sessione extra
+Outcome: rinnovo entro 90 giorni
+Popolazione: account che non hanno completato ERP integration entro D30
+```
 
-Un servizio subscription offre un mese gratuito ai clienti a rischio churn. Sul gruppo trattato il churn scende dal 18% al 10%.
+### Consistency: il trattamento osservato deve corrispondere a quello definito
 
-Il management vuole offrire il mese gratuito a tutti.
+Una causal claim presume che quando diciamo `trattamento = 1` sappiamo che cosa è stato realmente ricevuto.
 
-Ma i clienti trattati erano stati selezionati perché avevano ancora almeno due login nell'ultimo mese. I clienti completamente inattivi non erano inclusi.
+Se nel gruppo “training” alcuni ricevono un video automatico e altri un workshop con consulente senior, stiamo mescolando versioni diverse.
 
-L'effetto osservato riguarda quindi un segmento specifico. Estendere la stima a tutta la popolazione è un problema di **generalizzazione**, non soltanto di calcolo.
+Prima di stimare l'effetto bisogna verificare:
 
-> **Una stima causale risponde sempre a una domanda su una popolazione, un trattamento, un outcome e un contesto specifici.**
+- assignment;
+- exposure effettiva;
+- intensità;
+- timing;
+- eventuale cross-over.
 
-## Riferimenti
+Il Capitolo 9 entrerà nel dettaglio operativo degli esperimenti. Qui fissiamo il principio causale: **non possiamo interpretare un trattamento che non sappiamo definire**.
 
-- Stanford University, *The Potential Outcomes Model*.
-- Guido Imbens, *Potential Outcome and Directed Acyclic Graph Approaches to Causality*, Journal of Economic Literature.
+### Interference: il controfattuale di uno può dipendere dagli altri
+
+Molti esempi semplici assumono che il trattamento di un'unità non modifichi l'outcome di un'altra.
+
+Ma nel mondo reale può esserci interferenza:
+
+- una promozione a un seller sottrae domanda ad altri seller;
+- un nuovo algoritmo cambia il marketplace per tutti;
+- un training a un manager influenza il suo team;
+- un aumento prezzi in una regione sposta clienti nella regione confinante.
+
+Quando esistono spillover, la domanda causale deve includerli oppure scegliere un'unità di trattamento coerente.
+
+### Il controfattuale è una costruzione, non una colonna mancante
+
+Un buon comparison group non è “il gruppo che abbiamo trovato nel database”.
+
+È un gruppo per cui possiamo argomentare:
+
+> **in assenza del trattamento avrebbe riprodotto, abbastanza bene, l'outcome che i trattati avrebbero avuto senza intervento.**
+
+Metodi diversi costruiscono questo argomento in modi differenti.
+
+Randomizzazione, DiD, matching, RDD e IV non sono varianti della stessa formula. Sono strategie diverse per rendere plausibile un controfattuale non osservato.
+
+> **Prima di calcolare l'effetto, scrivi il mondo alternativo che vuoi rappresentare. Se non sai descriverlo, non hai ancora una causal question sufficientemente definita.**
+
+### Riferimenti
+
+- World Bank e Inter-American Development Bank, *Impact Evaluation in Practice*, capitolo 3, causal inference e counterfactuals: https://www.worldbank.org/en/programs/sief-trust-fund/publication/impact-evaluation-in-practice
+- Stanford University, STATS 209, *Introduction to Causal Inference*: https://bulletin.stanford.edu/courses/2235031
