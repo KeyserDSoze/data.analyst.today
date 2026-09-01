@@ -1,104 +1,141 @@
-## 10.3 Coefficienti, categorie e interazioni: leggere il modello senza raccontarsi favole
+## 10.3 Coefficienti, categorie e interazioni: interpretare il modello senza trasformarlo in una teoria causale
 
-La regressione sembra semplice perché produce coefficienti leggibili. Proprio per questo è facile attribuire loro più significato di quanto abbiano davvero.
+I modelli lineari sono attraenti perché producono coefficienti leggibili. Proprio questa leggibilità crea un rischio: scambiare una descrizione del comportamento predittivo del modello per una spiegazione del mondo.
 
-Un coefficiente risponde a una domanda del tipo:
+Un coefficiente risponde, in modo semplificato, a una domanda del tipo:
 
-> a parità delle altre variabili incluse nel modello, come cambia il target quando questa feature aumenta di un'unità?
+> **come cambia la previsione quando questa feature cambia di un'unità, mantenendo fisse le altre feature rappresentate nel modello?**
 
-Questa frase contiene tre avvertenze:
+Questa frase contiene già tre limiti:
 
-- “a parità” vale solo per le variabili incluse;
-- l'unità di misura conta;
-- la relazione può non essere davvero lineare.
+- "mantenendo fisse" riguarda solo ciò che il modello contiene;
+- l'unità e la scala della feature cambiano l'interpretazione numerica;
+- la relazione stimata vale nella popolazione e nel dominio in cui il modello è stato appreso.
 
-### Caso realistico: BluePeak SaaS e l'espansione dei contratti
+### Caso simulato/composito — BluePeak SaaS
 
-BluePeak vende software B2B. Il team Revenue Operations costruisce un modello per stimare l'espansione annuale del contratto.
+BluePeak vende software B2B e vuole prevedere l'espansione annuale del contratto.
 
-Feature:
+Il primo modello usa:
 
-- utenti attivi mensili;
-- numero di integrazioni configurate;
+- utenti attivi;
+- integrazioni configurate;
 - ticket di supporto;
-- numero di business unit;
-- piano Enterprise sì/no;
-- utilizzo della funzione di automazione.
+- piano commerciale;
+- utilizzo delle automazioni.
 
-Il primo modello mostra un coefficiente positivo molto forte per `ticket_support`.
+`ticket_support` riceve un coefficiente positivo molto forte.
 
-Interpretazione ingenua:
+La lettura sbagliata è:
 
-> più ticket generano più espansione.
+> "Aprire ticket fa aumentare l'espansione."
 
-L'indagine mostra invece che i clienti grandi generano più ticket **e** hanno maggiore probabilità di espandere. La dimensione organizzativa non era rappresentata bene nel modello iniziale.
+L'EDA mostra invece che gli account enterprise hanno contemporaneamente:
 
-Dopo aver aggiunto dimensione account, numero di business unit e complessità di implementazione, il coefficiente dei ticket si riduce drasticamente.
+- implementazioni più complesse;
+- più ticket;
+- più business unit;
+- maggiore spazio di espansione.
 
-La lezione non è che la regressione sia “inaffidabile”. La lezione è che un modello riflette la struttura informativa che gli forniamo.
+Aggiungendo proxy migliori della dimensione e complessità dell'account, il coefficiente dei ticket si riduce molto.
 
-### Variabili categoriche
+Il punto non è cercare il "coefficiente vero" finché il numero ci piace. È ricordare che il coefficiente dipende dalla rappresentazione del problema fornita al modello.
 
-Una categoria come `piano = Enterprise / Pro / Basic` non può essere interpretata come un numero arbitrario 1, 2, 3.
+### Coefficiente predittivo vs effetto causale
 
-Di solito si usano indicatori binari e una categoria di riferimento.
+Questa distinzione deve essere esplicita in ogni presentazione.
 
-Esempio:
+Un coefficiente può essere molto stabile e utile per predire senza rappresentare l'effetto di una leva modificabile.
 
-- Basic = riferimento;
-- Pro = 1 se Pro, 0 altrimenti;
-- Enterprise = 1 se Enterprise, 0 altrimenti.
+Per trasformare:
 
-Il coefficiente di `Enterprise` rappresenta quindi la differenza attesa rispetto a Basic, a parità delle altre feature incluse.
+> "gli account con più integrazioni hanno espansione prevista maggiore"
 
-### Interazioni: quando l'effetto dipende da un'altra variabile
+in:
 
-Supponiamo che un aumento di utilizzo del prodotto sia associato a maggiore espansione, ma solo per clienti con almeno tre integrazioni attive.
+> "aggiungere un'integrazione farà aumentare l'espansione"
 
-Un modello puramente additivo può perdere questo pattern.
+serve una strategia causale come quelle discusse nel Capitolo 8.
 
-Possiamo introdurre un termine di interazione:
+La regressione predittiva da sola non chiude quel passaggio.
 
-\[
-y = \beta_0 + \beta_1 usage + \beta_2 integrations + \beta_3(usage \times integrations)
-\]
+### Variabili categoriche: il riferimento cambia la lettura
 
-Nel caso BluePeak, l'analisi mostra che l'uso della funzione di automazione è molto più informativo per account con processi complessi.
+Una variabile come piano `Basic / Pro / Enterprise` non dovrebbe essere trattata come la scala numerica arbitraria `1 / 2 / 3` se non esiste davvero quella struttura quantitativa.
 
-Questa scoperta non serve solo alla previsione. Suggerisce anche un segmento su cui il team Customer Success può concentrare onboarding e training.
+Una codifica con indicatori può usare, per esempio, `Basic` come riferimento.
 
-### Non linearità
+A quel punto:
 
-Molti fenomeni business non sono lineari.
+- il coefficiente `Pro` descrive una differenza rispetto a Basic;
+- il coefficiente `Enterprise` descrive una differenza rispetto a Basic;
+- cambiare categoria di riferimento cambia i coefficienti visualizzati, non le previsioni del modello correttamente specificato.
 
-Il primo ticket di supporto può essere normale. Il ventesimo in una settimana può essere un segnale completamente diverso.
+Quando si comunica il modello, la categoria di riferimento va quindi dichiarata.
 
-Il primo sconto può aumentare conversione. Ulteriori sconti possono erodere margine senza migliorare molto la probabilità di acquisto.
+### Interazioni: il contributo di una feature può dipendere dal contesto
 
-Una relazione può richiedere:
+I modelli additivi assumono che il contributo di una feature non cambi a seconda del valore di un'altra, salvo trasformazioni esplicite.
 
-- trasformazioni logaritmiche;
-- termini quadratici;
+Un termine come:
+
+`usage × integrations`
+
+permette invece al contributo di `usage` di dipendere dal numero di integrazioni.
+
+Nel caso BluePeak, un'interazione migliora la previsione perché l'utilizzo delle automazioni discrimina molto di più tra account con ecosistemi complessi che tra piccoli clienti appena attivati.
+
+Questo è utile per capire **dove il modello trova segnale**.
+
+Non basta, da solo, a concludere che un intervento di training sulle automazioni produrrà espansione.
+
+### Non linearità e domain of validity
+
+Molti fenomeni business non cambiano in modo costante.
+
+Esempi:
+
+- 1 ticket può essere normale, 20 ticket in una settimana no;
+- aumentare stock riduce stock-out fino a un certo punto, poi immobilizza capitale;
+- il rapporto tra tempo di attesa e abbandono può accelerare oltre una soglia;
+- una variazione di prezzo può avere risposta diversa per fasce diverse.
+
+Possiamo rappresentare queste strutture con:
+
+- trasformazioni;
 - spline;
-- segmentazione;
+- termini polinomiali;
+- interazioni;
 - modelli non lineari.
 
-Ma prima di aumentare la complessità bisogna capire se il pattern è reale o nasce da problemi di dati.
+Prima di farlo, però, dobbiamo verificare che il pattern sia:
 
-### Errore tipico
+1. presente fuori dal training set;
+2. supportato da abbastanza osservazioni;
+3. rilevante per la prediction task.
 
-> “Il coefficiente è positivo, quindi questa variabile è buona.”
+### Extrapolation: il coefficiente non autorizza a uscire dai dati
 
-Un coefficiente non è un giudizio di valore. È una relazione stimata sotto un insieme di condizioni.
+Supponiamo che BrightFoods abbia osservato saturazione del magazzino tra 0,35 e 0,92.
 
-### Regola pratica
+Usare il modello per stimare che cosa accadrebbe a saturazione `1,40` non è una semplice previsione più estrema. È extrapolation fuori dal dominio osservato.
 
-Quando presenti coefficienti a stakeholder, evita frasi causali se il disegno dello studio non le giustifica.
+La forma lineare continuerà a produrre un numero anche quando l'evidenza per sostenerlo è molto debole.
+
+Per questo nella Predictive Decision Card indicheremo anche lo **scope** della popolazione e dei valori su cui il modello è stato validato.
+
+### Regola di comunicazione
 
 Preferisci:
 
-> “Nel dataset osservato, a parità delle variabili incluse, gli account con questa caratteristica mostrano in media…”
+> "Nel modello, questa feature contribuisce positivamente alla previsione, condizionatamente alle altre variabili incluse."
 
-anziché:
+oppure:
 
-> “Questa caratteristica causa…”
+> "Il modello usa questa interazione per migliorare la performance fuori campione."
+
+Evita, senza identificazione causale:
+
+> "Questa variabile fa aumentare l'outcome."
+
+> **L'interpretabilità predittiva spiega come il modello costruisce una previsione. Non dimostra automaticamente come il mondo reagirà a un intervento.**
