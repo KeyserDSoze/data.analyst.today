@@ -1,146 +1,228 @@
-## 11.14 Modelli incrementali: non ricalcolare il mondo ogni notte
+## 11.14 Modelli incrementali: processare meno senza perdere cambiamenti reali
 
 Quando i dati crescono, ricalcolare tutto da zero può diventare lento, costoso e inutile.
 
-Un modello incrementale aggiorna soltanto la parte necessaria.
+Un modello incrementale aggiorna soltanto la parte che può aver cambiato il risultato.
 
-L'idea sembra semplice:
+La frase importante è l'ultima.
 
-```text
-ieri avevo 3 miliardi di righe
-oggi ne sono arrivate 12 milioni
-elaboro soprattutto quelle 12 milioni
-```
+Non:
 
-Ma la difficoltà reale è capire **quali righe possono ancora cambiare**.
+> “elabora solo le righe nuove”.
 
-### Append-only vs dati mutabili
+Ma:
 
-Se una sorgente è davvero append-only, la logica incrementale è relativamente semplice.
+> **“elabora tutte le righe che possono ancora modificare lo stato analitico corretto”.**
+
+### Append-only e dati mutabili
+
+Se una sorgente è veramente append-only, l'incrementalità può essere semplice.
 
 Esempio:
 
 ```sql
-WHERE event_timestamp > max_timestamp_already_loaded
+WHERE event_timestamp > last_processed_event_timestamp
 ```
 
-Ma molti dati di business non sono immutabili.
+Ma molti domini non sono immutabili.
 
-Un ordine può essere creato oggi e rimborsato tra tre settimane. Un pagamento può fallire e poi essere recuperato. Un ticket può cambiare stato. Una fattura può essere rettificata.
+Un ordine può essere creato oggi e rimborsato fra tre settimane. Un pagamento può fallire e poi essere recuperato. Un ticket cambia stato. Una fattura viene rettificata. Una spedizione riceve un nuovo evento dopo giorni.
 
-Se carichiamo solo i record "nuovi", perdiamo gli aggiornamenti.
+Se selezioniamo soltanto i record “creati oggi”, perdiamo gli aggiornamenti.
 
-### Caso realistico: il revenue model che smette di vedere i refund
+### Caso simulato/composito — ModaLane e i refund invisibili
 
-**ModaLane** crea un modello incrementale sulle vendite.
-
-Ogni notte carica:
+ModaLane materializza ogni notte il net revenue selezionando:
 
 ```sql
 WHERE order_created_at >= CURRENT_DATE - 1
 ```
 
-La pipeline è veloce e sembra corretta.
+La pipeline è veloce.
 
-Dopo due mesi il Finance team nota che il net revenue del warehouse è sistematicamente superiore al ledger.
+Dopo due mesi Finance osserva che il warehouse sovrastima sistematicamente il net revenue.
 
-La causa: i refund avvengono mediamente 9 giorni dopo l'ordine. Il modello non riapre mai gli ordini più vecchi.
+L'indagine mostra che:
 
-La soluzione non è necessariamente un full refresh giornaliero. Può essere una **lookback window**:
+- molti refund arrivano diversi giorni dopo l'ordine;
+- alcuni ordini vecchi vengono aggiornati;
+- la pipeline non riapre più quelle business key.
+
+Il modello è incrementale rispetto alla **data di creazione**, ma non rispetto al **processo che modifica il valore economico**.
+
+### Caso reale documentato — incremental load nei modelli dimensionali Microsoft Fabric
+
+Microsoft raccomanda, quando possibile, il caricamento incrementale delle fact table perché è più scalabile e riduce il lavoro sui sistemi sorgente e di destinazione. La documentazione sottolinea però che è necessario riuscire a identificare in modo affidabile i record nuovi o modificati, per esempio tramite identificatori, timestamp, change tracking o CDC.
+
+Fonte: https://learn.microsoft.com/en-us/fabric/data-warehouse/dimensional-modeling-load-tables
+
+La lezione non è specifica di Fabric:
+
+> **l'incrementalità dipende dalla capacità di osservare i cambiamenti, non soltanto dalla capacità di filtrare per data.**
+
+### Tre tempi da distinguere
+
+Per molti dataset servono almeno:
+
+- `event_time`: quando il fatto è accaduto;
+- `updated_at`: quando il record business è cambiato;
+- `ingestion_time`: quando la piattaforma analitica lo ha ricevuto.
+
+Esempio:
+
+```text
+evento reale:       1 agosto 14:20
+record aggiornato:  1 agosto 14:21
+dispositivo offline
+ingestione:          4 agosto 09:03
+```
+
+Filtrare per `event_date = CURRENT_DATE` il 4 agosto può perdere definitivamente quell'evento.
+
+### High watermark: utile solo se la watermark è affidabile
+
+Una strategia classica mantiene un valore come:
+
+```text
+last_processed_updated_at = 2026-08-31 23:59:59
+```
+
+e legge ciò che viene dopo.
+
+Funziona se:
+
+- la colonna è aggiornata correttamente;
+- i record non arrivano con timestamp più vecchi;
+- clock e timezone sono coerenti;
+- delete e correzioni sono osservabili.
+
+Se queste condizioni non valgono, la watermark crea una falsa sensazione di completezza.
+
+### Lookback window: pagare un po' di ricalcolo per maggiore sicurezza
+
+Una strategia pragmatica può rielaborare una finestra recente:
 
 ```sql
 WHERE updated_at >= CURRENT_DATE - 30
 ```
 
-oppure una strategia CDC/change tracking, se disponibile.
+Se il 95% delle modifiche tardive arriva entro 30 giorni, la finestra cattura gran parte dei cambiamenti.
+
+Ma dobbiamo dichiarare cosa succede al restante 5%.
+
+Possibili risposte:
+
+- CDC;
+- reconciliation periodica;
+- backfill mirato;
+- full refresh programmato;
+- coda delle business key tardive.
+
+La lookback window è una policy di rischio, non un numero magico.
 
 ### Unique key e merge
 
-Un modello incrementale spesso necessita di una chiave stabile per decidere se:
-
-- inserire una nuova riga;
-- aggiornare una riga esistente.
-
-Per un ordine:
+Quando un record può essere modificato, serve spesso una chiave stabile:
 
 ```text
 unique_key = order_id
 ```
 
-Il pattern concettuale diventa:
+Il pattern concettuale è:
 
 ```text
-new or changed source rows
-        ↓
-match on business/unique key
-        ↓
-INSERT if new
-UPDATE/MERGE if changed
+new/changed rows
+→ match on key
+→ insert new
+→ update existing
 ```
 
-La documentazione Microsoft sul caricamento di modelli dimensionali descrive una logica analoga: i record sorgente vengono confrontati tramite business key per identificare nuovi o modificati elementi, con gestione diversa a seconda del tipo di dimensione.[^ms-load]
+Ma la unique key deve rappresentare il grain finale.
 
-### Late-arriving data
+Se il modello è una riga per `order_id + line_id`, usare solo `order_id` come merge key distrugge righe legittime.
 
-Gli eventi non arrivano sempre in ordine.
+### Delete: il caso dimenticato
 
-Esempio:
+Molte pipeline incrementali gestiscono insert e update ma non delete.
 
-- evento accaduto: 1 agosto;
-- dispositivo offline;
-- evento ricevuto: 4 agosto.
+Che cosa succede se una sorgente elimina un record?
 
-Se il modello incrementale seleziona solo:
+Possibili semantiche:
 
-```sql
-WHERE event_date = CURRENT_DATE
-```
+- hard delete anche nel modello analitico;
+- soft delete con `is_deleted`;
+- evento di cancellazione separato;
+- mantenimento storico per audit.
 
-l'evento del 1 agosto potrebbe non essere mai caricato.
+Non esiste una risposta universale. Deve esistere una risposta esplicita.
 
-Per questo è utile distinguere:
+### Full refresh e replayability
 
-- `event_time`;
-- `ingestion_time`;
-- `updated_at`.
+Incrementale non significa che il full refresh diventa inutile.
 
-### Full refresh non scompare
-
-Anche con modelli incrementali, può servire periodicamente un full refresh per:
+Può servire per:
 
 - correggere bug storici;
-- applicare nuove business rules;
-- ricostruire una dimensione;
-- eliminare drift accumulato;
-- gestire cambiamenti di schema.
+- cambiare una business rule;
+- ricostruire una SCD;
+- applicare uno schema nuovo;
+- verificare drift accumulato.
 
-La domanda importante è: **il modello è ricostruibile?**
+La domanda critica è:
 
-Se il risultato dipende da uno stato incrementale che nessuno sa rigenerare, abbiamo guadagnato velocità ma perso affidabilità.
+> **possiamo ricostruire il modello da una fonte di verità, oppure il risultato dipende da uno stato incrementale irripetibile?**
 
-### Idempotenza e backfill
+Un sistema che non può essere ricostruito è veloce finché non deve essere corretto.
 
-Una pipeline matura deve supportare:
+### Reconciliation: incremental e full dovrebbero convergere
 
-- rerun senza duplicazioni;
-- backfill di periodi storici;
-- ripartenza dopo failure;
-- gestione di record tardivi;
-- audit di cosa è stato caricato.
+Per modelli importanti è utile verificare periodicamente:
+
+```text
+incremental result
+vs
+recomputed reference result
+```
+
+Non necessariamente su tutta la storia ogni notte. Può bastare:
+
+- un campione di periodi;
+- una finestra recente;
+- checksum/aggregati;
+- full refresh periodico.
+
+L'obiettivo è intercettare errori cumulativi prima che diventino storia ufficiale.
+
+### Campo del contract: update semantics
+
+L'Analytical Data Contract dovrebbe dichiarare:
+
+```text
+source mutability:
+change detection field/mechanism:
+unique key:
+lookback window:
+late-arrival policy:
+delete policy:
+merge behavior:
+backfill procedure:
+full-refresh capability:
+reconciliation rule:
+```
+
+Questa è la vera specifica di un modello incrementale.
 
 ### Regola operativa
 
-Prima di rendere un modello incrementale chiedere:
+Prima di rendere un modello incrementale chiediamo:
 
-1. i record possono cambiare dopo la creazione?
-2. qual è la colonna affidabile di modifica?
-3. quanto tardi possono arrivare gli eventi?
-4. qual è la unique key?
-5. cosa succede ai delete?
+1. quali record possono cambiare dopo la creazione?
+2. come osserviamo quei cambiamenti?
+3. quanto tardi possono arrivare?
+4. qual è il grain della merge key?
+5. come gestiamo delete e correzioni?
 6. possiamo fare backfill?
 7. possiamo ricostruire tutto da zero?
-8. abbiamo riconciliazioni per verificare che incremental e full refresh convergano?
+8. come dimostriamo che incremental e full refresh convergono?
 
-**Incrementale non significa processare meno dati a ogni costo. Significa processare solo i dati necessari senza perdere la storia reale.**
-
-[^ms-load]: Microsoft Learn, *Load tables in a dimensional model*, https://learn.microsoft.com/en-us/fabric/data-warehouse/dimensional-modeling-load-tables
+> **Incrementale non significa elaborare meno dati possibile. Significa evitare lavoro inutile senza perdere nessuna modifica che possa cambiare la risposta analitica.**
