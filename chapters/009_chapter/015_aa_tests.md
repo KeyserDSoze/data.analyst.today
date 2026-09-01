@@ -1,63 +1,122 @@
-## 9.14 A/A test: testare il sistema prima di testare il prodotto
+## 9.14 A/A test: testare la macchina che produce gli esperimenti
 
-Un A/A test assegna gli utenti a due gruppi che ricevono **la stessa esperienza**.
+In un **A/A test** due gruppi ricevono la stessa esperienza.
 
-A prima vista sembra inutile. In realtà è uno dei modi migliori per verificare se la piattaforma di experimentation è affidabile.
+Se non esiste trattamento, perché spendere traffico?
 
-Se A e A sono identici, non dovremmo osservare differenze sistematiche nelle metriche. Se le vediamo, il problema può essere nel sistema di assegnazione, nella telemetria, nel filtering o nella pipeline di analisi.
+Perché stiamo testando un altro oggetto:
 
-### Caso pubblico documentato — Microsoft Teams
+> **la piattaforma di randomizzazione, exposure, telemetria, metriche e analisi.**
 
-Microsoft ha descritto un problema reale durante il confronto tra build di Teams. Un A/A test apparentemente semplice mostrava differenze statisticamente significative tra gruppi che avrebbero dovuto essere equivalenti. L'indagine ha mostrato che effetti legati all'aggiornamento della build e differenze di penetrazione introducevano bias nel confronto.
+Un programma sperimentale che non riesce a comportarsi bene sotto il null non dovrebbe essere dato per affidabile quando compare una variante B.
 
-Il team ha sviluppato un framework A/A'/B per separare meglio gli effetti del processo di update da quelli della build in test. In produzione, questo approccio ha permesso di rilevare regressioni reali e bloccare release prima di procedere.
+### Che cosa ci aspettiamo sotto A/A
 
-Questo esempio è importante perché dimostra una cosa spesso trascurata:
+Non ci aspettiamo che ogni metrica sia numericamente identica.
 
-> **un esperimento può essere statisticamente sofisticato e comunque sbagliato se l'infrastruttura di assegnazione o misurazione non è affidabile.**
+La randomizzazione produce differenze casuali.
 
-### Cosa può rivelare un A/A test
+Se analizziamo molte metriche, alcune possono superare una soglia nominale per caso.
 
-Un buon A/A test può aiutare a individuare:
+Ci aspettiamo però che, nel tempo e su molti A/A:
 
-- Sample Ratio Mismatch;
-- assegnazioni non stabili;
-- metriche calcolate in modo diverso tra gruppi;
-- problemi di logging;
-- filtri che rimuovono utenti in modo asimmetrico;
-- differenze di esposizione;
-- errori nella randomizzazione;
-- problemi nella gestione dei cookie o degli identifier;
-- regressioni della piattaforma di experimentation.
+- false positive rate sia compatibile con il metodo;
+- p-value/calibration behavior non mostri pattern sistematici anomali;
+- SRM resti sotto controllo;
+- non esistano differenze persistenti legate a platform, app version o assignment path;
+- intervalli abbiano coverage coerente con le proprietà attese.
 
-### Ma un A/A test può produrre falsi positivi
+### Non giudicare A/A con “esiste almeno un p < 0,05?”
 
-Se analizziamo 100 metriche indipendenti con soglia 0,05, ci aspettiamo comunque alcune differenze significative per puro caso.
+Con 100 metriche, qualche p-value piccolo è normale anche sotto il null.
 
-Per questo un A/A test non dovrebbe essere giudicato con la domanda:
+Le domande migliori sono:
 
-> "Esiste almeno una metrica con p < 0,05?"
+- quante metriche si muovono rispetto al false-positive rate atteso?
+- le stesse metriche falliscono ripetutamente?
+- il segno delle differenze è sistematico?
+- i failure si concentrano per piattaforma o pipeline?
+- l'SRM è sano?
+- le scorecard aggregate sono calibrate?
 
-Meglio chiedere:
+Un A/A test è una prova del **sistema**, non una caccia a una cella perfettamente zero.
 
-- quante metriche si muovono?
-- la quota è compatibile con il false positive rate atteso?
-- esistono pattern sistematici?
-- le differenze persistono nel tempo?
-- si concentrano su una famiglia di metriche?
+## Caso reale documentato — Microsoft Teams A/A'/B
 
-### Quando usare A/A test
+Microsoft Teams ha documentato un problema particolare nel confronto tra **build releases**. Un semplice confronto tra build poteva essere distorto da differenze nella penetrazione dell'update e dall'`update effect`, cioè dal processo stesso di passare da una build all'altra.
 
-Sono particolarmente utili:
+Il team sviluppò un framework **A/A'/B** per separare meglio questi effetti e creare un gate più affidabile per le release. In un test reale il framework rilevò regressioni statisticamente significative e il team fermò la release per investigare prima di procedere.[^teams-aa]
 
-- quando si introduce una nuova piattaforma di experimentation;
-- dopo modifiche importanti alla telemetria;
-- quando cambiano identifier o sistemi di identity resolution;
-- prima di grandi campagne sperimentali;
-- dopo migrazioni infrastrutturali;
-- quando i risultati di molti test diventano improvvisamente sospetti.
+Il caso è importante perché il “trattamento” da validare non era soltanto una feature.
 
-### Fonte pubblica
+Era l'intera catena:
 
-Microsoft Research, *A/A'/B Testing: Evaluating Microsoft Teams across Build Releases*:
-https://www.microsoft.com/en-us/research/articles/a-a-b-testing-evaluating-microsoft-teams-across-build-releases/
+```text
+build creation
+-> distribution/update
+-> exposure
+-> metric collection
+-> release decision
+```
+
+### A/A per una nuova experimentation platform
+
+Supponiamo di migrare da cookie-based ID a account-based ID.
+
+Prima di affidare grandi decisioni alla nuova piattaforma, eseguiamo diversi A/A e controlliamo:
+
+- 50/50 assignment;
+- persistent bucketing;
+- cross-device identity;
+- metric denominators;
+- missing events;
+- balance di covariate pre-experiment;
+- false positive behavior.
+
+Se i risultati falliscono, abbiamo trovato il bug **prima** che producesse ship/no-ship sbagliati.
+
+### A/A non è solo un test una tantum
+
+In sistemi maturi può essere usato anche come monitoraggio periodico:
+
+- dopo cambi della randomization service;
+- dopo migrazioni telemetry;
+- dopo modifiche di metric engine;
+- dopo identity changes;
+- per validare nuove procedure inferenziali;
+- per confrontare false-positive behavior di metodi su scorecard reali.
+
+Nel 2026 Microsoft ExP, per esempio, ha usato migliaia di A/A scorecard per valutare metodi di treatment-effect assessment e verificare empiricamente il loro comportamento sotto il null.[^ms-tea]
+
+### A/A non può validare tutto
+
+Un A/A sano non dimostra che:
+
+- un A/B non avrà treatment-dependent missingness;
+- non esisterà interference;
+- la metrica primaria rappresenti il valore business;
+- il rollout sarà sicuro.
+
+Dimostra che alcuni componenti fondamentali si comportano correttamente quando **nessuna differenza reale dovrebbe essere presente**.
+
+### Platform validation card
+
+```text
+System change being validated:
+Randomization unit:
+Expected allocation:
+Number of A/A replications:
+SRM behavior:
+Metric false-positive calibration:
+Persistent metric biases:
+Platform/device slices:
+Telemetry completeness:
+Interval/scorecard calibration:
+Failure patterns:
+Gate to reopen A/B decisions:
+```
+
+> **Prima di chiedere alla piattaforma quale variante vince, è ragionevole verificare che sappia riconoscere un pareggio.**
+
+[^teams-aa]: Microsoft Research, *A/A’/B Testing: Evaluating Microsoft Teams across Build Releases*: https://www.microsoft.com/en-us/research/articles/a-a-b-testing-evaluating-microsoft-teams-across-build-releases/
+[^ms-tea]: Microsoft Research, *Treatment Effect Assessment at Scale*, 15 luglio 2026: https://www.microsoft.com/en-us/research/articles/treatment-effect-assessment-at-scale-accounting-for-correlated-metrics-and-metric-relevance-in-modern-experimentation/
