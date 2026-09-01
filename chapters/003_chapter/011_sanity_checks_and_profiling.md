@@ -1,83 +1,113 @@
-## 3.10 Sanity check e data profiling: prima di credere al dataset, interrogalo
+## 3.10 Sanity check e data profiling: prima di descrivere il business, descrivi il dataset
 
-Prima di fare analisi sofisticate conviene eseguire controlli semplici.
+Prima di cercare pattern sofisticati conviene costruire una fotografia elementare del dato.
 
-Sono spesso proprio questi controlli a scoprire gli errori più costosi.
+Non perché i controlli semplici siano "junior", ma perché molte anomalie costose diventano evidenti proprio quando confrontiamo ciò che **abbiamo** con ciò che **ci aspettiamo**.
 
-### Un set minimo di sanity check
+### Il profiling non è `describe()`
+
+Un comando che produce minimi, massimi e medie è utile, ma non basta.
+
+Il vero data profiling cerca di rispondere a cinque domande:
+
+1. **quanto dato abbiamo?**
+2. **quale periodo e popolazione copre?**
+3. **quali valori e categorie contiene?**
+4. **quali proprietà dovrebbero essere vere?**
+5. **dove il comportamento cambia rispetto al normale?**
+
+La quinta domanda è quella che trasforma un riepilogo in un controllo analitico.
+
+### Un set minimo di controlli
 
 Per quasi ogni dataset dovremmo conoscere almeno:
 
 - numero di righe;
-- numero di colonne;
-- intervallo temporale coperto;
 - cardinalità delle chiavi principali;
-- percentuale di valori mancanti;
+- intervallo temporale;
+- numero di record per giorno/settimana/mese;
+- missing rate dei campi critici;
 - distribuzione delle categorie principali;
-- minimo, massimo, media e quantili delle variabili numeriche;
-- presenza di valori impossibili;
-- duplicati;
-- variazioni improvvise nel volume dei dati.
+- minimi, massimi e quantili delle misure;
+- presenza di valori fuori dominio;
+- duplicati al grain atteso;
+- record orfani rispetto alle relazioni principali;
+- freshness e ultimo timestamp disponibile.
 
-### Caso studio simulato — Il mese con 31 giorni e mezzo
+Ma ogni valore ha bisogno di una baseline.
 
-**VerdeMare Energy**, azienda che gestisce impianti fotovoltaici, riceve ogni notte le letture dei contatori.
+`2.000.000 righe` non ci dice se il dataset è completo. Se ieri ne avevamo 2,4 milioni e il business è stabile, la differenza è una pista.
+
+### Caso simulato/composito — Il giorno con il doppio delle letture
+
+**VerdeMare Energy** gestisce impianti fotovoltaici e riceve ogni notte le letture dei contatori.
 
 Un analista deve calcolare la produzione media giornaliera di luglio.
 
-Il dataset contiene 46 milioni di letture. Nulla sembra fuori posto.
+Il dataset contiene circa 46 milioni di letture e nessun errore evidente a livello di schema.
 
-Prima di iniziare l'analisi, l'analista aggrega semplicemente il numero di record per giorno.
+Prima dell'analisi, l'analista conta i record per giorno.
 
-Per quasi tutto il mese il volume oscilla attorno a 1,48 milioni di righe al giorno.
+Per quasi tutto il mese il volume oscilla attorno a **1,48 milioni** di righe giornaliere.
 
-Il 18 luglio compaiono invece 2,96 milioni di righe.
+Il 18 luglio ne compaiono **2,96 milioni**.
 
 Esattamente il doppio.
 
-Non serve ancora un modello statistico.
+L'indagine mostra che, dopo un recovery, una giornata di dati è stata caricata due volte.
 
-Un semplice conteggio ha rivelato che l'intera giornata è stata caricata due volte dopo un recovery del sistema di ingestion.
+Non serviva un algoritmo di anomaly detection. Bastava conoscere il volume atteso.
 
-Se l'analista avesse iniziato direttamente con medie e trend, avrebbe sovrappesato quella giornata.
+### Profilare per dimensione, non soltanto in aggregato
 
-### Profiling numerico
+Una media complessiva può nascondere un difetto localizzato.
 
-In Python:
+Esempio:
 
-```python
-print(df.shape)
-print(df.dtypes)
-print(df.isna().mean().sort_values(ascending=False))
-print(df.describe(include="all").T)
+```text
+missing_rate(delivery_date) = 4,8%
 ```
 
-In SQL:
+Può sembrare accettabile.
 
-```sql
-SELECT
-    MIN(event_time) AS min_time,
-    MAX(event_time) AS max_time,
-    COUNT(*) AS rows,
-    COUNT(DISTINCT event_id) AS events
-FROM readings;
+Poi segmentiamo per carrier:
+
+```text
+Carrier A: 0,7%
+Carrier B: 1,1%
+Carrier C: 19,4%
 ```
 
-Questi comandi non costituiscono un'analisi completa.
+La domanda cambia da "abbiamo un po' di missing" a "cosa succede nell'integrazione del Carrier C?".
 
-Sono un'ispezione iniziale.
+Profilare significa quindi osservare le proprietà del dato lungo le dimensioni in cui il processo potrebbe comportarsi diversamente.
+
+### Profiling temporale
+
+Il tempo merita controlli propri:
+
+- giorni o ore mancanti;
+- volumi che cambiano improvvisamente;
+- timestamp futuri;
+- cambio di timezone;
+- ritardi di caricamento;
+- backfill;
+- cambi di schema o di categoria che iniziano da una data precisa.
+
+Un dataset può essere perfettamente valido riga per riga e incompleto come storia.
 
 ### Profiling categoriale
 
-Per ogni variabile categorica chiediamoci:
+Per ogni campo categorico chiediamo:
 
 - quante categorie esistono?
-- ci sono categorie quasi identiche?
-- esistono categorie inattese?
-- una categoria domina quasi tutto il dataset?
-- la distribuzione cambia bruscamente nel tempo?
+- quali sono le più frequenti?
+- sono comparse categorie nuove?
+- alcune categorie sono scomparse?
+- esistono quasi-sinonimi?
+- la distribuzione cambia bruscamente dopo una release?
 
-Un campo `country` con questi valori:
+Un `country` che contiene:
 
 ```text
 IT
@@ -88,28 +118,28 @@ italy
 NULL
 ```
 
-non è solo un problema estetico.
+non è solo "sporco". Potrebbe indicare che più sistemi producono lo stesso concetto con standard differenti.
 
-Può produrre segmentazioni sbagliate.
+### Dall'osservazione all'invariante
 
-### Profiling temporale
+I controlli migliori derivano da aspettative esplicite.
 
-Il tempo merita controlli specifici:
+Esempi:
 
-- giorni mancanti;
-- ore mancanti;
-- salti improvvisi nel volume;
-- timestamp futuri;
-- timezone incoerenti;
-- ritardi di caricamento;
-- backfill storici.
+- un ordine dovrebbe avere almeno una riga d'ordine;
+- il numero di account non dovrebbe diminuire del 20% in una notte senza un evento noto;
+- la valuta di una transazione deve appartenere a un insieme previsto;
+- il volume giornaliero dovrebbe restare entro un intervallo plausibile rispetto allo storico;
+- la data massima dovrebbe essere compatibile con la SLA di aggiornamento.
 
-Un dataset può essere perfettamente pulito riga per riga e comunque essere incompleto come serie temporale.
+Queste aspettative diventeranno, quando serve, controlli automatici nella sezione 3.15.
 
-### La regola dei cinque minuti
+### La regola dei primi minuti
 
-Prima di un'analisi complessa, dedica qualche minuto a domande molto semplici:
+Prima di un'analisi complessa, prova a rispondere rapidamente:
 
-> Quante righe ho? Quante ne dovrei avere? Da quando a quando? Quali valori dominano? Cosa è palesemente strano?
+> **Quante righe ho? Quante dovrei averne? Da quando a quando? Quali chiavi dovrebbero essere uniche? Dove manca il dato? Quali categorie dominano? Che cosa è cambiato recentemente?**
 
-Spesso questi cinque minuti valgono più di un'ora di modellazione.
+Il profiling non serve a dimostrare che il dataset sia corretto.
+
+Serve a trovare abbastanza rapidamente i motivi per cui potrebbe non esserlo.
