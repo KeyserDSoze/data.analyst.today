@@ -1,102 +1,229 @@
-## 17.7 Forecasting operativo: una previsione utile deve cambiare un'azione
-Un forecast non è utile perché è accurato in astratto.
+## 17.7 “Quante persone dobbiamo pianificare lunedì?”
 
-È utile se migliora una decisione che deve essere presa prima che il futuro sia noto.
+### Caso simulato/composito: Arcadia Parcel
 
-## Caso composito: NorthRiver Logistics
+**Arcadia Parcel** gestisce 38 hub logistici e deve pianificare il personale per il lunedì successivo.
 
-NorthRiver gestisce 38 hub logistici e deve pianificare il personale per il lunedì successivo.
+Il team di Data Science presenta due forecast dei colli giornalieri:
 
-Il team usa un forecast dei colli giornalieri.
+- modello A: MAPE `6,8%`;
+- modello B: MAPE `7,4%`.
 
-Storicamente la metrica usata per valutare il modello è MAPE.
+La conclusione sembra ovvia: A è migliore.
 
-Il modello A ha MAPE 6,8%.
+L'operations manager però segnala un problema.
 
-Il modello B ha MAPE 7,4%.
+Nei giorni di picco il modello A tende a sottostimare sistematicamente. E proprio lì l'errore costa di più.
 
-Il team considera A migliore.
+La domanda reale non è:
 
-Ma l'operations manager segnala un problema: nei giorni di picco il modello A tende a sottostimare sistematicamente.
-
-Questa sottostima è costosa perché produce:
-
-- straordinari;
-- ritardi;
-- penali SLA;
-- backlog che si trascina nei giorni successivi.
-
-Il modello B ha errore medio leggermente peggiore ma distribuzione più prudente nei picchi.
-
-## L'errore possibile: ottimizzare la metrica del modello invece della decisione
-
-La domanda corretta non è:
-
-> “Quale modello ha MAPE più basso?”
+> “Quale forecast ha errore medio minore?”
 
 È:
 
-> “Quale previsione produce il miglior piano operativo dati costi asimmetrici di overstaffing e understaffing?”
+> **“Con quanta capacità dobbiamo impegnarci oggi per minimizzare il costo atteso di lunedì?”**
 
-Se un'ora di personale inutilizzata costa €24 ma un'ora mancante nei picchi genera in media €67 tra overtime, ritardi e penali, gli errori non sono simmetrici.
+## Routing iniziale
 
-Un forecast point-only nasconde questo problema.
+| Elemento | Scelta |
+|---|---|
+| Decisione | staffing e contractor capacity per hub |
+| Failure cost | understaffing → overtime, SLA, backlog; overstaffing → ore inutilizzate |
+| Claim necessario | predittivo + decision economics |
+| Reversibilità | diminuisce avvicinandosi al giorno operativo |
+| Incertezza critica | coda alta della domanda, non soltanto errore medio |
+| Stop rule | non scegliere il modello sulla sola MAPE |
 
-## Dal point forecast alla distribuzione
+## 1. La loss function del modello non è necessariamente quella del business
 
-Per ogni hub il team passa da una singola previsione a intervalli previsivi.
+Supponiamo che:
 
-Esempio per Milano Hub 3:
+- un'ora di capacità inutilizzata costi circa `€24`;
+- un'ora di capacità mancante nei picchi generi in media `€67` tra overtime, ritardi e penali.
 
-- forecast centrale: 82.000 colli;
-- P10: 74.000;
-- P50: 82.000;
-- P90: 94.000.
+Gli errori non sono simmetrici.
 
-Il piano personale non viene più costruito automaticamente sul P50.
+Una metrica media che tratta `+1.000` e `-1.000` unità come errori equivalenti non rappresenta bene la decisione.
 
-Nei periodi con forte costo di understaffing viene usato un percentile più alto.
+Il **Temporal Decision Brief** deve quindi registrare:
 
-## Decision threshold
+- orizzonte;
+- decisione collegata;
+- costo di overforecast;
+- costo di underforecast;
+- quantili rilevanti;
+- eventuali vincoli minimi/massimi di capacità.
 
-La scelta può essere formalizzata come problema di costo atteso.
+## 2. Dal point forecast alla distribuzione
 
-Per ogni possibile livello di staffing stimiamo:
+Per Milano Hub 3 il forecast diventa:
 
-- costo del personale;
-- costo atteso di capacità mancante;
-- costo di flessibilità last-minute;
-- probabilità degli scenari.
+- P10: `74.000` colli;
+- P50: `82.000`;
+- P90: `94.000`.
 
-Il valore del forecast è quindi nella sua integrazione con una funzione di decisione.
+Il team smette di trattare `82.000` come “il futuro”.
 
-## Il forecast cambia anche per orizzonte
+È una stima centrale dentro una distribuzione.
 
-NorthRiver usa modelli diversi per:
+Nei periodi in cui l'understaffing è molto costoso può essere razionale pianificare su un percentile superiore al P50.
 
-- 8 settimane: workforce planning;
-- 14 giorni: turni e contractor;
-- 48 ore: fine tuning operativo;
-- intra-day: riallocazione.
+Non perché il P90 sia “più preciso”, ma perché la funzione di costo rende conveniente una posizione più prudente.
+
+## 3. Forecast accuracy e decision loss
+
+Il team introduce due livelli di valutazione.
+
+### Model quality
+
+- MAE;
+- bias;
+- calibration degli intervalli;
+- performance per hub e regime;
+- errore sui picchi.
+
+### Decision quality
+
+- overtime cost;
+- idle labor cost;
+- SLA penalty;
+- backlog spillover;
+- contractor premium;
+- cost per parcel.
+
+Il modello B, pur avendo MAPE medio peggiore, produce un piano operativo con costo atteso inferiore nei giorni critici.
+
+Questa è una lezione generale:
+
+> **un modello può essere inferiore secondo una metrica statistica e superiore secondo la decisione che deve supportare.**
+
+## 4. Orizzonti diversi, decisioni diverse
+
+Arcadia usa quattro orizzonti:
+
+| Orizzonte | Decisione |
+|---|---|
+| 8 settimane | workforce planning e contratti |
+| 14 giorni | turni, contractor, ferie |
+| 48 ore | fine tuning operativo |
+| intra-day | riallocazione tra hub e backlog management |
 
 Pretendere un unico forecast per tutte le decisioni crea falsa semplicità.
 
-## Caso pubblico: driver-based forecasting e unit economics
+A otto settimane contano scenario e capacità strutturale.
 
-AWS descrive un approccio di driver-based forecasting in cui unit metrics vengono collegate ai driver di business per stimare costi futuri e utilizzo delle risorse. Nell'esempio, il costo per chiamata API viene usato per stimare l'impatto di milioni di chiamate aggiuntive e valutare alternative architetturali e operative. Il punto metodologico è importante: il forecast diventa utile quando collega volumi previsti, unit economics e decisioni concrete. 
+A 48 ore possono contare weather, backlog, preorder e segnali operativi recenti.
 
-Fonte: AWS Cloud Financial Management, *Understand and build driver-based forecasting*.
+Il **dato giusto** cambia con l'orizzonte.
 
-## Metodo operativo
+## 5. Un forecast può diventare inutile dopo un cambio di regime
 
-Prima di valutare un forecast chiedere:
+Il team definisce anche eventi che invalidano o degradano il forecast:
 
-1. quale decisione anticipa;
-2. quanto costa sovrastimare;
-3. quanto costa sottostimare;
-4. quale orizzonte serve;
-5. se serve una distribuzione invece di un punto;
-6. quali variabili esterne possono cambiare il regime;
-7. come verrà misurato l'impatto operativo.
+- sciopero;
+- chiusura hub;
+- nuova partnership commerciale;
+- meteo estremo;
+- promozione non presente nel training;
+- cambio di cut-off operativo.
 
-> **La metrica migliore per un forecast è spesso quella che riflette meglio il costo della decisione sbagliata.**
+In questi casi il sistema non deve continuare a mostrare lo stesso numero con la stessa fiducia.
+
+Può passare a:
+
+- scenario manuale;
+- intervallo più ampio;
+- modello fallback;
+- override documentato.
+
+Questa è una **stop/degrade condition**, non un fallimento da nascondere.
+
+## Caso pubblico documentato: driver-based forecasting
+
+AWS Cloud Financial Management descrive il **driver-based forecasting** come approccio che collega la previsione a driver futuri — per esempio lanci di prodotto, promozioni, nuovi utenti o cambi architetturali — invece di estrapolare soltanto il trend storico. La guida sottolinea anche l'importanza di documentare e rivedere le assunzioni quando emergono nuove informazioni.
+
+Fonte: https://aws.amazon.com/blogs/aws-cloud-financial-management/understand-and-build-driver-based-forecasting/
+
+Il dominio è cloud spend, ma il principio è generale:
+
+> **una previsione operativa migliora quando i driver della decisione entrano esplicitamente nel modello o negli scenari.**
+
+## 6. Decision Record
+
+Arcadia confronta:
+
+### A — Modello A + staffing sul P50
+
+Migliore MAPE, ma sottostima i picchi e genera costi di shortage elevati.
+
+### B — Modello B + staffing sul P50
+
+Più prudente nei picchi, ma non usa ancora esplicitamente la funzione di costo.
+
+### C — Forecast probabilistico + policy di capacità
+
+- intervalli previsivi;
+- percentile scelto in funzione dei costi;
+- policy diversa per hub;
+- contractor flessibili dove l'incertezza è più alta;
+- override documentato per shock di regime;
+- review del costo decisionale, non soltanto dell'errore.
+
+La scelta è C.
+
+## 7. Switching condition
+
+La policy cambia se:
+
+- il rapporto tra costo di under/overstaffing cambia;
+- la disponibilità di contractor diminuisce;
+- il forecast perde calibration;
+- compare un nuovo driver operativo;
+- il backlog cambia il volume effettivamente processabile.
+
+Il forecast non viene separato dalla policy che lo consuma.
+
+## 8. Decision Communication Pack
+
+La headline non è:
+
+> “Il modello B ha MAPE 7,4%.”
+
+È:
+
+> **“Il modello con errore medio minore sottostima i picchi, che sono gli errori più costosi. Proponiamo staffing basato sulla distribuzione prevista e sui costi asimmetrici, con percentile e flessibilità diversi per hub.”**
+
+Il pack mostra:
+
+1. distribuzione della domanda;
+2. costo under/over;
+3. expected cost per policy;
+4. hub a rischio;
+5. stop/degrade conditions.
+
+## 9. Outcome review
+
+Metriche:
+
+- forecast bias e calibration;
+- overtime;
+- idle hours;
+- SLA breaches;
+- backlog;
+- cost per parcel;
+- contractor premium;
+- differenza tra costo previsto e realizzato.
+
+## Cosa abbiamo scelto di non fare
+
+Non serve necessariamente il modello con architettura più sofisticata.
+
+Non serve ottimizzare un decimo di punto di MAPE se la policy continua a usare male il forecast.
+
+La catena effettiva è:
+
+**Temporal Decision Brief → Uncertainty Brief → Decision Record → Decision Communication Pack**
+
+con Data Readiness Review quando cambiano fonti o regime.
+
+> **La metrica migliore per un forecast non è quella che premia il modello più elegante. È quella che ci aiuta a evitare gli errori più costosi della decisione.**
