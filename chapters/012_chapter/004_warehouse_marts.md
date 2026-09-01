@@ -1,114 +1,179 @@
-## 12.3 Data warehouse e data mart: integrare per analizzare
+## 12.3 Warehouse e data mart: creare un confine analitico tra sorgenti e consumo
 
-Un **data warehouse** è un ambiente progettato per raccogliere, integrare e rendere interrogabili dati provenienti da più sistemi con finalità analitiche.
+Nel Capitolo 11 abbiamo già visto come modellare fatti, dimensioni e metriche. Qui il punto è diverso:
 
-Non è semplicemente "un database più grande".
+> **Perché un'organizzazione introduce un ambiente analitico condiviso invece di lasciare che ogni consumer interroghi direttamente le sorgenti?**
 
-Il suo valore nasce dal fatto che può diventare il luogo in cui:
+Un data warehouse crea un **integration and serving boundary**.
 
-- sorgenti diverse vengono integrate;
-- identità e chiavi vengono riconciliate;
-- la storia viene preservata;
-- la qualità viene controllata;
-- i dati vengono modellati per l'analisi;
-- le definizioni diventano più stabili e condivise.
+Può diventare il luogo in cui:
 
-Microsoft continua a indicare il dimensional modeling e lo star schema come approcci maturi per workload analitici: dimensioni per descrivere entità e facts per registrare osservazioni ed eventi a un grain definito.
+- dati di più sistemi vengono riuniti;
+- storia viene conservata;
+- identità vengono riconciliate;
+- modelli curati diventano riusabili;
+- workload analitici vengono isolati dalle applicazioni operative;
+- freshness e qualità possono essere misurate in modo coerente.
 
-## Data mart
+### Il valore non è “centralizzare tutto”
 
-Un data mart è normalmente un sottoinsieme orientato a un dominio o a una funzione, ad esempio:
+Un warehouse non è utile perché contiene molti terabyte.
+
+È utile quando riduce il costo marginale di rispondere alla prossima domanda.
+
+Se per ogni KPI dobbiamo ancora:
+
+1. collegarci a cinque sorgenti;
+2. capire da zero le chiavi;
+3. ricostruire la storia;
+4. riconciliare Finance;
+5. duplicare business logic;
+
+la presenza di un warehouse non ha ancora creato una vera capacità analitica condivisa.
+
+### Caso simulato/composito — OrionCloud e cinque percorsi verso la revenue
+
+OrionCloud cresce attraverso acquisizioni e possiede:
+
+- CRM;
+- billing legacy;
+- billing nuovo;
+- ERP;
+- product database.
+
+I team costruiscono flussi indipendenti:
+
+```text
+billing legacy → Finance workbook
+CRM → Sales dashboard
+product DB → Product analytics
+new billing → Customer Success report
+ERP → executive report
+```
+
+Il problema non è soltanto che i numeri differiscono.
+
+Il problema architetturale è che esistono **cinque percorsi non coordinati** dalla sorgente alla decisione.
+
+Quando una sorgente cambia o arriva in ritardo, ogni consumer scopre il problema separatamente.
+
+Un integration layer condiviso permette invece:
+
+```text
+sources
+   ↓
+conformed analytical storage
+   ↓
+domain models / marts
+   ↓
+semantic serving
+```
+
+La semantica resta quella definita nel Capitolo 11; qui cambia il modo in cui viene resa disponibile a più consumer.
+
+### Data mart: avvicinare serving e dominio
+
+Un data mart è una vista curata per un dominio, per esempio:
 
 - Finance;
 - Sales;
-- Marketing;
 - Supply Chain;
 - Product.
 
-Può essere fisicamente separato oppure essere semplicemente un insieme curato di tabelle, viste o schemi all'interno di una piattaforma condivisa.
+Può essere:
 
-### Il vantaggio
+- schema logico;
+- insieme di tabelle;
+- materializzazione fisica;
+- modello servito da una piattaforma condivisa.
 
-Un buon mart riduce la distanza tra il dato tecnico e il linguaggio del business.
+La forma tecnica conta meno della responsabilità:
 
-Un analyst di Finance dovrebbe poter trovare entità come:
+> **il mart riduce la distanza tra una piattaforma generica e un insieme di decisioni specifiche del dominio.**
 
-- invoice;
-- payment;
-- cost center;
-- revenue recognition;
-- fiscal period.
+### Centralizzazione e autonomia
 
-Non dovrebbe dover ricostruire ogni volta queste entità da trenta tabelle applicative.
+Due estremi falliscono spesso.
 
-## Caso realistico: cinque revenue diverse
+**Tutto decentralizzato**
 
-**OrionCloud**, SaaS B2B, cresce tramite acquisizioni e si ritrova con:
+Ogni team copia raw data e ricostruisce definizioni.
 
-- CRM Salesforce;
-- billing system storico;
-- nuovo billing system;
-- ERP Finance;
-- database applicativo.
+Risultato:
 
-Cinque team calcolano la revenue mensile.
+- velocità locale;
+- incoerenza globale;
+- molte pipeline duplicate.
 
-I risultati per giugno sono:
+**Tutto centralizzato**
 
-| Team | Revenue |
-|---|---:|
-| Finance | €12,8M |
-| Sales | €13,6M |
-| Product Analytics | €14,1M |
-| Customer Success | €13,2M |
-| CEO dashboard | €13,9M |
+Ogni nuova domanda richiede un ticket al team data centrale.
 
-Nessuna query contiene un evidente errore di sintassi.
+Risultato:
 
-Le differenze derivano da:
+- coerenza potenziale;
+- coda crescente;
+- self-service quasi nullo.
 
-- invoice date vs service period;
-- gross vs net of credits;
-- valuta al cambio corrente vs storico;
-- account test inclusi;
-- revenue booked vs recognized.
+Una struttura più matura può separare:
 
-Costruire un warehouse non risolve automaticamente il problema, ma crea il luogo in cui la riconciliazione può diventare esplicita.
+```text
+shared platform/integration
++
+domain-owned curated models
++
+certified serving interfaces
+```
 
-Il team definisce quindi una fact `revenue_recognition` con grain:
+Il Capitolo 18 riprenderà questa tensione come operating model organizzativo.
 
-> una riga per contratto, prodotto e mese di competenza.
+### Warehouse come failure boundary
 
-Finance mantiene la responsabilità della definizione contabile, mentre Sales dispone di una metrica separata per booked ARR.
+Un punto spesso sottovalutato è che il warehouse separa anche failure domain diversi.
 
-Il risultato non è "una metrica per tutto". È **una semantica esplicita per ogni decisione**.
+Se il CRM è temporaneamente indisponibile, possiamo avere:
 
-## Quando il warehouse diventa troppo centrale
+- ultimo snapshot valido ancora interrogabile;
+- pipeline che segnala freshness degradata;
+- dashboard che non colpisce direttamente il CRM.
 
-Anche una piattaforma centralizzata può creare problemi se ogni richiesta richiede un team centrale.
+Questo non elimina il problema, ma rende possibile una degradazione controllata.
 
-Il rischio è passare da:
+### Quando un mart crea una nuova verità parallela
 
-> tutti producono numeri diversi
+Un mart diventa pericoloso se:
 
-alla situazione opposta:
+- copia dati senza lineage;
+- modifica definizioni localmente;
+- non riceve breaking changes;
+- non si riconcilia con i modelli condivisi.
 
-> nessuno riesce a ottenere un dato senza aprire un ticket.
+Quindi un mart dovrebbe essere un **consumer governato della piattaforma**, non una seconda piattaforma nascosta.
 
-Per questo molte architetture moderne combinano:
+### Campo della Data Flow Architecture Map
 
-- fondazioni dati condivise;
-- ownership per dominio;
-- modelli certificati;
-- self-service controllato.
+Per ogni warehouse/mart annotiamo:
 
-### Regola pratica
+```text
+role: integration / domain serving / both
+upstream sources:
+load cadence:
+curation boundary:
+history retained:
+downstream consumers:
+owner:
+failure behavior:
+last known good state available? sì/no
+```
 
-Il warehouse dovrebbe ridurre il costo marginale delle nuove analisi.
+### Regola operativa
 
-Se ogni nuovo KPI richiede ricostruire da zero sorgenti, join e definizioni, il problema non è solo SQL: manca un livello di modellazione riusabile.
+Quando entriamo in un nuovo ambiente chiediamo:
 
-### Fonte pubblica
+1. qual è il punto di integrazione tra sorgenti?
+2. quali asset sono source-aligned e quali business-ready?
+3. quali mart sono ufficiali?
+4. quali logiche appartengono alla piattaforma condivisa e quali al dominio?
+5. cosa succede ai consumer se una sorgente upstream fallisce?
 
-Microsoft Learn, *Understand star schema and the importance for Power BI*:
-https://learn.microsoft.com/en-us/power-bi/guidance/star-schema
+> **Un warehouse non è soltanto un posto dove mettere dati. È un confine che dovrebbe ridurre accoppiamento, duplicazione e fragilità tra sistemi che producono dati e persone che devono usarli.**
