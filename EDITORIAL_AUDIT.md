@@ -7,23 +7,23 @@ Questo documento è la dashboard editoriale del manoscritto.
 ## 1. Stato attuale
 
 - Corpo principale completo: **Capitoli 0–19**.
-- Review completata: **Capitoli 0–15**.
-- Da revisionare: **Capitoli 16–19**.
+- Review completata: **Capitoli 0–16**.
+- Da revisionare: **Capitoli 17–19**.
 - Markdown è la source of truth.
 - CI attiva su `main` con lint + build Markdown/DOCX/PDF.
 - Casi pubblici e casi simulati/compositi devono essere distinti esplicitamente.
 
 ### Ultima build validata
 
-Dopo la review del Capitolo 15:
+Dopo la review del Capitolo 16:
 
 - **20 capitoli**;
 - **321 file Markdown**;
-- **226.446 parole stimate**;
-- **1.667.461 caratteri**;
-- **174 URL esterni distinti**;
+- **230.523 parole stimate**;
+- **1.699.234 caratteri**;
+- **177 URL esterni distinti**;
 - **8 file con LaTeX**;
-- **1.032 pagine PDF**;
+- **1.051 pagine PDF**;
 - build Markdown, DOCX e PDF: **SUCCESS**.
 
 Il page count non è un obiettivo da massimizzare. La priorità è la densità di valore per pagina.
@@ -38,18 +38,7 @@ python scripts/lint_book.py
 python scripts/build.py
 ```
 
-Il lint verifica, tra le altre cose:
-
-- continuità dei capitoli;
-- prefissi file duplicati/mancanti;
-- heading incoerenti;
-- file vuoti;
-- `TODO`, `FIXME`, `TBD`;
-- `utm_source=chatgpt.com`;
-- grafie ASCII legacy;
-- URL esterni;
-- formule/LaTeX;
-- conteggio parole.
+Il lint verifica continuità dei capitoli, prefissi, heading, file vuoti, TODO/FIXME/TBD, URL contaminati, grafie ASCII legacy, formule/LaTeX e conteggio parole.
 
 ### Warning residuo
 
@@ -57,18 +46,13 @@ Resta un solo warning globale:
 
 - notazione matematica/LaTeX in **8 file**.
 
-Prima della release bisognerà decidere se usare notazione testuale o un vero renderer matematico per le formule residue.
+Prima della release bisognerà usare un renderer matematico o normalizzare editorialmente le formule residue.
 
 ## 3. Convenzione casi e fonti
 
 ### Caso reale documentato
 
-Deve avere:
-
-- organizzazione/evento identificabile;
-- fonte pubblica attendibile;
-- claim proporzionato alla fonte;
-- nessuna trasformazione indebita di associazione in causalità.
+Richiede organizzazione/evento identificabile, fonte pubblica attendibile, claim proporzionato e nessuna promozione indebita di associazione a causalità.
 
 ### Caso simulato/composito
 
@@ -76,9 +60,9 @@ Può usare nomi, numeri e circostanze costruiti per la didattica, ma deve essere
 
 ### Fonti
 
-La review privilegia standard e governi, documentazione ufficiale, letteratura accademica riconosciuta e fonti primarie per i casi pubblici.
+La review privilegia standard/governi, documentazione ufficiale, letteratura accademica riconosciuta e fonti primarie per i casi pubblici.
 
-Prima della release resta un audit globale dei **174 URL** per link, redirect, supporto del claim e uniformità delle note.
+Prima della release resta un audit globale dei **177 URL** per link, redirect, supporto del claim e uniformità delle note.
 
 ## 4. Stato capitolo per capitolo
 
@@ -100,8 +84,8 @@ Prima della release resta un audit globale dei **174 URL** per link, redirect, s
 | 13 — Tool selection | **Revisionato** | **Tooling Decision Record**. |
 | 14 — AI-assisted analytics | **Revisionato** | **AI Analysis Control Sheet**. |
 | 15 — Insight e decisione | **Revisionato** | **Decision Record**. |
-| 16 — Storytelling/dashboard | **Da revisionare** | Comunicazione e visual evidence. |
-| 17 — Casi end-to-end | **Da revisionare** | Laboratorio integrato. |
+| 16 — Storytelling/dashboard | **Revisionato** | **Decision Communication Pack**. |
+| 17 — Casi end-to-end | **Da revisionare** | Capstone: selezionare e integrare i deliverable necessari. |
 | 18 — Sistema analitico che scala | **Da revisionare** | Operating model, reliability, data products, governance. |
 | 19 — Data Analyst 2026–2035 | **Da revisionare** | Skill, agent management, deskilling, carriera. |
 
@@ -122,6 +106,7 @@ Analytical Brief
 → Tooling Decision Record
 → AI Analysis Control Sheet
 → Decision Record
+→ Decision Communication Pack
 ```
 
 Non ogni analisi richiede tutti gli artefatti. Sono un vocabolario operativo per rischi differenti.
@@ -131,7 +116,7 @@ Non ogni analisi richiede tutti gli artefatti. Sono un vocabolario operativo per
 ### 0 / 14 / 19 — AI
 
 - **0:** ownership e supervisione umana;
-- **14:** workflow operativo, context/data/tool boundary, eval, privacy, auditability;
+- **14:** workflow operativo, boundary, verification, eval, privacy e auditability;
 - **19:** conseguenze su skill, ruoli e carriera.
 
 ### 3 / 4 / 5 — qualità, pattern, inferenza
@@ -146,62 +131,39 @@ Non ogni analisi richiede tutti gli artefatti. Sono un vocabolario operativo per
 - **8:** identification assumptions;
 - **9:** preservare il confronto in un esperimento reale.
 
-### 6 / 8 / 9 / 10 — comportamento, intervento, prediction
-
-- **6:** localizzare il lifecycle risk;
-- **8:** identificare effetti;
-- **9:** testare interventi;
-- **10:** anticipare eventi e trasformare score in policy.
-
 ### 11 / 12 / 13 — significato, flusso, strumento
 
-- **11:** che cosa deve significare il dataset → **Analytical Data Contract**;
-- **12:** da dove arriva e con quali garanzie → **Data Flow Architecture Map**;
-- **13:** quale ambiente è proporzionato al lavoro → **Tooling Decision Record**.
+- **11:** che cosa deve significare il dataset → Analytical Data Contract;
+- **12:** da dove arriva e con quali garanzie → Data Flow Architecture Map;
+- **13:** quale ambiente è proporzionato → Tooling Decision Record.
 
-### 14 / 15 — evidence control vs decision quality
+### 14 / 15 / 16 — controllo, decisione, comunicazione
 
-- **14:** stabilisce se un output ha il diritto di sostenere un determinato claim;
-- **15:** confronta alternative e decide quale azione è giustificata da evidenza, rischio e incertezza.
+- **14:** quale claim ha diritto di uscire dal workflow;
+- **15:** quale alternativa scegliere e perché;
+- **16:** come comprimere quel Decision Record senza rafforzare il claim, nascondere l'incertezza o perdere le alternative.
 
-### 15 / 16 — decisione vs comunicazione
+```text
+AI Analysis Control Sheet
+→ Decision Record
+→ Decision Communication Pack
+```
 
-- **15:** cosa dovremmo decidere e perché → **Decision Record**;
-- **16:** come rendere quella decisione e la sua evidenza comprensibili senza alterare claim, incertezza o priorità.
+### 16 / 17 — comunicazione vs capstone
 
-Il Capitolo 16 deve derivare dal Decision Record, non inventare una nuova narrativa indipendente.
+- **16:** progetta la superficie con cui la decisione viene capita;
+- **17:** mette insieme framing, dati, metodi, decisione e comunicazione in problemi end-to-end senza dire in anticipo quale tecnica usare.
 
 ### 13 / 18 — workflow locale vs operating model
 
 - **13:** scelta/migrazione del singolo workflow;
 - **18:** standard e ownership organizzativi che permettono di scalare.
 
-## 7. Note review Capitoli 14–15
-
-### Capitolo 14
-
-Il centro è la **AI Analysis Control Sheet**:
-
-```text
-decision
-→ analytical contract
-→ Context Pack
-→ data/tool boundary
-→ AI generation/execution
-→ Verification Bundle
-→ method-specific gate
-→ eval
-→ claim gate
-→ human control
-→ action
-→ audit trace
-```
-
-Aurelia Travel e DeltaHome sono marcati esplicitamente come casi simulati/compositi; i casi pubblici sono sostenuti da fonti primarie.
+## 7. Note review Capitoli 15–16
 
 ### Capitolo 15
 
-Il capitolo converge nel **Decision Record**:
+Il **Decision Record** usa:
 
 ```text
 decision
@@ -219,19 +181,48 @@ decision
 → review / learning
 ```
 
+Punti chiave: alternative reali, ACT/PILOT/WAIT/BUY INFORMATION/ABANDON, evidence threshold distinto da switching threshold, robustness of ranking, pre-mortem, learning contract e distinzione decision/execution/outcome quality.
+
+### Capitolo 16
+
+Il centro è la **Decision Communication Pack**:
+
+```text
+Decision Record
+→ audience
+→ decision question
+→ decision requested
+→ headline / claim level
+→ evidence hierarchy
+→ Visual Encoding Contract
+→ Context Contract
+→ uncertainty / switching value
+→ alternatives
+→ Visual Integrity Gate
+→ Accessibility Gate
+→ meeting plan
+→ provenance
+```
+
 Concetti rafforzati:
 
-- finding, insight, explanation hypothesis, recommendation e decisione sono livelli distinti;
-- una raccomandazione deve essere confrontata con alternative reali e con il business as usual;
-- `ACT / PILOT / WAIT / BUY INFORMATION / ABANDON` come classi di mossa decisionale;
-- evidence threshold distinto da switching threshold;
-- one-way sensitivity, scenari coerenti, stress test e robustness of ranking;
-- analytics recommendation distinta dalla chosen decision del decision owner;
-- pre-mortem e learning contract;
-- **Decision quality ≠ Execution quality ≠ Outcome quality**;
-- Decision Quality Gate: **DECIDE / PILOT-STAGE / WAIT FOR X / NO ACTION-ABANDON**.
+- discovery artifacts vs decision artifacts ed **evidence promotion**;
+- ruoli `orient / compare / diagnose / decide / verify`;
+- dashboard operative, diagnostiche e decisionali separate per cadence;
+- salience budget e precision budget;
+- uncertainty comunicata rispetto allo switching value;
+- executive summary derivato dal Decision Record;
+- annotazioni di eventi distinte da spiegazioni causali;
+- Visual Integrity Gate: scale, periodi, denominatori, dual axis, cumulative/run-rate, opposite framing;
+- table-first per lookup/audit e small multiples per pattern comparabili;
+- dashboard anti-pattern inclusi KPI wall, slicer cemetery, traffic-light theater, hover-only truth e dashboard-as-database;
+- meeting communication: claim/evidence/caveat/ask e classificazione delle challenge;
+- accessibilità come **redundant encoding**, con WCAG 2.2, alt text, keyboard, contrasto e alternative tabellari/testuali;
+- Communication Readiness Gate: **READY / READY WITH CAVEATS / NOT READY**.
 
-Aurora Home è marcato come caso simulato/composito. Le fonti di riferimento includono HM Treasury Green Book 2026 e NASA Decision Analysis.
+Il caso finale NorthRiver Logistics è simulato/composito e sostituisce il precedente caso margin/promotion per evitare sovrapposizione con il Capitolo 15.
+
+Fonti principali: W3C WCAG 2.2, Government Analysis Function, Office for National Statistics e Microsoft Learn.
 
 ## 8. Arco complessivo
 
@@ -258,7 +249,7 @@ mentalità
 
 ## 9. Lavori ancora necessari prima della release
 
-- review Capitoli 16–19;
+- review Capitoli 17–19;
 - audit link/fonti globale;
 - formula rendering;
 - frontespizio, copyright/licenza, autore e bio;
@@ -270,8 +261,6 @@ mentalità
 
 ## 10. Release gate
 
-Prima di una release candidata:
-
 ```bash
 python scripts/normalize_sources.py --check
 python scripts/lint_book.py --strict
@@ -282,22 +271,19 @@ Poi controllo manuale di indice, formule, tabelle, codice, fonti, casi reali/com
 
 ## 11. Prossimo blocco
 
-La review continua dal **Capitolo 16 — Data storytelling, dashboard ed executive communication**.
+La review continua dal **Capitolo 17 — Casi end-to-end di Data Analysis**.
 
 Direzione editoriale:
 
 ```text
-Decision Record
-→ audience
-→ decision question
-→ headline
-→ evidence hierarchy
-→ visual encoding
-→ uncertainty / context
-→ decision requested
-→ appendix / provenance
+messy business question
+→ risk/decision classification
+→ choose only necessary deliverables
+→ evidence production
+→ competing explanations
+→ decision
+→ communication
+→ measurement / learning
 ```
 
-Deliverable previsto: **Decision Communication Pack**.
-
-Il Capitolo 16 non deve insegnare a “rendere i dati belli”. Deve insegnare a preservare il significato mentre riduce il costo cognitivo della decisione.
+Il Capitolo 17 deve diventare un **capstone**, non un catalogo di tecniche. Il lettore non deve sapere dal titolo del caso se serviranno forecasting, causalità, experiment, predictive modeling o soltanto una buona decomposition.
