@@ -1,159 +1,284 @@
-## 14.3 Hallucination e semantic errors: quando una risposta convincente è più pericolosa di un errore
-Un errore esplicito è spesso facile da gestire. Una risposta fluente, plausibile e sbagliata è molto più insidiosa.
+## 14.3 Confabulation, semantic error e narrative overreach: classificare l'errore prima di correggerlo
 
-Nel lavoro analitico possiamo distinguere almeno quattro famiglie di errore generate o amplificate dall'AI.
+Una risposta palesemente rotta è spesso meno pericolosa di una risposta convincente che fallisce in un punto nascosto della catena.
 
-## 1. Hallucination fattuale
+Per verificare bene un output AI dobbiamo prima chiedere:
 
-Il modello inventa qualcosa che non esiste.
+> **che tipo di errore potrebbe essere?**
+
+“Hallucination” è una parola utile, ma troppo larga se raccoglie problemi molto diversi.
+
+Nel lavoro analitico distinguiamo almeno sei famiglie.
+
+## 14.3.1 Entity / factual confabulation
+
+Il sistema introduce qualcosa che il contesto autorizzato non supporta.
 
 Esempi:
 
-- una colonna `customer_lifetime_value` che non è presente;
-- una tabella `fact_revenue_monthly` che il warehouse non contiene;
-- una funzione SQL non supportata dal motore usato;
-- una fonte, un paper o una definizione non realmente verificata.
+- tabella inesistente;
+- colonna inventata;
+- funzione non disponibile;
+- fonte bibliografica non verificata;
+- numero attribuito a un report che non lo contiene.
 
-## 2. Hallucination strutturale
-
-Il modello immagina uno schema o una relazione errata.
-
-Per esempio assume:
+Controllo:
 
 ```text
-orders.customer_id -> customers.customer_id
+existence / source verification
 ```
 
-quando in realtà gli ordini guest usano `identity_id` e molti `customer_id` sono null.
+## 14.3.2 Structural error
 
-La query può comunque girare e perdere silenziosamente parte della popolazione.
-
-## 3. Semantic error
-
-L'AI usa dati veri ma interpreta male il significato.
-
-È il caso più importante per un Data Analyst.
-
-### Caso pubblico documentato: Copilot e la data sbagliata
-
-Microsoft Learn mostra un esempio in cui Copilot per Power BI riceve una domanda sui profitti per anno ma applica il filtro alla colonna di compleanno del cliente invece che alla date table corretta.
-
-Il modello non ha necessariamente "inventato" il dato. Ha selezionato un campo semanticamente sbagliato all'interno di un modello reale.
-
-Questo esempio è prezioso perché dimostra che la presenza di un semantic model non rende il natural-language analytics infallibile. La documentazione Microsoft raccomanda esplicitamente di ispezionare campi e filtri usati da Copilot e di addestrare gli utenti a valutare criticamente le risposte.
-
-## 4. Hallucination narrativa
-
-I numeri possono essere corretti, ma l'AI costruisce una spiegazione non supportata.
+Gli oggetti esistono, ma la relazione assunta è sbagliata.
 
 Esempio:
 
-- revenue -12%;
-- conversion -9%;
-- traffico stabile.
+```text
+orders.customer_id → customers.customer_id
+```
 
-L'AI scrive:
+quando i guest order usano un identity layer separato.
 
-> "Il calo è dovuto probabilmente a una maggiore sensibilità al prezzo dei clienti."
+La query può girare e rimuovere silenziosamente una popolazione.
 
-Non c'è alcuna evidenza sul prezzo.
+Controllo:
 
-La frase è plausibile, ma è un'ipotesi presentata come spiegazione.
+```text
+grain + keys + join cardinality + population reconciliation
+```
 
-## Un caso realistico: "la campagna ha causato +18%"
+## 14.3.3 Semantic error
 
-Una retail company lancia una campagna CRM sui clienti VIP.
+Il sistema usa un campo vero per rappresentare il concetto sbagliato.
 
-Dati osservati:
+Questo è spesso il failure mode più importante in analytics.
 
-- trattati: conversion 14,2%;
-- non trattati: conversion 12,0%.
+### Caso reale documentato — Copilot filtra la data sbagliata
 
-Un assistente AI riassume:
+Microsoft Learn mostra pubblicamente un esempio di Copilot in Power BI in cui l'utente chiede quale paese abbia prodotto il profitto più alto nel 2024/2023.[^ms-wrong-date]
 
-> "La campagna ha aumentato la conversion del 18,3%."
+Nel modello esistono dati per quegli anni usando la date table corretta.
 
-Il calcolo relativo è corretto:
+Copilot però finisce per filtrare la colonna **Birthday** della tabella Customer invece della date table marcata nel modello.
 
-`(14,2 - 12,0) / 12,0 = 18,3%`
+Microsoft usa l'esempio per mostrare che, anche con prompt e modello, gli output possono essere inaccurati e che gli utenti devono ispezionare campi e filtri utilizzati.
 
-Ma la conclusione causale non lo è. I VIP sono selezionati perché più attivi e di valore più alto.
+Questo è un caso perfetto di semantic error:
 
-Qui l'errore non è matematico. È epistemologico.
+```text
+campo reale
++ query plausibile
++ concetto temporale sbagliato
+```
 
-Il modello ha confuso:
+La soluzione non è soltanto “promptare meglio”.
 
-**differenza osservata → effetto causale**
+Può richiedere:
 
-Una buona verifica dovrebbe riportare:
+- schema più semplice per l'AI;
+- campi ambigui esclusi;
+- istruzioni;
+- verified answers;
+- training degli utenti alla verifica.
 
-> "La conversion è 2,2 punti percentuali più alta nei trattati. Con i dati osservazionali disponibili non possiamo attribuire causalmente la differenza alla campagna."
+## 14.3.4 Computational error
 
-## Il protocollo di verifica in cinque domande
+La semantica è corretta, ma il calcolo è implementato male.
 
-Per ogni output importante prodotto dall'AI chiediamo:
+Esempi:
 
-### 1. Esiste davvero?
+- percentuale calcolata con denominatore errato;
+- media di medie non pesata;
+- intervallo di confidenza sbagliato;
+- filtro booleano invertito;
+- bug nel codice generato.
 
-Tabelle, colonne, metriche, fonti e funzioni citate sono reali?
+Controllo:
 
-### 2. È la cosa giusta?
+```text
+fixture + unit test + independent calculation
+```
 
-La colonna scelta rappresenta davvero il concetto business richiesto?
+## 14.3.5 Narrative overreach
 
-### 3. Il calcolo è riproducibile?
+I numeri possono essere corretti, ma il testo dice più di ciò che dimostrano.
 
-Possiamo ottenere lo stesso numero con una query o un metodo indipendente?
+Esempio:
 
-### 4. L'interpretazione segue dai dati?
+```text
+revenue -12%
+conversion -9%
+traffic stabile
+```
 
-La conclusione distingue correlazione, previsione e causalità?
+Output:
 
-### 5. Quanto è sensibile alle assunzioni?
+> Il calo è dovuto a una maggiore sensibilità al prezzo.
 
-Cambia molto usando altra finestra temporale, denominatore o definizione?
+Non abbiamo mostrato nulla sul prezzo.
 
-## Un confidence score non è una verifica
+La frase ha trasformato:
 
-Un LLM può esprimere sicurezza anche quando sbaglia. La sicurezza linguistica non è una misura statistica di affidabilità.
+```text
+pattern osservato
+→ meccanismo causale inventato
+```
 
-Frasi come:
+Controllo:
 
-- "sono certo";
-- "con alta probabilità";
-- "il driver principale è";
+```text
+claim classification
+```
 
-non devono essere trattate come evidenza se non derivano da un metodo verificabile.
+## 14.3.6 Action overreach
 
-## Verifica tramite triangolazione
+L'output può essere ragionevole, ma il sistema compie un'azione più forte di quella autorizzata.
 
-Quando la decisione è importante, confrontiamo più percorsi.
+Esempi:
 
-Esempio revenue mensile:
+- da “questa query sembra costosa” a cancellare una tabella intermedia;
+- da “questa campagna sottoperforma” a sospenderla automaticamente;
+- da “questi account sono high risk” a inviare incentivi senza budget/policy approval.
 
-1. query SQL sul warehouse;
-2. misura certificata nel semantic layer;
-3. reconciliation con finance export;
-4. confronto con numero del mese precedente.
+Questo failure mode nasce dalla **permission boundary**, non dalla qualità del linguaggio.
 
-Se tre fonti danno €12,4M e l'AI produce €13,8M, il problema non si risolve chiedendo al modello di essere "più preciso". Si ispeziona la logica.
+Controllo:
 
-## Risk-based verification
+```text
+action authorization + approval gate
+```
 
-Non tutti gli output richiedono lo stesso livello di controllo.
+## 14.3.7 Caso simulato/composito — +18,3% non è un treatment effect
 
-| Output AI | Rischio | Controllo consigliato |
-|---|---:|---|
-| spiegazione di una funzione SQL | basso | lettura rapida |
-| bozza di query esplorativa | medio | sanity check |
-| KPI per management | alto | reconciliation + peer review |
-| pricing / credito / compliance | molto alto | review formale + test + approvazione |
+Un retailer invia una campagna CRM a clienti VIP.
 
-Il NIST AI RMF per Generative AI insiste proprio su un approccio basato sul rischio: valutazione, misurazione e gestione devono essere proporzionate all'impatto potenziale dell'uso dell'AI.
+Dati:
 
-> **Più una risposta AI può cambiare una decisione reale, meno possiamo permetterci di valutarla in base a quanto suona convincente.**
+```text
+trattati:      conversion 14,2%
+non trattati:  conversion 12,0%
+```
 
-### Fonti
+L'AI calcola correttamente:
 
-- Microsoft Learn, *Use Copilot with semantic models in Power BI*, https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
-- NIST, *Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile*, https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
+```text
+(14,2 - 12,0) / 12,0 = +18,3%
+```
+
+Poi scrive:
+
+> La campagna ha aumentato la conversion del 18,3%.
+
+Il problema non è aritmetico.
+
+I destinatari sono stati selezionati perché già più attivi e di valore più alto.
+
+Il claim consentito è:
+
+> La conversion osservata è 2,2 punti percentuali più alta nel gruppo trattato; il confronto osservazionale non identifica l'effetto incrementale della campagna.
+
+Il Capitolo 8 ha fornito il Causal Identification Brief.
+
+L'AI Analysis Control Sheet deve quindi poter dire:
+
+```text
+causal claim allowed: NO
+```
+
+## 14.3.8 Claim ladder
+
+Per evitare narrative overreach classifichiamo il livello massimo di affermazione consentito.
+
+**L0 — Extraction**
+
+> Il valore è 4,6%.
+
+**L1 — Description**
+
+> È aumentato di 0,8 punti.
+
+**L2 — Localization / association**
+
+> Il delta è concentrato nei clienti con tenure <90 giorni.
+
+**L3 — Prediction**
+
+> Il modello stima maggiore probabilità futura per questo gruppo.
+
+**L4 — Causal claim**
+
+> L'intervento produce una differenza nel risultato.
+
+**L5 — Recommendation**
+
+> Dovremmo scegliere l'azione A date evidenza, costi e vincoli.
+
+Ogni gradino richiede evidenza aggiuntiva.
+
+Un sistema non dovrebbe salire di livello soltanto perché può produrre una frase più convincente.
+
+## 14.3.9 Verifica per triangolazione
+
+Per un KPI importante possiamo confrontare:
+
+```text
+AI-generated query
+vs certified semantic metric
+vs finance/operational reconciliation
+vs historical order-of-magnitude
+```
+
+Se l'AI produce €13,8M e due percorsi indipendenti producono circa €12,4M, non chiediamo semplicemente:
+
+> sei sicuro?
+
+Ispezioniamo:
+
+- population;
+- date;
+- joins;
+- filters;
+- duplicates;
+- definition version.
+
+La sicurezza linguistica del modello non è una misura di affidabilità statistica.
+
+## 14.3.10 Risk-based verification
+
+Il NIST Generative AI Profile propone un approccio di risk management proporzionato al contesto e include esplicitamente measurement ed evaluation nella gestione dei sistemi generativi.[^nist-profile-14]
+
+Nel nostro workflow questo diventa:
+
+| Output | Conseguenza | Gate minimo |
+|---|---|---|
+| spiegazione sintassi | bassa | review rapida |
+| query esplorativa | moderata | fixture + sanity check |
+| KPI management | alta | reconciliation + peer review |
+| recommendation economica rilevante | alta | evidence review + assumptions |
+| write/action automatico | molto alta | eval + permission + approval/rollback |
+
+La categoria non dipende dal modello usato.
+
+Dipende da ciò che l'output può cambiare nel mondo reale.
+
+### Campo della AI Analysis Control Sheet
+
+```text
+Potential failure class:
+Claim level requested:
+Claim level supported:
+Existence check:
+Structural/semantic check:
+Computational check:
+Independent reconciliation:
+Action authorization:
+Unresolved uncertainty:
+```
+
+### Regola operativa
+
+> **Non verificare un output AI chiedendoti soltanto “è giusto?”. Chiediti dove potrebbe essere sbagliato: oggetto, struttura, significato, calcolo, interpretazione o azione. Ogni classe richiede un controllo diverso.**
+
+[^ms-wrong-date]: Microsoft Learn, *Use Copilot with semantic models in Power BI*, https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
+[^nist-profile-14]: NIST, *Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile*, https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
