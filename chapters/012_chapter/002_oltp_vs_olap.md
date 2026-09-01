@@ -1,81 +1,152 @@
-## 12.1 OLTP vs OLAP: il sistema che registra non è sempre il sistema che analizza
+## 12.1 OLTP e analytics: il sistema che registra non è necessariamente quello da interrogare
 
-Una delle distinzioni più utili per un Data Analyst è quella tra sistemi **OLTP** e sistemi **OLAP**.
+Una delle prime domande della Data Flow Architecture Map è:
 
-In termini semplici:
+> **Dove nasce il dato e quel sistema è progettato anche per il tipo di analisi che vogliamo eseguire?**
 
-- un sistema OLTP è ottimizzato per eseguire transazioni operative rapidamente e in modo consistente;
-- un sistema OLAP è ottimizzato per interrogazioni analitiche, aggregazioni e scansioni su grandi volumi di dati.
+La distinzione tradizionale tra **OLTP** e **OLAP** è utile proprio per questo.
 
-### Un esempio concreto
+In modo semplificato:
 
-Pensiamo a un e-commerce.
+- **OLTP** privilegia transazioni operative frequenti, consistenza e tempi di risposta bassi;
+- **OLAP / analytical serving** privilegia scansioni, aggregazioni, storia e query su grandi volumi.
 
-Quando un cliente conferma un ordine, il sistema operativo deve:
+Microsoft Azure Architecture Center descrive i workload analitici come tipicamente read-intensive, alimentati da dati storici e curati, mentre le sorgenti transazionali sono progettate prima di tutto per sostenere il processo operativo.
 
-1. creare l'ordine;
-2. aggiornare lo stock;
-3. registrare il pagamento;
-4. mantenere consistenza tra più entità;
-5. rispondere in tempi molto bassi.
+Fonte: https://learn.microsoft.com/en-us/azure/architecture/data-guide/relational-data/online-analytical-processing
 
-Questa è una responsabilità tipica OLTP.
+### Lo stesso dominio, due responsabilità diverse
 
-Quando, invece, il CFO chiede:
+In un e-commerce il sistema operativo deve poter:
 
-> Qual è stato il margine netto per categoria, paese e coorte cliente negli ultimi 24 mesi?
+```text
+creare ordine
+→ autorizzare pagamento
+→ riservare stock
+→ aggiornare stato
+→ rispondere all'applicazione
+```
 
-la query deve probabilmente:
+Il workload analitico può invece chiedere:
 
-- leggere milioni di ordini;
-- unire clienti, prodotti, costi, promozioni e resi;
-- aggregare per più dimensioni;
-- confrontare periodi storici.
+> Qual è il contribution margin per categoria, paese e coorte negli ultimi 24 mesi, corretto per refund e riclassificazioni storiche?
 
-Questo è un workload analitico.
+La seconda domanda può richiedere:
 
-### Perché non fare tutto direttamente sul database operativo?
+- molte più righe;
+- storia;
+- più sorgenti;
+- join e aggregazioni pesanti;
+- definizioni che non appartengono al database transazionale.
 
-Per piccoli contesti può funzionare. Ma quando scala, emergono problemi:
+### Caso simulato/composito — UrbanBike e il report che compete con il checkout
 
-- query pesanti competono con il traffico operativo;
-- lo schema è progettato per transazioni, non per facilità analitica;
-- la storia può essere incompleta o sovrascritta;
-- integrare più sistemi diventa difficile;
-- business logic e definizioni metriche si moltiplicano nelle query degli analisti.
+UrbanBike usa inizialmente lo stesso PostgreSQL per applicazione e reporting.
 
-### Caso realistico: il report che rallenta il checkout
+Ogni lunedì una query ricostruisce vendite, resi e commissioni su un volume ormai molto grande.
 
-**UrbanBike**, marketplace di biciclette e accessori, ha inizialmente un solo database PostgreSQL usato sia dall'applicazione sia dagli analisti.
+Nella stessa finestra:
 
-Ogni lunedì mattina una query di reporting calcola vendite, resi e commissioni su circa 180 milioni di righe.
+- aumentano CPU e I/O;
+- le query operative attendono più a lungo;
+- alcuni endpoint del checkout rallentano.
 
-Dopo la crescita internazionale, il team nota che tra le 8:30 e le 9:15:
+Il problema non è che SQL analitico sia “vietato” sull'OLTP.
 
-- il tempo medio del checkout sale da 420 ms a 1,8 secondi;
-- aumentano i timeout;
-- il conversion rate scende leggermente.
+Il problema è che due workload con priorità diverse stanno competendo sullo stesso failure domain e sulle stesse risorse.
 
-La query SQL non era sbagliata. Era eseguita nel **posto sbagliato**.
+Una possibile evoluzione è:
 
-La soluzione è separare il workload operativo da quello analitico attraverso replica/ingestion e un ambiente analitico dedicato.
+```text
+operational DB
+      ↓
+replication / ingestion
+      ↓
+analytical storage
+      ↓
+curated models
+```
 
-## Schema operativo vs schema analitico
+### Replica non significa automaticamente dato pronto
 
-Uno schema OLTP tende spesso a essere più normalizzato per ridurre ridondanza e preservare consistenza.
+Spostare il carico su una replica read-only risolve parte del problema operativo, ma non crea automaticamente un prodotto analitico affidabile.
 
-Uno schema analitico può essere intenzionalmente più denormalizzato o modellato dimensionalmente per rendere più semplici e performanti le domande di business.
+Una replica può avere:
 
-Questa differenza spiega perché una fact table vendite con dimensioni prodotto, cliente e data può essere molto più utile per l'analisi rispetto a decine di tabelle operative perfettamente normalizzate.
+- replication lag;
+- schema operativo difficile da usare;
+- storia sovrascritta;
+- dati distribuiti su più sistemi;
+- definizioni non conformate.
 
-### Regola pratica
+Quindi dobbiamo distinguere:
 
-Prima di interrogare una tabella chiediti:
+```text
+source isolation
+≠
+analytical readiness
+```
 
-- è una sorgente operativa o analitica?
-- contiene storia completa?
-- è sicuro eseguire query pesanti?
-- esiste una replica o un modello curato?
-- qual è la latenza tra operatività e disponibilità analitica?
+La replica protegge il sistema operativo. Il layer analitico risolve un problema diverso.
 
-Il punto non è evitare sempre i database operativi. È capire **quando la comodità di leggere direttamente dalla sorgente crea un rischio analitico o operativo**.
+### HTAP e sistemi ibridi non annullano la domanda
+
+Esistono piattaforme capaci di sostenere workload transazionali e analitici nello stesso ecosistema.
+
+La presenza di tecnologia ibrida non elimina però le domande architetturali:
+
+- quali query possono competere con il traffico operativo?
+- quale storia è disponibile?
+- quale freshness è garantita?
+- qual è il serving model certificato?
+- quale failure impatta entrambi i workload?
+
+Il confine può diventare meno fisico, ma resta un confine di responsabilità.
+
+### Source of record vs source for analysis
+
+Un concetto utile è separare:
+
+**system of record**
+
+Il sistema autorevole per lo stato operativo di un'entità.
+
+**analytical source / serving layer**
+
+Il punto consigliato per analizzare quella realtà, eventualmente integrata, storicizzata e validata.
+
+Per esempio:
+
+```text
+customer current status → CRM
+customer historical analytical dimension → warehouse/lakehouse curated layer
+```
+
+Entrambi possono essere “corretti” per usi diversi.
+
+### Campo della Data Flow Architecture Map
+
+Per ogni sorgente critica annotiamo:
+
+```text
+system of record:
+workload type:
+allowed analytical load:
+history available:
+replication/ingestion path:
+expected lag:
+downstream analytical source:
+owner:
+```
+
+### Regola operativa
+
+Prima di interrogare direttamente una sorgente chiediamo:
+
+1. sto mettendo a rischio un workload operativo?
+2. la sorgente contiene la storia necessaria?
+3. esiste una replica o un layer analitico più appropriato?
+4. qual è il lag tra sorgente e serving layer?
+5. quale dei due è certificato per la decisione?
+
+> **Il sistema che registra la realtà non è automaticamente il posto migliore in cui ricostruirla analiticamente.**
