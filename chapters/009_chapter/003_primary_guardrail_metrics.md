@@ -1,78 +1,179 @@
-## 9.2 Metriche primarie e guardrail: vincere senza fare danni
+## 9.2 Metric Contract: decidere prima che cosa significa vincere
 
-Un esperimento raramente ha una sola conseguenza. Ottimizzare una metrica senza guardare il resto del sistema può produrre una vittoria locale e una perdita complessiva.
+Un esperimento raramente muove una sola cosa.
 
-Per questo è utile distinguere almeno tre famiglie di metriche:
+QuickPay può aumentare conversione e contemporaneamente:
 
-- **primary metric**: la metrica principale che rappresenta l'obiettivo del test;
-- **secondary metrics**: aiutano a capire il meccanismo e gli effetti collaterali;
-- **guardrail metrics**: metriche che non devono peggiorare oltre una soglia accettabile.
+- aumentare chargeback;
+- ridurre il tempo al checkout;
+- aumentare cancellazioni impulsive;
+- modificare il basket;
+- creare più ticket;
+- peggiorare latency.
 
-### Caso: conversione in aumento, qualità dell'ordine in calo
+Per questo le metriche devono avere **ruoli differenti**, definiti prima di vedere il risultato.
 
-Il checkout rapido dell'e-commerce viene testato su 620.000 utenti per variante.
+### Quattro famiglie di metriche
 
-Risultato iniziale:
+Una struttura utile è:
 
-| Metrica | Controllo | Trattamento | Delta |
+1. **Primary / Overall Evaluation Criterion (OEC)** — la metrica che sintetizza il successo principale rispetto alla decisione;
+2. **Guardrail** — ciò che non deve peggiorare oltre una soglia accettabile;
+3. **Diagnostic / local feature metrics** — aiutano a capire dove e come cambia il comportamento;
+4. **Data-quality / experiment-health metrics** — dicono se il test è tecnicamente interpretabile.
+
+Microsoft Experimentation Platform usa una tassonomia molto simile, distinguendo data-quality metrics, OEC metrics, local/feature metrics e guardrail metrics nel monitoraggio degli esperimenti.[^ms-metric-patterns]
+
+### Caso simulato/composito — QuickPay “vince” sulla conversione
+
+Dopo il periodo pianificato:
+
+| Metrica | Controllo | QuickPay | Delta |
 |---|---:|---:|---:|
-| Conversion rate | 3,93% | 4,12% | +0,19 pp |
-| Ordini | 24.366 | 25.544 | +4,8% |
+| Conversion user → order | 3,93% | 4,12% | +0,19 pp |
+| Chargeback | 0,42% | 0,61% | +0,19 pp |
+| Cancellazioni entro 24h | 2,8% | 3,6% | +0,8 pp |
+| Support contacts / 1.000 ordini | 14,1 | 18,7 | +32,6% |
 
-Il team Product celebra. Ma l'analista aveva definito guardrail prima dell'esperimento:
+Dire soltanto:
 
-| Guardrail | Controllo | Trattamento |
-|---|---:|---:|
-| Chargeback rate | 0,42% | 0,61% |
-| Cancellation rate entro 24h | 2,8% | 3,6% |
-| Customer support contacts / 1.000 ordini | 14,1 | 18,7 |
+> “B è statisticamente significativa sulla conversione.”
 
-La variante B genera più ordini ma anche più ordini problematici.
+ignora la domanda decisionale.
 
-Se il margine medio per ordine è 17,40 euro, l'incremento lordo sembra positivo. Ma dopo costi di chargeback, assistenza e cancellazioni, il margine incrementale scende molto.
+### Primary metric: proxy o valore?
 
-### Una metrica primaria deve corrispondere alla decisione
+La conversione è vicina al comportamento che la feature modifica.
 
-La conversione può essere utile, ma se la decisione è “questa esperienza crea più valore sostenibile?”, allora una metrica come revenue netta per utente o contribution margin per utente potrebbe essere più coerente.
+Ma il business potrebbe realmente voler massimizzare:
 
-La scelta della primary metric deve avvenire **prima** del risultato. Cambiarla dopo aver visto i dati apre la porta al cherry-picking.
+- contribution margin per utente;
+- net revenue per eligible user;
+- completed-and-not-cancelled orders per user.
 
-### Guardrail non significa metrica decorativa
+Una primary metric troppo distante dal valore può premiare comportamenti che non vogliamo.
 
-Una guardrail deve avere una regola di decisione esplicita.
+Una metrica troppo lenta, però, può rendere impossibile un test pratico.
+
+Quindi la scelta è un compromesso tra:
+
+- vicinanza al valore business;
+- sensibilità;
+- latenza dell'outcome;
+- affidabilità del tracking;
+- interpretabilità.
+
+### Guardrail con soglia, non decorativi
+
+Scrivere “monitoriamo frodi” non è sufficiente.
+
+Un guardrail deve specificare **quando blocca la decisione**.
 
 Esempio:
 
-- primary metric: conversion rate;
-- criterio di successo: aumento minimo +0,10 pp;
-- guardrail chargeback: non oltre +0,08 pp;
-- guardrail support contacts: non oltre +10%;
-- durata minima: 14 giorni.
+```text
+Primary:
+conversion per eligible user
+success threshold: almeno +0,10 pp
 
-A questo punto il test può avere quattro esiti:
+Guardrail 1:
+chargeback rate
+non-inferiority margin: peggioramento massimo +0,05 pp
 
-1. primary migliora, guardrail ok -> candidato al rollout;
-2. primary migliora, guardrail fallisce -> non rollout o redesign;
-3. primary non migliora, guardrail ok -> nessuna evidenza sufficiente;
-4. primary peggiora -> stop.
+Guardrail 2:
+checkout fatal error
+stop operativo se +20% relativo
 
-### Metric hierarchy
+Guardrail 3:
+cancellation D1
+ship blocked se peggiora oltre +0,30 pp
+```
 
-Nei sistemi maturi le metriche formano una gerarchia:
+A quel punto un test può avere una primary positiva e restare **NO-SHIP**.
 
-**business outcome -> product behavior -> diagnostic metrics -> system health**
+### Non-inferiority come logica di guardrail
 
-Per un marketplace:
+Per molti guardrail la domanda non è:
 
-- business outcome: contribution margin;
-- product behavior: completed transactions;
-- diagnostic: add-to-cart, checkout completion;
-- system health: latency, error rate, fraud rate.
+> “La variante è significativamente diversa?”
 
-Questa struttura evita di confondere una proxy con l'obiettivo finale.
+ma:
 
-### Errore tipico
+> **“Possiamo escludere con sufficiente confidenza un peggioramento più grande della soglia che consideriamo materialmente dannosa?”**
 
-Il problema non è avere molte metriche. Il problema è non sapere quali guidano la decisione e quali servono solo a interpretarla.
+Questo è più vicino a una logica di non-inferiority.
 
-> Un esperimento ben progettato decide prima che cosa significa vincere e anche che cosa significa vincere troppo caro.
+La soglia deve essere scelta prima e giustificata dal rischio business, non dopo aver osservato il delta.
+
+### Diagnostic metrics non devono diventare primary retroattive
+
+Immaginiamo che la primary sia piatta, ma una delle 35 diagnostic metric cresca molto.
+
+Possiamo usare il risultato per generare una nuova ipotesi.
+
+Non dovremmo riscrivere la storia come:
+
+> “Il test è riuscito perché quella era in realtà la metrica importante.”
+
+La distinzione tra confermativo ed esplorativo del Capitolo 5 vale anche qui.
+
+### Data-quality metric prima del business outcome
+
+Un dashboard sperimentale maturo dovrebbe visualizzare prima:
+
+- SRM;
+- exposure rate;
+- event completeness;
+- missing identifiers;
+- metric invariants;
+- logging differences.
+
+Solo dopo ha senso discutere lift e intervalli.
+
+### Denominatore e unità devono entrare nel metric contract
+
+`conversion_rate` non è una definizione sufficiente.
+
+Scriviamo:
+
+```text
+Nome: eligible-user conversion D7
+Numeratore: utenti con >=1 ordine valido entro 7 giorni dalla prima eligibility
+Denominatore: utenti randomizzati eleggibili
+Deduplicazione: 1 per stable_user_id
+Cancellazioni: ordine considerato valido solo se non cancellato entro 24h
+Late events: finestra di maturazione 48h
+Timezone: UTC per event time
+```
+
+Il Capitolo 11 formalizzerà ulteriormente le metriche nel semantic layer. Nell'esperimento questa precisione serve a impedire che A e B vengano calcolati con una semantica mobile.
+
+### Caso reale documentato — Alerting sugli esperimenti Microsoft
+
+Microsoft ExP documenta alert su SRM e su metriche che si muovono fuori da range prestabiliti. L'obiettivo è individuare rapidamente test che degradano seriamente prodotto o user experience, fino ad arrivare in alcuni casi all'auto-shutdown di esperimenti egregi.[^ms-alerting]
+
+Questo trasforma i guardrail da tabella osservata ex post a **controllo operativo durante l'esecuzione**.
+
+### Metric Contract
+
+```text
+Decisione:
+Primary/OEC:
+Definizione completa:
+Unità/denominatore:
+Success threshold / MDE:
+Guardrail:
+Margin per ogni guardrail:
+Diagnostic metrics:
+Data-quality metrics:
+Maturazione outcome:
+Late data policy:
+Multiple-testing family:
+Quali metriche possono bloccare ship?
+Quali metriche sono solo esplorative?
+```
+
+> **Una metrica sperimentale non è soltanto una formula. È una regola concordata su quale evidenza può cambiare la decisione.**
+
+[^ms-metric-patterns]: Microsoft Research, *Patterns of Trustworthy Experimentation: During-Experiment Stage*: https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/patterns-of-trustworthy-experimentation-during-experiment-stage/
+[^ms-alerting]: Microsoft Research, *Alerting in Microsoft’s Experimentation Platform (ExP)*: https://www.microsoft.com/en-us/research/articles/alerting-in-microsofts-experimentation-platform-exp/
