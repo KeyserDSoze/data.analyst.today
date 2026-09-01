@@ -43,17 +43,17 @@ La CI costruisce automaticamente Markdown aggregato, DOCX e PDF a ogni modifica 
 
 ### Ultima build validata
 
-Dopo la revisione editoriale dei Capitoli 0–2:
+Dopo la revisione editoriale dei Capitoli 0–3:
 
 - **20 capitoli**;
 - **321 file Markdown**;
-- **168.185 parole stimate**;
-- **1.205.797 caratteri**;
-- **116 URL esterni distinti**;
-- **745 pagine PDF**;
+- **172.246 parole stimate**;
+- **1.235.110 caratteri**;
+- **118 URL esterni distinti**;
+- **759 pagine PDF**;
 - build Markdown, DOCX e PDF completata con successo.
 
-Il numero di pagine non è una metrica editoriale da massimizzare. Può salire o scendere durante la revisione: alcuni passaggi vengono compressi perché ridondanti, altri vengono resi più chiari con esempi, tabelle e casi operativi più forti.
+Il numero di pagine non è una metrica editoriale da massimizzare. Può salire o scendere durante la revisione: alcuni passaggi vengono compressi perché ridondanti, altri vengono resi più chiari con esempi, tabelle, casi operativi e fonti reali più forti.
 
 ### Da completare prima della release tipografica
 
@@ -153,6 +153,7 @@ Ogni caso reale importante deve avere:
 
 - Nessun link nel manoscritto contiene `utm_source=chatgpt.com`.
 - Le revisioni mantengono la preferenza per documentazione ufficiale e fonti primarie.
+- Il Capitolo 3 usa ora il Government Data Quality Framework britannico come riferimento per fitness for purpose e dimensioni di qualità e include il Mars Climate Orbiter come caso reale documentato sulla semantica delle unità.
 
 ### Da fare prima della release
 
@@ -181,7 +182,8 @@ Obiettivo della revisione:
 | 0 — Al timone | **Revisionato** | Ridisegnato come manifesto operativo: orchestrazione, accountability, verification by design, stop condition, deskilling, trust levels, caso multi-agent, manifesto finale. |
 | 1 — Tutto è cambiato. Il problema è rimasto lo stesso | **Revisionato** | Eliminata la duplicazione con Ch. 0; fissata una sola catena analitica canonica; cinque tipi di domanda; caso vendite riscritto e marcato simulato/composito; rimandi ai capitoli specialistici. |
 | 2 — Dal problema di business al problema analitico | **Revisionato** | Il capitolo converge ora su un unico deliverable: l'Analytical Brief. Decision specification, stakeholder map, metric roles, hypothesis register, scope, baseline, segmentation plan, data requirements, Value of Information e stop rule sono campi coerenti dello stesso piano. Caso Velora Home riscritto e marcato simulato/composito. |
-| 3–19 | **Da revisionare** | Procedere in ordine, controllando anche sovrapposizioni inter-capitolo. |
+| 3 — Capire il dato prima di analizzarlo | **Revisionato** | Riorganizzato come indagine di data readiness: record/grain → identità → tempo → qualità → missing/duplicati/outlier → unità → profiling → lineage → riconciliazione → contract/check automatici → verdetto PRONTO / CON CAVEAT / NON PRONTO. Caso end-to-end sostituito con ProntoVeloce per evitare sovrapposizione col Ch. 2; aggiunti Government Data Quality Framework e caso reale Mars Climate Orbiter. |
+| 4–19 | **Da revisionare** | Procedere in ordine, controllando anche sovrapposizioni inter-capitolo. |
 
 ## 8. Sovrapposizioni concettuali da governare
 
@@ -204,6 +206,17 @@ Ruolo:
 - **1:** mentalità di base, cinque tipi di domanda e catena analitica canonica;
 - **2:** trasformare formalmente la richiesta in un Analytical Brief operativo.
 
+### Capitolo 2 / 3 — specifica e readiness
+
+Ruolo:
+
+- **2:** dichiarare quali dati, popolazioni, metriche e confronti servono per rispondere;
+- **3:** verificare che i dati disponibili rappresentino davvero quelle proprietà e stabilire se siano pronti per l'analisi.
+
+Catena editoriale:
+
+**Analytical Brief → Data Readiness Review → Analisi**.
+
 ### Capitolo 2 / 15 — decisione
 
 Ruolo:
@@ -215,10 +228,10 @@ Ruolo:
 
 Ruolo:
 
-- **3:** capire il dato prima di analizzarlo;
+- **3:** verificare fitness for purpose del dato dal punto di vista dell'analista;
 - **11:** formalizzare grain, join, trasformazioni e metriche in SQL/modeling;
 - **12:** capire l'architettura che produce e trasporta il dato;
-- **18:** rendere il sistema analitico affidabile e scalabile nell'organizzazione.
+- **18:** trasformare qualità, ownership, contract e osservabilità in capacità organizzativa scalabile.
 
 ## 9. Arco narrativo complessivo
 
@@ -234,7 +247,7 @@ Non usare il numero di capitoli come proxy della lunghezza.
 
 La misura corrente viene dalla pipeline reale.
 
-Dopo i primi tre capitoli revisionati il PDF è di **745 pagine**, quindi la revisione può continuare liberamente a tagliare ripetizioni o ad ampliare casi che aumentano la comprensione senza alcun rischio rispetto all'obiettivo minimo di 400+ pagine.
+Dopo i primi quattro capitoli revisionati il PDF è di **759 pagine**. La revisione può quindi continuare liberamente a comprimere ripetizioni o ad ampliare esempi e casi che aumentano la comprensione senza alcun rischio rispetto all'obiettivo minimo di 400+ pagine.
 
 L'obiettivo non è preservare un numero massimo di pagine. È massimizzare **densità di valore per pagina**.
 
@@ -280,4 +293,4 @@ Poi controllo manuale di:
 
 Il contenuto principale del libro è strutturalmente completo.
 
-La revisione editoriale ha completato i **Capitoli 0, 1 e 2**. Il lavoro successivo continua dal Capitolo 3, con particolare attenzione a non duplicare ciò che i Capitoli 11, 12 e 18 tratteranno a livello di data modeling, architettura e governance.
+La revisione editoriale ha completato i **Capitoli 0, 1, 2 e 3**. Il lavoro successivo continua dal Capitolo 4, con l'obiettivo di trasformare statistica descrittiva ed EDA da catalogo di tecniche a processo disciplinato per descrivere ciò che il dato mostra senza anticipare spiegazioni o causalità.
