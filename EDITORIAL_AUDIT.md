@@ -7,23 +7,23 @@ Questo documento è la dashboard editoriale del manoscritto.
 ## 1. Stato attuale
 
 - Corpo principale completo: **Capitoli 0–19**.
-- Review completata: **Capitoli 0–13**.
-- Da revisionare: **Capitoli 14–19**.
+- Review completata: **Capitoli 0–14**.
+- Da revisionare: **Capitoli 15–19**.
 - Markdown è la source of truth.
 - CI attiva su `main` con lint + build Markdown/DOCX/PDF.
 - Casi pubblici e casi simulati/compositi devono essere distinti esplicitamente.
 
 ### Ultima build validata
 
-Dopo la review del Capitolo 13:
+Dopo la review del Capitolo 14:
 
 - **20 capitoli**;
 - **321 file Markdown**;
-- **213.785 parole stimate**;
-- **1.566.819 caratteri**;
-- **166 URL esterni distinti**;
+- **220.052 parole stimate**;
+- **1.617.128 caratteri**;
+- **172 URL esterni distinti**;
 - **8 file con LaTeX**;
-- **966 pagine PDF**;
+- **999 pagine PDF**;
 - build Markdown, DOCX e PDF: **SUCCESS**.
 
 Il page count non è un obiettivo da massimizzare. La priorità è la densità di valore per pagina.
@@ -83,7 +83,7 @@ La review privilegia:
 - letteratura accademica riconosciuta;
 - fonti primarie di aziende/istituzioni per i casi pubblici.
 
-Prima della release resta un audit globale dei **166 URL** per link, redirect, supporto del claim e uniformità delle note.
+Prima della release resta un audit globale dei **172 URL** per link, redirect, supporto del claim e uniformità delle note.
 
 ## 4. Stato capitolo per capitolo
 
@@ -103,8 +103,8 @@ Prima della release resta un audit globale dei **166 URL** per link, redirect, s
 | 11 — SQL e data modeling | **Revisionato** | **Analytical Data Contract**. |
 | 12 — Data architecture | **Revisionato** | **Data Flow Architecture Map**. |
 | 13 — Tool selection | **Revisionato** | **Tooling Decision Record**. |
-| 14 — AI-assisted analytics | **Da revisionare** | Workflow AI verificabile, valutato e governato. |
-| 15 — Insight e decisione | **Da revisionare** | Decision quality, trade-off, expected value, reversibilità. |
+| 14 — AI-assisted analytics | **Revisionato** | **AI Analysis Control Sheet**. |
+| 15 — Insight e decisione | **Da revisionare** | Decision quality, alternative, trade-off, uncertainty, reversibilità. |
 | 16 — Storytelling/dashboard | **Da revisionare** | Comunicazione e visual evidence. |
 | 17 — Casi end-to-end | **Da revisionare** | Laboratorio integrato. |
 | 18 — Sistema analitico che scala | **Da revisionare** | Operating model, reliability, data products, governance. |
@@ -125,6 +125,7 @@ Analytical Brief
 → Analytical Data Contract
 → Data Flow Architecture Map
 → Tooling Decision Record
+→ AI Analysis Control Sheet
 ```
 
 Non ogni analisi richiede tutti gli artefatti. Sono un vocabolario operativo per rischi differenti.
@@ -134,8 +135,8 @@ Non ogni analisi richiede tutti gli artefatti. Sono un vocabolario operativo per
 ### 0 / 14 / 19 — AI
 
 - **0:** ownership e supervisione umana;
-- **14:** workflow operativo, eval, privacy, permission boundary, auditability;
-- **19:** conseguenze su skill e carriera.
+- **14:** workflow operativo, context/data/tool boundary, eval, privacy, auditability;
+- **19:** conseguenze su skill, ruoli e carriera.
 
 ### 2 / 3 — specifica vs readiness
 
@@ -169,64 +170,62 @@ Non ogni analisi richiede tutti gli artefatti. Sono un vocabolario operativo per
 
 ### 10 / 15 — policy predittiva vs decision framework
 
-- **10:** soglia/top-K, capacità e costi degli errori;
-- **15:** confronto generale tra alternative e trade-off.
+- **10:** soglia/top-K, capacità e costi degli errori per score predittivi;
+- **15:** confronto generale tra alternative, rischio, reversibilità e decisione.
 
 ### 11 / 12 / 13 — significato, flusso, strumento
 
-**Capitolo 11**
+**11 — Analytical Data Contract**
 
 > Che cosa deve significare il dataset?
 
-→ **Analytical Data Contract**
-
-**Capitolo 12**
+**12 — Data Flow Architecture Map**
 
 > Da dove arriva e con quali garanzie?
 
-→ **Data Flow Architecture Map**
-
-**Capitolo 13**
+**13 — Tooling Decision Record**
 
 > Quale ambiente è proporzionato alla parte di lavoro che dobbiamo eseguire o servire?
 
-→ **Tooling Decision Record**
-
 ### 13 / 14 — AI economics vs AI governance
 
-- **13:** l'AI abbassa build/switching cost;
-- **14:** come verificare e governare gli output prodotti con AI.
+- **13:** l'AI abbassa build/switching cost ma non ownership cost;
+- **14:** come delegare execution mantenendo boundary, verification, eval e accountability.
 
-Il Capitolo 14 non deve ripetere il manifesto del Capitolo 0 né la tool economics del 13.
+### 14 / 15 — evidence control vs decision quality
+
+- **14:** stabilisce se un output AI-assisted ha il diritto di sostenere un determinato claim;
+- **15:** stabilisce quale alternativa scegliere dato quel livello di evidenza, rischio e incertezza.
+
+Il Capitolo 15 non deve rispiegare AI governance, statistica o causalità. Deve trasformare evidenza già qualificata in una decisione esplicita.
+
+### 15 / 16 — decisione vs comunicazione
+
+- **15:** cosa dovremmo decidere e perché;
+- **16:** come rendere evidenza e decisione comprensibili senza manipolare.
 
 ### 13 / 18 — workflow locale vs operating model
 
 - **13:** scelta/migrazione del singolo workflow;
 - **18:** standard e ownership organizzativi che permettono di scalare.
 
-## 7. Note review Capitoli 11–13
+## 7. Note review Capitoli 11–14
 
 ### Capitolo 11
 
-Il capitolo non è più un tutorial SQL. Grain, join, aggregazioni, window functions, CTE, star schema, temporalità, dedup, many-to-many, test, incrementalità e AI-assisted SQL convergono nell'**Analytical Data Contract**.
-
-Il caso finale usa contribution margin per categoria, evitando un'ulteriore ripetizione dei casi retention.
+Grain, join, aggregazioni, window functions, CTE, star schema, temporalità, dedup, many-to-many, test, incrementalità e AI-assisted SQL convergono nell'**Analytical Data Contract**. Il caso finale usa contribution margin per categoria.
 
 ### Capitolo 12
 
-Il capitolo non è più un glossario di tecnologie. Usa la **Data Flow Architecture Map**:
+La **Data Flow Architecture Map** usa:
 
 ```text
 source → capture → transport → storage → transform → serve → consume
 ```
 
-Ogni boundary considera latency, freshness/completeness, ownership, failure, replay/backfill, recovery e costo.
-
-Il semantic layer resta serving boundary, senza duplicare il Capitolo 11. Batch/streaming distingue event time, processing time, watermark, late data e output provisional/reconciled. Orchestration considera readiness del dato e non soltanto job `SUCCESS`.
+Ogni boundary considera latency, freshness/completeness, ownership, failure, replay/backfill, recovery e costo. Batch/streaming distingue event time, processing time, watermark, late data e output provisional/reconciled. Orchestration considera readiness del dato e non soltanto job `SUCCESS`.
 
 ### Capitolo 13
-
-La domanda non è più “Excel vs SQL vs Python vs BI”.
 
 Il **Tooling Decision Record** valuta:
 
@@ -242,20 +241,57 @@ problem shape
 → exit condition
 ```
 
-Concetti introdotti/rafforzati:
+La scelta del tool è trattata come decisione reversibile da rivalutare quando cambiano requisiti e costi.
 
-- spreadsheet come reasoning surface vs hidden production system;
-- compute near data / pushdown vs pull-out;
-- notebook come laboratorio con hidden state;
-- BI come superficie di consumo per domande stabilizzate;
-- shared/managed compute come scelta operativa, non badge “cloud”;
-- complexity budget per no-code;
-- AI: build cost ≠ ownership cost;
-- livelli di riproducibilità R0–R4;
-- livelli prototipo-produzione P0–P3;
-- promotion gate, shadow run/parity test;
-- TCO = build + run + maintenance + coordination + skills + reliability + migration + error + delay;
-- **exit condition** obbligatoria per sapere quando rivalutare il tool.
+### Capitolo 14
+
+Il capitolo non è più una guida al prompting. Il centro è la **AI Analysis Control Sheet**:
+
+```text
+decision
+→ analytical contract
+→ Context Pack
+→ data/tool boundary
+→ AI generation/execution
+→ Verification Bundle
+→ method-specific gate
+→ eval
+→ claim gate
+→ human control
+→ action
+→ audit trace
+```
+
+Concetti rafforzati:
+
+- Context Pack e assumption budget;
+- quattro correttezze: syntax/logical/semantic/decision;
+- Verification Bundle;
+- error taxonomy e claim ladder;
+- Agent Execution Contract;
+- livelli di autonomia A0–A3;
+- stop/degrade/escalate;
+- reversibilità e blast radius;
+- multi-agent trust boundary;
+- Causal Claim Gate;
+- generator/selector/evaluator e holdout sovereignty;
+- purpose limitation, data minimisation e least privilege;
+- eval basate sul claim e stratificate per severità;
+- LLM-as-a-judge calibrato contro human ratings;
+- Execution Manifest e semantic reproducibility;
+- organizational failure modes: approval theater, failure correlati, feedback loop, shadow AI, agenti orfani;
+- stati finali della Control Sheet: **APPROVED / APPROVED WITH CAVEATS / PROVISIONAL / BLOCKED**.
+
+Casi reali/documentati inclusi o rafforzati:
+
+- Microsoft Power BI Copilot e selezione della colonna temporale semanticamente sbagliata;
+- Microsoft AI agent shared responsibility model;
+- OpenAI, incidenti in third-party cyber evaluations oltre i boundary previsti;
+- OpenAI, audit SWE-Bench Pro e problemi diffusi nei task di eval;
+- European Commission / EDPB per minimizzazione e protezione dei dati;
+- Google Cloud per calibrazione dei judge model con human ratings.
+
+Aurelia Travel e DeltaHome sono marcati esplicitamente come casi simulati/compositi.
 
 ## 8. Arco complessivo
 
@@ -282,7 +318,7 @@ mentalità
 
 ## 9. Lavori ancora necessari prima della release
 
-- review Capitoli 14–19;
+- review Capitoli 15–19;
 - audit link/fonti globale;
 - formula rendering;
 - frontespizio;
@@ -324,20 +360,24 @@ Poi controllo manuale di:
 
 ## 11. Prossimo blocco
 
-La review continua dal **Capitolo 14 — AI-assisted analytics: accelerare senza perdere rigore**.
+La review continua dal **Capitolo 15 — Dall'analisi all'insight e alla decisione**.
 
 Direzione editoriale:
 
 ```text
-task
-→ context
-→ permission boundary
-→ generation
-→ verification
-→ evaluation
-→ escalation
-→ decision
-→ audit trail
+decision
+→ objectives
+→ alternatives incl. do nothing
+→ evidence
+→ uncertainty/risk
+→ value + downside
+→ reversibility / option value
+→ switching threshold
+→ recommendation
+→ owner
+→ outcome review
 ```
 
-Il Capitolo 0 resta il manifesto della responsabilità umana. Il Capitolo 13 spiega l'effetto dell'AI sull'economia del tooling. Il Capitolo 14 deve insegnare come produrre **evidenza verificabile** con sistemi AI senza abbassare lo standard professionale.
+Deliverable previsto: **Decision Record**.
+
+Il Capitolo 15 deve insegnare a prendere una decisione buona con informazione incompleta, non a ripetere la statistica dei Capitoli 5–10 né la comunicazione del Capitolo 16.
