@@ -1,81 +1,147 @@
-## 5.15 Il p-value: cosa dice e, soprattutto, cosa non dice
+## 5.15 Il p-value: un numero utile che risponde a una domanda molto più stretta di quanto sembri
 
-Il p-value è probabilmente uno dei numeri più usati e più fraintesi dell'analisi quantitativa.
+Il p-value è uno dei numeri più usati e più fraintesi dell'analisi quantitativa.
 
-La definizione operativa è questa: assumendo che l'ipotesi nulla sia vera, il p-value misura quanto sarebbe insolito osservare un risultato almeno altrettanto estremo di quello ottenuto.
+Una formulazione operativa corretta è:
 
-Non è la probabilità che l'ipotesi nulla sia vera. Non è la probabilità che il risultato sia dovuto al caso. Non è la probabilità che l'esperimento sia corretto. E non misura la grandezza dell'effetto.
+> **assumendo il modello statistico specificato, incluso lo scenario di `H0`, qual è la probabilità di ottenere una statistica almeno altrettanto estrema di quella osservata?**
 
-### Caso realistico: p = 0,03 e una decisione da 2 milioni di euro
+Questa definizione contiene già un avvertimento: il p-value è **condizionato al modello**. Non è una probabilità generale sulla verità del mondo.
 
-Un retailer europeo testa un nuovo algoritmo di raccomandazione. Il test coinvolge circa 1,4 milioni di sessioni. Il valore medio dell'ordine passa da 63,84 euro a 63,97 euro.
+L'American Statistical Association ha pubblicato una dichiarazione specifica proprio perché l'uso meccanico del p-value aveva generato interpretazioni scorrette in molti campi.[^asa-p]
 
-Differenza: 0,13 euro.
+### Quattro frasi da non dire
 
-Il p-value risulta 0,03.
+#### 1. “`p = 0,03`, quindi c'è il 97% di probabilità che l'ipotesi alternativa sia vera”
 
-La prima slide preparata per il management contiene una frase semplice:
+No.
 
-> Il nuovo algoritmo migliora significativamente l'average order value.
+Il p-value non è `P(H1 | dati)` e non è `1 - P(H0 | dati)`.
 
-Statisticamente, il risultato può essere incompatibile con l'ipotesi di effetto esattamente nullo a un livello convenzionale del 5%. Ma questa frase lascia fuori quasi tutto ciò che serve per decidere.
+Per ottenere probabilità sulle ipotesi servirebbe un'impostazione diversa, per esempio bayesiana, con prior e modello espliciti.
 
-L'implementazione completa del nuovo sistema costa 2 milioni di euro l'anno tra licenze, infrastruttura e manutenzione. L'incremento atteso di margine, dopo aver considerato resi e costi di serving, è stimato in circa 480.000 euro.
+#### 2. “`p = 0,03`, quindi c'è solo il 3% di probabilità che il risultato sia dovuto al caso”
 
-Il problema non è che p = 0,03 sia sbagliato. Il problema è usarlo come se significasse "il progetto conviene".
+Anche questa frase è sbagliata.
 
-### La soglia 0,05 non è una legge naturale
+Il p-value non divide il mondo in “caso” e “causa reale”. Quantifica quanto il risultato sia estremo **sotto uno specifico modello nullo**.
 
-La convenzione p < 0,05 è diventata così familiare da sembrare una frontiera oggettiva tra vero e falso. Non lo è.
+#### 3. “`p = 0,18`, quindi non c'è effetto”
 
-Un risultato con p = 0,049 e uno con p = 0,051 sono praticamente indistinguibili dal punto di vista dell'evidenza, eppure processi decisionali troppo meccanici possono trattarli come opposti.
+No.
 
-La American Statistical Association ha esplicitamente ricordato che conclusioni scientifiche, di business o di policy non dovrebbero dipendere esclusivamente dal superamento di una soglia di p-value. Ha inoltre chiarito che il p-value non misura la dimensione dell'effetto né la sua importanza pratica.[^asa-p]
+Un p-value non piccolo può derivare da:
 
-### Il p-value dipende anche dalla dimensione del campione
+- effetto piccolo;
+- campione insufficiente;
+- rumore elevato;
+- disegno inefficiente;
+- dati compatibili con un intervallo molto ampio di effetti.
 
-Con campioni enormi, differenze minuscole possono produrre p-value piccoli. Con campioni piccoli, effetti economicamente importanti possono produrre p-value grandi.
+“Non abbiamo evidenza sufficiente per distinguere l'effetto dal rumore alle condizioni del test” è una frase molto diversa da “abbiamo dimostrato che l'effetto è zero”.
 
-Immaginiamo due test sul churn.
+#### 4. “`p < 0,05`, quindi dobbiamo implementare”
 
-Esperimento A:
+No.
 
-- 2.000.000 di clienti;
-- churn controllo: 8,000%;
-- churn trattamento: 7,950%;
-- differenza: -0,05 punti percentuali.
+Il p-value non contiene:
 
-Esperimento B:
+- costo di implementazione;
+- dimensione dell'effetto;
+- margine;
+- rischio operativo;
+- guardrail;
+- reversibilità della decisione.
 
-- 1.200 clienti;
-- churn controllo: 8,0%;
-- churn trattamento: 6,4%;
-- differenza: -1,6 punti percentuali.
+Il software statistico non conosce il business case.
 
-È possibile che A produca un p-value molto più piccolo di B, pur avendo un effetto molto meno interessante per il business.
+### Caso simulato/composito — `p = 0,03` e un progetto che distrugge valore
 
-### Una migliore domanda da fare
+Un retailer testa un nuovo sistema di raccomandazione su circa 1,4 milioni di sessioni.
 
-Invece di chiedere soltanto:
+L'AOV passa:
 
-> È statisticamente significativo?
+- controllo: 63,84 €;
+- nuovo sistema: 63,97 €;
+- differenza: **+0,13 €**.
 
-un analyst dovrebbe chiedere:
+Il p-value sul confronto è `0,03`.
 
-> Quanto è grande l'effetto? Quanto è incerto? È compatibile con un beneficio economicamente rilevante? Quanto costa sbagliare decisione?
+La prima slide dice:
 
-Queste domande spostano l'attenzione dal rituale statistico alla decisione.
+> **“Il nuovo algoritmo migliora significativamente l'AOV.”**
 
-### Una frase da evitare
+La frase è incompleta.
 
-"Il p-value è 0,18, quindi non c'è effetto."
+L'implementazione costa 2 milioni di euro l'anno tra infrastruttura, licenze e manutenzione. Dopo resi, costi di serving e margine, il beneficio economico atteso è circa 480.000 €.
 
-Questa conclusione è logicamente troppo forte. Un p-value non piccolo può significare che i dati non forniscono sufficiente evidenza per distinguere l'effetto dal rumore nelle condizioni del test. Non dimostra che l'effetto sia zero.
+Il risultato può essere statisticamente incompatibile con un effetto esattamente nullo e contemporaneamente essere una pessima decisione economica.
 
-La formulazione corretta è più simile a:
+### `0,05` non è un confine naturale tra vero e falso
 
-> Con i dati disponibili non abbiamo evidenza sufficiente per distinguere l'effetto osservato dalla variabilità campionaria; l'intervallo di confidenza include sia effetti piccoli sia effetti potenzialmente rilevanti.
+Un risultato con:
 
-È meno spettacolare, ma molto più utile.
+- `p = 0,049`;
+- `p = 0,051`;
 
-[^asa-p]: American Statistical Association, *Statement on Statistical Significance and P-Values*, https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf
+non rappresenta due universi epistemici opposti.
+
+L'ASA afferma esplicitamente che decisioni scientifiche, di policy o di business non dovrebbero essere basate soltanto sul superamento di una soglia convenzionale.[^asa-p]
+
+La soglia può essere parte di un piano di analisi predefinito. Non deve diventare una trasformazione automatica:
+
+**numero continuo → etichetta vero/falso**.
+
+### La sample size modifica il p-value
+
+Con campioni enormi possiamo ottenere p-value molto piccoli per differenze minuscole.
+
+Con campioni piccoli possiamo osservare effetti materialmente grandi e non avere abbastanza informazione per distinguerli con precisione.
+
+Consideriamo due confronti ipotetici sul churn:
+
+| Confronto | n | Controllo | Variante | Delta assoluto |
+|---|---:|---:|---:|---:|
+| A | 2.000.000 | 8,000% | 7,950% | -0,05 pp |
+| B | 1.200 | 8,0% | 6,4% | -1,6 pp |
+
+Il confronto A può avere un p-value più piccolo del B pur mostrando un effetto molto meno interessante.
+
+Per questo p-value e **effect size** devono essere letti insieme.
+
+### Le sei idee dell'ASA tradotte per un Data Analyst
+
+La dichiarazione ASA può essere condensata in sei regole operative:[^asa-p]
+
+1. il p-value può indicare quanto i dati siano incompatibili con un modello statistico specificato;
+2. non misura la probabilità che l'ipotesi studiata sia vera;
+3. una decisione non dovrebbe dipendere soltanto da una soglia;
+4. analisi e reporting devono essere trasparenti;
+5. il p-value non misura dimensione o importanza dell'effetto;
+6. da solo non è una misura completa dell'evidenza.
+
+Per il nostro libro queste sei regole confluiscono in una sola:
+
+> **Il p-value è una coordinata dell'evidenza, non la destinazione.**
+
+### Cosa presentare invece di un p-value isolato
+
+Un risultato inferenziale dovrebbe mostrare almeno:
+
+> **Effetto stimato:** +0,24 punti percentuali  
+> **CI 95%:** +0,07 / +0,41 pp  
+> **p-value:** 0,012  
+> **Baseline:** 4,2%  
+> **Soglia business rilevante:** +0,18 pp  
+> **Principali caveat:** ...
+
+Questa struttura consente al lettore di capire:
+
+- quanto è grande il segnale;
+- quanto è preciso;
+- come si confronta con ciò che conta economicamente;
+- quale parte dell'incertezza non è rappresentata dal test.
+
+È molto più informativa di una cella verde con scritto **SIGNIFICANT**.
+
+[^asa-p]: American Statistical Association, *Statement on Statistical Significance and P-Values*: https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf
