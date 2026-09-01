@@ -1,84 +1,155 @@
-## 8.3 Confondenti: la terza variabile che cambia la storia
+## 8.3 Confondenti: capire perché i gruppi erano diversi prima del trattamento
 
-Un confondente è una variabile associata sia all'esposizione o trattamento sia all'outcome e può creare o distorcere una relazione osservata.
+Il confounding nasce quando il processo che assegna l'esposizione crea gruppi che differiscono anche per cause dell'outcome.
 
-### Caso - La campagna display che sembrava generare vendite
+In forma intuitiva:
 
-Un e-commerce investe 1,2 milioni di euro in campagne display. L'analista confronta gli utenti esposti con quelli non esposti:
+```text
+Z -> trattamento
+Z -> outcome
+```
+
+`Z` apre un percorso non causale tra trattamento e outcome.
+
+La conseguenza è importante: il confronto grezzo mescola l'effetto che vogliamo stimare con differenze già presenti tra i gruppi.
+
+### Caso simulato/composito — La campagna display che sembrava triplicare la conversione
+
+Un e-commerce osserva:
 
 | Gruppo | Conversion rate |
 |---|---:|
-| Esposti alla campagna | 5,8% |
+| Esposti agli annunci | 5,8% |
 | Non esposti | 2,1% |
 
-La differenza sembra enorme.
+La piattaforma pubblicitaria, però, mostra più annunci proprio agli utenti che hanno visitato siti della categoria, cercato prodotti simili o dimostrato recente intento d'acquisto.
 
-Ma la piattaforma pubblicitaria mostra più annunci proprio agli utenti che visitano spesso siti della categoria e che hanno già mostrato interesse per quei prodotti.
+Una rappresentazione plausibile è:
 
-La **propensione all'acquisto preesistente** influenza sia la probabilità di essere esposti sia la probabilità di convertire.
+```text
+intento preesistente -> probabilità di esposizione
+intento preesistente -> probabilità di acquisto
+esposizione ----------> possibile effetto sull'acquisto
+```
 
-Uno schema plausibile è:
+Il `+3,7 pp` osservato contiene sia selezione sia possibile effetto advertising.
 
-`intento d'acquisto -> esposizione advertising`
+### “Associato a trattamento e outcome” non basta come definizione operativa
 
-`intento d'acquisto -> conversione`
+Una variabile non va controllata solo perché è correlata con entrambe le cose.
 
-L'esposizione può comunque avere un effetto causale. Il confronto grezzo, però, non lo identifica.
+Per decidere se aggiustare dobbiamo chiederci **dove si trova nel processo causale**.
 
-### "Controllare per tutto" non è una strategia
+Una variabile può essere:
 
-Una reazione comune è inserire tutte le colonne disponibili in una regressione e considerare il problema risolto.
+- causa comune pre-trattamento — potenziale confondente;
+- semplice predittore dell'outcome;
+- mediatore generato dal trattamento;
+- collider;
+- proxy imperfetto di un confondente;
+- conseguenza dell'outcome.
 
-Non funziona così.
+Il ruolo, non la correlazione, determina se il controllo aiuta o danneggia.
 
-Aggiustare per una variabile è corretto solo se comprendiamo il suo ruolo causale. Alcune variabili vanno controllate, altre no; alcune sono conseguenze del trattamento e aggiustarle può eliminare una parte dell'effetto che vogliamo misurare.
+### Caso simulato/composito — Prezzo del gelato e temperatura
 
-### Caso - Prezzo, domanda e meteo
+Una catena di gelaterie trova una correlazione positiva tra prezzo medio e quantità venduta.
 
-Una catena di gelaterie trova una correlazione positiva tra prezzo medio e numero di gelati venduti.
+Il management potrebbe concludere che aumentare il prezzo aumenta la domanda.
 
-Sembra assurdo: prezzi più alti generano più domanda?
+Ma nei giorni più caldi:
 
-L'analista segmenta per temperatura.
+- la domanda aumenta;
+- alcuni store attivano pricing dinamico;
+- il prezzo medio cresce.
 
-Nei giorni molto caldi:
+```text
+temperatura -> prezzo
+     |
+     +-------> domanda
+```
 
-- aumenta la domanda;
-- alcuni punti vendita applicano prezzi dinamici leggermente superiori.
+Confrontare giornate climaticamente molto diverse attribuisce al prezzo una parte dell'effetto della temperatura.
 
-La temperatura influenza sia prezzo sia vendite e crea una correlazione aggregata positiva.
+### “Controlliamo per tutte le colonne” è un anti-pattern causale
 
-Una volta confrontati giorni con condizioni meteo simili, la relazione tra prezzo e quantità torna negativa.
+Una regressione con cinquanta feature non è automaticamente più causale di una con cinque.
 
-### Confondenti osservabili e non osservabili
+Aggiungere indiscriminatamente variabili può:
 
-Alcuni confondenti sono facili da misurare:
+- bloccare mediatori e cambiare l'estimand;
+- aprire percorsi attraverso collider;
+- introdurre misure post-trattamento;
+- aumentare instabilità e extrapolation;
+- dare un falso senso di completezza.
 
-- età;
-- area geografica;
+Il set di adjustment dovrebbe essere giustificato da una storia causale e dal timing delle variabili.
+
+### Confondenti osservati e non osservati
+
+Alcune cause comuni possono essere ben misurate:
+
 - storico acquisti;
-- dimensione aziendale;
-- giorno della settimana.
+- dimensione account;
+- tenure;
+- area geografica;
+- utilizzo prima del trattamento;
+- calendario.
 
-Altri sono difficili o impossibili da osservare direttamente:
+Altre sono più difficili:
 
 - motivazione;
-- qualità del management;
 - reale intenzione di acquisto;
-- propensione al rischio;
-- urgenza del bisogno.
+- qualità del management;
+- urgenza;
+- relazione commerciale;
+- severità di un problema non registrata.
 
-Questo è uno dei motivi per cui la randomizzazione è così importante: non richiede di conoscere e misurare ogni possibile confondente per ottenere gruppi comparabili in media.
+Matching, weighting e regressione possono bilanciare o aggiustare **ciò che osserviamo**.
 
-### Checklist operativa sul confounding
+Non eliminano per definizione il confounding non osservato.
 
-Prima di interpretare causalmente un confronto osservazionale chiediamo:
+### Il processo di assegnazione viene prima del dataset
 
-- perché alcune unità ricevono il trattamento e altre no?
-- quali caratteristiche influenzano questa selezione?
-- quelle caratteristiche influenzano anche l'outcome?
-- erano presenti prima del trattamento?
-- sono misurate in modo affidabile?
-- esistono confondenti non osservati plausibili?
+Una domanda spesso più utile di “quali feature abbiamo?” è:
 
-> **Il confounding nasce dal processo che ha generato i gruppi, non dalla formula usata per analizzarli.**
+> **Perché questa persona ha ricevuto il trattamento?**
+
+Intervistare chi prende la decisione operativa può rivelare variabili assenti dal database.
+
+Per esempio:
+
+> “Offriamo lo sconto solo quando il procurement minaccia esplicitamente di andarsene.”
+
+Se `minaccia_di_churn` non è registrata, nessuna regressione sul CRM può controllarla direttamente.
+
+### Confounding by indication
+
+In molti processi aziendali l'intervento viene attivato proprio perché il rischio è elevato:
+
+- più supporto ai clienti in difficoltà;
+- più sconti ai clienti che minacciano churn;
+- più manutenzione agli impianti fragili;
+- più visite manageriali ai negozi peggiori.
+
+Il trattamento può quindi apparire associato a outcome peggiori anche quando è utile.
+
+Questo meccanismo ritornerà nel caso finale del capitolo.
+
+### Scheda minima sul confounding
+
+Prima di aggiustare un confronto osservazionale, documenta:
+
+```text
+Trattamento:
+Outcome:
+Cause plausibili del trattamento:
+Cause plausibili dell'outcome:
+Cause comuni plausibili:
+Quali sono pre-trattamento?
+Quali sono misurate?
+Quali importanti non sono misurate?
+Quali variabili NON dobbiamo controllare e perché?
+```
+
+> **Il confounding non è un difetto del coefficiente. È una conseguenza del modo in cui il mondo ha prodotto i gruppi che stiamo confrontando.**
