@@ -1,152 +1,254 @@
-## 14.1 Prompting per analisti: trasformare una richiesta vaga in una specifica verificabile
-Un prompt analitico efficace non è una formula magica. È una specifica di lavoro.
+## 14.1 Dal prompt alla specifica: dare all'AI il contesto che può usare e quello che non può inventare
 
-La differenza tra:
+Il prompting è utile, ma il termine rischia di portarci nella direzione sbagliata.
 
-> "Analizza le vendite"
+Sembra suggerire che la qualità dipenda principalmente da **come formuliamo una frase**.
 
-e:
+Nel lavoro analitico dipende soprattutto da **quale specifica rendiamo disponibile al sistema**.
 
-> "Confronta il net revenue delle ultime 8 settimane con le 8 precedenti, a parità di perimetro negozi, separando volume, prezzo e mix; usa `payment_captured_at` come data economica, escludi ordini cancellati e rimborsati integralmente, segnala segmenti con contributo assoluto > €50k e non formulare conclusioni causali"
+Confrontiamo:
 
-non è principalmente una differenza di stile. È una differenza di qualità analitica.
+> Analizza le vendite.
 
-## Un framework pratico: Q-C-D-M-V-O
+con:
 
-Per richieste non banali, possiamo strutturare il prompt in sei blocchi.
+> Confronta il net revenue delle ultime 8 settimane con le 8 precedenti, a perimetro negozi comparabile. Usa `payment_captured_at` come data economica, escludi ordini cancellati e refund completi, separa volume/prezzo/mix, segnala segmenti con contributo assoluto > €50k. Prima di interpretare verifica freshness e reconciliation con la misura certificata. Non formulare causal claim.
 
-### 1. Q — Question
+La seconda richiesta non è migliore perché è “più dettagliata”.
 
-Qual è la domanda business?
+È migliore perché esplicita **decisioni che altrimenti il modello dovrebbe indovinare**.
 
-### 2. C — Context
+### Il prompt è una view dei contratti precedenti
 
-Quale decisione deve supportare l'analisi? Quali definizioni aziendali contano?
+Non dovremmo riscrivere nel prompt tutto il libro.
 
-### 3. D — Data
+Se esistono già:
 
-Quali tabelle, campi, grain e finestre temporali sono ammessi?
+- Analytical Brief;
+- Data Readiness Review;
+- metric definitions;
+- Analytical Data Contract;
+- Data Flow Architecture Map;
 
-### 4. M — Method
+l'AI dovrebbe ricevere o poter recuperare le parti pertinenti.
 
-Quale tipo di confronto o metodo vogliamo? Descrittivo, diagnostico, predittivo, causale?
+Il prompt diventa allora una **work order** sopra contesto governato.
 
-### 5. V — Verification
+```text
+Task
++ relevant certified context
++ allowed assumptions
++ constraints
++ expected evidence
++ output contract
+```
 
-Quali controlli deve eseguire l'AI prima di dare il risultato?
+Questo è molto più robusto di una raccolta di “prompt perfetti” copiati da un documento.
 
-### 6. O — Output
+## 14.1.1 Il Context Pack
 
-Come deve essere restituito il risultato?
+Per task non banali usiamo un **Context Pack**.
 
-## Caso realistico: "Perché il churn è salito?"
+Può includere:
 
-Una SaaS company osserva churn mensile dal 3,8% al 4,6%.
+```text
+Decision:
+Question:
+Population:
+Grain:
+Metric definitions:
+Time semantics:
+Certified sources:
+Known data limitations:
+Allowed method:
+Forbidden inference:
+Expected output:
+Required checks:
+```
 
-Prompt debole:
+Non tutti i campi devono essere scritti a mano ogni volta.
 
-> "Analizza perché il churn è aumentato."
+Possono provenire da metadata, semantic layer, catalogo o documentazione versionata.
 
-Un LLM potrebbe produrre una lista plausibile: prezzo, onboarding, supporto, concorrenza.
+### Caso simulato/composito — “perché il churn è salito?”
 
-Il problema è che queste non sono evidenze. Sono ipotesi.
+Un SaaS osserva logo churn da 3,8% a 4,6%.
 
-Prompt migliore:
+Richiesta debole:
 
-> "Analizza l'aumento del logo churn dal 3,8% al 4,6% tra Q1 e Q2. Usa account attivi a inizio mese come denominatore. Segmenta per cohort di acquisizione, piano, paese, tenure e activation status. Verifica prima eventuali cambi nella definizione del churn o nel tracking. Distingui evidenze osservate, ipotesi e possibili confondenti. Non usare linguaggio causale se il design non lo supporta. Restituisci una tabella dei driver ordinata per contributo al delta e un elenco di verifiche successive."
+> Analizza perché il churn è aumentato.
 
-Ora il modello ha più possibilità di produrre un output utile e auditabile.
+Un sistema generativo può proporre:
 
-## Chiedere all'AI di esplicitare le assunzioni
+- pricing;
+- onboarding;
+- supporto;
+- competizione.
 
-Una tecnica semplice ma potente è chiedere:
+Sono spiegazioni plausibili.
 
-> "Prima di scrivere codice, elenca le assunzioni che stai facendo su grain, date, filtri, definizioni delle metriche e cardinalità dei join."
+Non sono ancora evidenze.
 
-Questo sposta errori potenziali da impliciti a visibili.
+Un Context Pack migliore stabilisce:
 
-### Esempio
+```text
+Decision:
+capire dove investire capacità di retention investigation
 
-Richiesta:
+Metric:
+logo churn mensile
+numeratore = account che terminano la relazione nel mese
+base = account attivi a inizio mese
 
-> "Calcola l'ARPU mensile per mercato."
+Comparison:
+Q2 vs Q1
 
-L'AI potrebbe assumere:
+Required slices:
+cohort, plan, country, tenure, activation status
 
-- revenue netta o lorda?
-- utenti attivi medi o utenti attivi almeno una volta nel mese?
-- mercato del billing o del consumo?
-- valuta convertita a quale FX rate?
-- utenti trial inclusi?
+Pre-check:
+verificare cambi di tracking/definizione
 
-Senza queste decisioni, il codice può essere corretto ma la metrica indefinita.
+Claim rule:
+association ≠ cause
 
-## Prompting iterativo, non one-shot
+Output:
+contribution-to-delta table
+observed facts
+candidate hypotheses
+next evidence needed
+```
 
-Per analisi complesse è spesso più sicuro dividere il lavoro.
+Ora il sistema non riceve solo una domanda.
 
-### Passo 1 — piano
+Riceve **i confini epistemici del lavoro**.
 
-> "Proponi un piano di analisi senza scrivere codice."
+## 14.1.2 Known / Unknown / Must Ask
 
-### Passo 2 — verifica del piano
+Un pattern utile è obbligare il workflow a classificare ciò che incontra.
 
-L'analista corregge scope, grain, metriche e assunzioni.
+**Known**
 
-### Passo 3 — generazione
+Informazione presente nel contesto autorizzato.
 
-> "Ora genera la query per il solo step 1."
+**Unknown**
 
-### Passo 4 — test
+Informazione non disponibile ma non bloccante.
 
-> "Proponi tre sanity check per verificare che la query non duplichi righe e che il denominatore sia corretto."
+**Must Ask / Must Escalate**
 
-### Passo 5 — interpretazione
-
-Solo dopo i controlli si chiede un summary.
-
-Questo approccio riduce il rischio che una singola risposta incorpori un errore iniziale e lo propaghi fino alla conclusione.
-
-## Prompt che separano fatti, inferenze e ipotesi
-
-Una struttura utile è chiedere tre sezioni distinte:
-
-1. **Fatti osservati nei dati**
-2. **Interpretazioni plausibili**
-3. **Ipotesi che richiedono ulteriori dati o test**
+Ambiguità che cambia materialmente il risultato.
 
 Esempio:
 
+> “Calcola ARPU per mercato.”
+
+Il sistema trova `gross_revenue`, `net_revenue` e tre possibili definizioni di active user.
+
+La risposta matura non è scegliere quella che sembra più probabile.
+
+È:
+
+```text
+MUST ASK:
+ARPU non è univoco nel contesto disponibile.
+Servono definizione revenue e denominator policy.
+```
+
+> **Chiedere chiarimento può essere un output corretto.**
+
+Questa regola diventa ancora più importante nei workflow agentici, perché un'assunzione implicita può propagarsi per dieci step.
+
+## 14.1.3 Assumption budget
+
+Possiamo dichiarare anche un **assumption budget**.
+
+Per esempio:
+
+```text
+May infer:
+- formato della tabella finale
+- naming di alias temporanei
+
+Must not infer:
+- KPI definition
+- population exclusions
+- causal mechanism
+- write target
+- privacy classification
+```
+
+L'obiettivo non è impedire ogni inferenza.
+
+È distinguere **convenzioni innocue** da assunzioni che cambiano il significato o il rischio.
+
+## 14.1.4 Piano prima dell'esecuzione quando il costo di errore è alto
+
+Per task complessi può essere utile separare:
+
+```text
+1. plan
+2. review
+3. execute
+4. verify
+5. interpret
+```
+
+Esempio:
+
+> Proponi il piano di investigazione. Non eseguire query e non formulare conclusioni.
+
+Dopo la review umana:
+
+> Esegui soltanto gli step 1–3 usando le fonti certificate indicate. Se una cardinalità non corrisponde alle attese, fermati.
+
+Questo introduce un **commit point** prima che il sistema consumi risorse o propaghi decisioni sbagliate.
+
+## 14.1.5 Fatti, inferenze, ipotesi e raccomandazioni
+
+La forma dell'output deve separare livelli diversi.
+
 | Livello | Esempio |
 |---|---|
-| Fatto | conversion mobile è scesa da 4,2% a 3,5% |
-| Interpretazione | il peggioramento è concentrato su Android 14 |
-| Ipotesi | un bug del wallet potrebbe aver aumentato gli errori di pagamento |
+| Osservazione | mobile conversion 4,2% → 3,5% |
+| Localizzazione | 74% del delta è su Android 14 |
+| Ipotesi | possibile problema nel payment flow |
+| Evidenza mancante | error code / release telemetry |
+| Causal claim | non consentito con i dati correnti |
+| Recommendation | investigare build X prima di modificare pricing |
 
-Questa separazione è particolarmente importante perché i modelli generativi tendono a produrre narrazioni fluenti anche quando l'evidenza è debole.
+Un testo fluente tende a comprimere queste categorie in una storia unica.
 
-## Caso pubblico: Microsoft Copilot e semantic model
+Un output contract le mantiene separate.
 
-La documentazione Microsoft su Copilot in Power BI raccomanda prompt specifici e un semantic model ben preparato. Nomi ambigui, campi duplicati, descrizioni povere e organizzazione debole del modello aumentano la probabilità di risposte inattese.
+## 14.1.6 Caso reale documentato — preparare la semantica per l'AI
 
-È un punto fondamentale: il prompting non può compensare indefinitamente una semantica aziendale incoerente.
+Microsoft ha introdotto in Power BI strumenti specifici per preparare un semantic model all'uso AI: AI data schemas, AI instructions e verified answers.[^ms-prep-ai]
 
-## Checklist del prompt analitico
+La documentazione sulle AI instructions descrive esplicitamente la possibilità di fornire business context, terminology e analytical guidance sul modello e raccomanda di testare le risposte prima della pubblicazione.[^ms-ai-instructions]
 
-Prima di inviare una richiesta importante, chiediti:
+La lezione generale è importante:
 
-- la domanda decisionale è chiara?
-- ho definito la metrica?
-- ho specificato grain e popolazione?
-- ho indicato la finestra temporale corretta?
-- ho distinto analisi descrittiva da causale?
-- ho indicato ciò che l'AI non deve assumere?
-- ho chiesto controlli e sanity check?
-- l'output è strutturato in modo verificabile?
+> **il contesto utile all'AI dovrebbe diventare un asset governato del sistema, non un segreto custodito nella memoria di chi scrive il prompt migliore.**
 
-> **Un buon prompt non serve a convincere l'AI a essere intelligente. Serve a rendere esplicito il problema che noi stessi dobbiamo aver capito.**
+## 14.1.7 Campo della AI Analysis Control Sheet
 
-### Fonti
+```text
+Task:
+Decision:
+Context Pack version:
+Certified sources:
+Known ambiguities:
+Allowed assumptions:
+Must-ask conditions:
+Forbidden inference:
+Expected output schema:
+Required checks before interpretation:
+```
 
-- OpenAI, *Best practices for prompt engineering*, https://help.openai.com/en/articles/6654000-how-to-use-ai-models-effectively
-- Microsoft Learn, *Use Copilot with semantic models in Power BI*, https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
+### Regola operativa
+
+> **Un buon prompt non rende intelligente una richiesta vaga. Una buona specifica rende visibili le decisioni che non vogliamo lasciare all'improvvisazione del modello.**
+
+[^ms-prep-ai]: Microsoft Learn, *Prepare your data for AI to improve Copilot results*, https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai
+[^ms-ai-instructions]: Microsoft Learn, *Prepare your data for AI - AI instructions*, https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai-instructions
