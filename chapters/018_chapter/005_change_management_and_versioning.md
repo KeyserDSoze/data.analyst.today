@@ -1,195 +1,422 @@
-## 18.4 Versionamento, change management e compatibilità
+## 18.4 Change management: schema stabile non significa significato stabile
+
 Un sistema analitico maturo non deve soltanto funzionare oggi.
 
-Deve poter cambiare domani senza rendere invisibile ciò che è cambiato.
-
-Le pipeline cambiano.
+Deve poter cambiare domani senza rendere invisibile **che cosa** è cambiato, **chi** è impattato e **se** la comparabilità è ancora valida.
 
 Le sorgenti cambiano.
 
-Le definizioni business cambiano.
-
 Le organizzazioni cambiano.
+
+Le definizioni cambiano.
+
+Le policy cambiano.
+
+Le piattaforme cambiano.
 
 Il problema non è evitare il cambiamento.
 
-È renderlo controllabile.
+È impedire che un cambiamento legittimo si trasformi in un incidente semantico.
 
-## Quando una modifica rompe il significato
+## Quattro tipi di change
 
-Immaginiamo che una società cambi la definizione di “active customer”.
+Possiamo classificare una modifica almeno lungo quattro dimensioni.
 
-Prima:
+### 1. Technical change
 
-> almeno un ordine negli ultimi 90 giorni.
+Esempi:
 
-Dopo:
+- engine SQL;
+- orchestratore;
+- storage;
+- refactoring;
+- performance optimization.
 
-> almeno un ordine negli ultimi 60 giorni.
+Può non cambiare l'output osservabile.
 
-La modifica sembra semplice.
+### 2. Structural change
 
-Ma impatta:
+Esempi:
 
-- dashboard executive;
-- segmentazioni CRM;
-- modelli churn;
-- forecast;
-- obiettivi commerciali;
-- serie storiche;
-- benchmark trimestrali.
+- colonna rinominata;
+- tipo modificato;
+- chiave sostituita;
+- schema nested.
 
-Se aggiorniamo la formula senza registrare il cambiamento, il grafico storico può mostrare una discontinuità che sembra un fenomeno business ma è soltanto una nuova definizione.
+È spesso facile da intercettare con contract e test.
 
-## Semantic breaking change
+### 3. Semantic change
 
-Nel software siamo abituati a parlare di breaking change.
+Esempi:
 
-Anche i dati hanno breaking change.
+- `active_customer` passa da 90 a 60 giorni;
+- `completed` cambia da “consegnato” a “pagamento autorizzato”;
+- revenue passa da gross a net;
+- il denominatore di conversion include una nuova popolazione.
 
-Possono essere:
+Questi cambi sono pericolosi proprio perché la pipeline può continuare a funzionare.
 
-- **strutturali** — una colonna cambia nome o tipo;
-- **semantici** — il campo mantiene nome e tipo ma cambia significato;
-- **temporali** — cambia la logica con cui viene assegnata una data;
-- **popolazionali** — cambia chi entra nel denominatore;
-- **operativi** — cambia freshness o frequenza di aggiornamento.
+### 4. Operating change
 
-I più pericolosi sono spesso quelli semantici, perché non fanno fallire la pipeline.
+Esempi:
 
-Continuano a produrre numeri.
+- refresh da hourly a daily;
+- supporto non più 24/7;
+- fonte che diventa provisional;
+- SLO rilassato;
+- owner trasferito;
+- prodotto destinato a un nuovo consumer critico.
 
-## Caso realistico: schema stabile, significato rotto
+Anche questo può cambiare il diritto di usare il dato.
 
-Un marketplace riceve dal sistema ordini un campo `order_status`.
+## Il Compatibility Contract
 
-Per anni `completed` significa ordine pagato e consegnato.
-
-Dopo una migrazione, il team sorgente ridefinisce `completed` come ordine con pagamento autorizzato.
-
-Il tipo di dato resta stringa.
-
-I valori restano apparentemente gli stessi.
-
-Nessun test di schema fallisce.
-
-Ma:
-
-- revenue viene anticipata;
-- cancellation rate diminuisce artificialmente;
-- delivery metrics vengono distorte;
-- Finance non riconcilia più.
-
-Questo è un data incident semantico.
-
-## Versionare ciò che conta
-
-Un sistema serio dovrebbe versionare almeno:
-
-- codice di trasformazione;
-- definizioni metriche;
-- schema dei data product;
-- mapping critici;
-- configurazioni;
-- test;
-- documentazione.
-
-Per alcune metriche può essere utile mantenere esplicitamente versioni parallele durante una transizione.
-
-Esempio:
-
-- `active_customer_v1`;
-- `active_customer_v2`.
-
-Non è elegante come sostituire tutto immediatamente.
-
-Ma rende la migrazione osservabile.
-
-## Backfill o non backfill?
-
-Quando una logica cambia, dobbiamo decidere se riscrivere il passato.
-
-### Backfill completo
-
-Ricalcoliamo tutta la storia con la nuova logica.
-
-Utile quando vogliamo comparabilità coerente nel tempo.
-
-### Forward-only
-
-La nuova definizione vale da una data in avanti.
-
-Utile quando la realtà o i dati storici non permettono un ricalcolo affidabile.
-
-### Dual reporting
-
-Manteniamo entrambe le versioni temporaneamente.
-
-Utile quando il business deve capire l'impatto del cambiamento.
-
-Nessuna scelta è sempre corretta.
-
-L'errore è non sceglierla esplicitamente.
-
-## Change notice
-
-Per i prodotti critici, una modifica dovrebbe avere una nota chiara:
-
-- cosa cambia;
-- perché;
-- quando entra in vigore;
-- quali asset sono impattati;
-- se il passato viene ricalcolato;
-- quali differenze aspettarsi;
-- chi è l'owner;
-- come segnalare problemi.
-
-## Deprecation è parte del design
-
-Molti ecosistemi analitici si riempiono di asset “temporanei” che nessuno osa cancellare.
-
-Dashboard duplicate.
-
-Tabelle obsolete.
-
-Metriche con suffissi `_new`, `_final`, `_final2`.
-
-Questo aumenta la probabilità che utenti o agenti AI scelgano l'asset sbagliato.
-
-La deprecazione deve essere progettata.
-
-Un asset può avere stati come:
-
-- experimental;
-- certified;
-- deprecated;
-- retired.
-
-Databricks, per esempio, include oggi segnali di certification e deprecation nelle proprie capacità semantiche proprio per distinguere asset autorevoli da asset superati.
-
-## Compatibility contract
-
-Un data product maturo dovrebbe comunicare cosa i consumer possono aspettarsi che resti stabile.
+Per ogni data product T2/T3 l'Analytics Operating Contract dovrebbe chiarire che cosa i consumer possono aspettarsi stabile.
 
 Per esempio:
 
-- chiavi principali;
-- granularità;
-- naming;
-- tipi di dato;
-- semantic meaning;
-- freshness;
-- finestra di preavviso per breaking change.
+```text
+primary key
++ grain
++ required fields
++ semantic meaning
++ metric definitions
++ freshness class
++ history policy
++ supported interface
++ deprecation notice window
+```
 
-Questo è un contratto sociale oltre che tecnico.
+Il Compatibility Contract non promette immobilità.
 
-## Una regola utile
+Promette che una modifica incompatibile sarà **riconoscibile e gestita**.
 
-> **Se una modifica può cambiare una decisione senza cambiare il nome di una metrica, deve essere trattata come una breaking change.**
+## Caso simulato/composito: schema verde, revenue sbagliata
 
-Scalare significa anche permettere all'organizzazione di evolvere senza trasformare ogni evoluzione in una perdita di fiducia nei dati.
+Un marketplace riceve `order_status` dal sistema ordini.
 
-## Fonti
+Per anni:
 
-- Databricks, *Unity Catalog semantics*: https://docs.databricks.com/gcp/en/uc-semantics
-- Microsoft, *Data Processing Standards for AI and Analytics*: https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/data/operational-standards-data-processing-standards-unify-data-platform
+`completed = pagamento acquisito + ordine consegnato`
+
+Dopo una migrazione:
+
+`completed = pagamento autorizzato`
+
+La colonna:
+
+- ha lo stesso nome;
+- ha lo stesso tipo;
+- contiene ancora il valore `completed`.
+
+Passano:
+
+- schema test;
+- not-null test;
+- accepted-values test.
+
+Ma downstream:
+
+- revenue viene anticipata;
+- cancellation rate scende artificialmente;
+- delivery metrics diventano incoerenti;
+- Finance smette di riconciliare.
+
+Questo è un **semantic breaking change**.
+
+Il test decisivo non era sul tipo del campo.
+
+Era sul **contratto di significato**.
+
+## Breaking change: la domanda giusta
+
+Una modifica è breaking non soltanto quando rompe una query.
+
+È breaking se può cambiare una decisione o l'interpretazione senza che il consumer lo abbia accettato.
+
+Quindi può essere breaking:
+
+- ridurre una finestra temporale;
+- aggiungere una popolazione;
+- spostare un cut-off;
+- cambiare currency conversion;
+- ricalcolare una serie storica;
+- modificare un mapping territorio;
+- introdurre una nuova identity-resolution policy.
+
+> **Se il significato della serie può cambiare mantenendo lo stesso nome, il change process deve essere più forte del solo schema test.**
+
+## Versionare codice, semantica e decision boundary
+
+Un prodotto critico dovrebbe versionare almeno:
+
+- transformation code;
+- metric definition;
+- schema;
+- mapping/configuration;
+- test;
+- documentation;
+- access policy quando rilevante;
+- Operating Contract.
+
+Non tutto richiede un suffisso `_v2` nella tabella.
+
+La versione può vivere in catalogo, metadata o semantic layer.
+
+Ciò che conta è poter ricostruire:
+
+> **“Quale logica e quale significato erano in vigore quando questa decisione è stata presa?”**
+
+## Backfill policy: il passato non si riscrive per default
+
+Quando una definizione cambia esistono almeno tre strategie.
+
+### Full backfill
+
+Ricalcolare il passato con la nuova logica.
+
+Utile quando:
+
+- i dati storici permettono un calcolo coerente;
+- il nuovo significato deve essere confrontabile nel tempo;
+- il costo è proporzionato.
+
+Rischio:
+
+- i report storici cambiano;
+- decisioni passate sembrano basate su numeri che allora non esistevano.
+
+### Forward-only
+
+Nuova logica da una data esplicita.
+
+Utile quando:
+
+- la realtà business è cambiata;
+- il passato non è ricostruibile;
+- mantenere la discontinuità è più onesto.
+
+Richiede annotazione chiara.
+
+### Dual reporting
+
+Vecchia e nuova logica convivono durante la migrazione.
+
+Utile per:
+
+- quantificare l'impatto;
+- preparare consumer;
+- aggiornare threshold;
+- validare downstream.
+
+L'errore è lasciare che la strategia emerga accidentalmente dall'implementazione.
+
+## Change classification
+
+Non ogni modifica richiede lo stesso processo.
+
+### Low-risk / compatible
+
+- typo documentale;
+- nuova colonna opzionale;
+- ottimizzazione con output invariato.
+
+Può avere review leggera.
+
+### Material compatible change
+
+- nuova dimensione;
+- miglioramento quality;
+- performance change che potrebbe influire su latency.
+
+Richiede test e consumer awareness proporzionata.
+
+### Breaking structural/semantic change
+
+- grain;
+- key;
+- denominator;
+- business definition;
+- history rewrite;
+- freshness commitment.
+
+Richiede:
+
+- impact analysis;
+- approvazione owner appropriati;
+- migration plan;
+- consumer notice;
+- rollback/fallback;
+- version strategy.
+
+## Caso reale documentato: Microsoft e change management
+
+La Microsoft Fabric Adoption Roadmap tratta il change management come una disciplina necessaria a ridurre disruption e perdita di produttività. La guida raccomanda di:
+
+1. descrivere stato prima/dopo;
+2. stimare l'impatto;
+3. identificare le priorità;
+4. implementare incrementi gestibili;
+5. creare action plan per ogni fase, includendo quando possibile un rollback plan.
+
+Fonte: https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-change-management
+
+La stessa guida sottolinea che il cambiamento è un problema di **persone**, non soltanto di tool e processo.
+
+Per l'analytics questo è evidente: modificare una metrica significa modificare dashboard, abitudini, threshold, KPI e spesso incentivi.
+
+## Consumer impact analysis
+
+Prima di una breaking change, il team dovrebbe sapere:
+
+- quali dashboard dipendono dal prodotto;
+- quali query/job;
+- quali modelli ML;
+- quali agenti AI;
+- quali report esterni;
+- quali threshold/alert;
+- quali processi manuali;
+- quali owner.
+
+Lineage aiuta, ma non basta se i consumer non sono registrati o interrogano export locali.
+
+Per prodotti critici può servire un **consumer registry** o almeno un meccanismo di subscription alle change notice.
+
+## Change notice
+
+Una notice utile risponde in modo operativo:
+
+```text
+what changes
+why
+effective date
+old vs new meaning
+expected numerical impact
+history/backfill policy
+assets affected
+migration action required
+owner/support
+rollback/fallback
+```
+
+Una mail generica:
+
+> “Da lunedì aggiorniamo il modello dati.”
+
+non è change management.
+
+## Threshold migration
+
+Un cambio semantico può rendere obsolete le soglie decisionali.
+
+Se `active_customer` cambia popolazione, possono cambiare:
+
+- target;
+- alert threshold;
+- forecast baseline;
+- model feature distribution;
+- executive traffic-light status.
+
+Quindi la migrazione deve considerare **semantic threshold debt**.
+
+Non basta che il nuovo numero sia corretto.
+
+Le decision rule che lo consumano devono essere corrette rispetto alla nuova definizione.
+
+## Deprecation: il debito invisibile dell'analytics
+
+Molti ecosistemi accumulano:
+
+- `dashboard_final`;
+- `dashboard_final_v2`;
+- `revenue_old`;
+- `customer_new`;
+- tabelle duplicate;
+- metriche non certificate;
+- report senza owner.
+
+Ogni asset obsoleto aumenta la probabilità che:
+
+- un nuovo analyst scelga quello sbagliato;
+- un agente AI recuperi una definizione superata;
+- un consumer continui a usare un sistema non più supportato.
+
+Per questo gli asset dovrebbero poter avere stati:
+
+```text
+EXPERIMENTAL
+→ SUPPORTED
+→ CERTIFIED
+→ DEPRECATED
+→ RETIRED
+```
+
+Non tutte le fasi sono obbligatorie, ma lo stato deve essere leggibile.
+
+## Deprecation policy
+
+Una deprecazione può specificare:
+
+- sostituto consigliato;
+- data fine supporto;
+- consumer noti;
+- migration guide;
+- read-only period;
+- rimozione accesso;
+- archival requirement;
+- owner della chiusura.
+
+Se nessuno è owner del retirement, la probabilità è che l'asset resti per sempre.
+
+## Change failure rate per analytics
+
+DORA avverte che fare deployment più spesso senza migliorare processi, architettura e pratiche tecniche può aumentare failure rate e burnout; la continuous delivery non è semplicemente “eseguire il vecchio processo più velocemente”.
+
+Fonte: https://dora.dev/capabilities/continuous-delivery/
+
+Lo stesso vale nell'analytics.
+
+Automatizzare release senza:
+
+- test;
+- contract;
+- preview;
+- impact analysis;
+- rollback;
+
+rende semplicemente più veloce la produzione di breaking change.
+
+Possiamo quindi monitorare:
+
+- percentuale release con rollback/hotfix;
+- incidenti causati da change;
+- consumer breakage;
+- tempo di recovery;
+- breaking change senza notice;
+- deprecation incomplete.
+
+## Il Change Gate nell'Operating Contract
+
+Per una modifica materiale:
+
+```text
+change proposed
+→ classify risk
+→ identify consumers
+→ validate semantic impact
+→ test
+→ compare old/new
+→ approve
+→ communicate
+→ deploy progressively if useful
+→ monitor
+→ rollback or certify
+```
+
+Questo processo deve essere leggero per T1 e più rigoroso per T3.
+
+Il punto non è rallentare il cambiamento.
+
+È **ridurre il costo delle sorprese**.
+
+> **Un sistema analitico che scala non evita le breaking change. Fa in modo che una breaking change non venga scoperta retroattivamente da qualcuno che sta già prendendo una decisione.**
