@@ -1,70 +1,93 @@
-## 3.14 Data contract: smettere di scoprire i cambiamenti quando è troppo tardi
+## 3.14 Data contract: quando un controllo deve diventare un'aspettativa condivisa
 
-Molti problemi di qualità del dato non nascono nel team analytics. Nascono a monte, quando un'applicazione cambia il modo in cui produce un evento, rinomina un campo, modifica un enum o smette di valorizzare una proprietà.
+Finora abbiamo lavorato soprattutto dal punto di vista del consumatore del dato: riceviamo un dataset, ne comprendiamo grain, chiavi, tempo e qualità, poi decidiamo se è utilizzabile.
 
-Se nessuno comunica il cambiamento, la pipeline può continuare a funzionare tecnicamente e produrre risultati semanticamente sbagliati.
+Ma alcuni problemi non dovrebbero essere riscoperti a ogni analisi.
 
-Un **data contract** rende esplicite le aspettative tra chi produce e chi consuma un dato.
+Se un campo critico cambia significato, se una chiave deve essere unica o se un evento non può essere rinominato senza conseguenze, queste aspettative devono progressivamente diventare **esplicite a monte**.
 
-Può specificare, per esempio:
+Qui entra il concetto di **data contract**.
 
-- nome dell'evento o della tabella;
-- significato dei campi;
-- tipo dei dati;
+### Che cosa interessa all'analista
+
+Un data contract può assumere forme tecniche diverse. Per il Data Analyst il punto centrale è più semplice:
+
+> **chi produce un dato e chi lo usa condividono una definizione verificabile delle proprietà che non possono cambiare silenziosamente.**
+
+Tra queste proprietà possono esserci:
+
+- significato del dataset o dell'evento;
+- grain;
+- chiavi;
+- campi obbligatori;
+- tipi e unità;
 - valori ammessi;
 - nullability;
-- chiavi;
-- granularità;
-- frequenza di aggiornamento;
-- SLA attesi;
+- frequenza e latenza attese;
 - owner;
-- regole per i breaking change.
+- regole per modifiche incompatibili.
 
-### Caso simulato: il conversion rate crolla del 22% in una notte
+La progettazione e governance dei contract verranno riprese nei Capitoli 12 e 18. Qui ci interessa capire **quando l'analista dovrebbe chiedere che una conoscenza scoperta durante l'indagine diventi un vincolo permanente**.
+
+### Caso simulato/composito — Il conversion rate che crolla senza che le vendite cambino
 
 Un marketplace monitora quotidianamente il checkout conversion rate.
 
-Lunedì mattina il valore passa dal **3,8% al 2,9%**.
+Lunedì il valore passa dal **3,8% al 2,9%**.
 
-Marketing pensa a un problema di traffico. Product pensa a un bug nel checkout. Il management chiede un'analisi urgente.
+Le vendite assolute sono quasi stabili.
 
-L'analista verifica le vendite assolute: sono normali.
+L'analista controlla il denominatore: il numero di `checkout_started` è aumentato del 31%.
 
-Poi controlla il denominatore della conversione, cioè le sessioni che hanno iniziato il checkout. È aumentato improvvisamente del 31%.
+La causa emerge dopo il confronto con il team frontend.
 
-Dopo alcune ore si scopre la causa: durante una release del frontend l'evento `checkout_started` era stato spostato dal click su "Vai al pagamento" all'apertura automatica del drawer del carrello.
+Prima della release, l'evento veniva emesso quando l'utente entrava esplicitamente nel primo step di checkout. Dopo la release viene emesso già all'apertura automatica del drawer del carrello.
 
-Il nome dell'evento non era cambiato.
+Il nome dell'evento non è cambiato.
 
-La pipeline non era rotta.
+La pipeline non è fallita.
 
-Il dashboard non era rotto.
+Il campo è ancora valido.
 
-Era cambiato **il significato del dato**.
+È cambiato il **fenomeno misurato**.
 
-Il team analytics non era stato informato.
+### Dal problema al contratto
 
-### Come avrebbe aiutato un data contract
-
-Il contratto avrebbe potuto definire:
+La conoscenza emersa dall'incidente potrebbe essere formalizzata così:
 
 ```text
 Event: checkout_started
-Definition: fired once when the user explicitly enters step 1 of checkout
+Definition: emitted once when the user explicitly enters checkout step 1
 Grain: one event per checkout attempt
-Required fields: session_id, user_id, timestamp, cart_value
+Required fields: session_id, timestamp, cart_value
 Owner: Checkout Product Team
-Breaking changes: require analytics review before production
+Semantic changes: analytics review required before production
 ```
 
-Cambiare il punto di emissione dell'evento avrebbe costituito una modifica semantica e quindi richiesto una revisione.
+Il valore del contratto non sta nel formato del documento. Sta nel rendere il cambiamento **visibile prima** che diventi una falsa storia nei KPI.
 
-### Data contract non significa burocrazia infinita
+### Non tutto merita lo stesso livello di formalizzazione
 
-Non ogni tabella ha bisogno di un documento di venti pagine.
+Un campo esplorativo usato da un solo analista una volta all'anno non richiede necessariamente lo stesso processo di una metrica che alimenta:
 
-Il principio è più semplice:
+- board reporting;
+- pricing;
+- campagne automatizzate;
+- decisioni operative quotidiane;
+- modelli predittivi in produzione.
 
-> Le proprietà del dato da cui dipendono decisioni importanti non devono essere implicite.
+La formalizzazione dovrebbe essere proporzionata alla criticità.
 
-Più il dato è critico, più devono essere chiare responsabilità, semantica e aspettative.
+### Dalla scoperta locale alla prevenzione sistemica
+
+Durante una data readiness review, chiediamoci:
+
+- questo problema può ripetersi?
+- la proprietà che abbiamo verificato dovrebbe essere sempre vera?
+- chi può modificarla a monte?
+- come può sapere che esistono consumatori dipendenti da quella proprietà?
+- possiamo trasformare il controllo manuale in una regola condivisa?
+
+Se la risposta è sì, abbiamo superato il confine tra "fix dell'analisi" e **miglioramento del sistema dati**.
+
+> **La maturità non consiste nel diventare bravissimi a scoprire ogni volta lo stesso problema. Consiste nel trasformare le scoperte importanti in aspettative che il sistema non possa violare silenziosamente.**
