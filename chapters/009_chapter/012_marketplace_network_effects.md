@@ -1,64 +1,202 @@
-## 9.11 Esperimenti su marketplace e network effects: quando gli utenti interferiscono tra loro
+## 9.11 Marketplace e network experiments: scegliere il design che misura la policy reale
 
-L'A/B test classico funziona meglio quando l'esperienza di un'unità non modifica il risultato delle altre. Nei marketplace questa assunzione spesso è fragile.
+Nel 9.4 abbiamo visto **perché** interference e contamination rompono un A/B individuale semplice.
 
-Se cambiamo il ranking per una parte dei buyer, influenziamo la domanda ricevuta dai seller. Se riduciamo le commissioni solo per alcuni driver, possiamo cambiare la disponibilità di corse anche per gli utenti del controllo. Se mostriamo più spesso certi ristoranti a un gruppo, riduciamo implicitamente la visibilità disponibile per altri.
+Qui facciamo il passo successivo:
 
-Il trattamento "trabocca" tra gruppi.
+> **quale design possiamo usare quando il prodotto è un sistema condiviso?**
 
-### Caso simulato/composito - Il ranking che sembrava aumentare il GMV del 5,9%
+Nei marketplace, social product, logistics network e sistemi di allocazione, il risultato dipende spesso dall'equilibrio tra più attori.
 
-Un marketplace di servizi locali testa un nuovo ranking che privilegia fornitori con maggiore probabilità di accettazione.
+### Caso simulato/composito — Ranking di un marketplace locale
 
-Randomizzazione iniziale: buyer-level.
+Un marketplace di servizi testa un ranking che privilegia fornitori con probabilità di accettazione più alta.
 
-Dopo tre settimane:
+Nel buyer-randomized test:
 
-- conversion controllo: 12,4%;
-- conversion trattamento: 13,1%;
-- GMV per buyer: +5,9%;
-- tempo medio alla conferma: -11%.
+- conversion B: +0,7 pp;
+- GMV/buyer: +5,9%;
+- time-to-confirm: -11%.
 
-Sembra una vittoria netta.
+Ma alcuni provider ricevono molta più domanda dal treatment e saturano.
 
-Poi il team seller nota qualcosa: alcuni fornitori molto popolari stanno ricevendo quasi tutta la domanda del trattamento. Questi fornitori hanno capacità limitata. Quando saturano, diventano meno disponibili anche per i buyer assegnati al controllo.
+La saturazione modifica disponibilità e prezzo anche per il controllo.
 
-Il controllo non è più un vero controfattuale: il trattamento ha modificato il mercato in cui anche il controllo opera.
+La domanda non è più soltanto:
 
-Analizzando aree geografiche con bassa sovrapposizione e costruendo un successivo test clusterizzato per zona, l'effetto stimato sul GMV scende a circa +2,1%. Rimane positivo, ma molto inferiore al +5,9% iniziale.
+> “Quale esperienza vede il buyer?”
 
-### Perché succede
+ma:
 
-Nei sistemi con interazione tra utenti possono comparire:
+> **“Come cambia il marketplace quando questa policy governa una quota crescente della domanda?”**
 
-- spillover;
-- congestione;
-- cannibalizzazione;
-- capacity constraints;
-- equilibrium effects;
-- network effects;
-- competizione per la stessa offerta.
+### Tre estimand possibili
 
-L'effetto osservato su una piccola percentuale di traffico può anche non coincidere con quello a rollout completo.
+**Direct user effect**
 
-### Strategie sperimentali
+Che cosa succede al buyer assegnato a B rispetto ad A nel mercato misto corrente?
 
-A seconda del problema si possono considerare:
+**Total marketplace effect**
 
-- randomizzazione per area geografica;
-- randomizzazione per marketplace locale;
-- cluster randomization;
-- switchback experiments, alternando trattamento e controllo nel tempo;
-- analisi esplicita di spillover e saturazione.
+Che cosa succede a GMV, fill rate e welfare complessivo se la policy viene applicata al mercato?
 
-Nessuna soluzione è universale. L'unità di randomizzazione deve riflettere il livello a cui l'interferenza diventa rilevante.
+**Equilibrium / full-rollout effect**
 
-> **Quando il prodotto è un mercato, l'utente non è sempre l'unità indipendente giusta.**
+Che cosa succede dopo che seller, supply, prezzi e comportamento si sono adattati al nuovo sistema?
 
-### Un collegamento pubblico
+Un buyer-level A/B può essere utile per il primo e insufficiente per il terzo.
 
-Microsoft ha documentato problemi analoghi nei tenant-randomized experiments: quando gli utenti devono condividere un'esperienza coerente a livello di organizzazione, la randomizzazione per singolo utente non è appropriata. La piattaforma usa quindi tenant/cluster come unità e combina tecniche specifiche per correggere varianza e sensibilità.
+### Cluster randomization
 
-### Fonte
+Possiamo randomizzare mercati relativamente indipendenti:
 
-- Microsoft Experimentation Platform, *Why Tenant-Randomized A/B Test is Challenging and Tenant-Pairing May Not Work*.
+- città;
+- zone;
+- store catchment;
+- community;
+- tenant.
+
+Vantaggi:
+
+- riduce spillover tra arm;
+- l'unità di trattamento è più vicina all'equilibrio locale.
+
+Costi:
+
+- pochi cluster;
+- grande variabilità tra cluster;
+- minore power;
+- rischio che geografie differiscano strutturalmente.
+
+Non possiamo recuperare il numero effettivo di unità contando milioni di transazioni dentro 20 città.
+
+### Switchback experiments
+
+Se non abbiamo abbastanza mercati indipendenti, possiamo alternare il trattamento **nel tempo** sullo stesso mercato.
+
+Esempio:
+
+```text
+Roma
+08–10 A
+10–12 B
+12–14 A
+14–16 B
+```
+
+oppure randomizzare blocchi di 30/60 minuti con schema bilanciato.
+
+Questo può essere utile per:
+
+- ride-hailing;
+- delivery;
+- dispatch;
+- pricing dinamico;
+- ranking condiviso.
+
+Ma il design deve controllare:
+
+- time-of-day seasonality;
+- day-of-week;
+- carryover;
+- inventory che persiste;
+- driver/seller che reagiscono lentamente;
+- autocorrelazione.
+
+Il Capitolo 7 diventa parte del design sperimentale.
+
+### Carryover
+
+Supponiamo che B incentivi driver a entrare online.
+
+Quando il sistema torna ad A, quei driver possono rimanere disponibili per un'ora.
+
+La finestra A successiva è contaminata dall'effetto precedente.
+
+Possibili strategie:
+
+- washout period;
+- blocchi temporali più lunghi;
+- modellazione del carryover;
+- estimand esplicitamente dinamico.
+
+### Saturation experiment
+
+Un'altra domanda utile è come l'effetto cambia con la percentuale di trattamento.
+
+Possiamo testare cluster con, per esempio:
+
+- 0%;
+- 25%;
+- 50%;
+- 75%;
+- 100% exposure.
+
+L'obiettivo è studiare se il trattamento:
+
+- scala linearmente;
+- satura;
+- cannibalizza;
+- produce threshold effects;
+- modifica l'equilibrio.
+
+Questo è molto più informativo di assumere che un effetto misurato al 10% resti identico al 100%.
+
+### Two-sided marketplace metrics
+
+Una decisione marketplace dovrebbe spesso includere metriche su entrambi i lati.
+
+Buyer:
+
+- conversion;
+- wait time;
+- price;
+- cancellations.
+
+Seller/supply:
+
+- utilization;
+- earnings;
+- acceptance;
+- concentration;
+- churn;
+- fairness/distribution quando rilevante.
+
+Platform:
+
+- GMV;
+- contribution margin;
+- fill rate;
+- reliability.
+
+Una policy che migliora buyer conversion distruggendo supply health può avere effetto positivo nel test breve e negativo nel steady state.
+
+### Tenant randomization come caso affine
+
+Microsoft Research documenta difficoltà analoghe negli esperimenti enterprise: quando l'esperienza deve essere coerente all'interno di un'organizzazione, la randomization unit può diventare il **tenant**. Questo preserva coerenza e riduce interference interna, ma rende la statistica più difficile per la forte eterogeneità dei tenant e il numero minore di unità.[^ms-tenant]
+
+Il caso non è un marketplace, ma la logica è la stessa:
+
+> randomizzare al livello in cui l'interazione rende impossibile trattare gli individui come mondi indipendenti.
+
+### Network experiment card
+
+```text
+Actors nel sistema:
+Shared resources:
+Direct effect desired?
+Total/equilibrium effect desired?
+Interference graph plausibile:
+Cluster candidates:
+Number of clusters:
+Switchback possible?
+Carryover duration:
+Seasonality controls:
+Saturation levels useful?
+Two-sided guardrails:
+Effect expected to change at 100% rollout?
+```
+
+> **Quando il trattamento modifica il mercato, la domanda non è soltanto come randomizzare meglio gli utenti. È quale esperimento rappresenta meglio il mondo che esisterà dopo lo ship.**
+
+[^ms-tenant]: Microsoft Research, *Why Tenant-Randomized A/B Test is Challenging and Tenant-Pairing May Not Work*: https://www.microsoft.com/en-us/research/articles/why-tenant-randomized-a-b-test-is-challenging-and-tenant-pairing-may-not-work/
