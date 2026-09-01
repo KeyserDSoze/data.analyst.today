@@ -1,90 +1,116 @@
-## 3.9 Tipi di dato e domini: una colonna non è solo un contenitore
+## 3.9 Tipi, domini e unità: una colonna non è solo un contenitore
 
-Una colonna ha almeno tre livelli di significato:
+Una colonna possiede almeno quattro livelli di significato:
 
 1. **tipo tecnico** — integer, decimal, string, date, boolean;
 2. **dominio ammesso** — quali valori sono validi;
-3. **significato di business** — cosa rappresenta davvero quel campo.
+3. **unità di misura** — euro, dollari, secondi, chilometri, percentuali;
+4. **significato di business** — che cosa rappresenta davvero il campo.
 
-Confondere questi tre livelli produce errori sottili.
+Un dataset può essere tecnicamente valido e semanticamente pericoloso se anche uno solo di questi livelli è implicito.
 
-### Caso studio simulato — Il CAP che perse gli zeri
+### Caso simulato/composito — Il CAP che perse gli zeri
 
-Una società di logistica, **Mercurio Express**, importa ogni notte un file CSV con gli indirizzi dei clienti.
+**Mercurio Express** importa ogni notte un CSV con gli indirizzi dei clienti.
 
-Il campo `postal_code` viene interpretato automaticamente come numero intero.
+Il campo `postal_code` viene interpretato automaticamente come intero.
 
-Per alcune aree, i codici che iniziano con zero vengono trasformati. Un valore come `00144` diventa `144`.
+`00144` diventa `144`.
 
-Il dato continua a essere formalmente valido come numero.
+Il dato è ancora un numero perfettamente valido. Ma il CAP non è una quantità: è un codice. Non ha senso farne somme, medie o eliminare zeri iniziali.
 
-Ma semanticamente è sbagliato.
+La correzione tecnica è semplice. Il principio è più importante:
 
-Il CAP non è una quantità sulla quale abbia senso fare somme o medie. È un identificatore testuale.
+> **La rappresentazione tecnica deve seguire il significato del dato, non il contrario.**
 
-La correzione è semplice:
+Un identificatore composto solo da cifre può dover essere una stringa. Un importo richiede una valuta. Una durata richiede un'unità. Una percentuale deve chiarire se `0.12` significa 12% oppure 0,12%.
 
-```python
-customers["postal_code"] = customers["postal_code"].astype("string").str.zfill(5)
-```
+### Caso reale documentato — Mars Climate Orbiter
 
-Ma il punto non è la riga di codice.
+Il 23 settembre 1999 NASA perse il **Mars Climate Orbiter** durante l'arrivo su Marte.
 
-Il punto è capire che **la rappresentazione tecnica deve seguire il significato del dato**.
+La spiegazione ufficiale è diventata un caso classico di errore di interfaccia e semantica delle unità: un componente del software di terra produceva dati in unità inglesi mentre il sistema di navigazione li interpretava secondo le specifiche metriche. NASA descrive la causa come una mancata traduzione tra unità inglesi e metriche; il rapporto d'indagine specifica che dati che avrebbero dovuto essere espressi in newton-secondi furono forniti in pound-force seconds.[^nasa-mco][^nasa-mco-report]
 
-### Tipi frequenti e rischi tipici
+Non era un problema di sintassi.
+
+Il valore numerico esisteva. Il file veniva prodotto. Il software lo leggeva.
+
+Era sbagliato il **significato attribuito al numero**.
+
+Il caso è estremo, ma il principio è quotidiano nell'analytics:
+
+- `weight = 80` — chilogrammi o libbre?
+- `duration = 90` — secondi o minuti?
+- `revenue = 1200` — euro o centesimi?
+- `temperature = 70` — Celsius o Fahrenheit?
+- `rate = 0.15` — frazione o punti percentuali?
+
+Quando l'unità resta implicita, una pipeline può funzionare perfettamente e produrre una conclusione sbagliata.
+
+### Tipi tecnici e rischi analitici
 
 **Numeri interi e decimali**
 
-Possono rappresentare quantità, importi, identificatori o codici. Un `customer_id` composto solo da cifre non è per questo una misura numerica.
+Possono rappresentare quantità, importi, durate, codici o identificatori. Il fatto che una colonna sia numerica non significa che sia una misura.
 
 **Stringhe**
 
-Possono contenere categorie, descrizioni, codici, identificatori, JSON o dati sporchi mascherati da testo.
+Possono contenere categorie, codici, testo libero, JSON o numeri memorizzati male. La flessibilità del tipo stringa può nascondere molti problemi di standardizzazione.
 
 **Date e timestamp**
 
-Richiedono attenzione a timezone, calendario, formato, precisione e significato dell'evento temporale.
+Richiedono semantica temporale, timezone e precisione. `2026-09-01` può significare data locale, data contabile o data UTC trasformata.
 
 **Boolean**
 
-Un campo `is_active` può sembrare semplice, ma bisogna sapere chi lo aggiorna, quando e secondo quale regola.
+Un `is_active = true` sembra autoesplicativo, ma serve conoscere la regola e il momento con cui viene aggiornato.
 
 **Categorie**
 
-Valori come `Italy`, `Italia`, `IT`, `ita` e `ITALY` possono rappresentare la stessa categoria oppure no, a seconda del sistema.
+`IT`, `ITA`, `Italy` e `Italia` possono essere sinonimi, categorie prodotte da sistemi differenti o codici con significati specifici.
 
-### Il dominio
+### Il dominio è una dichiarazione di ciò che può esistere
 
-Il dominio definisce l'insieme dei valori plausibili.
+Esempi:
 
-Per esempio:
+- `discount_pct`: tra 0 e 100 se memorizzato in punti percentuali;
+- `currency`: codice appartenente all'elenco supportato;
+- `order_status`: valori previsti dal workflow;
+- `birth_date`: non futura;
+- `quantity`: coerente con la semantica di vendita/resi;
+- `country_code`: formato standard adottato dall'organizzazione.
 
-- `discount_pct`: 0–100;
-- `quantity`: intero positivo, salvo resi;
-- `country_code`: elenco ISO previsto dal sistema;
-- `order_status`: `created`, `paid`, `shipped`, `cancelled`, `refunded`;
-- `currency`: valuta ammessa;
-- `birth_date`: non futura.
+Le regole di dominio sono preziose perché trasformano conoscenza tacita in condizioni verificabili.
 
-Queste regole possono essere trasformate in test automatici.
+### Valido non significa accurato
 
-```python
-assert orders["discount_pct"].between(0, 100).all()
-assert orders["order_status"].isin(ALLOWED_STATUSES).all()
+Un valore può rispettare perfettamente il dominio e descrivere male la realtà.
+
+`country_code = IT` è valido se `IT` è ammesso. Ma può essere inaccurato se il cliente appartiene a un altro Paese.
+
+Allo stesso modo una data può avere formato corretto ma riferirsi all'evento sbagliato.
+
+Per questo dobbiamo tenere distinte **validità** e **accuratezza**.
+
+### Scheda minima per una variabile critica
+
+Per i campi da cui dipendono KPI o decisioni, documenta almeno:
+
+```text
+Campo:
+Significato:
+Tipo tecnico:
+Unità:
+Dominio:
+Null ammesso:
+Momento di validità:
+Sistema sorgente:
+Casi speciali:
 ```
 
-### Il tipo giusto riduce ambiguità
+È una piccola quantità di documentazione con un grande rendimento.
 
-Un buon analista non guarda soltanto `dtype`.
+> **Un numero senza unità, dominio e significato non è ancora una misura. È soltanto un valore memorizzato.**
 
-Chiede:
-
-- che cosa rappresenta questa colonna?
-- quali valori sono ammessi?
-- quali valori sono impossibili?
-- `NULL` ha un significato specifico?
-- l'unità di misura è esplicita?
-- il formato può cambiare tra sistemi?
-
-La qualità dell'analisi comincia spesso da dettagli apparentemente banali come questi.
+[^nasa-mco]: NASA Science, *Mars Climate Orbiter*. https://science.nasa.gov/mission/mars-climate-orbiter/
+[^nasa-mco-report]: NASA, *Mars Climate Orbiter Mishap Investigation Board — Phase I Report*. https://discovery.larc.nasa.gov/discovery/PDF_FILES/MCO_report_2.pdf
