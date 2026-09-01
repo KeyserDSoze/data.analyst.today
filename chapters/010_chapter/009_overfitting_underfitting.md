@@ -1,128 +1,143 @@
-## 10.9 Overfitting e underfitting: quando il modello impara troppo o troppo poco
+## 10.9 Overfitting e underfitting: la complessità deve guadagnarsi il diritto di esistere
 
-Un modello predittivo non deve semplicemente adattarsi bene ai dati che ha già visto. Deve riuscire a **generalizzare**.
+Un modello non viene premiato perché descrive bene il training set.
 
-Questa parola è centrale.
+Viene premiato se il pattern che ha imparato sopravvive a:
 
-Un modello generalizza quando riesce a produrre previsioni utili anche su dati nuovi, provenienti dallo stesso tipo di processo reale ma non usati durante l'addestramento.
+- nuove osservazioni;
+- nuovi periodi;
+- segmenti importanti;
+- piccole variazioni del campione;
+- deployment reale.
 
-Due errori opposti possono impedirlo:
+Questa è la generalizzazione.
 
-- **underfitting**: il modello è troppo semplice e non cattura pattern importanti;
-- **overfitting**: il modello è troppo adattato ai dati di training e finisce per imparare anche rumore, coincidenze e dettagli non replicabili.
+Due fallimenti opposti sono:
 
-### Caso simulato: FalconCredit e il modello che sembrava perfetto
+- **underfitting:** il modello non cattura abbastanza struttura nemmeno nel training;
+- **overfitting:** cattura anche dettagli, rumore e coincidenze che non si ripetono fuori campione.
 
-FalconCredit, società di credito al consumo, vuole stimare il rischio di insolvenza entro 90 giorni.
+### Caso simulato/composito — FalconCredit
 
-Il primo modello usa poche variabili:
+FalconCredit stima il rischio di insolvenza a 90 giorni.
 
-- reddito dichiarato;
-- rapporto rata/reddito;
-- anzianità lavorativa;
-- storico dei ritardi;
-- importo richiesto.
+Confronta:
 
-Sul training set ottiene AUC 0,71 e sul test set 0,70.
+| Modello | Feature | AUC train | AUC validation |
+|---|---:|---:|---:|
+| logistic baseline | 18 | 0,71 | 0,70 |
+| boosting esteso | 240 | 0,94 | 0,73 |
 
-Il data science team costruisce poi un modello molto più complesso con centinaia di feature, interazioni e variabili derivate.
+La slide iniziale mette in grande `0,94`.
 
-Risultati:
+È il numero meno importante della tabella.
 
-| Modello | AUC training | AUC test |
-|---|---:|---:|
-| semplice | 0,71 | 0,70 |
-| complesso | 0,94 | 0,73 |
+Il miglioramento che deve giustificare complessità, serving e monitoring è `0,70 → 0,73` fuori campione.
 
-La direzione iniziale del progetto interpreta il 0,94 come una prova di enorme progresso.
+Potrebbe essere molto prezioso. Potrebbe essere troppo piccolo. Dipende da ciò che cambia alla soglia operativa.
 
-Ma quel numero misura soprattutto quanto bene il modello ricorda e ricostruisce il training set.
+### Il gap train-validation è una diagnosi, non una formula automatica
 
-Il miglioramento reale su dati nuovi è molto più modesto: da 0,70 a 0,73.
-
-Se un'ulteriore versione arrivasse a:
-
-- AUC training 0,99;
-- AUC test 0,68;
-
-avremmo un segnale ancora più evidente di overfitting.
-
-### Il gap train-validation
-
-Un modo semplice per ragionare è confrontare performance su training e validation/test.
-
-Un pattern tipico di overfitting è:
+Un pattern classico:
 
 ```text
-training score      molto alto
-validation score    significativamente più basso
+train molto alto
+validation molto più basso
 ```
 
-Un pattern tipico di underfitting è invece:
+è compatibile con alta variance / overfitting.
 
-```text
-training score      basso
-validation score    basso
-```
+Due score bassi possono indicare underfitting o segnale predittivo debole.
 
-Nel secondo caso il modello non riesce nemmeno a rappresentare bene il segnale disponibile nei dati di training.
+Ma il gap va interpretato insieme al design della validation.
 
-### Bias e variance come intuizione
+Se validation appartiene a un periodo nuovo e difficile, parte del calo può essere **distribution shift**, non soltanto overfitting tradizionale.
 
-Il problema viene spesso descritto attraverso il compromesso tra **bias** e **variance**.
+Per questo la domanda più utile è:
 
-Un modello con alto bias tende a essere troppo rigido. Sbaglia sistematicamente perché rappresenta male la struttura reale.
+> **dove e perché il modello smette di generalizzare?**
 
-Un modello con alta variance è invece troppo sensibile alle peculiarità del campione di training: piccole variazioni nei dati possono produrre modelli molto diversi.
+### Learning curve: più dati o modello diverso?
 
-Non serve trasformare il Data Analyst in un teorico del machine learning per usare bene questa idea.
+Una learning curve confronta performance train/validation al crescere della quantità di dati.
 
-La domanda operativa è:
+Può aiutare a distinguere situazioni come:
 
-> il modello sta imparando un pattern stabile o sta imparando la storia particolare del dataset che gli abbiamo dato?
+- validation continua a migliorare con più dati → raccogliere dati può avere valore;
+- train e validation convergono entrambi a performance mediocre → più dati dello stesso tipo potrebbero non bastare;
+- gap train-validation rimane elevato → serve più regolarizzazione, meno complessità o feature più robuste.
 
-### Un errore frequente: premiare la complessità
+Scikit-learn usa learning e validation curves proprio per diagnosticare bias/variance e comportamento della generalizzazione.
 
-In molti progetti esiste una pressione implicita verso modelli più sofisticati.
+Fonte: https://scikit-learn.org/stable/modules/learning_curve.html
 
-Un modello con 300 feature, gradient boosting e tuning esteso sembra più avanzato di una regressione logistica con 18 variabili.
+### Caso reale documentato — underfitting e overfitting nell'esempio scikit-learn
 
-Ma sofisticazione tecnica e valore operativo non sono sinonimi.
+Scikit-learn mostra un esempio didattico con regressioni polinomiali di complessità crescente:
 
-Se il modello semplice:
+- un modello troppo semplice non cattura la funzione;
+- un modello intermedio generalizza bene;
+- un modello molto flessibile segue quasi perfettamente le osservazioni ma performa peggio in cross-validation.
 
-- generalizza quasi altrettanto bene;
-- è più stabile;
-- è più interpretabile;
-- richiede meno dati;
-- costa meno da mantenere;
-- è più facile da monitorare;
-
-può essere la scelta migliore.
-
-### Caso pubblico documentato: l'esempio di scikit-learn
-
-La documentazione ufficiale di scikit-learn mostra un esempio didattico in cui modelli polinomiali di complessità crescente vengono usati per approssimare una funzione non lineare.
-
-Il modello troppo semplice produce underfitting. Un modello di complessità intermedia approssima bene il pattern. Un modello troppo complesso si adatta quasi perfettamente ai dati osservati ma generalizza peggio.
-
-L'esempio viene valutato tramite cross-validation proprio per mostrare la differenza tra adattamento al training set e capacità di generalizzare.
+La lezione non è "usa grado X". È che **training fit e predictive value sono oggetti differenti**.
 
 Fonte: https://scikit-learn.org/stable/auto_examples/model_selection/plot_underfitting_overfitting.html
 
-### Metodo operativo
+### Complexity budget
 
-Quando confronti modelli diversi, non guardare soltanto la metrica migliore ottenuta sul training set.
+Ogni aumento di complessità ha almeno quattro costi potenziali:
 
-Controlla almeno:
+**1. Statistical cost**  
+Più libertà di adattarsi a rumore o sottogruppi fragili.
 
-1. performance su validation/test;
-2. differenza train-validation;
-3. stabilità tra fold o periodi temporali;
-4. sensibilità a piccole variazioni dei dati;
-5. complessità necessaria per ottenere il miglioramento;
-6. costo di manutenzione del modello.
+**2. Data cost**  
+Più feature da produrre con lineage, qualità e history corretti.
 
-Il modello migliore non è quello che racconta meglio il passato.
+**3. Operational cost**  
+Più dipendenze, latency, serving e failure mode.
 
-È quello che mantiene utilità quando incontra il futuro.
+**4. Governance cost**  
+Più difficile spiegare, monitorare, validare e revisionare il comportamento.
+
+Perciò una nuova complessità dovrebbe poter rispondere:
+
+> **quale miglioramento fuori campione otteniamo e quale decisione migliora abbastanza da giustificare questi costi?**
+
+### Slice overfitting
+
+Un modello può avere performance globale buona e adattarsi male a segmenti specifici.
+
+Controlliamo quindi non solo la media, ma almeno:
+
+- train/validation gap globale;
+- performance per periodo;
+- performance per popolazioni business rilevanti;
+- code dell'errore;
+- stabilità tra fold.
+
+Questo è particolarmente importante se la decisione ha costo diverso tra segmenti.
+
+### Hyperparameter search e multiple tries
+
+Anche il processo di modeling può overfittare la validation.
+
+Se testiamo centinaia di configurazioni e scegliamo quella con score massimo sullo stesso set, parte della "vittoria" può essere fortuna di selezione.
+
+Per progetti intensivi servono quindi:
+
+- cross-validation adeguata;
+- test finale isolato;
+- confronti con baseline;
+- preferenza per miglioramenti replicabili, non per il massimo decimale ottenuto.
+
+### Regola editoriale e operativa
+
+Non presentare:
+
+> "il modello complesso ha AUC 0,94."
+
+Presenta:
+
+> **"Rispetto alla baseline, il modello migliora la metrica fuori campione da 0,70 a 0,73; al top 5% aumenta precision da X a Y; il costo aggiuntivo è Z; il miglioramento è stabile in questi periodi e non in questi altri."**
+
+> **La complessità non è progresso. È un investimento che deve produrre generalizzazione e valore decisionale misurabili.**
