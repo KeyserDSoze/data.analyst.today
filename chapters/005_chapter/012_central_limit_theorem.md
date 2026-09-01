@@ -1,75 +1,101 @@
-## 5.11 Teorema del Limite Centrale: perché tante medie diventano quasi normali
+## 5.11 Teorema del Limite Centrale: la normalità riguarda spesso la stima, non il dato grezzo
 
-Il Teorema del Limite Centrale è uno dei motivi per cui la statistica inferenziale funziona così bene in problemi molto diversi.
+Il **Teorema del Limite Centrale**, o CLT, è uno dei ponti più importanti tra probabilità e inferenza.
 
-In forma intuitiva, dice che se prendiamo campioni sufficientemente grandi da una popolazione e calcoliamo la media di ciascun campione, la distribuzione di quelle medie tende ad avvicinarsi a una distribuzione normale, anche quando i dati originali non sono normali.
+In forma intuitiva, sotto condizioni appropriate, se prendiamo molti campioni della stessa dimensione e calcoliamo ogni volta la media, la distribuzione di quelle medie tende ad assumere una forma approssimativamente normale al crescere della dimensione del campione — anche quando la distribuzione delle osservazioni originali non è normale.
 
-Inoltre, la distribuzione delle medie è centrata sulla media della popolazione e la sua deviazione standard si riduce approssimativamente come:
+NIST riassume due proprietà centrali:
 
-\[
-\frac{\sigma}{\sqrt{n}}
-\]
+- la sampling distribution della media tende verso una forma normale all'aumentare di `n`;
+- la sua dispersione si riduce come `σ / √n`.[^nist-clt]
 
-### Caso realistico: gli importi degli ordini non sono per niente normali
+Questo non significa:
 
-Un e-commerce di arredamento analizza l'importo degli ordini.
+> “i dati diventano normali”.
 
-La distribuzione è fortemente asimmetrica:
+Significa:
 
-- moltissimi ordini tra 40 e 180 euro;
-- alcuni ordini da 600-1.500 euro;
-- pochi progetti completi da 8.000-20.000 euro.
+> **in molte condizioni, la distribuzione della media campionaria diventa molto più regolare della distribuzione dei dati individuali.**
 
-La distribuzione individuale è quindi lontana dalla classica campana.
+### Caso simulato/composito — Ordini fortemente asimmetrici, medie molto più regolari
 
-Il CFO però non deve prevedere il valore del singolo ordine. Vuole stimare l'average order value mensile.
+Un e-commerce di arredamento ha una distribuzione degli importi molto asimmetrica:
 
-Il team simula campioni casuali di 500 ordini e calcola la media di ciascun campione. Le medie risultanti sono molto più regolari della distribuzione originale.
+- moltissimi ordini tra 40 e 180 €;
+- alcuni tra 600 e 1.500 €;
+- pochi progetti completi tra 8.000 e 20.000 €.
 
-Questo è esattamente il tipo di fenomeno spiegato dal Teorema del Limite Centrale.
+La distribuzione del **singolo ordine** non assomiglia affatto a una campana normale.
 
-### Attenzione: non significa che “n = 30” risolve tutto
+Il CFO, però, vuole stimare l'AOV di una popolazione ampia tramite campioni casuali.
 
-Una scorciatoia spesso insegnata è che con 30 osservazioni possiamo assumere normalità.
+Se il team prende ripetutamente campioni di 500 ordini e calcola ogni volta la media, le medie risultano molto meno asimmetriche dei singoli importi.
 
-È una regola troppo meccanica.
+Il CLT spiega perché procedure basate sulla sampling distribution della media possono funzionare anche quando il dato grezzo è lontano dalla normalità.
 
-La velocità con cui la distribuzione campionaria della media si avvicina alla normalità dipende dalla forma della popolazione, dalla presenza di code pesanti, di outlier e dalla dipendenza tra osservazioni.
+### Il mito di `n = 30`
 
-Se analizziamo importi finanziari con eventi rarissimi ma enormi, 30 osservazioni possono essere pochissime.
+Una regola didattica molto diffusa dice:
 
-Se analizziamo una distribuzione relativamente simmetrica e ben comportata, possono invece essere già informative.
+> “con 30 osservazioni possiamo assumere normalità”.
 
-### Il problema della dipendenza
+È troppo meccanica per il lavoro professionale.
 
-Il Teorema del Limite Centrale viene spesso applicato come se ogni riga fosse indipendente.
+La velocità di convergenza dipende da fattori come:
 
-Ma immaginiamo 10.000 click provenienti da soli 120 utenti.
+- asimmetria;
+- code pesanti;
+- presenza di eventi estremi;
+- distribuzioni con varianza molto elevata;
+- dipendenza tra osservazioni.
 
-Abbiamo davvero 10.000 osservazioni indipendenti?
+Con dati relativamente regolari, 30 casi possono essere già utili. Con fenomeni estremamente heavy-tailed, 30 possono essere pochissimi.
 
-No.
+Non serve memorizzare una soglia universale. Serve capire **quanto è difficile il processo che stiamo campionando**.
 
-Lo stesso utente può produrre molti eventi correlati. Trattare ogni click come unità indipendente può far sembrare la stima molto più precisa di quanto sia realmente.
+### La dipendenza riduce l'informazione effettiva
+
+Immaginiamo di avere 10.000 click generati da soli 120 utenti.
+
+Il file contiene 10.000 righe. Ma non abbiamo 10.000 utenti indipendenti.
+
+Gli eventi dello stesso utente possono essere fortemente correlati.
 
 Lo stesso problema compare con:
 
 - transazioni ripetute dello stesso cliente;
-- misure multiple dello stesso macchinario;
+- misure dello stesso sensore;
 - ordini dello stesso negozio;
-- osservazioni giornaliere consecutive;
-- utenti appartenenti alla stessa azienda.
+- dipendenti dello stesso team;
+- serie temporali consecutive.
 
-La numerosità nominale del dataset non coincide necessariamente con la numerosità informativa.
+Applicare formule che trattano ogni riga come osservazione indipendente può produrre uno standard error artificialmente piccolo.
 
-### Perché l'analista deve capirlo
+### Quando il CLT è utile all'analista
 
-Il Teorema del Limite Centrale non è una licenza per applicare formule automaticamente.
+Il CLT aiuta a capire perché possiamo costruire, in molti contesti:
 
-È un ponte tra dati individuali rumorosi e stime aggregate più regolari.
+- intervalli per una media;
+- approssimazioni normali di statistiche aggregate;
+- test inferenziali;
+- ragionamenti sulla precisione delle stime.
 
-Ma quel ponte regge solo se comprendiamo come il campione è stato generato.
+Ma non è una licenza per ignorare:
 
-### Fonti
+- disegno del campione;
+- unità di analisi;
+- dipendenza;
+- bias;
+- qualità del dato.
 
-[^nist-clt]: NIST/SEMATECH e-Handbook of Statistical Methods, *Normal Distribution*, sezione “Theoretical Justification - Central Limit Theorem”, https://www.itl.nist.gov/div898/handbook/eda/section3/eda3661.htm
+Il CLT affronta una parte specifica del problema: **la forma della variabilità campionaria**.
+
+Non corregge un campione sbagliato e non rende casuale ciò che non lo è.
+
+### La frase da ricordare
+
+> **Non chiedere “i miei dati sono normali?”. Chiedi “quale statistica sto stimando, quale sampling distribution mi serve e le condizioni rendono ragionevole l'approssimazione che sto usando?”.**
+
+È una domanda meno scolastica e molto più utile.
+
+[^nist-clt]: NIST/SEMATECH, *Normal Distribution — Theoretical Justification: Central Limit Theorem*: https://www.itl.nist.gov/div898/handbook/eda/section3/eda3661.htm
