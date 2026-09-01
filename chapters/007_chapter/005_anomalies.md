@@ -1,33 +1,49 @@
-## 7.4 Anomalie: prima di cercare una causa, verifica che l'evento esista davvero
+## 7.4 Anomalie: un alert è l'inizio dell'indagine, non la conclusione
 
-Un'anomalia è un'osservazione o un pattern che si discosta da ciò che ci aspetteremmo dato il comportamento storico della serie.
+Un'anomalia è uno scostamento rispetto a ciò che consideriamo **atteso nel contesto corretto**.
 
-Questa definizione sembra semplice, ma contiene una parola pericolosa: **aspettarsi**.
+La definizione sembra semplice, ma dipende interamente dalla baseline.
 
-Per decidere se qualcosa è anomalo dobbiamo prima costruire una baseline ragionevole. Un picco di ordini il 24 novembre può sembrare enorme rispetto alla media di ottobre, ma essere perfettamente normale durante Black Friday. Un calo del traffico alle tre del mattino è normale. Lo stesso calo alle undici del mattino può essere un incidente.
+Un valore di 50.000 ordini può essere:
 
-### Tipi di anomalie utili per un Data Analyst
+- normale il giorno di Black Friday;
+- eccezionale in un martedì di febbraio;
+- impossibile se il sistema ha capacità massima di 20.000;
+- semplicemente incompleto se metà degli eventi è ancora in ritardo.
 
-Possiamo distinguere almeno quattro situazioni:
+Per questo anomaly detection non dovrebbe iniziare da “quanto è lontano dalla media?”, ma da:
 
-1. **point anomaly**: un singolo punto è insolito;
-2. **contextual anomaly**: il valore è anomalo solo in quel contesto temporale;
-3. **collective anomaly**: nessun punto è estremo da solo, ma una sequenza intera è insolita;
-4. **structural break**: cambia il comportamento del processo, non solo un singolo punto.
+> **Quale comportamento avremmo considerato normale in questa finestra, dato calendario, trend, stagionalità e stato del dato?**
 
-### Caso: il -42% che non era un problema commerciale
+### Quattro classi che non vanno confuse
 
-Un marketplace europeo monitora il GMV ogni quindici minuti. Alle 14:30 il sistema di alert segnala:
+Per il lavoro di un Data Analyst è utile distinguere:
+
+**1. Data anomaly** — il business può essere normale, ma il sistema di osservazione è incompleto o errato.
+
+**2. Contextual anomaly** — il valore è estremo rispetto a una baseline generica, ma normale nel contesto specifico.
+
+**3. Business anomaly** — il dato è valido e il comportamento è realmente insolito rispetto a una baseline adeguata.
+
+**4. Structural break** — non cambia soltanto un punto: cambia il processo che genera la serie.
+
+La risposta operativa è diversa in ciascun caso.
+
+### Caso simulato/composito — Il -42% che apparteneva alla pipeline
+
+Un marketplace monitora il GMV ogni quindici minuti.
+
+Alle 14:30 l'alert mostra:
 
 ```text
-GMV atteso 14:00-14:15: 318.000 €
+GMV atteso 14:00–14:15: 318.000 €
 GMV osservato: 184.000 €
-scostamento: -42.1%
+scostamento: -42,1%
 ```
 
-Marketing sospende immediatamente una campagna per paura che il checkout sia rotto.
+Il primo impulso è sospendere una campagna e aprire un incidente sul checkout.
 
-L'analista controlla il funnel:
+L'analista verifica la catena di metriche:
 
 - sessioni: normali;
 - add-to-cart: normali;
@@ -35,73 +51,130 @@ L'analista controlla il funnel:
 - payment success: apparentemente -39%;
 - errori del payment gateway: normali.
 
-Poi controlla il timestamp di ingestion. Il 38% degli eventi `payment_success` ha un ritardo superiore a venti minuti a causa di un problema nella pipeline streaming.
+Poi controlla la **latenza di ingestion**. Il 38% degli eventi `payment_success` ha più di venti minuti di ritardo.
 
-Alle 15:05, una volta arrivati gli eventi in ritardo, il GMV reale della finestra risulta 309.000 €, cioè circa -2.8% rispetto all'atteso.
+Alle 15:05, una volta arrivati gli eventi, il GMV reale della finestra è 309.000 €, circa -2,8% rispetto all'atteso.
 
-L'anomalia era nel **sistema di osservazione**, non nel business.
+L'anomalia era reale nel dashboard. Non era reale nel processo commerciale.
 
-### Data anomaly vs business anomaly
+### Prima regola: verificare l'osservabilità
 
-Questa distinzione dovrebbe diventare automatica.
+Per un alert operativo, prima delle ipotesi di business controlliamo:
 
-Quando un numero si muove in modo inatteso, le prime ipotesi non dovrebbero essere solo commerciali:
+- freshness;
+- completezza;
+- ritardo di ingestion;
+- duplicati;
+- partizioni mancanti;
+- variazioni di schema;
+- cambi di timezone;
+- cambi di definizione della metrica;
+- errori upstream/downstream.
 
-- il comportamento degli utenti è cambiato;
-- il mix clienti è cambiato;
-- una campagna è partita;
-- un competitor ha cambiato prezzo;
+Questo non duplica il Capitolo 3. Nel Capitolo 3 valutavamo se un dataset era pronto per l'analisi. Qui il punto è diverso: **una pipeline può essere normalmente affidabile e produrre un incidente temporaneo che imita un'anomalia di business**.
 
-ma anche:
+### Contextual anomaly: l'eccezione che era prevista
 
-- manca una partizione;
-- sono arrivati eventi in ritardo;
-- è cambiato uno schema;
-- un timestamp è passato da UTC a ora locale;
-- una join ha perso righe;
-- un job è stato eseguito due volte;
-- è cambiata la definizione della metrica.
+Un detector segnala ordini +63% rispetto alla media recente durante la finale di Champions League.
 
-### Soglie statiche: semplici ma spesso fragili
+Statisticamente il valore può essere estremo. Operativamente può essere esattamente ciò che il business si aspettava.
 
-Un alert del tipo:
+Se l'evento era noto nel calendario, il problema non è l'algoritmo in senso stretto. È una baseline che non contiene informazione contestuale sufficiente.
+
+Questo è il motivo per cui soglie come:
+
+`alert se |z| > 4`
+
+possono essere utili come primo filtro ma fragili in processi stagionali, promozionali o soggetti a eventi speciali.
+
+### Point, collective e change anomaly
+
+Un punto singolo non è l'unica forma di anomalia.
+
+**Point anomaly** — un valore isolato è insolito.
+
+**Collective anomaly** — ogni punto singolo sembra plausibile, ma la sequenza complessiva è anomala.
+
+**Change-point / structural break** — cambia livello, trend, varianza o altra proprietà della serie.
+
+NIST mostra, nel contesto della rilevazione di change-point, che autocorrelazione e stagionalità devono essere considerate per evitare di interpretare la normale struttura temporale come un numero eccessivo di cambiamenti.[^nist-change]
+
+### Caso simulato/composito — Nessun giorno è terribile, ma il processo è cambiato
+
+Un SaaS monitora il numero giornaliero di ticket critici.
+
+Storicamente oscilla tra 38 e 55. Dopo una nuova release osserva:
+
+`52, 54, 57, 59, 58, 61, 60, 62, 63, 61`
+
+Nessun giorno è abbastanza estremo da superare una soglia di quattro deviazioni standard.
+
+Ma la sequenza mostra un cambiamento persistente di livello.
+
+Un detector concentrato soltanto su point anomaly può non vedere ciò che per operations è molto più importante: **il processo è entrato in un nuovo regime**.
+
+### Anomalia statistica e materialità business
+
+Non ogni scostamento statisticamente insolito merita lo stesso livello di escalation.
+
+Un aumento del 80% su una metrica che vale 200 € al giorno e un calo del 4% su una metrica che vale 30 M€ al giorno possono avere priorità opposte.
+
+Un sistema di alert maturo combina quindi almeno:
+
+- intensità dello scostamento;
+- durata/persistenza;
+- valore economico;
+- criticità operativa;
+- confidenza nella qualità del dato;
+- possibilità di azione.
+
+### Anomaly triage
+
+Quando arriva un alert, la sequenza consigliata è:
+
+1. **Data health** — la misura è completa e comparabile?
+2. **Context** — calendario, promozione, festività, evento noto?
+3. **Scope** — quale segmento, geografia, prodotto o step è coinvolto?
+4. **Persistence** — punto singolo, sequenza o cambio di livello?
+5. **Corroboration** — metriche upstream/downstream confermano il fenomeno?
+6. **Materiality** — qual è l'impatto reale?
+7. **Hypothesis** — quali meccanismi sono compatibili con l'evidenza?
+8. **Next method** — altra diagnostica, causalità, intervento o monitoraggio?
+
+### Il detector non deve “spiegare”
+
+Un sistema automatico può dire:
+
+> “GMV 18% sotto la baseline stagionale, concentrato su Android, dato completo al 99,7%.”
+
+È molto utile.
+
+Dovrebbe essere molto più prudente nel dire:
+
+> “Il calo è causato dal nuovo checkout.”
+
+La seconda frase richiede evidenza sul meccanismo.
+
+Un LLM può proporre ipotesi, ma non trasforma la correlazione temporale in causalità.
+
+### Il campo del Temporal Decision Brief
+
+Per ogni anomalia importante registriamo:
 
 ```text
-se revenue < 1.000.000 € allora alert
+Segnale:
+Baseline usata:
+Data health:
+Contesto di calendario:
+Scope / segmenti:
+Persistenza:
+Tipo: data / contextual / business / structural
+Impatto:
+Ipotesi plausibili:
+Cosa NON è ancora dimostrato:
+Azione / escalation:
 ```
 
-può essere utile, ma ignora trend e stagionalità.
+> **Un'anomalia statistica è un invito a investigare. La qualità dell'analista si vede da quanto velocemente distingue un evento eccezionale da un sistema di osservazione eccezionalmente sbagliato.**
 
-Una soglia dinamica può essere più sensata:
-
-```text
-alert se valore osservato è molto lontano dal valore atteso dato
-trend + stagionalità + variabilità storica
-```
-
-Ma anche un sistema dinamico può generare falsi positivi se non conosce promozioni, festività, migrazioni o cambi strutturali.
-
-### Caso: il miglior giorno dell'anno classificato come incidente
-
-Una piattaforma food delivery implementa un detector automatico che segnala deviazioni superiori a quattro deviazioni standard dalla media recente.
-
-La sera della finale di Champions League gli ordini aumentano del 63%. Il detector apre un incidente severity 1 perché il volume è “impossibile”.
-
-Tecnicamente l'algoritmo ha ragione: rispetto alla distribuzione recente il valore è estremo. Operativamente ha torto: il fenomeno è spiegabile e desiderabile.
-
-Il problema non è nel calcolo, ma nella baseline incompleta.
-
-### Un workflow pratico per investigare un'anomalia
-
-Quando ricevi un alert:
-
-1. verifica freshness e completezza;
-2. confronta metriche upstream e downstream;
-3. controlla se esistono eventi di calendario;
-4. segmenta per paese, piattaforma, prodotto, canale;
-5. verifica se il cambiamento è un punto singolo o persiste;
-6. confronta con periodi stagionalmente simili;
-7. misura l'impatto economico;
-8. solo dopo formula ipotesi causali.
-
-> **Un'anomalia statistica è un invito a investigare, non una spiegazione.**
+[^nist-change]: NIST, *Statistical Methods for Change-Point Detection in Surface Temperature Records*, https://www.nist.gov/publications/statistical-methods-change-point-detection-surface-temperature-records
