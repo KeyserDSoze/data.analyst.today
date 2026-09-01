@@ -1,90 +1,152 @@
-## 13.5 Cloud e scala: quando il laptop smette di essere il posto giusto
-Il cloud non è automaticamente la risposta a ogni problema analitico. È utile quando permette di gestire scala, collaborazione, sicurezza, elasticità e integrazione meglio di un ambiente locale.
+## 13.5 Locale, shared compute e cloud: scegliere dove deve vivere l'esecuzione
 
-## 13.5.1 Il falso problema della scala
+Il Capitolo 12 ha già spiegato l'architettura dati.
 
-Molti team parlano di «big data» quando gestiscono dataset che entrano comodamente nella memoria di un laptop moderno.
+Qui non dobbiamo decidere se l'azienda “deve andare in cloud”.
 
-Se un dataset ha 2 milioni di righe e l'analisi è occasionale, spostare tutto su un'architettura distribuita può aumentare complessità, latenza e costo senza creare valore.
+Dobbiamo rispondere a una domanda più vicina al lavoro dell'analista:
 
-La scala va misurata, non immaginata.
+> **Questo calcolo può vivere responsabilmente sul mio computer oppure ha bisogno di un ambiente condiviso e gestito?**
 
-## 13.5.2 Quando il cloud diventa utile
+La differenza non dipende soltanto dai gigabyte.
 
-Il cloud è particolarmente utile quando servono:
+### La scala ha più dimensioni
 
-- grandi volumi;
-- calcolo elastico;
-- accesso condiviso;
-- integrazione tra molte sorgenti;
+Quando diciamo “scala” possiamo intendere:
+
+- volume di dati;
+- frequenza di esecuzione;
+- numero di utenti;
+- concorrenza;
+- numero di sorgenti;
+- sensibilità del dato;
+- durata del processo;
+- dipendenze downstream;
+- necessità di compute elastico.
+
+Un dataset da 5 GB può essere perfettamente gestibile localmente per una EDA una tantum.
+
+Lo stesso dataset può richiedere un ambiente condiviso se deve essere elaborato ogni notte, con credenziali centralizzate, output per 200 utenti e SLA mattutino.
+
+### Caso simulato/composito — il processo che funziona finché lo esegue una persona
+
+Un retailer costruisce un'analisi settimanale su 40 milioni di righe.
+
+Sul laptop dell'analista senior gira in 55 minuti.
+
+Dopo alcuni mesi:
+
+- tre persone devono eseguirla;
+- il volume cresce a 250 milioni di righe;
+- il job diventa notturno;
+- Finance usa automaticamente l'output;
+- Security vieta copie locali dei dati cliente.
+
+Il problema non è diventato improvvisamente “big data”.
+
+È diventato un problema di:
+
+- **shared execution**;
+- sicurezza;
 - scheduling;
-- sicurezza centralizzata;
+- ownership;
+- affidabilità.
+
+Qui spostare il workload su infrastruttura gestita può ridurre il rischio complessivo anche se un laptop più potente sarebbe ancora tecnicamente capace di eseguire il calcolo.
+
+### Non usare “cloud” come sinonimo di distribuito
+
+Molte analisi possono girare in cloud su una singola istanza o direttamente nel warehouse senza usare framework distribuiti.
+
+La sequenza di maturità non è necessariamente:
+
+```text
+laptop → cluster distribuito
+```
+
+Può essere:
+
+```text
+laptop
+→ query nel warehouse
+→ job schedulato gestito
+→ compute elastico
+→ distributed processing solo se necessario
+```
+
+Ogni gradino dovrebbe essere giustificato da un vincolo reale.
+
+### Caso simulato/composito — dashboard da €27.000 al mese
+
+Una dashboard interroga direttamente una fact event da miliardi di righe.
+
+Ha 34 visualizzazioni e ogni interazione genera nuove scansioni.
+
+Il costo mensile cresce fino a circa €27.000.
+
+La risposta sbagliata è:
+
+> cambiamo cloud provider.
+
+La prima domanda dovrebbe essere:
+
+> perché una superficie di consumo sta chiedendo ripetutamente al motore di ricostruire la stessa informazione da miliardi di eventi?
+
+Possibili interventi:
+
+- pre-aggregazione;
+- partition pruning;
+- caching;
+- modelli serving dedicati;
+- refresh proporzionato;
+- riduzione delle visualizzazioni/query duplicate.
+
+Questo collega il tool selection all'architettura: **il posto dell'esecuzione e il design del dato contano insieme**.
+
+### Local-first quando è sufficiente
+
+Lavorare localmente resta ragionevole quando:
+
+- il dataset è gestibile;
+- il lavoro è esplorativo;
+- non ci sono dati che non devono essere copiati;
+- l'esecuzione non è un servizio;
+- una singola persona possiede il processo;
+- il costo di setup centrale non crea valore.
+
+La semplicità locale può essere un vantaggio reale.
+
+### Shared/managed execution quando il lavoro diventa sistema
+
+Segnali di migrazione:
+
+- scheduling;
+- più utenti;
+- credenziali condivise in modo sicuro;
+- dati sensibili;
+- output downstream;
 - workload concorrenti;
-- servizi gestiti;
-- audit e governance;
-- disaster recovery.
+- necessità di recovery;
+- grandi scansioni ripetute;
+- compute che deve crescere/ridursi dinamicamente.
 
-## 13.5.3 Caso realistico: l'analisi che funziona finché la fa una persona
+### Campo del Tooling Decision Record
 
-Un retailer costruisce previsioni settimanali su 40 milioni di righe di vendite.
+```text
+current execution location:
+data residency constraints:
+input/output size:
+frequency:
+concurrent users/jobs:
+sensitive data:
+downstream dependency:
+local runtime:
+managed/shared alternative:
+estimated run cost:
+reason to centralize or remain local:
+exit condition:
+```
 
-Sul laptop dell'analista senior il processo impiega 55 minuti e funziona.
+### Regola operativa
 
-Poi:
-
-- tre analyst devono eseguirlo contemporaneamente;
-- il dato cresce a 250 milioni di righe;
-- il modello deve girare ogni notte;
-- Finance vuole accesso allo stesso output;
-- Security vieta copie locali del dataset clienti.
-
-Il problema non è più solo computazionale. È operativo e organizzativo.
-
-Qui il cloud diventa una scelta di sistema.
-
-## 13.5.4 Costi: pagare per ciò che non capiamo
-
-Nel cloud, una query o un job possono avere un costo marginale che in locale rimane invisibile.
-
-Un analyst deve quindi imparare concetti come:
-
-- dati scansionati;
-- compute time;
-- storage;
-- egress;
-- autoscaling;
-- idle resources;
-- caching;
-- partition pruning.
-
-La competenza analitica include anche capire quando una query scritta male consuma risorse sproporzionate.
-
-## 13.5.5 Caso realistico: dashboard executive da 27.000 euro al mese
-
-Una società costruisce un dashboard con 34 visualizzazioni, ognuna collegata direttamente a una tabella evento da miliardi di righe.
-
-Ogni filtro genera nuove query. Centinaia di utenti aggiornano il dashboard durante la giornata.
-
-Il costo cloud cresce fino a circa 27.000 euro al mese.
-
-La soluzione non richiede un cloud più economico. Richiede un modello migliore:
-
-- aggregazioni precomputate;
-- partizionamento;
-- caching;
-- semantic model;
-- riduzione delle query duplicate.
-
-## 13.5.6 Locale e cloud sono complementari
-
-Un workflow sano può essere:
-
-1. SQL sul warehouse cloud per ridurre il dataset;
-2. estrazione di un campione o tabella analitica;
-3. EDA locale in Python;
-4. trasformazione stabile riportata nella piattaforma centrale;
-5. BI sul semantic layer.
-
-L'obiettivo non è fare tutto nel cloud. È evitare movimenti inutili e mantenere la logica critica nel posto giusto.
-
-> **Il cloud non risolve la complessità. La rende scalabile — nel bene e nel male.**
+> **Non spostare un workload nel cloud perché “scala”. Spostalo quando un ambiente condiviso o elastico riduce concretamente rischio, tempo, costo o dipendenza da una macchina/persona.**
