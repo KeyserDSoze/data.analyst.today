@@ -1,20 +1,22 @@
-## 11.7 Caso studio: la query corretta che raccontava la storia sbagliata
+## 11.7 Caso end-to-end intermedio: la query corretta che raccontava la storia sbagliata
 
-### Il contesto
+### Caso simulato/composito — VelaHome
 
 **VelaHome** è un retailer omnicanale di arredamento con negozi fisici e un e-commerce in sei Paesi europei.
 
-A metà trimestre il COO vede un dato preoccupante nel dashboard operativo:
+A metà trimestre il COO vede nel dashboard operativo:
 
-- ordini consegnati in ritardo: 12,6%;
+- late delivery rate: 12,6%;
 - trimestre precedente: 8,9%;
 - peggioramento: +3,7 punti percentuali.
 
-La conclusione immediata è che la rete logistica stia deteriorando.
+La lettura immediata è:
 
-Il team Operations propone di spostare una parte dei volumi verso un nuovo corriere, con un costo incrementale stimato di 1,2 milioni di euro annui.
+> la rete logistica sta peggiorando rapidamente.
 
-Prima di prendere la decisione viene chiesta una verifica analitica.
+Operations propone di spostare volumi verso un nuovo corriere, con un costo incrementale stimato di €1,2M annui.
+
+Prima della decisione, l’analista non parte dal corriere. Ricostruisce l’**Analytical Data Contract** del KPI.
 
 ### La query originale
 
@@ -28,72 +30,70 @@ SELECT
         END
     ) AS late_delivery_rate
 FROM orders
-WHERE order_date >= '2026-01-01'
+WHERE order_date >= DATE '2026-01-01'
 GROUP BY 1
 ORDER BY 1;
 ```
 
-La query è semplice, leggibile e sintatticamente corretta.
+La query è leggibile, sintatticamente corretta e riproduce il dashboard.
 
-Il primo controllo conferma i numeri del dashboard.
+Questo non basta.
 
-### Prima domanda: qual è il grain?
+### Campo 1 — Business entity e grain
 
-`orders` è una riga per ordine.
+`orders` contiene una riga per ordine.
 
 Ma un ordine può essere diviso in più spedizioni provenienti da magazzini diversi.
 
-Il business definisce “ordine consegnato” come completato quando arriva l'ultima spedizione.
+Esistono almeno tre metriche legittime:
 
-Il cliente, però, percepisce il ritardo a livello di spedizione e articolo.
+1. **late order completion rate** — quota di ordini completamente consegnati dopo la promessa finale;
+2. **late shipment rate** — quota di spedizioni arrivate in ritardo;
+3. **late unit rate** — quota di unità arrivate in ritardo.
 
-Quindi il KPI “late delivery rate” può essere costruito almeno in tre modi:
+Sono metriche diverse perché assegnano peso a entità diverse.
 
-1. percentuale di ordini completamente consegnati oltre la promessa finale;
-2. percentuale di spedizioni consegnate in ritardo;
-3. percentuale di unità consegnate in ritardo.
+Il KPI esistente era chiamato genericamente `late_delivery_rate`, quindi la definizione non rendeva visibile il grain.
 
-Sono tre metriche diverse.
-
-### Seconda domanda: quale data determina la coorte?
+### Campo 2 — Time semantics
 
 La query raggruppa per `order_date`.
 
-Un ordine del 29 giugno consegnato il 5 luglio viene attribuito a giugno.
+Un ordine creato il 29 giugno e consegnato il 5 luglio viene attribuito a giugno.
 
-Questo può essere corretto per un'analisi per coorte di ordini, ma non per monitorare la performance operativa delle consegne avvenute a luglio.
+Questo è corretto per una **coorte di ordini creati**, ma non per una dashboard che vuole descrivere **le consegne avvenute nel mese**.
 
-Il team scopre che il dashboard precedente utilizzava `delivered_at`, mentre una recente migrazione lo ha sostituito con `order_date`.
+L’analista scopre inoltre che, prima di una migrazione recente, il dashboard usava `delivered_at`.
 
-Una parte del peggioramento è quindi un cambio di definizione temporale.
+Una parte del salto è quindi un **definition drift**: lo stesso nome KPI ha cambiato semantica temporale.
 
-### Terza domanda: cosa significa `promised_delivery_at`?
+### Campo 3 — Metric semantics
 
-Durante il trimestre l'e-commerce ha introdotto una nuova promessa di consegna più aggressiva per aumentare la conversione.
+Durante il trimestre VelaHome ha reso più aggressiva la promessa di consegna mostrata nel checkout.
 
 Prima:
 
-- promessa media: 5,2 giorni.
+- promised lead time medio: 5,2 giorni.
 
 Dopo:
 
-- promessa media: 3,9 giorni.
+- promised lead time medio: 3,9 giorni.
 
-Il tempo di consegna effettivo è passato da 4,4 a 4,5 giorni.
+Il transit time effettivo passa soltanto da 4,4 a 4,5 giorni.
 
-La logistica è peggiorata di circa 0,1 giorni.
+Quindi due domande che sembravano equivalenti si separano:
 
-Il late rate è aumentato molto di più perché il target promesso è diventato più stringente.
+> **la logistica è diventata più lenta?**
 
-La domanda “la logistica sta peggiorando?” non è equivalente alla domanda “stiamo rispettando la promessa al cliente?”.
+vs
 
-Entrambe sono utili, ma richiedono metriche diverse.
+> **stiamo rispettando meno spesso la promessa fatta al cliente?**
 
-### Quarta domanda: sono cambiate le popolazioni?
+Il late rate risponde soprattutto alla seconda.
 
-La crescita del trimestre è concentrata in prodotti voluminosi e in aree rurali, dove le consegne sono strutturalmente più lente.
+### Campo 4 — Population semantics e mix
 
-Segmentando:
+La crescita del trimestre è concentrata in prodotti voluminosi e destinazioni rurali.
 
 | Segmento | Late rate Q1 | Late rate Q2 |
 |---|---:|---:|
@@ -102,13 +102,11 @@ Segmentando:
 | bulky urbani | 13,8% | 14,2% |
 | bulky rurali | 19,5% | 20,1% |
 
-Dentro ogni segmento il deterioramento è contenuto.
+All’interno dei segmenti il deterioramento è contenuto. L’aggregato peggiora molto anche perché cambia il mix.
 
-Il mix Q2 contiene però molti più ordini bulky e rurali.
+Questa non è una prova che il problema sia irrilevante. Significa che l’intervento deve essere localizzato sulla parte del processo che genera il delta.
 
-L'aggregato peggiora anche perché cambia la composizione.
-
-### La ricostruzione
+### La nuova fact
 
 Il team costruisce una fact a grain spedizione:
 
@@ -126,8 +124,6 @@ fact_shipments
 - shipping_cost
 ```
 
-Poi aggiunge dimensioni per carrier, area, prodotto e data.
-
 Le metriche vengono separate:
 
 - `on_time_shipment_rate`;
@@ -136,34 +132,50 @@ Le metriche vengono separate:
 - `promise_gap_days`;
 - `shipping_cost_per_unit`.
 
-### La conclusione
+### Il contratto ricostruito
 
-La prima lettura era:
+| Campo | Definizione |
+|---|---|
+| business entity | spedizione |
+| grain | una riga per `shipment_id` |
+| key | `shipment_id` unico |
+| population | spedizioni customer-facing non cancellate |
+| operational time | `delivered_at` |
+| cohort time | `order_date` quando serve analisi per coorte |
+| promise metric | `delivered_at <= promised_delivery_at` |
+| transit metric | `delivered_at - shipped_at` |
+| invariants | una spedizione non può avere più di una consegna finale valida |
+| reconciliation | spedizioni e unità riconciliate con OMS/WMS |
+
+### La conclusione cambia
+
+Prima:
 
 > la rete logistica è peggiorata drasticamente; cambiamo corriere.
 
-La conclusione analitica diventa:
+Dopo:
 
-> il rispetto della promessa al cliente è peggiorato in modo rilevante, ma solo una piccola parte è spiegata da un deterioramento della velocità logistica. Le cause principali sono una promessa commerciale più aggressiva e un mix di ordini più difficile. Il nuovo corriere potrebbe aumentare i costi senza risolvere il problema dominante.
+> il rispetto della promessa al cliente è peggiorato in modo rilevante, ma il transit time è quasi stabile. Il delta aggregato è spiegato soprattutto da una promessa più aggressiva e da un mix più difficile, con deterioramento operativo più marcato nel segmento bulky-rurale.
 
-La decisione cambia.
+La decisione diventa:
 
-Invece di una migrazione generalizzata da 1,2 milioni di euro, VelaHome avvia tre interventi:
+1. promessa dinamica per area e tipologia prodotto;
+2. test del nuovo carrier sul segmento bulky-rurale;
+3. monitoraggio separato di transit time e promise adherence;
+4. definizione certificata dei KPI per evitare nuovi definition drift.
 
-1. promessa dinamica per area e tipologia di prodotto;
-2. test del nuovo carrier soltanto sul segmento bulky-rurale;
-3. monitoraggio separato di transit time e promise adherence.
+### La lezione
 
-### Le lezioni del caso
+La query iniziale non aveva un bug evidente.
 
-La query iniziale non conteneva un bug evidente.
+Il problema nasceva da una catena semantica:
 
-Il problema nasceva da una catena di decisioni semantiche:
+```text
+grain ambiguo
+→ data non coerente con la domanda
+→ target commerciale cambiato
+→ mix di popolazione diverso
+→ una metrica usata per due decisioni
+```
 
-- grain ordine invece di spedizione;
-- data ordine invece di data consegna;
-- KPI relativo a una promessa che era cambiata;
-- mix di popolazione diverso;
-- una sola metrica usata per rispondere a due domande diverse.
-
-> **Il SQL affidabile non comincia da `SELECT`. Comincia dalla definizione del fenomeno che vogliamo misurare.**
+> **Una query può calcolare perfettamente una metrica definita male. Per questo la correttezza analitica deve essere verificata prima e oltre la correttezza SQL.**
