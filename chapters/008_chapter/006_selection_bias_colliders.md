@@ -1,82 +1,140 @@
-## 8.5 Selection bias e collider: quando il campione crea una relazione
+## 8.5 Selection bias e collider: quando il campione costruisce una relazione
 
-Non tutte le distorsioni nascono da una variabile che causa sia trattamento sia outcome. A volte il problema nasce dal fatto che analizziamo solo una parte selezionata della popolazione.
+Un dataset può essere perfettamente pulito e comunque rappresentare male la relazione causale che ci interessa.
 
-### Caso - I venditori migliori sembrano usare meno il CRM
+Il problema può nascere **prima** dell'analisi, nel meccanismo che decide chi entra nel campione.
 
-Un'azienda B2B analizza soltanto le opportunità che hanno raggiunto la fase finale della pipeline. Tra queste osserva che i venditori che registrano meno attività nel CRM hanno un win rate più alto.
+### Caso simulato/composito — I migliori venditori sembrano usare meno il CRM
 
-La direzione commerciale conclude che documentare troppe attività faccia perdere tempo e riduca le vendite.
+Un'azienda B2B analizza soltanto le opportunità arrivate alla fase finale della pipeline.
 
-Ma per arrivare alla fase finale un'opportunità può avere due caratteristiche che aiutano molto:
+Tra queste, i commerciali con meno attività registrate nel CRM hanno win rate più alto.
 
-- elevata qualità iniziale del lead;
-- forte attività commerciale.
+La conclusione superficiale è:
 
-Se selezioniamo soltanto le opportunità arrivate alla fase finale, finiamo per confrontare casi in cui una qualità più bassa può essere compensata da maggiore attività e viceversa.
+> “Documentare troppe attività riduce la performance.”
 
-Condizionare sulla selezione può creare una relazione artificiale tra variabili che nella popolazione completa non hanno quella relazione.
+Ma l'arrivo alla fase finale è favorito sia da:
 
-### Un collider in forma intuitiva
+- qualità iniziale del lead;
+- intensità commerciale.
 
-Immaginiamo:
+Possiamo rappresentarlo così:
 
-`qualità lead -> arrivo alla fase finale <- intensità commerciale`
+```text
+qualità lead --------> fase finale <-------- intensità commerciale
+```
 
-L'arrivo alla fase finale è influenzato da entrambe le variabili. È quindi un punto di collisione delle due frecce: un **collider**.
+`fase finale` è un **collider**: riceve frecce da entrambe le variabili.
 
-Se analizziamo solo le opportunità che hanno raggiunto quella fase, stiamo condizionando sul collider e possiamo introdurre un'associazione spuria tra qualità del lead e intensità commerciale.
+Condizionando sull'essere arrivati in quella fase, possiamo creare un'associazione artificiale tra qualità del lead e intensità commerciale.
 
-### Caso - Soddisfazione dei clienti che rispondono al survey
+### Un collider non va “controllato perché importante”
 
-Un servizio digitale invia un questionario NPS a tutti i clienti. Risponde il 18%.
+Una regola di regressione puramente predittiva potrebbe suggerire di aggiungere una variabile molto informativa come `reached_final_stage`.
 
-Tra i rispondenti, chi usa più frequentemente il prodotto sembra meno soddisfatto.
+Ma causalmente il controllo può aprire un percorso che prima era chiuso.
 
-Il team propone di ridurre notifiche e funzionalità avanzate.
+È uno dei motivi per cui:
 
-Ma la probabilità di rispondere è maggiore sia per:
+> **“controllare più variabili” non equivale a “controllare meglio il bias”.**
 
-- utenti estremamente coinvolti;
-- utenti molto insoddisfatti.
+### Caso simulato/composito — NPS dei soli rispondenti
 
-Analizzando soltanto chi risponde, si studia una popolazione selezionata attraverso un meccanismo legato alle variabili di interesse.
+Un servizio digitale invia una survey a tutti i clienti. Risponde il 18%.
 
-### Forme comuni di selection bias nel lavoro quotidiano
+Tra i rispondenti, gli utenti più intensivi sembrano meno soddisfatti.
 
-Il problema compare quando analizziamo solo:
+Ma la probabilità di rispondere aumenta sia per:
 
-- clienti sopravvissuti abbastanza a lungo;
-- utenti che completano l'onboarding;
-- lead diventati opportunità;
-- dipendenti ancora presenti in azienda;
-- ordini effettivamente consegnati;
-- persone che rispondono a una survey;
-- ticket escalati;
-- campagne che hanno ottenuto abbastanza volume da essere mantenute attive.
+- utenti molto coinvolti;
+- utenti estremamente insoddisfatti.
 
-La domanda da fare è:
+Studiando solo i rispondenti, analizziamo una popolazione selezionata da un meccanismo collegato alle variabili di interesse.
 
-> **Perché questa unità è entrata nel dataset che sto analizzando?**
+Il problema non è soltanto il basso response rate. È **come la probabilità di risposta dipende dal fenomeno studiato**.
 
-### Caso - Analisi dei tempi di consegna
+### Survivorship bias
 
-Un marketplace vuole capire se il nuovo corriere è più veloce. L'analisi include solo ordini consegnati entro 30 giorni.
+Una forma frequente di selection bias consiste nell'analizzare solo chi è rimasto abbastanza a lungo da essere osservato.
 
-Il nuovo corriere ha un tempo medio di 2,8 giorni, il vecchio 3,4.
+Esempi:
 
-Successivamente emerge che il nuovo corriere ha anche una percentuale maggiore di ordini non consegnati entro 30 giorni. Questi ordini sono stati esclusi dal dataset.
+- retention dei clienti ancora attivi;
+- produttività dei dipendenti rimasti in azienda;
+- qualità dei seller che non sono stati sospesi;
+- performance degli SKU sopravvissuti a una razionalizzazione;
+- tempi di consegna dei soli ordini effettivamente consegnati.
 
-Il filtro ha eliminato proprio una parte importante dei casi peggiori.
+### Caso simulato/composito — Il corriere “più veloce”
+
+Un marketplace confronta i tempi medi dei soli ordini consegnati entro 30 giorni:
+
+- corriere nuovo: 2,8 giorni;
+- corriere storico: 3,4 giorni.
+
+Il nuovo corriere sembra migliore.
+
+Poi emerge che ha una quota molto più alta di ordini non consegnati entro 30 giorni, esclusi dalla tabella.
+
+Il filtro rimuove proprio parte della coda negativa che dovrebbe entrare nella decisione.
+
+### Selezione causata dal trattamento
+
+La selezione è particolarmente pericolosa quando il trattamento influenza la probabilità di essere osservati.
+
+Esempio:
+
+```text
+trattamento -> sopravvivenza nel campione <- severità iniziale
+```
+
+Analizzare soltanto i sopravvissuti può rompere la comparabilità creata inizialmente, perfino in un esperimento randomizzato.
+
+Questa è una delle ragioni per cui le esclusioni post-randomizzazione devono essere trattate con estrema cautela.
+
+### Domanda diagnostica fondamentale
+
+Prima di aprire il notebook chiedi:
+
+> **“Quale processo deve attraversare un'unità per comparire in questa tabella?”**
+
+Scrivilo come funnel di selezione:
+
+```text
+popolazione target
+    ↓
+eleggibile
+    ↓
+registrata nel sistema
+    ↓
+ha outcome osservabile
+    ↓
+passa i filtri analitici
+    ↓
+campione finale
+```
+
+A ogni passaggio chiedi se la selezione dipende da:
+
+- trattamento;
+- outcome;
+- cause del trattamento;
+- cause dell'outcome.
 
 ### Regola operativa
 
-Prima di interpretare qualsiasi relazione chiediamo:
+La scheda minima dovrebbe includere:
 
-1. qual è la popolazione target?
-2. attraverso quali filtri entra nel dataset?
-3. i filtri dipendono dal trattamento, dall'outcome o da loro cause?
-4. chi manca dall'analisi?
-5. come cambierebbe la conclusione includendo gli esclusi?
+```text
+Popolazione target:
+Popolazione realmente osservabile:
+Filtri prima dell'analisi:
+Filtri dopo il trattamento:
+Chi manca?
+Perché manca?
+La probabilità di essere osservato dipende da trattamento/outcome?
+Quale conclusione cambierebbe includendo gli esclusi?
+```
 
-> **Un dataset può essere tecnicamente perfetto e statisticamente distorto perché il problema è nel processo di selezione che lo ha creato.**
+> **La tabella finale non è la popolazione. È il risultato di un processo di selezione che deve entrare nel ragionamento causale.**
