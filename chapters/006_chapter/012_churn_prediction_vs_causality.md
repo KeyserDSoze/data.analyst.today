@@ -1,78 +1,139 @@
-## 6.11 Churn prediction: prevedere chi se ne andrà non significa sapere perché
+## 6.11 Churn prediction: rischio, diagnosi e persuadibilità sono problemi diversi
 
-Una delle richieste più comuni nei team subscription è: “Possiamo costruire un modello che predice il churn?”
+Dopo aver descritto segmenti, coorti, activation, retention e valore, arriva spesso una richiesta naturale:
 
-La risposta tecnica è spesso sì. La risposta analitica più importante è un'altra: **cosa faremo con quella previsione?**
+> Possiamo prevedere chi se ne andrà?
 
-Un modello predittivo può imparare che alcuni pattern precedono il churn. Ma questo non implica che intervenire su quei pattern riduca il churn.
+Sì, spesso possiamo costruire un modello utile. Ma il lifecycle analysis deve fissare una distinzione prima ancora di parlare di algoritmo.
 
-### Caso: Northstar CRM
+Esistono almeno tre domande diverse:
 
-Northstar CRM serve circa 18.000 aziende. Il team Data Science costruisce un modello che assegna ogni settimana una probabilità di churn a ciascun account.
+1. **Prediction** — chi ha maggiore probabilità di churnare?
+2. **Diagnosis** — quali condizioni e pattern sono associati al churn?
+3. **Intervention** — su quali clienti una certa azione riduce realmente il churn?
 
-Le variabili più importanti risultano:
+Un modello predittivo risponde soprattutto alla prima.
 
-- numero di login negli ultimi 14 giorni;
-- utilizzo delle automazioni;
-- numero di ticket al supporto;
-- riduzione degli utenti attivi nel workspace;
-- mancato utilizzo dell'integrazione contabile.
+### Caso simulato/composito: Northstar CRM
 
-Il modello ha buone performance di ranking: gli account nel decile di rischio più alto churnano molto più spesso della media.
+**Northstar CRM** serve circa 18.000 aziende. Il team Data Science assegna settimanalmente a ogni account un risk score.
 
-Il Customer Success team propone quindi una strategia semplice: contattare tutti gli account con pochi login e incentivare l'uso del prodotto.
+Tra i segnali più predittivi emergono:
 
-Il problema è che “pochi login” può essere un **segnale** di un problema, non la sua causa.
+- riduzione dei login;
+- meno utenti attivi nel workspace;
+- mancato utilizzo delle automazioni;
+- aumento dei ticket al supporto;
+- assenza dell'integrazione contabile.
 
-### Il caso del cliente che non entra più perché ha già deciso di uscire
+Gli account nel decile di rischio più alto churnano molto più frequentemente della media.
 
-Un account può ridurre i login perché:
+Il modello è utile per il **ranking** del rischio.
 
-- il prodotto non funziona bene;
-- l'azienda ha cambiato processo;
-- ha acquistato un concorrente;
+Il Customer Success team propone però:
+
+> i clienti con pochi login sono a rischio, quindi dobbiamo farli usare di più.
+
+Il salto logico è troppo grande.
+
+### Un segnale predittivo non è automaticamente una leva
+
+Pochi login possono significare che:
+
+- il prodotto è diventato meno utile;
 - il champion interno ha lasciato l'azienda;
-- il team è stato ridimensionato;
-- ha già deciso di non rinnovare.
+- il cliente ha acquistato un concorrente;
+- il team si è ridimensionato;
+- l'account ha già deciso di non rinnovare;
+- il workflow è diventato più efficiente e richiede meno accessi.
 
-In alcuni casi aumentare artificialmente i login non cambia nulla.
+Aumentare artificialmente il numero di login non risolve necessariamente nessuno di questi problemi.
 
-L'analista distingue quindi tre domande:
+Il segnale aiuta a localizzare il rischio. Non ci dice ancora quale trattamento funzioni.
 
-1. **Prediction:** chi ha maggiore probabilità di churnare?
-2. **Diagnosis:** quali pattern e condizioni sono associati al churn?
-3. **Causal intervention:** quali azioni riducono realmente il churn?
+### Il caso dei ticket di supporto
 
-Sono tre problemi diversi.
+Nel modello Northstar, molti ticket sono associati a churn elevato.
 
-### Un modello utile può essere non causale
+Sarebbe assurdo concludere che bisogna impedire ai clienti di contattare il supporto.
 
-Questo non rende inutile il churn model. Può essere estremamente utile per prioritizzare il lavoro del Customer Success.
+È più plausibile che:
 
-Se un team può contattare solo 500 clienti al mese, una buona previsione può concentrare l'attenzione sugli account a rischio maggiore.
+`problema del cliente → più ticket`
 
-Ma la successiva decisione — quale intervento usare — richiede evidenza ulteriore.
+e contemporaneamente:
 
-### Caso: il supporto che “causa” churn
+`problema del cliente → maggiore rischio di churn`
 
-Nel modello Northstar, il numero di ticket support aperti è fortemente associato al churn. Una lettura superficiale potrebbe suggerire di ridurre i contatti con il supporto.
+Il ticket è in parte un proxy del problema sottostante.
 
-Naturalmente sarebbe assurdo.
+Questo esempio è utile perché rende evidente la differenza tra **predittore** e **causa**, anche senza un modello causale formale.
 
-È più plausibile che i clienti con problemi aprano ticket e che gli stessi problemi aumentino il rischio di churn.
+### Rischio elevato non significa cliente salvabile
 
-Il supporto è in parte un **proxy della difficoltà vissuta**, non necessariamente il driver causale.
+Supponiamo che il Customer Success possa intervenire su 300 account al mese.
 
-### Dal risk score al treatment effect
+Se seleziona semplicemente i 300 risk score più alti, può finire per contattare soprattutto clienti che:
 
-Un passo più maturo consiste nel chiedere non solo “chi è a rischio?”, ma:
+- hanno già comunicato la disdetta;
+- stanno cessando l'attività;
+- hanno completato una migrazione verso un concorrente;
+- non hanno più il bisogno che il prodotto soddisfaceva.
 
-> Su quali clienti un certo intervento ha maggiore probabilità di funzionare?
+Sono clienti facili da prevedere e difficili da influenzare.
 
-Questo porta verso concetti come uplift modeling, heterogeneous treatment effects e sperimentazione mirata, che incontreremo più avanti.
+La lista operativa dovrebbe quindi considerare almeno:
 
-Per il momento basta fissare una regola:
+- rischio di churn;
+- valore economico;
+- tempo prima del momento decisionale;
+- tipo di problema osservato;
+- possibilità concreta di intervento.
 
-**Un modello che predice bene il churn non è automaticamente un modello che spiega il churn.**
+### Risk score, value score, actionability
 
-E un fattore predittivo non è automaticamente una leva di business.
+Un modo semplice per evitare che il modello domini la decisione è separare tre colonne:
+
+| Dimensione | Domanda |
+| --- | --- |
+| Risk | Quanto è probabile l'uscita? |
+| Value | Quanto valore è a rischio? |
+| Actionability | Abbiamo ancora una leva plausibile e il tempo per usarla? |
+
+Non devono necessariamente essere fuse subito in un unico punteggio.
+
+Vederle separatamente aiuta il team a capire perché un account viene prioritizzato.
+
+### E la persuadibilità?
+
+Esiste una quarta domanda ancora più difficile:
+
+> quale cliente cambierebbe comportamento **proprio grazie** al nostro intervento?
+
+Un cliente ad alto rischio potrebbe churnare comunque. Un cliente a basso rischio sarebbe rimasto anche senza intervento. Il segmento più interessante può essere quello intermedio: clienti per i quali il trattamento produce un effetto incrementale.
+
+Questa idea porta a uplift modeling, heterogeneous treatment effects e sperimentazione mirata.
+
+La incontreremo nei capitoli dedicati a causalità, sperimentazione e modelli.
+
+### Confine con i capitoli successivi
+
+Questo capitolo non deve diventare un tutorial di machine learning.
+
+Qui il punto è capire **dove entra la prediction nel lifecycle**.
+
+- Nel **Capitolo 8** approfondiremo il ragionamento causale e i treatment effect.
+- Nel **Capitolo 9** vedremo come progettare esperimenti e interventi controllati.
+- Nel **Capitolo 10** costruiremo e valuteremo modelli predittivi, compresi leakage, calibration, threshold e monitoring.
+
+La regola da portare avanti è semplice:
+
+**Un modello che predice bene chi churnerà non dimostra perché churnerà e non identifica automaticamente chi possiamo salvare.**
+
+### La domanda operativa
+
+Prima di costruire un churn model chiediamo:
+
+> Quale decisione prenderemo con il ranking, quanta capacità operativa abbiamo e quale evidenza useremo per scegliere l'intervento?
+
+Se nessuno conosce la risposta, il rischio è costruire un modello tecnicamente corretto per una decisione ancora indefinita.
