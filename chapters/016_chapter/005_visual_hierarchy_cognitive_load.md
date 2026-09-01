@@ -1,119 +1,165 @@
-## 16.4 Gerarchia visiva e cognitive load
+## 16.4 Gerarchia visiva e cognitive load: progettare l'attenzione
+
 Quando tutto sembra importante, niente lo è davvero.
 
-Una dashboard o una slide può contenere numeri corretti ma costringere il lettore a troppo lavoro cognitivo:
+Una pagina può contenere numeri corretti e fallire perché trasferisce al lettore troppo lavoro:
 
 - capire dove guardare;
 - distinguere segnale e contesto;
-- ricostruire la gerarchia;
-- ricordare definizioni;
-- confrontare scale incompatibili;
-- leggere legende lontane dal dato;
-- filtrare mentalmente informazioni irrilevanti.
+- ricordare una legenda lontana;
+- confrontare scale;
+- ricostruire quale numero è headline e quale è diagnostico;
+- capire quali dettagli sono caveat e quali sono decorazioni.
 
-Questo costo cognitivo riduce la probabilità che il messaggio venga compreso correttamente.
+Il cognitive load non è solo un problema estetico. È **rischio di interpretazione**.
 
-## La gerarchia visiva è una forma di priorità
+## Il salience budget
 
-Se un KPI è la decisione centrale, deve essere facile da trovare.
+Ogni pagina ha un budget limitato di attenzione.
 
-Se un valore è secondario, non dovrebbe competere visivamente con il messaggio principale.
-
-Possiamo costruire gerarchia usando:
+Possiamo spenderlo con:
 
 - posizione;
 - dimensione;
 - contrasto;
-- prossimità;
 - spazio bianco;
-- ordine;
+- peso tipografico;
+- colore;
 - annotazioni.
 
-Non serve trasformare ogni dashboard in un poster.
+Se usiamo massima enfasi su dieci elementi, non abbiamo dieci priorità. Abbiamo perso la gerarchia.
 
-Serve evitare che il lettore debba indovinare cosa conta.
+Una regola utile è classificare gli elementi:
 
-## Caso realistico: quattro KPI, sedici colori
+### P1 — Decision-critical
 
-Una fintech prepara una dashboard rischio con quattro metriche davvero importanti:
+Deve emergere immediatamente.
+
+Esempi:
+
+- recommendation;
+- gap che supera una soglia;
+- guardrail violato;
+- caveat che cambia la decisione.
+
+### P2 — Supporting evidence
+
+Deve essere visibile senza competere con P1.
+
+### P3 — Context / verification
+
+Serve per capire o controllare, ma può vivere più in basso o in appendix.
+
+La gerarchia visiva dovrebbe seguire questa gerarchia semantica.
+
+## Caso simulato/composito — Quattro KPI, sedici colori
+
+Una fintech prepara una dashboard rischio con quattro metriche centrali:
 
 - default rate;
 - loss given default;
 - approval rate;
 - fraud loss.
 
-La pagina usa però sedici colori diversi per segmenti, prodotti, stati, alert e regioni.
+La pagina usa sedici colori per segmenti, prodotti, stati, alert e regioni.
 
-Il risultato è visivamente ricco ma cognitivamente rumoroso.
+Durante la review il management dedica diversi minuti a un segmento rosso che sembra critico.
 
-Durante una review, il management dedica diversi minuti a discutere un segmento colorato in rosso perché sembra “critico”.
+Il rosso indica in realtà soltanto una categoria prodotto.
 
-In realtà quel rosso indica soltanto una categoria prodotto.
+Il redesign usa:
 
-La dashboard viene ridisegnata:
+- tono neutro per il contesto;
+- enfasi riservata agli scostamenti decisionali;
+- etichette dirette;
+- simbolo/testo per gli alert;
+- palette di categoria separata dal linguaggio di stato.
 
-- colore neutro per il contesto;
-- enfasi solo sugli scostamenti che richiedono attenzione;
-- label dirette;
-- meno legende;
-- alert separati dal codice colore delle categorie.
-
-Il dato non cambia.
-
-Cambia la probabilità di interpretarlo bene.
+I numeri non cambiano. Cambia la probabilità di interpretarli correttamente.
 
 ## Ridurre il lavoro di memoria
 
-Un principio utile è evitare di costringere il lettore a ricordare informazioni presenti altrove.
+Il lettore non dovrebbe ricordare continuamente:
 
-Esempio debole:
+- quale linea è l'anno corrente;
+- quale colore è il target;
+- quale unità usa il grafico precedente;
+- quale filtro è attivo.
 
-- linea blu = current year;
-- linea verde = prior year;
-- linea tratteggiata = target;
-- legenda in alto a destra;
-- grafico in basso a sinistra.
+Quando possibile:
 
-Esempio migliore:
+- etichettiamo direttamente le linee;
+- mettiamo unità vicino ai numeri;
+- mostriamo il filtro decision-critical in pagina;
+- mettiamo l'annotazione vicino al punto a cui si riferisce;
+- manteniamo lo stesso encoding per lo stesso concetto tra pagine.
 
-- etichettare direttamente le linee vicino alla loro estremità.
+La coerenza riduce il costo cognitivo cumulativo.
 
-In generale, quando possibile:
+## Precision budget: più decimali non significa più rigore
 
-- metti label vicino al dato;
-- metti il contesto vicino alla metrica;
-- metti la spiegazione vicino all'anomalia.
+`31,847362%` comunica precisione apparente.
 
-## Precisione apparente e falsa importanza
+La precisione mostrata dovrebbe dipendere dalla soglia decisionale.
 
-Un KPI mostrato come `31,847362%` comunica una precisione che raramente è utile alla decisione.
+Se nessuna decisione cambia per differenze inferiori a 0,1 punti percentuali, sei decimali non aiutano. Possono anzi rendere invisibile la vera incertezza.
 
-La quantità di decimali dovrebbe dipendere dalla domanda.
+Chiamiamo questo **precision budget**:
 
-Se una decisione cambia solo oltre una differenza di 0,5 punti percentuali, mostrare sei decimali non aggiunge valore.
+> mostriamo soltanto la precisione che il processo decisionale può realmente utilizzare e che il metodo può difendere.
 
-Può anzi suggerire una certezza inesistente.
+## Spazio bianco come separazione semantica
 
-## Lo spazio bianco non è spazio sprecato
+Lo spazio bianco non è vuoto.
 
-Lo spazio bianco separa concetti.
+Comunica:
 
-Aiuta a capire quali elementi appartengono allo stesso gruppo e quali no.
+- questi elementi appartengono allo stesso gruppo;
+- questo blocco è più importante;
+- questa evidenza è distinta dalla raccomandazione;
+- qui cambia livello di dettaglio.
 
-Riempire ogni centimetro disponibile aumenta spesso il numero di elementi visibili ma diminuisce la leggibilità dell'insieme.
+Riempire ogni centimetro spesso aumenta la quantità di informazione visibile e diminuisce quella effettivamente utilizzabile.
 
-## Una regola pratica
+## Il test dei tre secondi e dei dieci secondi
 
-Per ogni pagina chiediamoci:
+Mostriamo la pagina a una persona non coinvolta nell'analisi.
 
-1. dove guarderà l'utente nei primi tre secondi?
-2. è il punto giusto?
-3. cosa dovrebbe capire entro dieci secondi?
-4. quali dettagli può esplorare dopo?
-5. cosa possiamo rimuovere senza perdere capacità decisionale?
+Dopo tre secondi chiediamo:
 
-Microsoft raccomanda di considerare il pubblico, mettere in evidenza le informazioni più importanti e rimuovere elementi non essenziali quando una pagina diventa troppo affollata.
+> “Che cosa ti sembra più importante?”
 
-Fonte: https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-tips-and-tricks-for-creating-reports
+Dopo dieci:
 
-**La gerarchia visiva non serve a decorare la priorità. Serve a renderla immediatamente percepibile.**
+> “Quale decisione o problema pensi che questa pagina stia evidenziando?”
+
+Se le risposte non coincidono con l'intento, la gerarchia è sbagliata anche se ogni singolo elemento è corretto.
+
+## La gerarchia non deve occultare il caveat
+
+Un errore frequente è mettere la recommendation enorme e l'incertezza in piccolo.
+
+Se il caveat attraversa lo switching value del Capitolo 15, è P1 anch'esso.
+
+Esempio:
+
+> “Progetto con beneficio centrale €1,2M”
+
+ma range plausibile:
+
+> “€0,4M–€1,9M contro costo €1,0M.”
+
+Il range non è footnote. È parte del messaggio principale.
+
+## Accessibilità e gerarchia
+
+La gerarchia non può dipendere soltanto dal colore. W3C WCAG 2.2 richiede che il colore non sia l'unico mezzo per distinguere informazione; testo, forma, etichette e struttura devono fornire ridondanza.
+
+Questa non è una limitazione creativa. È una buona disciplina comunicativa anche per chi vede perfettamente i colori.
+
+> **La gerarchia visiva è una decisione su dove spendere l'attenzione del lettore. Va allocata con la stessa disciplina con cui allochiamo tempo e budget analitico.**
+
+### Fonti
+
+- W3C, *WCAG 2.2 — Understanding 1.4.1 Use of Color*: https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html
+- Government Analysis Function, *Accessible charts: a checklist of the basics*: https://analysisfunction.civilservice.gov.uk/policy-store/accessible-charts-a-checklist-of-the-basics/
