@@ -1,4 +1,4 @@
-## 11.9 Slowly Changing Dimensions: quando il passato deve restare passato
+## 11.9 Slowly Changing Dimensions: decidere se il passato può cambiare
 
 Le dimensioni descrivono entità: clienti, prodotti, territori, dipendenti, account, negozi.
 
@@ -6,29 +6,39 @@ Ma le entità cambiano.
 
 Un cliente cambia segmento. Un venditore cambia regione. Un prodotto cambia categoria. Un punto vendita cambia area commerciale.
 
-La domanda è: **quando analizziamo il passato, vogliamo usare la classificazione di oggi o quella che era valida allora?**
+La domanda analitica è:
 
-Questa non è una scelta tecnica. È una scelta analitica.
+> **quando analizziamo il passato, vogliamo usare la classificazione corrente o quella valida nel momento dell’evento?**
 
-### Type 1: sovrascrivere il passato
+Questa è una scelta semantica prima di essere una scelta tecnica.
 
-Con una Slowly Changing Dimension di tipo 1, quando un attributo cambia, il valore precedente viene sovrascritto.
+### Type 1: correggere o reinterpretare il passato
 
-È appropriato quando il vecchio valore era semplicemente sbagliato oppure quando non interessa mantenere la storia.
+Con una Slowly Changing Dimension di tipo 1, il nuovo valore sovrascrive quello precedente.
+
+È appropriato quando:
+
+- il valore precedente era un errore;
+- la storia non ha valore analitico;
+- vogliamo intenzionalmente reinterpretare il passato con la classificazione corrente.
 
 Esempio:
 
-`customer_name = "Acme Srl"`
+```text
+Acme Srl
+```
 
-viene corretto in:
+corretto in:
 
-`customer_name = "ACME S.p.A."`
+```text
+ACME S.p.A.
+```
 
-Se si tratta di una correzione anagrafica, mantenere la vecchia grafia può non avere valore analitico.
+Se si tratta soltanto di una correzione anagrafica, conservare la vecchia grafia può non servire.
 
-### Type 2: conservare versioni storiche
+### Type 2: preservare il contesto storico
 
-Con una SCD Type 2, ogni cambiamento rilevante produce una nuova riga della dimensione.
+Con una SCD Type 2, un cambiamento rilevante crea una nuova versione della riga.
 
 Una struttura tipica può contenere:
 
@@ -44,27 +54,29 @@ is_current
 Per esempio:
 
 | customer_sk | customer_id | segment | valid_from | valid_to | is_current |
-|---:|---:|---|---|---|---|
-| 4102 | C884 | SMB | 2024-01-01 | 2025-09-30 | false |
+|---:|---|---|---|---|---|
+| 4102 | C884 | SMB | 2024-01-01 | 2025-10-01 | false |
 | 9177 | C884 | Enterprise | 2025-10-01 | 9999-12-31 | true |
 
-Microsoft descrive proprio il Type 2 come un pattern in cui, quando un attributo dimensionale cambia, viene creata una nuova versione della riga mentre quella precedente viene mantenuta, così da preservare la storia e poter ricostruire lo stato del dato in un determinato momento.[^ms-scd2]
+La business key `customer_id` identifica l’entità. La surrogate key identifica una **versione storica** di quell’entità.
 
-### Caso realistico: il segmento Enterprise che sembrava aver triplicato le vendite
+Microsoft documenta la SCD Type 2 come un pattern in cui i cambiamenti dimensionali producono nuove versioni della riga per preservare la storia.
 
-**NovaParts**, distributore industriale, presenta questo risultato:
+Fonte: https://learn.microsoft.com/en-us/fabric/data-factory/slowly-changing-dimension-type-two
+
+### Caso simulato/composito — NovaParts e l’Enterprise che sembrava crescere del 74%
+
+NovaParts, distributore industriale, presenta:
 
 - vendite Enterprise 2024: €18,2M;
 - vendite Enterprise 2025: €31,7M;
-- crescita: +74%.
+- crescita apparente: +74%.
 
-Il management conclude che la strategia Enterprise funziona in modo straordinario.
+L’analista scopre che `dim_customer` contiene soltanto il segmento corrente.
 
-L'analista controlla il modello e scopre che `dim_customer` contiene solo il segmento corrente.
+Nel 2025 molti clienti Mid-Market sono stati riclassificati Enterprise dopo aver superato una soglia di fatturato.
 
-Nel 2025 molte aziende sono state riclassificate da Mid-Market a Enterprise dopo aver superato una soglia di fatturato.
-
-La query storica:
+La query:
 
 ```sql
 SELECT
@@ -76,58 +88,108 @@ JOIN dim_customer d
 GROUP BY 1;
 ```
 
-attribuisce retroattivamente anche le vendite 2024 di quei clienti al segmento Enterprise.
+attribuisce retroattivamente al segmento Enterprise anche vendite del 2024 generate quando quei clienti erano Mid-Market.
 
-Dopo una ricostruzione point-in-time con SCD Type 2:
+Ricostruendo il segmento `as-of sale date`:
 
 - Enterprise 2024: €24,9M;
 - Enterprise 2025: €31,7M;
-- crescita reale comparabile: +27%.
+- crescita comparabile: +27%.
 
-La crescita rimane positiva, ma la storia strategica cambia completamente.
-
-### Business key e surrogate key
-
-La business key identifica l'entità nel sistema sorgente:
-
-`customer_id = C884`
-
-La surrogate key identifica una specifica versione storica:
-
-`customer_sk = 4102` oppure `9177`.
-
-Le fact table storiche dovrebbero tipicamente puntare alla surrogate key appropriata per il momento dell'evento.
-
-Così una vendita del 2024 rimane collegata alla versione `SMB`, mentre una vendita del 2026 può essere collegata alla versione `Enterprise`.
+La crescita resta positiva. Cambia però la storia strategica raccontata dal KPI.
 
 ### Il join point-in-time
 
-Quando si ricostruisce la chiave dimensionale durante un load, la logica concettuale è:
+La logica concettuale per associare una fact alla versione dimensionale corretta è:
 
 ```sql
-fact.event_date >= dim.valid_from
-AND fact.event_date < dim.valid_to
+fact.event_at >= dim.valid_from
+AND fact.event_at < dim.valid_to
 ```
 
-Il dettaglio delle convenzioni su estremi inclusivi/esclusivi varia, ma deve essere coerente e testato.
+La convenzione `[valid_from, valid_to)` evita sovrapposizioni ai confini se viene applicata in modo coerente.
+
+Ma il vero invariant è:
+
+> **per ogni fact e business key deve esistere al massimo una versione dimensionale valida al momento dell’evento.**
+
+Se due versioni si sovrappongono, un join temporale può duplicare la fact.
+
+### Test sulle SCD
+
+Una dimensione Type 2 dovrebbe avere controlli come:
+
+- una sola riga `is_current = true` per business key;
+- nessun intervallo con `valid_from >= valid_to`;
+- nessuna sovrapposizione temporale tra versioni della stessa key;
+- continuità degli intervalli quando richiesta;
+- surrogate key unica;
+- fact storiche collegate a una versione valida.
+
+La storicizzazione senza test può creare più ambiguità di quanta ne risolva.
 
 ### Type 1 e Type 2 possono convivere
 
-Non tutti gli attributi della stessa dimensione devono avere la stessa politica.
+Nella stessa dimensione:
 
-Per un cliente:
-
-- correzione typo nel nome → Type 1;
+- typo nel nome → Type 1;
 - segmento commerciale → Type 2;
-- account manager → forse Type 2;
-- email di contatto → dipende dal caso d'uso.
+- account manager → Type 2 se serve analisi storica per ownership;
+- email di contatto → dipende dall’uso;
+- classificazione prodotto → Type 2 se il confronto storico deve preservare la tassonomia dell’epoca.
 
-### Domanda operativa
+Il contratto va quindi definito **per attributo**, non soltanto per tabella.
 
-Per ogni attributo chiedere:
+### Current view e historical view possono essere entrambe corrette
 
-> Se questo valore cambia domani, voglio che anche i report di ieri cambino?
+Una direzione commerciale può voler sapere:
 
-Se la risposta è no, probabilmente serve storia.
+> quanto revenue storico generano oggi i clienti che oggi sono Enterprise?
 
-[^ms-scd2]: Microsoft Learn, *Slowly changing dimension type 2*, https://learn.microsoft.com/en-us/fabric/data-factory/slowly-changing-dimension-type-two
+Finance o Strategy possono invece chiedere:
+
+> quanto revenue generava il segmento Enterprise secondo la classificazione valida in ciascun periodo?
+
+La prima è una **current-state reclassification**.
+
+La seconda è una **historical as-of analysis**.
+
+Il problema nasce quando entrambe vengono chiamate “Enterprise revenue” senza specificare la policy.
+
+### Late-arriving dimensions
+
+A volte la fact arriva prima dell’attributo dimensionale corretto.
+
+Esempio:
+
+- vendita caricata oggi;
+- classificazione cliente aggiornata domani ma valida già da ieri.
+
+Il modello deve avere una policy:
+
+- unknown member temporaneo;
+- backfill della surrogate key;
+- restatement controllato;
+- quarantena della fact.
+
+Anche qui la domanda è semantica: **quanto siamo disposti a cambiare il passato quando arriva informazione migliore?**
+
+### History policy nell’Analytical Data Contract
+
+Per gli attributi che cambiano documentiamo:
+
+| Campo | Domanda |
+|---|---|
+| business key | quale entità cambia? |
+| attribute | quale proprietà storicizziamo? |
+| history policy | Type 1, Type 2 o altra policy? |
+| event date | quale timestamp sceglie la versione? |
+| restatement | il passato viene corretto? |
+| late-arriving policy | cosa succede se la dimensione arriva tardi? |
+| invariant | una sola versione valida per momento |
+
+La domanda pratica da ricordare è:
+
+> **Se questo attributo cambia domani, voglio che anche il report di ieri cambi?**
+
+Se la risposta è no, la storia deve esistere da qualche parte nel modello.
