@@ -1,32 +1,38 @@
-## 4.15 Box plot e IQR: vedere centro, dispersione e anomalie insieme
+## 4.15 Box plot e IQR: confrontare distribuzioni senza ridurle a una media
 
-Il box plot è uno dei grafici più compatti dell'analisi esplorativa. In pochi elementi visualizza mediana, quartili, dispersione centrale e valori potenzialmente anomali.
+Il box plot è utile perché comprime in poco spazio **posizione e dispersione** di una distribuzione. Mostra la mediana, i quartili, l'intervallo interquartile e, secondo una convenzione molto comune, evidenzia osservazioni lontane dalla parte centrale dei dati.
 
-Il cuore del box plot è l'**interquartile range**, o IQR:
+Il cuore del grafico è l'**interquartile range**, o IQR:
 
 \[
 IQR = Q3 - Q1
 \]
 
-`Q1` è il 25° percentile e `Q3` il 75° percentile. L'IQR contiene quindi il 50% centrale delle osservazioni.
+`Q1` è il 25° percentile e `Q3` il 75° percentile. Tra i due si trova quindi il 50% centrale delle osservazioni.
 
-Una convenzione molto usata considera potenziali outlier i valori inferiori a:
+Una costruzione molto diffusa segnala come valori esterni ai *whisker* quelli inferiori a:
 
 \[
 Q1 - 1,5 \times IQR
 \]
 
-oppure superiori a:
+o superiori a:
 
 \[
 Q3 + 1,5 \times IQR
 \]
 
-NIST descrive proprio questa costruzione come una delle varianti standard del box plot per evidenziare valori estremi.[^nist-boxplot]
+NIST descrive questa come una delle costruzioni standard del box plot.[^nist-boxplot]
 
-### Caso: i tempi di consegna sembrano quasi identici
+La parola importante, però, è **segnala**. La regola `1,5 × IQR` non dimostra che un valore sia errato e non ordina di cancellarlo.
 
-La società logistica **FastLane Distribution** confronta quattro hub italiani. La media del tempo di consegna è sorprendentemente simile:
+Nel Capitolo 3 abbiamo già affrontato la domanda di data quality: *questa osservazione rappresenta un fatto reale o un errore?* Qui la domanda è diversa:
+
+> **Che cosa cambia nella nostra lettura quando osserviamo l'intera distribuzione invece della sola media?**
+
+### Caso simulato/composito — Quattro hub con quasi la stessa media
+
+La società logistica immaginaria **FastLane Distribution** confronta quattro hub italiani.
 
 | Hub | Media giorni |
 |---|---:|
@@ -35,47 +41,50 @@ La società logistica **FastLane Distribution** confronta quattro hub italiani. 
 | Roma | 2,9 |
 | Napoli | 2,8 |
 
-Un report basato soltanto sulla media potrebbe concludere che i quattro hub hanno performance equivalenti.
+Guardando soltanto la media, i quattro processi sembrano quasi equivalenti.
 
-I box plot raccontano una storia diversa.
+I box plot cambiano la lettura.
 
-Per Torino, metà delle spedizioni cade tra 2,3 e 3,1 giorni. Per Bologna, tra 2,5 e 2,9. Roma ha una dispersione più ampia, mentre Napoli presenta una coda di consegne molto lente.
+A Bologna il 50% centrale delle consegne è concentrato tra 2,5 e 2,9 giorni. Torino è un po' più dispersa. Roma mostra maggiore variabilità. Napoli ha una mediana simile agli altri hub, ma una coda di consegne molto lente.
 
-A Napoli:
+Per Napoli:
 
-- Q1 = 2,2 giorni;
-- mediana = 2,6;
-- Q3 = 3,1;
-- IQR = 0,9;
-- soglia superiore = 4,45 giorni.
+- `Q1 = 2,2` giorni;
+- mediana `= 2,6`;
+- `Q3 = 3,1`;
+- `IQR = 0,9`;
+- soglia superiore convenzionale `= 4,45` giorni.
 
-Il dataset contiene 184 spedizioni oltre 4,45 giorni, con un massimo di 13,8 giorni.
+Nel trimestre 184 spedizioni superano 4,45 giorni e il massimo è 13,8.
 
-La media di 2,8 giorni non era falsa. Era incompleta.
+La media di 2,8 giorni non era falsa. Era insufficiente per descrivere la stabilità del servizio.
 
-### Il punto fuori dal box non è automaticamente un errore
+### Un punto fuori dal box non è un ordine di cancellazione
 
-Il responsabile operations propone di eliminare tutte le spedizioni oltre la soglia IQR perché “sono outlier”. È un errore concettuale.
+Il 78% delle 184 spedizioni lente riguarda due isole minori servite solo tre volte a settimana. I valori sono reali e rappresentano proprio una parte dell'esperienza che operations deve conoscere.
 
-Il criterio IQR segnala valori insoliti rispetto alla distribuzione. Non stabilisce la loro causa.
+Eliminarli renderebbe il grafico più ordinato, non il processo migliore.
 
-Le 184 spedizioni vengono quindi investigate. Il 78% riguarda due isole minori servite solo tre volte a settimana. I tempi sono reali e operativamente importanti.
+Per questo, quando un punto estremo influenza molto una conclusione, l'EDA dovrebbe fare un **sensitivity check**:
 
-Eliminandoli, il team avrebbe reso il dataset più ordinato ma il modello operativo meno vero.
+- risultato con tutte le osservazioni;
+- risultato senza il punto o il gruppo influente;
+- spiegazione del perché l'osservazione esiste;
+- decisione che cambia, oppure non cambia, tra le due letture.
 
-### Confrontare distribuzioni, non solo singoli numeri
+### Il box plot comprime anche informazione
 
-Il box plot è particolarmente utile quando dobbiamo confrontare gruppi:
+Il vantaggio del box plot è anche il suo limite. Due distribuzioni con quartili simili possono avere forme differenti: una può essere unimodale, un'altra bimodale; una può avere molti punti vicino alla mediana, un'altra due cluster separati.
 
-- sedi;
-- prodotti;
-- team;
-- mercati;
-- periodi;
-- versioni di un processo.
+Per questo, quando la forma conta, è utile affiancare al box plot:
 
-NIST sottolinea proprio l'utilità dei box plot nel rilevare differenze di posizione e variabilità tra gruppi.[^nist-boxplot]
+- istogramma o density plot;
+- punti individuali, se il campione è gestibile;
+- numerosità del gruppo;
+- eventualmente P90/P95 quando le code hanno valore operativo.
 
-La lezione è importante: due gruppi possono avere la stessa media e processi molto diversi.
+Il box plot è quindi soprattutto uno strumento di **confronto tra distribuzioni**, non una radiografia completa.
 
-[^nist-boxplot]: NIST/SEMATECH, “Box Plot”, *e-Handbook of Statistical Methods*, https://itl.nist.gov/div898/handbook/eda/section3/boxplot.htm
+> **Una statistica compatta è utile quando sappiamo anche che cosa sta comprimendo.**
+
+[^nist-boxplot]: NIST/SEMATECH, *Box Plot*, e-Handbook of Statistical Methods: https://itl.nist.gov/div898/handbook/eda/section3/boxplot.htm
