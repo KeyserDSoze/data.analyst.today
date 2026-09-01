@@ -1,98 +1,231 @@
-## 5.20 Checklist operativa: prima di dichiarare un risultato
+## 5.20 Uncertainty Brief: come consegnare una stima senza nascondere ciò che non sappiamo
 
-Prima di scrivere "il test è significativo", fermati e controlla l'intera catena.
+Il Capitolo 5 non dovrebbe lasciarci con una collezione di formule.
 
-### 1. La domanda è chiara?
+Dovrebbe lasciarci con un nuovo deliverable professionale.
 
-Quale decisione deve supportare il test? Qual è la metrica primaria? Quale effetto sarebbe abbastanza grande da cambiare la decisione?
+Dopo:
 
-### 2. Il confronto è valido?
+**Analytical Brief → Data Readiness Review → EDA Evidence Map**
 
-I gruppi sono comparabili? L'assegnazione è casuale? Esistono differenze preesistenti? Ci sono contaminazioni tra controllo e trattamento?
+aggiungiamo:
 
-### 3. Il campione è adeguato?
+> **Uncertainty Brief**
 
-Il test ha potenza sufficiente per rilevare l'effetto minimo rilevante? Il campione è rappresentativo della popolazione su cui verrà presa la decisione?
+È una scheda che obbliga l'analista a rendere espliciti **stima, popolazione, precisione, assunzioni, bias non quantificati, dimensione dell'effetto e soglia decisionale**.
 
-### 4. Le assunzioni del metodo sono ragionevoli?
+### Il template
 
-Indipendenza, forma distributiva, varianze, struttura temporale e unità di analisi sono compatibili con il test scelto?
+```text
+DOMANDA INFERENZIALE
+Quale parametro, differenza o rischio stiamo cercando di stimare?
 
-### 5. Quanto è grande l'effetto?
+POPOLAZIONE TARGET
+Su chi o su che cosa vogliamo generalizzare?
 
-Non fermarti al p-value. Riporta differenza assoluta, differenza relativa quando utile, intervallo di confidenza e una misura dell'effetto coerente con il problema.
+DATI / DISEGNO
+Come sono entrate le osservazioni nel campione?
+Qual è la numerosità informativa reale?
 
-### 6. Quanto è incerto?
+STIMA
+Qual è il valore o effect size osservato?
 
-L'intervallo include effetti economicamente irrilevanti? Include anche effetti negativi? La stima è abbastanza precisa da sostenere una decisione?
+PRECISIONE
+Standard error / confidence interval appropriato.
 
-### 7. Quanti test hai eseguito?
+MODELLO E ASSUNZIONI
+Indipendenza? Distribuzione? Unità di analisi? Sampling design?
 
-La metrica era definita prima? Hai analizzato decine di segmenti o KPI? Se sì, considera il problema della molteplicità e distingui chiaramente analisi esplorativa e confermativa.
+BIAS NON CONTENUTI NELL'INTERVALLO
+Selection, nonresponse, measurement, drift, definizioni, confounding...
 
-### 8. Esistono guardrail metrics?
+TEST, SE UTILE
+H0, p-value e criterio pre-specificato.
 
-Un miglioramento locale può produrre danni altrove. Conversione più alta ma resi maggiori. Tempi più bassi ma costi superiori. Engagement più alto ma retention peggiore.
+POWER / INFORMATIVITÀ
+Il disegno era capace di distinguere l'effetto che ci interessa?
 
-### 9. Il risultato è stabile?
+MOLTEPLICITÀ
+Quante metriche, segmenti o specificazioni sono state esplorate?
 
-Controlla giorno per giorno, per coorti temporali e per segmenti predefiniti. Verifica se l'effetto dipende da campagne, festività, incidenti tecnici o cambi di mix.
+SOGLIA BUSINESS
+Qual è il più piccolo effetto che cambierebbe davvero la decisione?
 
-### 10. Cambia davvero la decisione?
+CONCLUSIONE CALIBRATA
+Che cosa sostengono i dati? Che cosa non sostengono?
 
-Questa è la domanda finale.
+PROSSIMO PASSO
+Agire, raccogliere altri dati, confermare, sperimentare o fermarsi?
+```
 
-Un risultato statisticamente interessante che non modifica alcuna azione può essere informativo, ma non necessariamente decisionale.
+Questo template non deve diventare burocrazia. Per un'analisi semplice può occupare mezza pagina. Per una decisione ad alto rischio può diventare una review molto più approfondita.
 
-### Come scrivere una conclusione robusta
+Il principio è sempre lo stesso:
 
-Una conclusione professionale potrebbe avere questa struttura:
+> **più forte è la decisione che vogliamo sostenere, più chiaramente dobbiamo dichiarare che cosa rende forte — o fragile — l'evidenza.**
 
-> La variante aumenta la conversione di +0,19 punti percentuali rispetto al controllo. L'effetto è statisticamente incompatibile con l'ipotesi di differenza nulla al livello predefinito, ma il beneficio economico si riduce dopo aver considerato l'aumento dei resi. Il revenue netto per visitor rimane incerto e l'intervallo include effetti prossimi allo zero. Non raccomandiamo il rollout completo; proponiamo un test più lungo con revenue netto come metrica primaria e return rate come guardrail.
+### Un esempio breve
 
-Questa conclusione contiene dato, incertezza, contesto e decisione.
+Immaginiamo una survey customer success.
+
+```text
+DOMANDA
+Qual è la quota di clienti enterprise soddisfatti del nuovo onboarding?
+
+POPOLAZIONE TARGET
+Clienti enterprise attivati nel trimestre.
+
+DISEGNO
+Survey inviata a 4.800 clienti; 1.120 risposte.
+Risposta volontaria, quindi possibile nonresponse bias.
+
+STIMA
+CSAT positivo: 74%.
+
+PRECISIONE
+CI 95% da campionamento, sotto assunzioni semplici: circa 71%–77%.
+
+BIAS NON NEL CI
+I clienti con onboarding fallito rispondono meno frequentemente.
+
+SOGLIA BUSINESS
+Il rollout richiede evidenza ragionevole che il CSAT sia almeno 70%.
+
+CONCLUSIONE
+La stima osservata supera il target e il CI di campionamento è prevalentemente sopra 70%,
+ma la sottorappresentazione dei clienti con onboarding problematico può produrre bias positivo.
+Non presentiamo quindi il 74% come stima definitiva dell'intera popolazione.
+
+PROSSIMO PASSO
+Collegare survey e dati operativi, aumentare follow-up dei nonrespondent e fare sensitivity analysis.
+```
+
+Notiamo la differenza rispetto a:
+
+> **“Il CSAT è 74% ±3%, quindi siamo sopra target.”**
+
+La seconda frase sembra più semplice. È anche più forte di quanto il disegno consenta.
+
+### Le dieci domande da fare prima di dichiarare un risultato
+
+1. **Popolazione** — a chi voglio generalizzare?
+2. **Selezione** — come sono entrati i casi nei dati?
+3. **Unità** — quante osservazioni realmente indipendenti ho?
+4. **Effetto** — quanto è grande la differenza o il parametro?
+5. **Precisione** — quanto potrebbe variare la stima per campionamento?
+6. **Bias** — quali errori importanti non sono rappresentati dall'intervallo?
+7. **Test** — che cosa dice realmente il p-value e quale modello presume?
+8. **Power** — il disegno poteva rilevare un effetto che conta?
+9. **Molteplicità** — quante possibilità avevamo di trovare un segnale?
+10. **Decisione** — l'effetto è abbastanza grande da cambiare ciò che facciamo?
+
+Se una di queste domande non ha risposta, non significa necessariamente che l'analisi sia inutilizzabile. Significa che il caveat deve entrare nel livello di fiducia della conclusione.
+
+## Sintesi del capitolo
+
+Abbiamo costruito una progressione unica:
+
+**evento → probabilità → condizionamento → dipendenza → distribuzione → expected value → aggiornamento → campionamento → sampling distribution → standard error → CLT → confidence interval → sample size → test → p-value → errori/power → materialità → multiple testing → Uncertainty Brief**.
+
+Le idee da conservare sono poche ma profonde.
+
+**Più dati ≠ dati migliori.**
+
+La numerosità riduce soprattutto una parte del rumore casuale; non corregge automaticamente bias e definizioni.
+
+**Deviazione standard ≠ standard error.**
+
+Una descrive la variabilità delle osservazioni; l'altro la precisione di una stima.
+
+**Confidence interval ≠ intervallo che contiene tutti gli errori dell'analisi.**
+
+Quantifica una forma specifica di incertezza sotto un modello e un disegno.
+
+**p-value ≠ probabilità che H0 sia vera.**
+
+E `p < 0,05` non è una decisione.
+
+**Non significativo ≠ nessun effetto.**
+
+Un test può essere inconcludente perché non contiene abbastanza informazione.
+
+**Significativo ≠ importante.**
+
+Effect size, incertezza ed economia devono essere letti insieme.
+
+**Esplorare molto cambia il significato di ciò che troviamo.**
+
+Multiple testing e scelte a posteriori devono essere dichiarati.
+
+### La frase da portare al capitolo successivo
+
+> **Una buona analisi non elimina l'incertezza. La misura abbastanza bene da impedire alla conclusione di essere più sicura dei dati.**
+
+Il Capitolo 6 tornerà a una domanda di business molto concreta: clienti e utenti non si comportano tutti allo stesso modo. Useremo segmenti, coorti, funnel e retention per capire **dove** si concentra un comportamento e **come evolve** lungo il lifecycle.
+
+L'incertezza appresa qui rimane con noi: ogni tasso di retention, ogni confronto tra coorti e ogni segmento piccolo dovrà essere letto anche in funzione della sua base informativa.
 
 ## Esercizi
 
-### Esercizio 1 — Il p-value perfetto
+### Esercizio 1 — Il milione di risposte
 
-Un marketplace testa un nuovo badge "Best price" su 3,5 milioni di utenti. La conversione passa da 2,841% a 2,873%, con p = 0,004. L'implementazione costa 1,1 milioni di euro l'anno.
+Una piattaforma raccoglie un milione di rating volontari e ottiene soddisfazione del 92,4% con un intervallo di campionamento strettissimo.
 
-Quali informazioni chiedi prima di raccomandare il rollout?
+Sai però che solo gli utenti che completano almeno cinque sessioni vedono la survey.
 
-### Esercizio 2 — Test inconcludente
+Costruisci un Uncertainty Brief. Spiega perché aumentare ancora il numero di risposte non risolve il problema principale.
 
-Un prodotto B2B mostra churn al 7,2% nel controllo e al 5,9% nel trattamento, ma il campione contiene solo 430 clienti per gruppo e il p-value è 0,19.
+### Esercizio 2 — Stima precisa ma irrilevante
 
-Scrivi una conclusione che non confonda "assenza di evidenza" con "evidenza di assenza".
+Un cambiamento riduce il churn da 6,000% a 5,970% su 8 milioni di clienti.
 
-### Esercizio 3 — Multiple testing
+La stima è molto precisa e il p-value è minuscolo.
 
-Un team misura 80 KPI e trova 6 metriche con p < 0,05. Nessuna era stata definita come primaria.
+Quali numeri economici servono prima di decidere? Scrivi una conclusione che non usi le parole “vince” o “funziona”.
 
-Come interpreteresti il risultato? Quale sarebbe il prossimo esperimento?
+### Esercizio 3 — Effetto importante ma test debole
 
-### Esercizio 4 — Tipo I o tipo II?
+Un prodotto B2B osserva:
 
-Per un sistema antifrode, descrivi un falso positivo e un falso negativo. Assegna un costo plausibile a entrambi e discuti come questo dovrebbe influenzare la soglia decisionale.
+- controllo: churn 7,2%;
+- trattamento: 5,9%;
+- 430 clienti per gruppo;
+- intervallo molto ampio;
+- `p = 0,19`.
 
-### Esercizio 5 — Significativo ma inutile
+Scrivi tre conclusioni:
 
-Un algoritmo riduce il tempo medio di risposta del supporto da 4 ore e 18 minuti a 4 ore e 11 minuti su 900.000 ticket, con un p-value estremamente piccolo.
+1. una sbagliata che confonde non-significativo con effetto zero;
+2. una tecnicamente corretta;
+3. una conclusione decisionale che consideri anche il valore potenziale dell'effetto e il costo di raccogliere nuovi dati.
 
-Quali metriche aggiuntive useresti per capire se l'intervento genera valore reale?
+### Esercizio 4 — Il segmento trovato dopo 120 tentativi
 
-### Esercizio 6 — Disegna un test prima di vedere i dati
+Un team prova 120 segmentazioni e trova un gruppo con `p = 0,009` e uplift del 14%.
 
-Definisci un A/B test per una nuova pagina pricing SaaS specificando:
+Come cambia la tua interpretazione sapendo quante analisi sono state fatte? Quali dati useresti per confermare il segnale?
 
-- ipotesi nulla e alternativa;
-- metrica primaria;
-- almeno due guardrail metrics;
-- effetto minimo business-rilevante;
-- popolazione;
-- durata minima;
-- segmenti definiti prima dell'esperimento;
-- criterio decisionale.
+### Esercizio 5 — Type I e Type II come euro
 
-Se riesci a compilare questi elementi prima di guardare il risultato, hai già ridotto una parte importante del rischio di autoinganno analitico.
+Per un nuovo controllo antifrode, definisci:
+
+- falso positivo;
+- falso negativo;
+- costo medio dei due errori;
+- prevalenza della frode;
+- volume mensile;
+- quale errore vorresti ridurre maggiormente e perché.
+
+Poi spiega perché questa decisione non può essere presa guardando soltanto accuracy o p-value.
+
+### Esercizio 6 — Costruire il proprio Uncertainty Brief
+
+Scegli una metrica del tuo dominio — conversion, churn, difetti, delivery SLA, NPS, forecast error o altro — e compila l'intero template del capitolo.
+
+L'esercizio è riuscito se, alla fine, sai dire non soltanto:
+
+> **“qual è il numero?”**
+
+ma anche:
+
+> **“quanto lo conosco bene, che cosa non è dentro quell'incertezza e quanto dovrebbe essere diverso per cambiare una decisione?”**
