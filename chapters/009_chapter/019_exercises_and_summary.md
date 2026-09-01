@@ -1,193 +1,304 @@
 ## 9.18 Sintesi ed esercizi: progettare esperimenti che sopravvivono al mondo reale
 
-L'A/B testing viene spesso presentato come una procedura semplice:
+Un A/B test non è:
 
-1. dividi gli utenti;
-2. mostra due versioni;
-3. confronta una metrica;
-4. guarda il p-value;
-5. scegli il vincitore.
+**split → p-value → winner.**
 
-Questa versione è utile per imparare il meccanismo di base, ma è insufficiente per lavorare bene.
+È una catena di affidabilità:
 
-Nel mondo reale bisogna gestire:
+**decisione → trattamento → popolazione → randomizzazione → exposure → telemetria → metrica → health gate → inferenza → decisione → rollout.**
 
-- randomizzazione;
-- unità di assegnazione;
-- esposizione;
-- identità utente;
-- sample size;
-- power;
-- MDE;
-- guardrail;
-- multiple metrics;
-- multiple variants;
-- Sample Ratio Mismatch;
-- peeking;
-- novelty effect;
-- learning effect;
-- spillover;
-- network effects;
-- rollout progressivo;
-- rollback;
-- qualità della telemetria.
+Ogni anello può modificare la conclusione.
 
-La statistica è solo una parte del sistema.
+Il Capitolo 5 ci ha insegnato a leggere effect size, intervalli, Type I/II error, power e multiple testing. Il Capitolo 8 ci ha insegnato perché un confronto randomizzato può identificare un effetto causale. Questo capitolo aggiunge il problema che domina la pratica: **far sì che il confronto progettato sulla carta sia ancora quello che abbiamo davvero misurato in produzione**.
 
-### Una formula mentale utile
+### Le cinque domande finali
 
-Prima di fidarti di un risultato, chiedi:
+Prima di approvare un esperimento importante dovremmo riuscire a rispondere, nell'ordine:
 
-**Esperimento sano → confronto valido → effetto credibile → effetto utile → rollout sicuro**
+1. **Il contract era sensato?** — treatment, popolazione, metrica e soglie rappresentavano davvero la decisione?
+2. **L'esperimento è sano?** — assignment, exposure e telemetria hanno conservato il confronto?
+3. **Che cosa abbiamo stimato?** — effect size, uncertainty e scope sono coerenti con il piano?
+4. **L'effetto vale abbastanza e non costa troppo altrove?** — primary/OEC e guardrail producono una decisione economicamente sensata?
+5. **Possiamo aumentare l'esposizione in sicurezza?** — rollout, coverage e rollback gestiscono il rischio residuo?
 
-Se uno di questi passaggi fallisce, il fatto che una metrica abbia `p < 0.05` non salva la decisione.
+Il deliverable operativo del capitolo è l'**Experiment Contract**, che nasce prima del test e diventa il record finale dell'esperimento.
+
+> **Un esperimento affidabile non è quello che produce una risposta netta. È quello in cui sappiamo distinguere una risposta netta da un sistema di misura che si è rotto.**
 
 ---
 
-## Esercizio 1 — Il nuovo checkout vince davvero?
+### Esercizio 1 — Conversione positiva, guardrail negativa
 
 Un e-commerce testa un checkout semplificato.
 
-| metrica | control | treatment |
+| Metrica | Control | Treatment |
 |---|---:|---:|
 | conversione | 5,40% | 5,71% |
-| AOV | €82,10 | €80,90 |
+| contribution margin / eligible user | €1,82 | €1,86 |
 | refund rate | 4,2% | 5,6% |
 | contatti supporto / 1.000 ordini | 18 | 29 |
 
-La conversione è statisticamente significativa con `p = 0,018`.
+L'intervallo sulla conversione esclude zero. Nel contract, però, il refund rate non doveva peggiorare di oltre 0,5 pp.
 
-Domande:
+Costruisci il verdetto finale separando:
 
-1. dichiareresti il test vinto?
-2. quale metrica primaria avresti preferito definire prima?
-3. quali guardrail cambiano la decisione?
-4. calcoleresti revenue lorda o revenue netta?
-5. quale rollout proporresti?
+- risultato della primary;
+- guardrail;
+- decisione `SHIP CANDIDATE / REDESIGN / NO-SHIP`;
+- informazione aggiuntiva necessaria;
+- modifica che testeresti nella variante successiva.
+
+L'obiettivo non è trovare una nuova metrica che faccia vincere B. È rispettare la funzione decisionale definita prima.
 
 ---
 
-## Esercizio 2 — SRM dopo cinque giorni
+### Esercizio 2 — SRM e missing selettivo
 
-Un test 50/50 produce:
+Un test configurato 50/50 produce:
 
 - control: 128.400 utenti;
 - treatment: 119.600 utenti.
 
-Domande:
+Il treatment sembra anche avere conversione inferiore del 4% relativo.
 
-1. perché non dovresti analizzare subito il risultato business?
-2. quali possibili cause tecniche indagheresti?
-3. cosa controlleresti per device, browser e versione app?
-4. cosa succede se gli utenti mancanti appartengono soprattutto a un segmento ad alta conversione?
+L'indagine preliminare mostra che la differenza di volumi è concentrata su Safari iOS.
 
----
+Prepara un piano diagnostico distinguendo:
 
-## Esercizio 3 — Marketplace e network effect
+1. assignment;
+2. exposure;
+3. telemetry;
+4. filtering;
+5. analysis join.
 
-Una piattaforma mette il 50% dei seller nel treatment con un nuovo algoritmo di pricing, ma buyer control e treatment acquistano dagli stessi seller.
+Poi assegna uno dei tre verdetti del Health Gate:
 
-Domande:
+**VALIDO / VALIDO CON CAVEAT / INVALIDO PER DECISIONE**.
 
-1. qual è il rischio di contaminazione?
-2. l'unità seller è davvero appropriata?
-3. come ridisegneresti l'esperimento?
-4. useresti cluster geografici, mercati o finestre temporali?
-5. quali effetti indiretti vorresti misurare?
+Spiega quali evidenze servirebbero per cambiare verdetto.
 
 ---
 
-## Esercizio 4 — Peeking
+### Esercizio 3 — Assignment, exposure e estimand
 
-Dopo quattro giorni un test mostra `p = 0,032`. Il PM vuole interromperlo. Il piano originale prevedeva 21 giorni.
+Una nuova feature viene assegnata al 50% degli account B2B. Per un bug di configurazione solo il 62% degli account trattati la vede realmente.
 
-Dopo 10 giorni il p-value sale a 0,11.
+Gli utenti che non la vedono sono soprattutto tenant con una versione legacy del prodotto.
 
-Domande:
+Rispondi:
 
-1. quale errore di processo è stato commesso?
-2. perché il p-value può oscillare?
-3. quali alternative corrette esistono?
-4. quando sarebbe comunque legittimo fermare il test prima?
+- quale effetto misura un'analisi intention-to-treat sull'assignment?
+- perché confrontare soltanto `exposed` vs `not exposed` può reintrodurre selection bias?
+- la popolazione legacy dovrebbe essere esclusa, e se sì in quale momento della definizione?
+- ripeteresti il test dopo la correzione?
 
----
-
-## Esercizio 5 — A/A test che fallisce
-
-Un A/A test su due esperienze identiche mostra movimenti statisticamente significativi su 28% delle metriche, molte con `p < 0,001`.
-
-Domande:
-
-1. è plausibile attribuire tutto al caso?
-2. quali layer del sistema controlleresti?
-3. cosa significa per gli esperimenti già eseguiti sulla stessa piattaforma?
-4. bloccheresti temporaneamente le decisioni di rollout?
+L'obiettivo è separare **problema di prodotto**, **problema di delivery del trattamento** e **problema di analisi**.
 
 ---
 
-## Esercizio 6 — Rollout progressivo
+### Esercizio 4 — Marketplace e interferenza
 
-Un nuovo motore di raccomandazione supera il test su 15% del traffico:
+Una piattaforma mette il 50% dei seller nel treatment con un nuovo algoritmo di pricing, ma tutti i buyer acquistano dagli stessi seller.
 
+Il trattamento modifica prezzi, disponibilità e capacità dei seller.
+
+Progetta due alternative al semplice seller-level A/B:
+
+- una basata su cluster geografici/mercati;
+- una basata su switchback temporali.
+
+Per ognuna specifica:
+
+- unità di randomizzazione;
+- principale rischio residuo di spillover;
+- durata minima plausibile;
+- quale effetto business stai cercando di stimare.
+
+---
+
+### Esercizio 5 — Il test che raggiunge il sample size in 30 ore
+
+Una piattaforma ad altissimo traffico raggiunge il sample size pianificato in 30 ore. Il risultato sulla primary è positivo.
+
+Sappiamo però che:
+
+- il traffico weekend è molto diverso;
+- il nuovo flusso richiede apprendimento;
+- refund e chargeback maturano in 7–14 giorni.
+
+Spiega perché `sample size reached` non equivale a `experiment complete` e proponi una durata minima coerente con:
+
+- cicli temporali;
+- learning/novelty;
+- metric maturity.
+
+---
+
+### Esercizio 6 — Peeking o sequential design?
+
+Il PM vuole controllare formalmente il test ogni giorno e fermarlo appena l'evidenza è sufficiente.
+
+Costruisci due Experiment Contract alternativi:
+
+**A. Fixed horizon**  
+Definisci durata, momento di analisi finale e safety monitoring consentito durante il test.
+
+**B. Sequential design**  
+Definisci checkpoint, procedura compatibile con analisi ripetute e regola di stop.
+
+Spiega perché "guardiamo ogni giorno `p < 0,05`" non è equivalente alla seconda strategia.
+
+---
+
+### Esercizio 7 — A/A che mette in discussione la piattaforma
+
+Un A/A test su esperienze identiche mostra:
+
+- SRM su due browser;
+- differenze persistenti su metriche revenue;
+- 28% delle metriche con segnali incompatibili con il false-positive rate atteso;
+- un cambio recente nel sistema di identity resolution.
+
+Scrivi un incident brief di experimentation:
+
+- quali decisioni sospenderesti?
+- quali layer indagheresti per primi?
+- come valuteresti gli esperimenti già conclusi dopo il cambio di identity?
+- quale criterio useresti per riaprire la piattaforma a decisioni di rollout?
+
+---
+
+### Esercizio 8 — CUPED non ripara un test rotto
+
+Un team ottiene una riduzione di varianza del 45% usando dati pre-esperimento. Il risultato aggiustato è molto preciso e positivo.
+
+Contemporaneamente il test mostra SRM e un bug di exposure su Android.
+
+Il PM sostiene:
+
+> "CUPED ha corretto le differenze iniziali, quindi possiamo fidarci del risultato."
+
+Spiega perché questa conclusione è sbagliata distinguendo:
+
+- variance reduction;
+- confounding/selection introdotta dal bug;
+- health gate;
+- precisione vs validità.
+
+---
+
+### Esercizio 9 — Multiple metrics e scoperta post-hoc
+
+Un test ha:
+
+- 1 primary;
+- 4 guardrail;
+- 28 diagnostic metrics;
+- 12 segmenti esplorati;
+- 3 varianti treatment.
+
+La primary è neutra. Un segmento non predefinito mostra +9% su una diagnostic metric con p-value piccolo.
+
+Classifica il risultato come:
+
+- confermativo;
+- esplorativo;
+- irrilevante.
+
+Poi descrivi il test successivo necessario per trasformare quel pattern in evidenza più forte.
+
+---
+
+### Esercizio 10 — Dal test al rollout
+
+Un motore di raccomandazione supera il test sul 15% del traffico:
+
+- contribution margin/session +1,8%;
 - CTR +4,3%;
-- revenue/session +1,8%;
 - latency P95 +22 ms;
-- nessuna guardrail critica.
+- nessuna guardrail critica;
+- Health Gate: valido.
 
-Al 70% di rollout, la latency P99 cresce di 310 ms su utenti di una regione specifica.
+Al 70% di rollout la latency P99 cresce di 310 ms in una regione e il customer support load aumenta del 18%.
 
-Domande:
+Decidi tra:
 
-1. perché il test iniziale non necessariamente era sbagliato?
-2. quale rischio si è materializzato?
-3. rollback totale o parziale?
-4. quali segmenti dovevano essere analizzati prima?
-5. come documenteresti la decisione?
+- freeze;
+- partial rollback;
+- global rollback;
+- continuazione al 100%.
+
+Motiva la scelta usando **scale risk, coverage risk e rollback criteria**, senza dichiarare retroattivamente che l'esperimento iniziale fosse necessariamente invalido.
 
 ---
 
-## Esercizio 7 — Caso da leadership meeting
+### Esercizio 11 — Leadership meeting
 
 Il CEO vede una slide:
 
 > "Variant B +3,2% engagement — significativa al 95%. Raccomandazione: rollout globale."
 
-Hai venti minuti prima della riunione.
-
-Le informazioni aggiuntive sono:
+Hai venti minuti per correggerla. Scopri che:
 
 - engagement +3,2%;
 - retention D30 -0,6 pp;
 - notifiche inviate +19%;
 - opt-out notifiche +24%;
-- session duration +7%;
-- customer satisfaction non ancora disponibile;
+- customer satisfaction non ancora matura;
 - test durato 9 giorni;
-- la metrica engagement è stata scelta tra 17 metriche dopo aver visto i risultati.
+- engagement è stato scelto tra 17 metriche dopo aver visto i risultati;
+- il contract originale indicava retention D30 come guardrail.
 
-Scrivi una nuova conclusione executive separando:
+Scrivi un executive summary in sei righe contenente:
 
-1. ciò che sappiamo;
-2. ciò che non possiamo concludere;
-3. i rischi metodologici;
-4. la decisione consigliata;
-5. il prossimo esperimento.
+1. finding;
+2. stato del Health Gate;
+3. problema di multiplicity/post-hoc selection;
+4. guardrail;
+5. decisione;
+6. prossimo test.
 
 ---
 
-## Autovalutazione
+### Esercizio 12 — Costruisci l'Experiment Contract
 
-Dovresti essere in grado di rispondere senza formule complesse:
+Il team vuole testare una nuova politica di free shipping per utenti ad alto valore.
 
-- Perché l'unità di randomizzazione è una scelta causale e non tecnica?
-- Che differenza c'è tra assignment ed exposure?
-- Perché un SRM può invalidare un test?
-- Perché una metrica significativa può essere economicamente irrilevante?
-- Perché multiple metrics aumentano il rischio di false discovery?
-- Quando CUPED può aumentare la sensibilità?
-- Perché marketplace e social product richiedono attenzione agli spillover?
-- Perché un A/A test è utile?
-- Che differenza c'è tra un test vinto e un rollout sicuro?
-- Cosa dovrebbe contenere il documento finale di un esperimento?
+Costruisci da zero il contract specificando almeno:
 
-Se queste risposte sono chiare, l'A/B testing non è più una ricetta statistica: è diventato un sistema per prendere decisioni causali in condizioni di incertezza.
+- decisione;
+- treatment;
+- mechanism;
+- eligibility;
+- randomization/exposure/analysis unit;
+- primary/OEC;
+- guardrail;
+- MDE business-relevant;
+- durata;
+- inference plan;
+- segmenti confermativi;
+- interference risks;
+- Health Gate;
+- decision matrix;
+- rollout e rollback.
+
+Poi prova a immaginare tre risultati possibili e applica la decision matrix senza modificarla.
+
+### Autovalutazione
+
+Alla fine del capitolo dovresti riuscire a spiegare con parole semplici:
+
+- perché randomization unit, exposure unit e analysis unit possono differire;
+- perché un SRM è un problema di fiducia prima che di significatività;
+- perché una primary positiva può portare a NO-SHIP;
+- perché raggiungere il sample size non garantisce durata sufficiente;
+- perché un fixed-horizon test e un sequential test richiedono regole diverse;
+- che cosa CUPED migliora e che cosa non può riparare;
+- perché multiple metrics richiedono gerarchia e controllo della molteplicità;
+- quando cluster o switchback sono preferibili alla randomizzazione individuale;
+- a cosa serve un A/A test;
+- perché il rollout è una fase di measurement e risk management;
+- quali elementi devono essere congelati nell'Experiment Contract.
+
+Se queste risposte sono chiare, l'A/B testing ha smesso di essere una procedura statistica isolata. È diventato una capacità organizzativa per produrre **evidenza causale verificabile e decisioni reversibili**.
