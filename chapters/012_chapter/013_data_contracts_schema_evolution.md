@@ -1,43 +1,73 @@
-## 12.12 Data contracts e schema evolution: cambiare senza rompere tutto
+## 12.12 Producer data contracts e schema evolution: cambiare l'interfaccia senza sorprendere i consumer
 
-Molti incidenti dati non nascono da una query sbagliata, ma da una sorgente che cambia senza che i consumer lo sappiano.
+Nel Capitolo 11 abbiamo creato un **Analytical Data Contract** per specificare il significato di una trasformazione analitica.
 
-Una colonna viene rinominata. Un tipo passa da intero a stringa. Un campo prima obbligatorio diventa opzionale. Un evento cambia significato ma mantiene lo stesso nome.
+Qui usiamo il termine *data contract* in un senso diverso e complementare:
 
-Tecnicamente il sistema può continuare a funzionare.
+> **l'interfaccia tra chi produce un dataset o evento e chi lo consuma downstream.**
 
-Semanticamente, però, il dato può essere già rotto.
-
-### Il data contract
-
-Un **data contract** rende esplicita l'interfaccia tra chi produce un dato e chi lo consuma.
-
-Può includere:
+Questa interfaccia può includere:
 
 - schema;
 - tipi;
-- significato dei campi;
+- nullability;
 - chiavi;
-- regole di nullability;
+- semantica dei campi;
+- quality expectation;
 - freshness;
-- completezza;
 - ownership;
-- compatibilita' attesa;
 - policy di evoluzione.
 
-Google Cloud descrive i data contract come accordi formali e machine-readable tra producer e consumer, includendo schema, semantica, metriche di qualità e SLO come freshness e completeness.
+### Due contract da non confondere
 
-### Caso pubblico: VMO2
+**Producer data contract — Capitolo 12**
 
-Google Cloud ha documentato l'uso dei data contract da parte di Virgin Media O2 per supportare prodotti dati e AI su scala.
+```text
+“Questo è ciò che la sorgente promette di pubblicare.”
+```
 
-Il punto interessante non è il formato specifico del contratto, ma il cambio organizzativo: la qualità non viene trattata soltanto come controllo downstream, bensì come responsabilita' esplicita già all'interfaccia tra producer e consumer.
+**Analytical Data Contract — Capitolo 11**
 
-### Caso realistico: FleetOne
+```text
+“Questo è ciò che il modello analitico promette di rappresentare.”
+```
 
-FleetOne gestisce telemetria per 180.000 veicoli.
+Esempio:
 
-Il payload contiene:
+```text
+producer contract:
+order.status enum, currency ISO, updated_at semantics
+
+analytical contract:
+net revenue per valid order line, refund policy, point-in-time product category
+```
+
+Entrambi servono perché una pipeline può rispettare perfettamente lo schema sorgente e costruire comunque una metrica semanticamente sbagliata.
+
+### Caso reale documentato — Virgin Media O2 e i data contracts
+
+Virgin Media O2 e Google Cloud hanno documentato nel 2025 l'uso di data contracts come quality and assurance layer per data products e AI.
+
+I contratti sono descritti come machine-readable e applicati agli asset pubblicati per rendere esplicite aspettative di qualità e affidabilità tra team produttori e consumer.
+
+Fonte:
+https://cloud.google.com/blog/products/data-analytics/vmo2-uses-data-contracts-to-build-scalable-ai-and-data-products
+
+Il punto interessante per questo libro è il passaggio da:
+
+```text
+“abbiamo documentato la tabella”
+```
+
+a:
+
+```text
+“la pipeline può verificare automaticamente parte della promessa”
+```
+
+### Caso simulato/composito — FleetOne e la stessa colonna con una nuova unità
+
+FleetOne riceve telemetria:
 
 ```json
 {
@@ -47,91 +77,158 @@ Il payload contiene:
 }
 ```
 
-Il team firmware rilascia una nuova versione e aggiunge:
+Un aggiornamento firmware cambia `speed` da km/h a m/s senza modificare il nome del campo.
 
-```json
-"battery_health": 0.88
-```
-
-Un cambiamento additivo potrebbe essere relativamente innocuo.
-
-Due settimane dopo, però, `speed` viene cambiato da km/h a m/s per allinearsi a uno standard interno. Il nome della colonna rimane `speed`.
-
-Le pipeline continuano a funzionare.
-
-Il dashboard mostra improvvisamente una riduzione enorme della velocita' media.
-
-Non c'è un errore tecnico evidente. C'è un errore **semantico**.
-
-### Schema evolution
-
-Le piattaforme moderne possono gestire alcune evoluzioni di schema automaticamente.
-
-Databricks Auto Loader, per esempio, supporta modalità diverse per nuovi campi e cambiamenti di schema: aggiunta automatica di colonne, rescue dei dati inattesi, oppure fail esplicito quando compaiono nuove colonne.
-
-Questa flessibilita' è utile, ma non risolve una domanda fondamentale:
-
-> il nuovo schema conserva lo stesso significato business?
-
-Un sistema può adattarsi perfettamente a una nuova colonna e continuare a calcolare una metrica sbagliata.
-
-### Compatibilita'
-
-Possiamo pensare a tre categorie semplici.
-
-**Backward compatible**  
-I consumer esistenti continuano a funzionare.
-
-Esempio: aggiungere una colonna opzionale.
-
-**Breaking change**  
-I consumer devono essere aggiornati.
-
-Esempio: rinominare `customer_id` in `account_id` senza alias o versione.
-
-**Semantic breaking change**  
-La struttura può rimanere identica, ma cambia il significato.
-
-Esempio:
+Lo schema continua a essere:
 
 ```text
-revenue
-prima: lordo IVA inclusa
-poi: netto IVA esclusa
+speed: number
 ```
 
-Questo terzo caso è spesso il più pericoloso per l'analista.
+La pipeline non fallisce.
 
-### Versionare quando serve
+Il dashboard mostra un crollo della velocità media.
 
-Una soluzione pragmatica è introdurre una nuova versione:
+Questo è un **semantic breaking change**.
+
+Un semplice schema registry non può proteggerci se il contratto non specifica anche l'unità e il significato.
+
+### Schema evolution: non tutti i cambiamenti hanno lo stesso rischio
+
+Possiamo distinguere almeno:
+
+**Additive**
 
 ```text
-orders_v1
-orders_v2
++ battery_health nullable
 ```
 
-oppure versionare il contratto/evento.
+Potenzialmente backward-compatible per consumer che ignorano il nuovo campo.
 
-Non bisogna abusare delle versioni, ma un breaking change nascosto costa spesso più della complessita' di una migrazione esplicita.
+**Structural breaking**
 
-### Metodo operativo
+```text
+customer_id int → struct
+column removed
+column renamed
+```
 
-Prima di modificare una sorgente critica chiedere:
+Può rompere parser e query.
 
-1. quali consumer dipendono da questo campo?
-2. il cambiamento è strutturale o semantico?
-3. è backward compatible?
-4. esistono test contrattuali?
-5. serve una nuova versione?
-6. qual è il piano di migrazione?
-7. per quanto tempo convivranno vecchio e nuovo formato?
+**Semantic breaking**
 
-**Schema evolution è un problema tecnico. Semantic evolution è un problema analitico. Servono entrambi sotto controllo.**
+```text
+same column, same type, different unit/meaning
+```
 
----
+Può essere ancora più pericoloso perché il sistema continua a funzionare.
 
-### Fonti pubbliche
+### Caso reale documentato — schema evolution configurabile
 
-- Google Cloud, caso VMO2 sui data contracts.
-- Databricks, documentazione su schema inference ed evolution in Auto Loader.
+Databricks Auto Loader permette di scegliere comportamenti differenti quando incontra nuove colonne, tra cui:
+
+- aggiungerle;
+- salvare campi inattesi in rescued data;
+- fallire esplicitamente su nuove colonne;
+- non evolvere automaticamente lo schema.
+
+Fonte:
+https://docs.databricks.com/aws/en/ingestion/cloud-object-storage/auto-loader/schema
+
+La documentazione recente sottolinea anche che i componenti di un'architettura — connector, parser, engine e dataset — possono gestire schema evolution in modo indipendente.
+
+Fonte:
+https://docs.databricks.com/aws/en/data-engineering/schema-evolution
+
+Questo è un punto fondamentale:
+
+> **“La piattaforma supporta schema evolution” non significa che l'intero data flow evolverà in modo compatibile.**
+
+Ogni boundary può reagire diversamente.
+
+### Fail fast vs rescue vs auto-evolve
+
+Non esiste una policy migliore sempre.
+
+**Fail fast** è utile quando:
+
+- lo schema è critico;
+- un cambiamento inatteso è ad alto rischio;
+- preferiamo fermare la pipeline piuttosto che reinterpretare dati.
+
+**Rescue/quarantine** è utile quando:
+
+- vogliamo continuare a catturare raw data;
+- non vogliamo perdere campi inattesi;
+- il serving curato deve restare stabile.
+
+**Auto-evolve** può essere utile per cambiamenti additivi controllati.
+
+L'importante è che la policy sia scelta, non ereditata inconsapevolmente dal default del tool.
+
+### Compatibilità come proprietà end-to-end
+
+Una nuova colonna può essere backward-compatible nel raw layer e breaking nel BI model se un consumer usa `SELECT *` o un export posizionale.
+
+Per questo l'impact analysis deve attraversare la lineage:
+
+```text
+producer change
+→ ingestion
+→ storage schema
+→ transformations
+→ serving
+→ consumers
+```
+
+La compatibilità non appartiene soltanto alla sorgente.
+
+### Versionare quando il cambiamento cambia il significato
+
+Una modifica semantica importante può richiedere:
+
+```text
+v1 → deprecation period → v2
+```
+
+con:
+
+- data di entrata in vigore;
+- consumer da migrare;
+- mapping tra vecchia e nuova semantica;
+- eventuale backfill;
+- periodo di convivenza.
+
+Non bisogna versionare ogni colonna aggiunta.
+
+Bisogna evitare i **breaking change nascosti**.
+
+### Campo della Data Flow Architecture Map
+
+Per ogni producer boundary annotiamo:
+
+```text
+contract owner:
+schema/version:
+semantic metadata:
+quality/freshness promises:
+compatibility policy:
+allowed additive changes:
+breaking-change process:
+deprecation window:
+consumer notification:
+lineage/impact analysis:
+```
+
+### Regola operativa
+
+Prima di cambiare un producer chiediamo:
+
+1. chi consuma questo asset?
+2. il cambiamento è additive, structural breaking o semantic breaking?
+3. quale componente può adattarsi automaticamente?
+4. adattarsi automaticamente significa anche restare semanticamente corretto?
+5. serve versione o deprecation window?
+6. possiamo rilevare automaticamente la violazione del contract?
+
+> **Schema evolution è la capacità tecnica di continuare a leggere dati che cambiano. Contract evolution è la disciplina con cui decidiamo quali cambiamenti i consumer possono accettare senza perdere il significato o rompere il servizio.**
