@@ -1,69 +1,83 @@
-## 3.2 Granularità: il livello a cui il mondo è stato registrato
+## 3.2 Granularità: a quale risoluzione il sistema ha osservato il fenomeno
 
-La granularità, o *grain*, descrive il livello di dettaglio rappresentato da una tabella.
+La **granularità**, o *grain*, descrive che cosa rende distinta una riga.
 
-È uno dei concetti più importanti dell'intero mestiere analitico perché determina quali domande possiamo porre senza introdurre errori.
+È uno dei concetti più importanti del lavoro analitico perché stabilisce quali aggregazioni hanno senso e quali invece possono creare doppio conteggio o perdita di informazione.
 
-Una tabella vendite può avere granularità:
+Una generica "tabella vendite" potrebbe avere:
 
 - una riga per ordine;
-- una riga per riga d'ordine;
+- una riga per prodotto nell'ordine;
 - una riga per prodotto e giorno;
 - una riga per negozio, prodotto e giorno;
 - una riga per cliente e mese.
 
-Tutte possono essere chiamate informalmente "tabella vendite", ma non sono intercambiabili.
+Il nome della tabella non basta. Dobbiamo riuscire a dichiararne il grain in una frase:
 
-Microsoft, nella documentazione sul dimensional modeling per workload analitici, descrive le fact table come tabelle che registrano misure associate a osservazioni o eventi e sottolinea che esse conservano valori a uno specifico livello granulare insieme alle chiavi delle dimensioni. Questa idea è alla base del corretto disegno dei modelli analitici.  
-Fonte: Microsoft Learn, *Dimensional modeling in Microsoft Fabric*: https://learn.microsoft.com/en-us/fabric/data-warehouse/dimensional-modeling-overview
-
-### Dichiarare il grain prima delle metriche
-
-Una buona pratica è scrivere esplicitamente:
-
-> Una riga rappresenta un prodotto presente in un singolo ordine.
+> **Una riga rappresenta un prodotto presente in un singolo ordine.**
 
 oppure:
 
-> Una riga rappresenta il saldo di un prodotto in un magazzino alla fine di ogni giornata.
+> **Una riga rappresenta lo stock di un prodotto in un magazzino alla fine di una giornata.**
 
-Questa frase rende immediatamente visibili molti rischi.
+Microsoft, nella documentazione sul dimensional modeling per Microsoft Fabric, sottolinea lo stesso principio: una fact table registra misure a uno specifico livello di granularità insieme alle chiavi che ne descrivono il contesto.[^ms-grain]
 
-Se la tabella è a livello di riga d'ordine e contiene anche `order_total`, quel valore potrebbe essere ripetuto su tutte le righe dell'ordine. Sommarlo produrrebbe un fatturato gonfiato.
+### Una colonna può essere corretta ma non additiva al grain corrente
 
-Esempio:
+Consideriamo:
 
 | order_id | product | line_amount | order_total |
 |---|---|---:|---:|
 | 1 | A | 40 | 100 |
 | 1 | B | 60 | 100 |
 
-La somma corretta di `line_amount` è 100. La somma ingenua di `order_total` è 200.
+La tabella è a livello di riga d'ordine.
 
-Il database non segnala alcun errore. SQL esegue perfettamente il calcolo richiesto. L'errore è concettuale.
+`line_amount` è additivo a quel livello: `40 + 60 = 100`.
 
-### Il problema delle join che cambiano il grain
+`order_total`, invece, è un attributo dell'ordine replicato su ogni linea. La somma `100 + 100 = 200` è sintatticamente possibile ma semanticamente priva di senso.
 
-La granularità può anche cambiare durante una join.
+Questo tipo di errore è insidioso perché non genera eccezioni. Produce un numero plausibile con una query perfettamente valida.
 
-Supponiamo di avere:
+### Una join può cambiare il grain
+
+Supponiamo di partire da:
 
 - `customers`: una riga per cliente;
 - `orders`: molte righe per cliente.
 
-Dopo una join tra clienti e ordini, i dati del cliente vengono replicati per ogni ordine. Questo è corretto dal punto di vista relazionale, ma significa che il risultato non è più a livello cliente: è a livello ordine.
+Dopo aver collegato le due tabelle, ogni attributo del cliente può essere replicato su più ordini. Il dataset risultante non è più a livello cliente.
 
-Se poi sommiamo un attributo del cliente, come `annual_income`, otteniamo valori privi di significato.
+Il punto non è imparare qui tutte le tecniche di join — lo faremo nel Capitolo 11 — ma sviluppare un riflesso:
 
-### Domande da porre sempre
+> **Dopo ogni trasformazione importante, chiediti se è cambiato ciò che rappresenta una riga.**
 
-Prima di lavorare con una tabella chiediamoci:
+### Grain dichiarato e grain osservato
 
-- Qual è il grain dichiarato?
-- Quali colonne identificano una riga?
-- Il grain è stabile nel tempo?
-- Una join può moltiplicare le righe?
-- Le metriche presenti sono additive a questo livello?
-- Esistono valori già aggregati che rischiamo di aggregare una seconda volta?
+Anche la documentazione può essere sbagliata o superata.
 
-Comprendere il grain significa capire **a quale risoluzione il sistema informativo ha osservato il fenomeno**.
+Se ci viene detto che una tabella contiene una riga per ordine, dovremmo verificare almeno che la chiave attesa sia unica. Se troviamo più righe per `order_id`, le spiegazioni possibili sono diverse:
+
+- la documentazione è sbagliata;
+- esistono versioni successive dell'ordine;
+- il caricamento ha duplicato record;
+- la chiave è composta anche da un'altra colonna;
+- il concetto di "ordine" nel sistema è diverso da quello che pensavamo.
+
+Non basta quindi conoscere il grain dichiarato. Serve confrontarlo con il grain osservato.
+
+### Domande operative
+
+Prima di usare una tabella, rispondi a queste domande:
+
+- Che cosa rende unica una riga?
+- Quali colonne dovrebbero identificare il grain?
+- Quel vincolo è rispettato nei dati?
+- Quali misure sono additive a questo livello?
+- Quali valori sono già aggregati?
+- Una trasformazione o una join può moltiplicare righe?
+- Il grain è rimasto stabile nel tempo?
+
+Comprendere la granularità significa capire **la risoluzione con cui il processo reale è diventato dato**.
+
+[^ms-grain]: Microsoft Learn, *Dimensional modeling in Microsoft Fabric*. https://learn.microsoft.com/en-us/fabric/data-warehouse/dimensional-modeling-overview
