@@ -1,183 +1,378 @@
 ## 14.15 Sintesi ed esercizi: dall'assistente al sistema sotto responsabilità
-L'AI-assisted analytics non è un singolo strumento. È un nuovo modo di organizzare il lavoro analitico.
 
-Possiamo usare l'AI per:
+Il punto del capitolo non è imparare a “usare l'AI per analytics”.
 
-- tradurre linguaggio naturale in SQL;
-- scrivere e spiegare codice;
-- generare ipotesi;
-- esplorare dataset;
-- costruire grafici;
-- proporre modelli;
-- cercare anomalie;
-- documentare pipeline;
-- revisionare query;
-- orchestrare agenti specializzati.
+È costruire un'abitudine più difficile:
 
-Ma ogni aumento di capacità introduce una domanda di governance:
+> **ogni delega deve avere un boundary, ogni output importante un controllo, ogni claim un livello di evidenza e ogni azione un owner.**
 
-> chi controlla ciò che viene prodotto, con quali standard e con quale responsabilità?
+La sequenza finale è:
 
-Il principio finale del capitolo è semplice:
+```text
+Decision
+→ Analytical contract
+→ Context Pack
+→ Data/tool boundary
+→ AI generation/execution
+→ Verification Bundle
+→ Method-specific gate
+→ Eval / regression evidence
+→ Claim gate
+→ Human control
+→ Action
+→ Audit trace
+```
 
-**non dobbiamo dimostrare di aver eseguito personalmente ogni passaggio; dobbiamo essere in grado di spiegare, verificare e difendere il sistema che ha prodotto il risultato.**
+L'AI può entrare in quasi ogni blocco.
 
-## Esercizio 1 — SQL plausibile ma semanticamente errato
+Non elimina nessuno dei passaggi logici che rendono l'analisi difendibile.
 
-Un agente riceve la richiesta:
+### Dieci idee da portare fuori dal capitolo
 
-> “Calcola il revenue per cliente nel 2026.”
+1. Un prompt è una specifica, non una formula magica.
+2. Il Context Pack vale spesso più di un prompt più sofisticato.
+3. Codice eseguibile non significa analisi corretta.
+4. Un agente con tool è un sistema operativo, non un chatbot più lungo.
+5. `STOP / DEGRADE / ESCALATE` sono output validi.
+6. L'AI può generare causal stories; l'identification design autorizza causal claims.
+7. Model search economico richiede evidenza finale più protetta, non meno.
+8. Privacy e least privilege si progettano prima del prompt.
+9. Un eval deve sostenere un claim specifico e va a sua volta validato.
+10. Il deliverable finale è la **AI Analysis Control Sheet**, non la chat history.
 
-Genera una query che unisce `orders`, `order_items` e `payments`, somma `payment_amount` e raggruppa per cliente.
+---
 
-La query gira e produce risultati plausibili.
+## Esercizio 1 — SQL plausibile, Verification Bundle insufficiente
 
-Domande:
+Un agente riceve:
 
-1. quali rischi di grain e cardinalità controlleresti?
-2. quali confronti useresti per verificare il totale?
-3. quali definizioni di revenue potrebbero essere implicite?
-4. come modificheresti il prompt per ridurre il rischio?
-5. quali controlli automatizzeresti?
+> “Calcola la net revenue per cliente nel 2026.”
 
-## Esercizio 2 — L'AI trova una “causa”
+Genera una query che unisce `orders`, `order_items`, `payments` e `refunds`, somma `payment_amount - refund_amount` e raggruppa per `customer_id`.
 
-Un agente osserva che i clienti che usano una nuova funzione hanno retention D90 del 64%, contro il 41% degli altri utenti.
+La query gira.
 
-Conclude:
+### Compito
 
-> “La nuova funzione aumenta la retention di 23 punti percentuali.”
+Costruisci il Verification Bundle prima di accettare il risultato.
 
-Costruisci una risposta professionale che:
+Deve includere almeno:
 
-- distingua associazione ed effetto causale;
-- proponga almeno quattro confondenti plausibili;
-- descriva un esperimento o quasi-esperimento credibile;
-- spieghi cosa può fare l'AI e cosa deve decidere l'analista.
+- grain di ogni tabella;
+- expected cardinality dei join;
+- definizione certificata di net revenue;
+- data economica;
+- guest customer handling;
+- refund timing;
+- reconciliation con Finance;
+- edge case;
+- query o calcolo indipendente di controllo.
 
-## Esercizio 3 — Cinque agenti e un'unica conclusione
+Assegna poi uno stato:
 
-Un team usa cinque agenti:
+`APPROVED / APPROVED WITH CAVEATS / PROVISIONAL / BLOCKED`.
 
-1. data quality agent;
+---
+
+## Esercizio 2 — Caso reale documentato: Copilot usa la data sbagliata
+
+Microsoft documenta un esempio in cui Copilot per Power BI, interrogato su profitto per anno, applica il filtro alla colonna `Birthday` del cliente invece della date table corretta.
+
+Fonte: https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
+
+### Compito
+
+Rispondi come se dovessi prevenire lo stesso failure mode nella tua organizzazione.
+
+1. Qual è la classe di errore: sintattico, fattuale, strutturale, semantico o causale?
+2. Quali campi devono entrare nel Context Pack?
+3. Quale test deterministico o semantic check potrebbe intercettarlo?
+4. Quale claim level consentiresti prima della verifica?
+5. Come modificheresti semantic model e verified answers per ridurre il rischio?
+6. Scrivi la relativa sezione della AI Analysis Control Sheet.
+
+---
+
+## Esercizio 3 — Cinque agenti, una raccomandazione troppo sicura
+
+Un team usa:
+
+1. data-quality agent;
 2. SQL agent;
 3. anomaly agent;
 4. causal-reasoning agent;
 5. executive-summary agent.
 
-I primi quattro producono risultati parzialmente in conflitto. L'executive agent sintetizza comunque una raccomandazione netta.
+Il data-quality agent restituisce `PROVISIONAL`.
+
+Il SQL agent trova revenue -6%.
+
+L'anomaly agent segnala un evento raro.
+
+Il causal agent scrive “pattern compatibile con un problema di pricing”.
+
+L'executive-summary agent conclude:
+
+> “Il pricing ha causato un calo del 6% della revenue.”
+
+### Compito
 
 Progetta:
 
-- gerarchia degli agenti;
-- criteri di escalation;
-- evidenze minime richieste;
+- trust boundary tra agenti;
+- metadata che devono accompagnare ogni artefatto;
+- regola che impedisca la promozione del claim;
 - stop condition;
-- punti di approvazione umana;
-- audit trail necessario.
+- human checkpoint;
+- audit trace.
 
-## Esercizio 4 — Dati sensibili
+Spiega perché cinque output non equivalgono a cinque evidenze indipendenti.
 
-Un responsabile HR vuole analizzare testo libero delle exit interview con un LLM esterno.
+---
 
-Definisci un processo che minimizzi il rischio prima dell'analisi. Indica:
+## Esercizio 4 — Privacy prima del clustering
 
-- quali dati non invieresti;
-- quali trasformeresti;
-- quale livello di accesso daresti all'agente;
-- quali output richiederebbero revisione umana;
-- come documenteresti il workflow.
+Un team HR vuole inviare a un LLM esterno il testo completo delle exit interview per trovare temi ricorrenti.
 
-## Esercizio 5 — Eval set per un agente analitico
+I record contengono:
 
-Devi validare un agente che risponde a domande commerciali interrogando il warehouse.
+- nome;
+- ruolo;
+- manager;
+- sede;
+- età;
+- testo libero;
+- note HR;
+- informazioni talvolta relative a salute o situazioni familiari.
 
-Crea almeno 15 casi di test distribuiti tra:
+### Compito
 
-- metriche semplici;
-- join difficili;
-- finestre temporali;
-- dati mancanti;
-- metriche ambigue;
-- richieste non autorizzate;
-- causal language;
-- richieste che dovrebbero generare una domanda di chiarimento.
+Non iniziare dal prompt.
 
-Per ogni caso definisci il criterio di successo.
+Costruisci il **Data Exposure Review**:
 
-## Esercizio 6 — Il forecast perfetto che non puoi usare
+- finalità;
+- campi necessari;
+- campi da escludere;
+- trasformazioni/redaction;
+- pseudonimizzazione;
+- ambiente approvato;
+- accesso dell'agente;
+- review Privacy/Legal/DPO da richiedere secondo policy;
+- retention;
+- output restrictions.
 
-Un agente costruisce un modello con performance eccellente usando una feature derivata da un dato disponibile solo 48 ore dopo il momento della previsione.
+Spiega perché pseudonimizzato non significa automaticamente anonimo.
 
-Spiega:
+Riferimenti:
 
-- perché è leakage;
-- perché il modello può sembrare ottimo offline;
-- come ricostruire correttamente il dataset;
-- quale baseline useresti;
-- come impedirai che l'errore ricompaia.
+- European Commission, GDPR principles: https://commission.europa.eu/law/law-topic/data-protection/information-business-and-organisations/principles-gdpr_en
+- EDPB, Opinion 28/2024: https://www.edpb.europa.eu/documents/opinion-of-the-board-art-64/opinion-282024-on-certain-data-protection-aspects-related-to_en
 
-## Esercizio 7 — “L'ha fatto l'AI”
+---
 
-Durante un meeting, il CFO scopre che una previsione inviata la settimana precedente era errata del 18%.
+## Esercizio 5 — Caso reale documentato: quando l'eval è rotto
 
-L'analista risponde:
+Nel 2026 OpenAI ha auditato SWE-Bench Pro e stimato che circa il 30% dei task presentasse problemi di costruzione o scoring.
 
-> “Il file è stato generato automaticamente dall'agente.”
+Fonte: https://openai.com/index/separating-signal-from-noise-coding-evaluations/
 
-Riscrivi la gestione dell'incidente come dovrebbe avvenire in un'organizzazione matura. Includi:
+### Compito
 
-- ownership;
-- diagnosi;
-- contenimento;
-- rollback;
-- root cause;
-- modifica dei controlli;
-- comunicazione al management.
+Trasferisci la lezione a un agente SQL aziendale.
 
-## Esercizio 8 — Caso finale: DeltaHome
+Hai un eval set da 200 domande con accuracy dichiarata del 96%.
 
-DeltaHome è un retailer europeo da €620 milioni di revenue. Il lunedì mattina un sistema agentico segnala:
+Progetta un audit dell'eval che controlli:
+
+- qualità del ground truth;
+- prompt sottospecificati;
+- test troppo rigidi;
+- test troppo permissivi;
+- distribuzione dei casi;
+- errori rari ma severi;
+- shortcut/leakage;
+- manual review di pass/fail;
+- validità del claim “pronto per Finance”.
+
+Concludi scrivendo una Eval Card.
+
+---
+
+## Esercizio 6 — LLM-as-a-judge
+
+Un'organizzazione usa un secondo modello per giudicare automaticamente la qualità degli executive summary generati dal primo.
+
+Il judge assegna score 1–5 su:
+
+- correttezza;
+- concisione;
+- chiarezza;
+- rispetto dei caveat.
+
+### Compito
+
+Progetta una procedura di calibrazione con:
+
+- campione human-rated;
+- rubric;
+- disagreement analysis;
+- false positive/false negative importanti;
+- periodic audit;
+- regression dopo cambio del judge;
+- casi in cui il judge non deve essere l'unico gate.
+
+Riferimento: Google Cloud documenta l'uso di human ratings come ground truth per valutare la qualità di judge model.
+
+Fonte: https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/evaluate-judge-model
+
+---
+
+## Esercizio 7 — Caso reale documentato: un agente oltre il boundary di test
+
+OpenAI ha documentato nel 2026 incidenti durante valutazioni cyber condotte da partner esterni, in cui la combinazione tra configurazioni di test, controlli e capacità del modello ha consentito attività oltre i confini previsti della valutazione.
+
+Fonte: https://openai.com/index/third-party-cyber-evaluations-involving-openai-models/
+
+### Compito
+
+Non analizzare il caso come incidente cyber. Usalo come problema di **agent control design**.
+
+Per un agente analytics con accesso a warehouse, Slack e sistema di ticketing, definisci:
+
+- agent identity;
+- tool allowlist;
+- read/write scope;
+- network/data boundary;
+- max steps;
+- cost limit;
+- forbidden actions;
+- approval points;
+- sandbox;
+- action logging;
+- kill switch;
+- rollback.
+
+Quali controlli testeresti in staging prima di dare accesso produttivo?
+
+---
+
+## Esercizio 8 — Model search con holdout contaminato dalle decisioni
+
+Un agente prova 350 pipeline di churn prediction.
+
+Ogni pipeline viene confrontata sullo stesso test set e i risultati vengono usati per decidere nuove feature e nuovi modelli.
+
+La pipeline finale ottiene AUC 0,91.
+
+### Compito
+
+1. Perché il test set non è più realmente indipendente?
+2. Come separeresti generator, selector ed evaluator?
+3. Quale evidence set manterresti intatto?
+4. Come controlleresti feature availability `as-of`?
+5. Quale baseline useresti?
+6. Quali metriche operative aggiungeresti oltre AUC?
+7. Quando fermeresti la model search?
+
+Compila il blocco Modeling Delegation Contract della Control Sheet.
+
+---
+
+## Esercizio 9 — Caso simulato/composito: DeltaHome e il rollback troppo veloce
+
+> **Nota:** DeltaHome è un caso didattico simulato/composito.
+
+DeltaHome è un retailer europeo. Lunedì mattina un sistema agentico segnala:
 
 - revenue settimanale: -7,6%;
 - conversion: -9,2%;
-- mobile checkout: principale driver;
-- causa proposta: nuova UI introdotta venerdì.
+- mobile checkout: principale concentrazione del delta;
+- ipotesi proposta: nuova UI introdotta venerdì.
 
-Il sistema ha automaticamente:
+Il sistema ha autonomamente:
 
 - interrogato il warehouse;
 - segmentato per paese e device;
-- controllato anomaly history;
-- letto le release note;
-- generato una raccomandazione di rollback.
+- letto anomaly history;
+- consultato release note;
+- preparato una raccomandazione di rollback.
 
-Prima di autorizzare il rollback scopri che:
+Prima dell'approvazione emerge che:
 
 - il feed pagamenti di un provider è in ritardo di 11 ore;
 - la nuova UI è attiva solo sul 25% degli utenti;
-- un altro provider di pagamento mostra conversion stabile;
-- il calo apparente è concentrato esattamente dove manca il feed.
+- un altro provider mostra conversion stabile;
+- il calo apparente è concentrato proprio nel provider con feed incompleto.
 
-Prepara il memo che invieresti al VP Product.
+### Compito
 
-Il memo deve separare:
+Compila l'intera **AI Analysis Control Sheet**.
 
-1. fatti osservati;
-2. problemi di qualità del dato;
-3. ipotesi ancora plausibili;
-4. decisioni da non prendere ancora;
-5. controlli necessari;
-6. condizioni che giustificherebbero davvero il rollback.
+Il deliverable deve includere:
 
-## Conclusione
+- risk tier;
+- autonomy level;
+- data-readiness gate;
+- fatti osservati;
+- evidenze non mature;
+- alternative hypotheses;
+- claim consentito;
+- claim bloccato;
+- decisione da non prendere;
+- condizione che renderebbe il rollback giustificato;
+- human approver;
+- prossimo check temporale;
+- audit trace.
 
-L'AI sposta il baricentro del lavoro.
+### Risposta professionale attesa
 
-Prima gran parte del tempo era speso nell'esecuzione. Sempre più spesso l'esecuzione sarà prodotta da sistemi automatici.
+La direzione corretta non è:
 
-Il valore dell'analista si sposta verso:
+> “La UI non è responsabile.”
 
-**framing → semantica → supervisione → verifica → giudizio → responsabilità.**
+Non abbiamo ancora evidenza sufficiente neppure per questo.
 
-Questa trasformazione merita una discussione più ampia della sola tecnica. Per questo torneremo sul tema in un capitolo dedicato alla mentalità dell'analista che lavora con molti agenti: non come passeggero dell'automazione, ma come persona che resta al timone.
+La conclusione corretta è più simile a:
+
+> “Il calo osservato non è ancora interpretabile come effetto della nuova UI perché coincide con incompletezza del feed pagamenti. Il rollback resta un'ipotesi operativa, non una decisione supportata dall'evidenza corrente. Prima servono riconciliazione del provider, confronto esposti/non esposti e verifica del funnel su dati maturi.”
+
+Status:
+
+```text
+PROVISIONAL
+```
+
+### Conclusione del capitolo
+
+L'AI sposta il baricentro del lavoro analitico.
+
+La sintassi, la generazione di query e molte attività di esplorazione diventano più economiche.
+
+La scarsità si sposta verso:
+
+```text
+framing
+→ semantica
+→ confini
+→ evidenza indipendente
+→ verifica
+→ claim discipline
+→ governance
+→ decisione
+→ responsabilità
+```
+
+Questo chiude il cerchio con il Capitolo 0.
+
+Essere **al timone** non significa eseguire ogni passaggio personalmente.
+
+Significa sapere:
+
+- cosa è stato delegato;
+- quali assunzioni reggono il risultato;
+- quali controlli sono passati;
+- dove il sistema potrebbe ancora sbagliare;
+- perché l'evidenza disponibile autorizza proprio quel livello di decisione e non uno più forte.
+
+> **Il nuovo standard professionale non è dimostrare che l'AI non ha partecipato. È poter difendere il sistema di lavoro che ha trasformato la sua capacità in evidenza affidabile.**
