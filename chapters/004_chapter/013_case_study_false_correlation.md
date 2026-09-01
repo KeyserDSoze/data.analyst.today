@@ -1,69 +1,141 @@
-## 4.12 Caso studio: la correlazione che quasi cambiò la strategia di marketing
+## 4.12 Caso studio — La correlazione che quasi spostò 600.000 euro di budget
 
-Una società e-commerce di arredamento, che chiameremo **Northstar Home**, chiude il trimestre con una sorpresa. I clienti acquisiti tramite campagne social mostrano un valore medio dell'ordine più alto rispetto agli altri canali.
+> **Caso simulato/composito.** Azienda, numeri e circostanze sono costruiti a fini didattici.
 
-Il team marketing porta in riunione un numero molto forte: correlazione di 0,76 tra spesa social settimanale e average order value.
+**Northstar Home**, e-commerce di arredamento, chiude il trimestre con un risultato apparentemente molto interessante.
 
-La proposta è immediata: spostare 600.000 euro di budget annuale da search a social.
+Il team marketing mostra una correlazione di **0,76** tra:
 
-A prima vista sembra una decisione data-driven.
+- spesa social settimanale;
+- average order value settimanale.
 
-L'analista apre però l'analisi prima di approvare la conclusione.
+Inoltre i clienti attribuiti al social hanno un AOV aggregato superiore a quelli provenienti dalla search.
 
-### Passo 1: guardare i punti
+La proposta è spostare **600.000 euro di budget annuale** da search a social.
 
-Lo scatter plot mostra una relazione positiva, ma anche quattro settimane molto distanti dal resto. Sono le settimane di Black Friday, pre-Natale e due campagne di lancio della nuova linea premium.
+L'analisi sembra quantitativa. La domanda è se il pattern sia abbastanza robusto da sostenere la storia che gli stiamo attribuendo.
 
-Senza quelle quattro settimane, la correlazione scende da 0,76 a 0,31.
+### 1. Guardare i punti
 
-Questo non rende i quattro punti "sbagliati". Significa che stanno dominando la relazione.
+Lo scatter plot conferma una relazione positiva, ma mostra quattro settimane molto distanti dal resto:
 
-### Passo 2: aggiungere il tempo
+- Black Friday;
+- pre-Natale;
+- due lanci della nuova linea premium.
 
-Le settimane con più spesa social coincidono con quelle in cui il catalogo promuove prodotti di fascia alta. Anche il valore medio dell'ordine cresce per tutti i canali.
+Con tutte le settimane:
 
-Il team stava osservando contemporaneamente:
+```text
+r = 0,76
+```
 
-- maggiore investimento social;
-- maggiore domanda stagionale;
-- mix di prodotto più costoso;
-- promozioni bundle;
-- incremento generale del traffico.
+In una sensitivity analysis che mostra separatamente le quattro settimane eccezionali:
 
-### Passo 3: segmentare
+```text
+r sulle altre settimane = 0,31
+```
 
-L'analista confronta l'AOV per canale, categoria prodotto e settimana.
+Le quattro osservazioni non sono errori e non vanno cancellate dal business.
 
-Risultato semplificato:
+Ma la frase "esiste una forte relazione generale" è molto più fragile di quanto suggerisse `0,76`.
 
-| Canale | AOV complessivo | AOV standard products | AOV premium products |
-| --- | ---: | ---: | ---: |
+### 2. Inserire il tempo
+
+La spesa social e l'AOV sono entrambi elevati nelle settimane in cui:
+
+- cresce la domanda stagionale;
+- il catalogo spinge prodotti premium;
+- aumentano bundle e gift set;
+- sale il traffico complessivo.
+
+Lo stesso calendario può quindi contribuire a entrambe le variabili.
+
+La correlazione iniziale non separa questi meccanismi.
+
+### 3. Guardare la composizione
+
+L'analista confronta AOV per canale e fascia prodotto:
+
+| Canale | AOV aggregato | Prodotti standard | Prodotti premium |
+|---|---:|---:|---:|
 | Social | €184 | €121 | €296 |
 | Search | €169 | €128 | €301 |
 | Direct | €176 | €126 | €299 |
 
-Social aveva AOV più alto nel totale soprattutto perché portava una quota maggiore di utenti sulle campagne premium. All'interno delle stesse categorie, non emergeva un vantaggio sistematico.
+Nell'aggregato Social sembra migliore.
 
-### Passo 4: riformulare la domanda
+Dentro le stesse fasce prodotto non emerge invece un vantaggio sistematico di AOV.
+
+La differenza totale dipende molto dal fatto che il social porta una quota maggiore di traffico alle creatività premium.
+
+Questo non rende il canale social meno interessante.
+
+Cambia la domanda.
+
+### 4. Aggiungere metriche che rappresentano la decisione
+
+Il business non guadagna perché aumenta l'AOV in astratto.
+
+La riallocazione dovrebbe migliorare valore economico dopo aver considerato almeno:
+
+- conversion rate;
+- CAC;
+- contribution margin;
+- return rate;
+- volume incrementale ottenibile;
+- capacità di scalare la spesa.
+
+L'EDA mostra quindi che `AOV` è un pezzo della decisione, non il suo obiettivo completo.
+
+### 5. Separare fatti e ipotesi
+
+**Fatti osservati**
+
+- social spend e AOV settimanale hanno `r = 0,76` nel trimestre;
+- quattro settimane eccezionali influenzano fortemente la relazione;
+- social ha un mix di traffico più orientato ai prodotti premium;
+- dentro le fasce prodotto l'AOV non mostra un vantaggio uniforme.
+
+**Ipotesi candidate**
+
+- il social è particolarmente efficace nel portare utenti verso linee premium;
+- le creatività premium spiegano parte dell'AOV maggiore;
+- la stagionalità spiega parte del movimento congiunto di spend e AOV.
+
+**Non dimostrato**
+
+- che aumentare la spesa social causi un AOV maggiore;
+- che spostare €600.000 aumenti il margine incrementale.
+
+### 6. La domanda migliore
 
 La domanda iniziale era:
 
-> La spesa social aumenta il valore medio dell'ordine?
+> Più social spend aumenta l'AOV?
 
 Dopo l'EDA diventa:
 
-> Il canale social è più efficace nel portare clienti verso categorie premium, e questo effetto produce margine incrementale sufficiente a giustificare una riallocazione di budget?
+> **A parità di offerta e mix creativo, aumentare l'investimento social produce abbastanza conversioni e contribution margin incrementali da superare le alternative di allocazione del budget?**
 
-È una domanda molto diversa. Richiede di separare composizione del traffico, causalità, costo di acquisizione e marginalità.
+Adesso sappiamo quale tipo di evidenza serve.
 
-### Passo 5: la decisione
+### 7. La decisione
 
-L'azienda non sposta immediatamente 600.000 euro. Decide invece di realizzare un test controllato su sei settimane, mantenendo costante il mix creativo e misurando non solo AOV ma anche conversion rate, CAC e contribution margin.
+L'azienda non sposta immediatamente l'intero budget.
 
-L'EDA non ha "risposto" definitivamente alla domanda. Ha evitato che una correlazione plausibile diventasse prematuramente una decisione costosa.
+Progetta invece un test limitato nel tempo e nel perimetro, mantenendo più stabile il mix creativo e definendo in anticipo:
 
-Questa è una delle funzioni più importanti dell'analisi esplorativa: **trasformare una storia convincente in una domanda verificabile**.
+- metrica primaria economica;
+- CAC;
+- conversion;
+- AOV;
+- contribution margin;
+- guardrail su resi e saturazione.
 
-NIST distingue esplicitamente correlazione e causalità: due variabili possono muoversi insieme senza che una provochi il cambiamento dell'altra.[^nist-correlation]
+La sperimentazione verrà trattata nel Capitolo 9.
 
-[^nist-correlation]: NIST, *Correlation*: https://www.nist.gov/glossary-term/21291
+Qui la lezione è diversa:
+
+> **l'EDA non ha dimostrato quale canale fosse causalmente migliore. Ha impedito che un coefficiente aggregato diventasse una decisione da 600.000 euro senza averne stressato la struttura.**
+
+Questo è un buon criterio per valutare l'analisi esplorativa: non quante correlazioni ha trovato, ma quante conclusioni premature ha reso più difficili da sostenere.
