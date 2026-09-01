@@ -1,87 +1,193 @@
-## 9.3 Sample Ratio Mismatch: quando il 50/50 non è davvero 50/50
+## 9.3 Sample Ratio Mismatch: il gate prima del lift
 
-Un A/B test può essere statisticamente sofisticato e allo stesso tempo inutilizzabile perché i gruppi non sono comparabili.
+Se un esperimento è configurato 50/50, ci aspettiamo che il numero di **unità randomizzate osservabili** sia compatibile con quella proporzione.
 
-Uno dei controlli più importanti è il **Sample Ratio Mismatch**, spesso abbreviato SRM.
+Piccole differenze casuali sono normali.
 
-Se un esperimento è configurato per assegnare il 50% degli utenti al controllo e il 50% al trattamento, ci aspettiamo una distribuzione compatibile con quella proporzione. Piccole differenze casuali sono normali. Differenze troppo grandi possono indicare un problema nella catena sperimentale.
+Una deviazione troppo improbabile è un **Sample Ratio Mismatch (SRM)**.
 
-Microsoft tratta l'SRM come un controllo di qualità fondamentale: una deviazione statisticamente significativa dal rapporto configurato può segnalare problemi di assegnazione, esecuzione, logging, join o analisi e rende il test non affidabile finché la causa non è capita.
+Il punto non è ottenere esattamente `50,000% / 50,000%`.
 
-### Caso: la variante B sembra perdere, ma mancano proprio gli utenti più coinvolti
+Il punto è verificare se il processo che ha costruito i gruppi osservati è coerente con l'assignment configurato.
 
-Immaginiamo un test su una homepage con allocazione 50/50.
+### Perché l'SRM viene prima dell'effetto
 
-Dopo cinque giorni:
+Microsoft Experimentation Platform considera l'SRM un controllo fondamentale di trustworthy experimentation. La documentazione Microsoft afferma che analisi con SRM sono generalmente non affidabili e non dovrebbero guidare decisioni finché il problema non è compreso.[^ms-dq]
 
-| Variante | Utenti osservati | CTR |
-|---|---:|---:|
-| A | 1.020.441 | 18,2% |
-| B | 973.115 | 17,4% |
+L'ordine operativo diventa:
 
-Il team conclude che B peggiora l'engagement.
+```text
+SRM PASS?
+    ↓ sì
+telemetry / exposure PASS?
+    ↓ sì
+effect analysis
+```
 
-L'analista però nota che la differenza nei volumi è troppo grande. Il test SRM fallisce.
+Non:
 
-L'indagine trova il problema: nella variante B gli utenti più attivi generano una sequenza di eventi che attiva erroneamente un filtro anti-bot. Proprio gli utenti maggiormente esposti all'effetto del trattamento spariscono dal dataset analitico.
+```text
+B +4% !!!
+    ↓
+forse controlliamo SRM
+```
 
-Dopo la correzione della pipeline:
+## Caso reale documentato — Il carousel MSN che sembrava peggiorare engagement
 
-| Variante | CTR corretto |
-|---|---:|
-| A | 18,2% |
-| B | 19,1% |
+Microsoft Research racconta un A/B test di **MSN** sul numero di card di un image carousel. La variante B aumentava le card da 12 a 16 e ci si aspettava maggiore engagement.
 
-La conclusione si ribalta.
+Il risultato iniziale mostrava invece un calo.
 
-### Perché guardare soltanto 49% vs 51% non basta
+Contemporaneamente, il test falliva l'SRM check.
 
-L'entità della deviazione va valutata insieme alla numerosità.
+L'indagine rivelò un meccanismo sorprendente: la variante B era in realtà abbastanza coinvolgente da generare comportamento che confondeva un algoritmo di bot detection. Alcuni degli utenti più engaged della variante B venivano quindi filtrati dall'analisi.[^ms-srm-case]
 
-Su 100 utenti, 47 contro 53 può essere del tutto plausibile.
+Dopo la correzione, la conclusione si ribaltò: la variante con più contenuto aumentava l'engagement.
 
-Su 100 milioni di utenti, 49,8 milioni contro 50,2 milioni può invece essere una deviazione estremamente improbabile rispetto a un vero 50/50.
+Questo caso è didatticamente potente perché mostra che:
 
-Per questo si usa normalmente un test statistico, ad esempio chi-quadro, sul conteggio delle unità randomizzate.
+> **gli utenti mancanti non sono necessariamente un campione casuale degli utenti. Possono mancare proprio perché il trattamento li ha influenzati.**
 
-### Dove nasce un SRM
+### Il sintomo: rapporto osservato incompatibile con il piano
 
-Le cause possono comparire in diversi punti:
+Supponiamo:
 
-**Assignment**
+```text
+allocation configurata: 50/50
+A osservati: 1.020.441
+B osservati:   973.115
+```
+
+La domanda non è se la differenza “sembra grande”.
+
+Dipende dalla numerosità.
+
+Su 100 utenti, 47/53 può essere plausibile.
+
+Su milioni di utenti, una deviazione percentuale molto piccola può essere statisticamente incompatibile con l'assignment previsto.
+
+Un test chi-quadro sui conteggi è una soluzione standard.
+
+### Ma quale conteggio?
+
+L'SRM deve essere calcolato sull'unità coerente con il design.
+
+Se randomizziamo `stable_user_id`, contare sessioni può produrre un rapporto diverso anche senza errore di assignment perché una variante può cambiare il numero di sessioni per utente.
+
+Quindi dobbiamo distinguere:
+
+- **SRM di assignment:** randomization units assegnate;
+- **SRM di exposure:** unità che hanno realmente raggiunto l'esperienza;
+- rapporti su eventi downstream che **possono essere influenzati dal trattamento** e non sono equivalenti a un assignment check.
+
+### Dove può nascere l'SRM
+
+Microsoft Research organizza le cause lungo la catena sperimentale. Operativamente possiamo usare questa tassonomia.
+
+#### Assignment
+
 - hashing errato;
-- user ID instabile;
-- bucket configurati male;
-- ramp-up non simmetrico.
+- bucket configuration sbagliata;
+- ID instabile;
+- ramp non simmetrico;
+- eligibility diversa tra rami.
 
-**Execution**
-- redirect diverso tra varianti;
-- crash o latency che impediscono l'esposizione;
-- utenti che possono auto-selezionarsi.
+#### Execution / exposure
 
-**Telemetry e processing**
+- redirect differenziali;
+- crash prima del rendering;
+- client version non supportata;
+- feature flag inconsistente;
+- trattamento che modifica la probabilità di entrare nel campione analitico.
+
+#### Telemetry / processing
+
 - eventi persi;
-- filtri applicati diversamente;
 - join lossy;
-- bot detection influenzata dal trattamento.
+- bot filter differenziale;
+- pipeline lag differente;
+- dedup diversa tra varianti.
 
-**Analysis**
-- segmentazioni definite su variabili post-treatment;
-- inclusione solo degli utenti che compiono un'azione influenzata dalla variante.
+#### Analysis
 
-### L'SRM è un sintomo, non una diagnosi
+- filtro post-treatment;
+- denominatore definito su un evento influenzato dal trattamento;
+- segmentazione che esclude unità in modo differenziale;
+- data maturity non uniforme.
 
-Non basta dire “c'è SRM”. Bisogna capire perché.
+#### Interference
 
-La regola operativa è molto semplice:
+In sistemi complessi anche interazioni tra esperimenti o unità possono generare pattern anomali da investigare.
 
-> Se l'SRM fallisce, non discutere ancora quale variante abbia vinto. Prima ripara la fiducia nei dati.
+### SRM è un allarme, non la diagnosi
 
-### Controllo prima del risultato
+Un SRM significativo non ci dice **perché** il test è rotto.
 
-Nelle piattaforme mature, l'SRM dovrebbe apparire prima delle metriche di business. Questo riduce una tentazione cognitiva pericolosa: cercare di giustificare un problema di qualità quando il risultato ci piace.
+Ci dice:
 
-### Riferimenti
+> “Il dataset che stai confrontando non sembra essere quello che il design prometteva.”
 
-- Microsoft Research, *Diagnosing Sample Ratio Mismatch in A/B Testing*.
-- Microsoft Learn, *Experiments Best Practices and Recommendations*.
+La responsabilità dell'analista è localizzare la rottura.
+
+### Segmentare l'SRM
+
+Una tecnica diagnostica utile è verificare il rapporto per:
+
+- piattaforma;
+- app version;
+- country;
+- browser;
+- giorno/ora;
+- logged-in vs anonymous;
+- nuovo vs returning user;
+- exposure path.
+
+Esempio:
+
+```text
+Totale: SRM
+Desktop: PASS
+Android: forte SRM
+iOS: PASS
+```
+
+Ora l'indagine ha una direzione.
+
+Attenzione però a non fare decine di segmentazioni e dichiarare causa al primo pattern casuale: il segmentation step serve a **debuggare il sistema**, non a produrre un risultato di business.
+
+### Quando un test può essere salvato?
+
+Dipende dalla causa.
+
+Se il problema riguarda un periodo iniziale chiaramente identificato e indipendente dall'outcome, può essere possibile predefinire una finestra valida e riavviare l'analisi.
+
+Se invece il trattamento stesso ha modificato chi entra nel dataset, rimuovere ex post i casi problematici può creare ulteriore selection bias.
+
+Spesso la scelta più pulita è:
+
+1. correggere il problema;
+2. riavviare il test;
+3. documentare l'incidente.
+
+### SRM runbook
+
+```text
+Configured allocation:
+Randomization unit:
+Observed unit counts:
+SRM p-value / alert:
+Quando è iniziato?
+Quali segmenti lo concentrano?
+Assignment integrity:
+Exposure symmetry:
+Telemetry completeness:
+Post-treatment filters:
+Treatment-dependent missingness plausibile?
+Root cause:
+Salvage / restart decision:
+```
+
+> **Se l'SRM fallisce, la domanda “A o B?” viene sospesa. La prima domanda diventa “possiamo ancora fidarci del confronto?”.**
+
+[^ms-dq]: Microsoft Research, *Data Quality: Fundamental Building Blocks for Trustworthy A/B testing Analysis*: https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/data-quality-fundamental-building-blocks-for-trustworthy-a-b-testing-analysis
+[^ms-srm-case]: Microsoft Research, *Diagnosing Sample Ratio Mismatch in A/B Testing*: https://www.microsoft.com/en-us/research/articles/diagnosing-sample-ratio-mismatch-in-a-b-testing/
