@@ -1,80 +1,171 @@
-## 9.4 Contaminazione e interferenza: quando A influenza B
+## 9.4 Contaminazione e interferenza: quando il controllo non resta davvero controllo
 
-L'idea classica dell'A/B test presume che l'esperienza assegnata a un'unità non cambi direttamente l'outcome di un'altra unità. Nei prodotti digitali reali questa assunzione può rompersi.
+Il Capitolo 8 ha introdotto l'**interference** come problema causale: il trattamento assegnato a un'unità può cambiare l'outcome di un'altra.
 
-Succede quando utenti, venditori, team o mercati interagiscono tra loro.
+In un esperimento operativo questo diventa una domanda di design:
 
-### Caso: marketplace e seller che reagiscono al trattamento
+> **possiamo creare due mondi abbastanza separati da misurare l'effetto che ci interessa?**
 
-Un marketplace testa una nuova logica di ranking che aumenta la visibilità dei venditori con consegne più rapide.
+### Contamination e interference non sono identiche
 
-L'unità di randomizzazione iniziale è il buyer. Metà dei buyer vede il ranking nuovo, metà quello vecchio.
+**Contamination**
+
+Un'unità di controllo riceve, direttamente o indirettamente, parte del trattamento.
+
+Esempio: un Sales Rep di controllo copia il nuovo playbook da un collega trattato.
+
+**Interference / spillover**
+
+Il trattamento di una unità modifica l'ambiente o l'outcome di altre unità, anche se queste non ricevono la feature.
+
+Esempio: trattare buyer cambia domanda, prezzo e inventario dei seller condivisi.
+
+Entrambi riducono la separazione tra A e B, ma possono richiedere strategie differenti.
+
+### Caso simulato/composito — Ranking marketplace randomizzato per buyer
+
+Un marketplace testa una logica che dà più visibilità ai seller con consegne rapide.
+
+Randomizzazione iniziale: buyer-level.
 
 Dopo due settimane:
 
-- conversione buyer B: +1,7%;
-- GMV buyer B: +2,4%;
-- delivery time medio: -4,1%.
+- conversion B: +1,7%;
+- GMV B: +2,4%;
+- delivery time: -4,1%.
 
-Sembra una vittoria netta.
+Sembra una vittoria.
 
-Ma i seller vedono crescere la domanda su alcuni prodotti e reagiscono:
+Ma i seller reagiscono alla nuova domanda:
 
 - aumentano stock;
 - cambiano prezzo;
-- modificano promozioni;
-- danno priorità operativa agli SKU più esposti.
+- spostano promozioni;
+- danno priorità agli SKU più visibili.
 
-Queste azioni influenzano anche i buyer nel gruppo A.
+Queste azioni cambiano anche ciò che vedono i buyer di controllo.
 
-Il controllo non è più veramente "non trattato".
+Il control arm non rappresenta più il marketplace che sarebbe esistito **senza** il trattamento.
 
-### Spillover
+### Dilution: un effetto reale può sembrare piccolo
 
-Questo fenomeno è spesso chiamato spillover o interference.
+Se il trattamento produce spillover positivi sul controllo, il contrasto A/B può essere attenuato.
 
-L'effetto del trattamento può propagarsi attraverso:
+Esempio:
 
-- rete sociale;
-- mercato condiviso;
-- inventario comune;
-- capacità logistica condivisa;
-- team operativi;
-- sistemi di raccomandazione che apprendono globalmente.
+```text
+effetto diretto su B: +5%
+spillover su A: +2%
+differenza osservata: circa +3%
+```
 
-### Caso B2B: esperimento sul team commerciale
+L'esperimento individuale può quindi sottostimare l'effetto di un rollout globale.
 
-Un'azienda assegna a metà dei Sales Representative un nuovo lead scoring model.
+L'opposto è possibile se il trattamento sottrae risorse al controllo.
 
-Gli account, però, non sono totalmente separati: alcuni appartengono allo stesso gruppo societario e i commerciali condividono informazioni nel CRM.
+### Cannibalization e sistemi a capacità limitata
 
-Dopo pochi giorni i commerciali di controllo iniziano a copiare informalmente le priorità dei colleghi trattati.
+Supponiamo di testare una promo che aumenta la visibilità di alcuni ristoranti.
 
-L'effetto osservato del modello si attenua. Non perché il modello non funzioni, ma perché il controllo viene contaminato.
+Il GMV dei trattati cresce.
 
-### Strategie possibili
+Ma se la domanda totale è quasi fissa, parte della crescita può provenire da ristoranti di controllo.
 
-A seconda del sistema possiamo:
+A livello unitario la variante sembra creare valore; a livello marketplace può stare soprattutto **redistribuendo** valore.
 
-- randomizzare cluster invece di individui;
-- usare regioni geografiche separate;
-- creare holdout più isolati;
-- limitare il test a mercati indipendenti;
-- modellare esplicitamente gli spillover;
-- accettare che la stima sia un effetto diluito e documentarlo.
+Per questo dobbiamo decidere qual è l'estimand:
 
-Non esiste una soluzione universale.
+- effetto sul singolo seller trattato?
+- effetto totale sulla piattaforma?
+- effetto di equilibrio al 100% rollout?
 
-### Quando l'interferenza è parte del prodotto
+### Caso simulato/composito — Lead scoring condiviso
 
-Nei marketplace, social network e piattaforme collaborative l'interferenza non è un'eccezione: è spesso il meccanismo di valore.
+Metà dei Sales Representative riceve un nuovo lead score.
 
-Se una feature rende più attivi alcuni seller e questo migliora l'esperienza di altri buyer, il network effect è parte dell'effetto business. Il problema non è eliminarlo, ma progettare un esperimento che lo misuri correttamente.
+Dopo pochi giorni:
 
-### Principio operativo
+- i commerciali parlano tra loro;
+- condividono priorità nel CRM;
+- i manager ridistribuiscono lead sulla base delle nuove informazioni.
 
-Prima del test chiediti:
+Il gruppo di controllo inizia a usare indirettamente il trattamento.
 
-> Se tratto questa unità, può cambiare il comportamento o l'ambiente di un'unità di controllo?
+Il problema non è solo statistico. È organizzativo.
 
-Se la risposta è sì, un semplice A/B individuale può non essere sufficiente.
+### Strategie di design
+
+A seconda del sistema possiamo considerare:
+
+**Cluster randomization**
+
+Randomizzare team, store, tenant o community abbastanza isolate.
+
+**Geo experiments**
+
+Usare aree con interazioni limitate, quando geografia e media mix lo permettono.
+
+**Switchback experiments**
+
+Alternare trattamento e controllo nel tempo su sistemi condivisi, per esempio marketplace o logistics, quando una randomizzazione simultanea individuale produce interference forte.
+
+**Holdout strutturali**
+
+Mantenere una popolazione non esposta abbastanza separata per misurare effetti di lungo periodo.
+
+**Modelli espliciti di spillover**
+
+Quando la rete è parte del fenomeno, stimare effetti diretti e indiretti invece di fingere indipendenza.
+
+### Switchback: il tempo diventa unità sperimentale
+
+Supponiamo che una piattaforma ride-hailing modifichi un algoritmo di matching che influenza driver e rider nello stesso mercato.
+
+Randomizzare rider individuali crea equilibrio misto.
+
+Una strategia può essere alternare il mercato tra A e B per finestre temporali:
+
+```text
+08:00–09:00 A
+09:00–10:00 B
+10:00–11:00 A
+...
+```
+
+Ma introduce nuovi problemi:
+
+- carryover tra finestre;
+- stagionalità oraria;
+- autocorrelazione;
+- numero effettivo di periodi indipendenti.
+
+Il Capitolo 7 ci ricorda che il tempo non può essere trattato come un normale shuffle casuale.
+
+### Concurrent experiments
+
+Nelle piattaforme mature gli stessi utenti possono essere contemporaneamente in più test.
+
+Microsoft ExP documenta che centinaia di esperimenti possono girare nello stesso ecosistema; le interazioni non sono automaticamente catastrofiche, ma gli experiment owner devono conoscere test incompatibili o meccanismi che possono interagire.[^ms-interactions]
+
+Quindi non serve isolare ogni esperimento dal mondo intero.
+
+Serve capire **quali interazioni sono materialmente plausibili**.
+
+### Interference card
+
+```text
+Randomization unit:
+Con chi interagisce?
+Risorse condivise:
+Inventory/capacity condivisa:
+Treatment può cambiare ambiente del controllo?
+Contamination diretta possibile?
+Concurrent experiments rilevanti?
+Effetto desiderato: diretto, totale, equilibrium?
+Design alternativo: cluster / geo / switchback / holdout?
+Carryover plausibile?
+```
+
+> **Quando A può modificare il mondo in cui vive B, il problema non è “più rumore”. È che il confronto può non rappresentare più la policy che vogliamo valutare.**
+
+[^ms-interactions]: Microsoft Research, *A/B Interactions: A Call to Relax*: https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/a-b-interactions-a-call-to-relax/
