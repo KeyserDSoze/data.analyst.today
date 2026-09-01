@@ -1,123 +1,227 @@
-## 13.11 Dal prototipo alla produzione: quando il successo cambia il problema
+## 13.11 Dal prototipo alla produzione: cambiare tool quando cambia la responsabilità
 
-Un prototipo ha un obiettivo diverso da un sistema di produzione.
+Un prototipo e un sistema di produzione possono usare lo stesso linguaggio e avere requisiti completamente diversi.
 
-Il prototipo deve dimostrare rapidamente che un'idea può funzionare.
+Il prototipo deve rispondere:
 
-La produzione deve funzionare anche:
+> **questa idea merita di essere usata?**
 
-- domani;
-- con più utenti;
-- con dati incompleti;
-- dopo una modifica di schema;
-- quando l'autore è in ferie;
-- quando il volume raddoppia;
-- quando qualcuno deve capire perché un numero è cambiato.
+La produzione deve rispondere anche:
 
-Il passaggio da prototipo a produzione non è quindi un semplice "deploy". È un cambio di requisiti.
+> **possiamo continuare a fidarci del processo che la esegue quando volume, utenti, errori e tempo reale entrano in gioco?**
 
-### Caso realistico: il notebook che diventa processo di pricing
+Per questo il passaggio a produzione non è un semplice deploy.
 
-Un analyst costruisce in Python un notebook per suggerire sconti a 120 clienti enterprise.
+È una **nuova decisione di design**.
 
-Il notebook:
+### Caso simulato/composito — notebook di pricing che cambia categoria
 
-- legge tre CSV;
-- applica regole commerciali;
-- stima probabilità di rinnovo;
-- produce un file Excel per il sales team.
+Un analyst costruisce un notebook per suggerire condizioni commerciali a 120 clienti enterprise.
 
-Per due trimestri funziona benissimo.
+Il processo:
 
-Poi il processo viene esteso a 18.000 clienti in 14 paesi e deve girare ogni notte.
+- legge tre estratti;
+- applica regole;
+- calcola scenari;
+- produce un workbook per Sales.
 
-Improvvisamente emergono problemi che nel prototipo erano irrilevanti:
+Per due trimestri funziona bene.
 
-- autenticazione alle sorgenti;
-- refresh automatico;
-- gestione degli errori;
-- audit delle raccomandazioni;
-- versionamento del modello;
-- rollback;
-- monitoraggio;
-- permessi;
-- localizzazione delle valute;
-- tempi di esecuzione.
+Poi il business decide di usarlo per:
 
-Il notebook non era "sbagliato". Era perfettamente adeguato al problema iniziale.
+- 18.000 clienti;
+- 14 paesi;
+- esecuzione notturna;
+- caricamento automatico nel CRM;
+- audit delle raccomandazioni.
 
-È cambiato il problema.
+Il metodo può essere lo stesso.
 
-### Cinque segnali che un prototipo sta diventando prodotto
+Ma sono cambiati:
 
-1. **Ricorrenza** — viene usato ogni giorno, settimana o mese.
-2. **Dipendenza** — qualcuno non può lavorare se il processo fallisce.
-3. **Scala** — crescono utenti, record, mercati o sorgenti.
-4. **Rischio** — un errore produce impatto economico, legale o reputazionale.
-5. **Riutilizzo** — la stessa logica viene consumata da più processi.
+- scala;
+- frequenza;
+- consumer;
+- rischio;
+- data access;
+- recovery requirement;
+- ownership.
 
-Più questi segnali sono presenti, più aumenta il valore dell'industrializzazione.
+Il notebook non è diventato improvvisamente “cattivo”.
 
-### Cosa cambia in produzione
+Ha semplicemente **superato l'exit condition del prototipo**.
 
-Un processo produttivo dovrebbe normalmente introdurre, in misura proporzionata:
+### Promotion gate
 
-- configurazione separata dal codice;
-- logging;
-- gestione degli errori;
-- test automatici;
-- ambienti separati;
+Un Tooling Decision Record dovrebbe stabilire in anticipo i segnali che richiedono una nuova review.
+
+Cinque categorie sono particolarmente utili.
+
+#### 1. Ricorrenza
+
+```text
+ad hoc → settimanale → giornaliero → continuo
+```
+
+Ogni aumento di frequenza aumenta il valore di automazione e osservabilità.
+
+#### 2. Dipendenza
+
+```text
+solo analyst → team → processo operativo → sistema downstream
+```
+
+Più persone dipendono dall'output, meno è accettabile uno stato locale non controllato.
+
+#### 3. Scala
+
+- righe;
+- utenti;
+- paesi;
+- sorgenti;
+- chiamate;
+- runtime.
+
+#### 4. Rischio
+
+- economico;
+- privacy;
+- compliance;
+- customer impact;
+- decisioni automatizzate.
+
+#### 5. Riutilizzo
+
+Se la stessa logica viene consumata da più processi, il valore di centralizzazione e test aumenta.
+
+### Prototype maturity ladder
+
+Possiamo rappresentare una progressione tipica.
+
+**P0 — scratch**
+
+- file/notebook personale;
+- input temporanei;
+- nessun consumer.
+
+**P1 — validated prototype**
+
+- metodo verificato;
+- input identificati;
+- output confrontato con baseline;
+- decisione di continuare presa.
+
+**P2 — recurring analytical process**
+
+- esecuzione ripetibile;
 - version control;
-- dependency management;
-- monitoraggio della qualità dati;
-- ownership;
-- documentazione;
-- procedure di recovery.
+- test principali;
+- owner e documentazione.
 
-Non serve implementare ogni elemento al massimo livello dal primo giorno. Serve però sapere quali rischi si stanno accettando.
+**P3 — production analytical product**
 
-### Il pericolo opposto: production engineering prima della prova di valore
+- scheduling;
+- monitoring;
+- access control;
+- recovery;
+- SLA/SLO quando serve;
+- change management.
 
-Un team decide di costruire un motore di raccomandazione.
+Non tutti i progetti devono arrivare a P3.
 
-Prima ancora di verificare che le raccomandazioni producano valore, crea:
+Molti non dovrebbero farlo.
 
-- microservizi;
-- feature store;
+### Il costo della premature productionization
+
+Un team vuole testare un recommendation system.
+
+Prima di verificare valore costruisce:
+
 - streaming;
-- Kubernetes;
-- CI/CD;
-- monitoring avanzato.
+- feature store;
+- microservizi;
+- orchestration;
+- CI/CD sofisticata;
+- monitoring completo.
 
-Dopo quattro mesi scopre che una semplice regola basata su recency e frequency produce quasi lo stesso risultato.
+Dopo quattro mesi scopre che una semplice regola recency-frequency produce quasi lo stesso valore economico.
 
-Il costo dell'errore non è solo tecnologico. Sono quattro mesi in cui il business non ha imparato quasi nulla.
+La tecnologia costruita può essere impeccabile.
+
+Ma il processo di apprendimento è stato inefficiente.
 
 Una sequenza più sana è spesso:
 
-**domanda → prototipo → evidenza di valore → limiti → industrializzazione proporzionata**
+```text
+problema
+→ soluzione minima verificabile
+→ evidenza di valore
+→ failure modes reali
+→ industrializzazione proporzionata
+```
 
-### Analista come custode della continuità semantica
+### Continuità semantica durante la migrazione
 
-Quando un prototipo viene riscritto da engineering, c'è un rischio sottile: preservare il codice ma cambiare il significato.
+Quando engineering riscrive un prototipo, non basta confrontare runtime o output shape.
+
+Bisogna verificare che restino invariati, quando devono restarlo:
+
+- popolazione;
+- grain;
+- date;
+- identity logic;
+- filtri;
+- metriche;
+- fallback;
+- handling dei missing.
 
 Esempio:
 
-nel prototipo `revenue` significa incasso netto dopo refund.
+```text
+prototype revenue = incasso netto dopo refund
+production revenue = gross_amount
+```
 
-Nella nuova pipeline engineering usa il campo `gross_amount` perché è più semplice da reperire.
+La pipeline nuova può essere più robusta e al tempo stesso implementare un prodotto diverso.
 
-Il sistema è più robusto tecnicamente ma il KPI non è più lo stesso.
+L'**Analytical Data Contract** del Capitolo 11 diventa quindi uno strumento di migrazione.
 
-L'analyst deve verificare non solo che la nuova pipeline "giri", ma che mantenga:
+### Shadow run e parity test
 
-- grain;
-- filtri;
-- finestre temporali;
-- identity logic;
-- definizioni metriche;
-- regole di esclusione.
+Prima di sostituire un processo importante può essere utile eseguire vecchio e nuovo sistema in parallelo.
+
+```text
+old output
+vs
+new output
+```
+
+Le differenze devono essere:
+
+- attese;
+- spiegate;
+- approvate.
+
+Non bisogna pretendere sempre equivalenza perfetta: una migrazione può correggere bug o cambiare definizioni.
+
+Ma le differenze non devono essere sorprese.
+
+### Campo del Tooling Decision Record
+
+```text
+current maturity: P0-P3
+current tool:
+current consumers:
+frequency:
+risk:
+known manual steps:
+promotion trigger:
+production requirements missing:
+parity / migration plan:
+new owner:
+rollback:
+```
 
 ### Regola operativa
 
-> **Un prototipo dimostra che un'idea può funzionare. La produzione dimostra che possiamo fidarci del processo che la rende ripetibile.**
+> **Non chiedere “possiamo mettere in produzione questo notebook?”. Chiedi “quali nuovi obblighi sono comparsi perché questo lavoro è diventato importante, ricorrente o operativo?”. Lo strumento deve cambiare solo quanto serve per soddisfarli.**
