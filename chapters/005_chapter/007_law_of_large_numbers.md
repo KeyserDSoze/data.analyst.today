@@ -1,96 +1,109 @@
-## 5.6 Legge dei grandi numeri: perché i KPI piccoli oscillano tanto
+## 5.6 Legge dei grandi numeri: più osservazioni stabilizzano il rumore, non il bias
 
-Uno dei fenomeni che confonde più spesso manager e analisti junior è la volatilità dei piccoli numeri.
+Uno dei fenomeni che confonde più spesso l'interpretazione dei KPI è la volatilità dei **piccoli denominatori**.
 
-Un conversion rate può passare dal 4% al 9% in una giornata e sembrare un successo straordinario. Ma se quella giornata contiene soltanto 40 visite, il cambiamento può essere quasi interamente casuale.
+Un conversion rate può passare dal 4% al 9% e sembrare un cambiamento enorme. Se però deriva da poche decine di visite, bastano pochissimi acquisti in più per produrre il salto.
 
-La legge dei grandi numeri ci aiuta a capire perché, quando il numero di osservazioni cresce, una media o una frequenza osservata tende a stabilizzarsi attorno al suo valore atteso.
+La **legge dei grandi numeri** formalizza un'intuizione importante: sotto condizioni appropriate, quando aumentano le osservazioni indipendenti e comparabili, una media o una frequenza osservata tende a stabilizzarsi attorno al proprio valore atteso.
 
-Non significa che grandi dataset eliminino tutti i problemi. Bias, errori di misura e confondenti possono rimanere perfettamente presenti anche con miliardi di righe.
+Non dice che “big data = verità”.
 
-Significa soltanto che la variabilità casuale di certe stime tende a ridursi quando aumentano le osservazioni indipendenti e comparabili.
+Dice qualcosa di molto più limitato e utile:
 
-### Caso realistico: il negozio “migliore” della rete
+> **aumentando il numero di osservazioni riduciamo in genere una parte della variabilità casuale.**
 
-Una catena retail confronta il conversion rate di 84 negozi.
+### Caso simulato/composito — Il negozio migliore della rete
 
-Il negozio di Aosta mostra il conversion rate più alto della settimana: 38%.
-
-Milano Centrale è al 24%.
-
-La classifica viene presentata nella riunione commerciale e qualcuno propone di studiare Aosta come best practice.
-
-L'analista aggiunge però il volume:
+Una catena retail confronta 84 punti vendita.
 
 | Negozio | Visitatori | Acquisti | Conversion rate |
 |---|---:|---:|---:|
 | Aosta | 42 | 16 | 38,1% |
 | Milano Centrale | 4.920 | 1.181 | 24,0% |
 
-La settimana precedente Aosta aveva avuto 37 visitatori e 7 acquisti: 18,9%.
+Aosta è prima nella classifica settimanale.
 
-Il tasso è quasi raddoppiato senza che sia cambiato nulla nel processo commerciale.
+La settimana precedente aveva però registrato:
 
-Con campioni così piccoli, pochi clienti cambiano drasticamente la percentuale.
+- 37 visitatori;
+- 7 acquisti;
+- conversion rate 18,9%.
 
-Milano, con quasi cinquemila visitatori, ha invece un indicatore molto più stabile.
+Il tasso è quasi raddoppiato senza che il team abbia cambiato promozioni, layout o processo commerciale.
 
-### Più dati, meno rumore casuale
+Con 42 visitatori, pochi esiti muovono enormemente la percentuale. Con quasi 5.000 visitatori, la stima di Milano è molto meno volatile.
 
-Supponiamo che la probabilità reale di conversione sia 25%.
+Questo non significa che Milano abbia “il valore vero” e Aosta no. Significa che le due percentuali hanno **precisione diversa**.
 
-Con 20 visitatori, il valore atteso è 5 acquisti, ma ottenere 3 oppure 8 acquisti non è particolarmente sorprendente. I conversion rate osservati sarebbero rispettivamente 15% e 40%.
+Le sezioni su standard error e intervalli di confidenza quantificheranno esattamente questa differenza.
 
-Con 20.000 visitatori, oscillazioni proporzionalmente così grandi diventano molto meno plausibili.
+### La classifica crea estremi anche quando non c'è una storia speciale
 
-Questo è il motivo per cui dashboard con decine di micro-segmenti producono spesso “insight” spettacolari ma instabili.
+Se confrontiamo decine o centinaia di negozi, campagne, seller o account executive, alcuni finiranno inevitabilmente molto in alto e altri molto in basso anche per semplice variabilità casuale.
 
-### La trappola delle classifiche
+Questo rende pericolose frasi come:
 
-Se confrontiamo centinaia di filiali, campagne o venditori, alcuni saranno inevitabilmente molto sopra o molto sotto la media semplicemente per variabilità casuale.
+> “Studiamo il top performer del mese e copiamo ciò che fa.”
 
-I valori estremi tendono inoltre a mostrare **regressione verso la media** nelle osservazioni successive.
+Prima dobbiamo capire quanto della performance estrema sia persistente.
 
-Il “peggior negozio del mese” può migliorare il mese seguente anche senza alcun intervento, semplicemente perché una parte della performance precedente era rumore.
+Un modo semplice è verificare:
 
-Lo stesso vale per il migliore.
+- più settimane o mesi;
+- numerosità della base;
+- intervalli di incertezza;
+- stabilità del ranking;
+- performance dopo il periodo in cui il soggetto è stato selezionato come estremo.
 
-### Caso realistico: il medico con il tasso di complicazioni più alto
+### Regressione verso la media
 
-Una rete sanitaria confronta il tasso di complicazioni post-operatorie tra strutture.
+I casi selezionati perché estremi tendono spesso a essere meno estremi alla misurazione successiva.
 
-Una clinica piccola registra 3 complicazioni su 24 interventi: 12,5%.
+Non necessariamente perché il processo sia migliorato o peggiorato. Una parte del valore precedente può essere stata rumore.
 
-Un grande ospedale ne registra 48 su 920: 5,2%.
+Un negozio scelto come “peggiore” dopo una settimana eccezionalmente negativa può migliorare anche senza intervento. Il migliore può peggiorare senza aver perso competenza.
 
-Guardando soltanto le percentuali, la clinica sembra più che doppiare il rischio.
+Questo fenomeno, **regressione verso la media**, è una ragione in più per non attribuire automaticamente ogni movimento successivo all'azione appena implementata.
 
-Ma tre soli casi determinano completamente il risultato. Un singolo caso in meno avrebbe portato il tasso a 8,3%.
+Lo ritroveremo nei capitoli su causalità ed experimentation.
 
-Prima di trarre conclusioni sulla qualità clinica servono volumi, intervalli di incertezza, differenze nel case mix e aggiustamenti per il rischio.
+### Più dati non correggono una selezione sbagliata
 
-Il principio è generale: **più il denominatore è piccolo, più dobbiamo diffidare delle percentuali estreme**.
+Supponiamo di avere un sondaggio con un milione di risposte volontarie.
 
-### Big data non significa automatically good data
+La numerosità può rendere piccolissimo l'errore casuale **all'interno di quel gruppo di rispondenti**. Ma se chi risponde è sistematicamente diverso dalla popolazione che vogliamo descrivere, l'estrema precisione non risolve il problema.
 
-La legge dei grandi numeri non salva un dataset distorto.
+AAPOR distingue infatti l'errore di campionamento da altre fonti di errore come coverage, measurement e nonresponse.[^aapor-definitions]
 
-Se un questionario online raccoglie un milione di risposte ma partecipano soprattutto clienti molto soddisfatti o molto insoddisfatti, aumentare il campione non elimina il selection bias.
+Il principio è fondamentale:
 
-Se un sensore è calibrato male, un miliardo di misurazioni può stimare con grandissima precisione il valore sbagliato.
+> **un campione enorme può stimare con grandissima precisione la popolazione sbagliata.**
 
-Questa distinzione è fondamentale:
+Nella sezione 5.8 vedremo un caso storico famoso proprio su questo punto.
 
-**più osservazioni riducono l'errore casuale, non necessariamente l'errore sistematico.**
+### Sensore sbagliato, miliardi di righe
+
+Lo stesso vale fuori dai survey.
+
+Se un sensore sovrastima sistematicamente la temperatura di 2 °C, aumentare da mille a un miliardo di misurazioni non elimina il bias. Riduce l'incertezza attorno a una misura sistematicamente spostata.
+
+Quindi:
+
+- **sample size** aiuta contro il rumore casuale;
+- **design, misurazione e rappresentatività** affrontano altre fonti di errore.
+
+Confondere questi livelli è uno degli errori più costosi della statistica applicata.
 
 ### La domanda operativa
 
 Quando vediamo un KPI estremo chiediamoci:
 
-- qual è il denominatore?
-- quante osservazioni sostengono il numero?
-- quanto era volatile storicamente?
-- il valore si replica su più periodi?
-- stiamo osservando un segnale o semplicemente una realizzazione estrema del rumore?
+1. qual è il denominatore?
+2. quante osservazioni sostengono il numero?
+3. quanto oscilla normalmente una stima di questa dimensione?
+4. il risultato persiste nel tempo?
+5. stiamo riducendo incertezza casuale o abbiamo anche ragioni per credere che il dato rappresenti bene la popolazione?
 
-La probabilità serve anche a questo: evitare di trasformare ogni oscillazione in una storia.
+> **Più dati possono rendere una stima più precisa. Solo un buon processo di raccolta può renderla anche più credibile.**
+
+[^aapor-definitions]: AAPOR, *Standard Definitions*: https://aapor.org/standards-and-ethics/standard-definitions/
