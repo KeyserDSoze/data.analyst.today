@@ -1,118 +1,157 @@
-## 13.2 SQL: portare il calcolo vicino al dato
-SQL è spesso il primo strumento che permette a un Data Analyst di smettere di dipendere da estrazioni manuali e iniziare a lavorare direttamente sulla base informativa dell'organizzazione.
+## 13.2 SQL: scegliere il luogo del calcolo, non soltanto il linguaggio
 
-Ma anche qui il punto non è la sintassi.
+Il Capitolo 11 ha già trattato grain, join, trasformazioni e semantica SQL.
 
-Il valore di SQL nasce dal fatto che consente di esprimere in modo relativamente dichiarativo una domanda sui dati, lasciando al database o al motore analitico il compito di eseguire il lavoro.
+Qui la domanda è diversa:
 
-## 13.2.1 Quando SQL è la scelta naturale
+> **Quando conviene che il lavoro analitico avvenga vicino al dato, dentro un motore relazionale o analitico?**
 
-SQL è particolarmente adatto quando:
+SQL è spesso la scelta naturale non perché sia “più professionale” di uno spreadsheet o di Python, ma perché evita di spostare grandi quantità di dati fuori dal sistema che li gestisce già bene.
 
-- i dati sono già in database, warehouse o lakehouse interrogabile;
-- bisogna filtrare, unire, aggregare e trasformare grandi volumi;
-- la logica deve essere ripetibile;
-- più persone devono usare la stessa definizione;
-- il risultato è tabellare;
-- vogliamo evitare di spostare inutilmente milioni di righe su un laptop.
+### Quando il calcolo appartiene naturalmente al motore dati
 
-## 13.2.2 Caso realistico: 180 milioni di righe scaricate per calcolare quattro numeri
+SQL è particolarmente adatto quando il problema è dominato da:
+
+- selezione;
+- filtri;
+- join;
+- aggregazioni;
+- window calculations;
+- trasformazioni tabellari;
+- costruzione di popolazioni o feature;
+- riuso condiviso della stessa logica.
+
+Se 800 milioni di righe sono già nel warehouse e il risultato finale è una tabella di 20.000 righe, scaricare il dato grezzo su un laptop è spesso un design inefficiente.
+
+### Caso simulato/composito — 180 milioni di righe per quattro KPI
 
 Un analyst deve calcolare:
 
-- clienti attivi mensili;
+- clienti attivi;
 - ordini per cliente;
-- revenue netta;
-- tasso di riacquisto.
+- net revenue;
+- repeat rate.
 
-Il dataset eventi contiene 180 milioni di righe.
+Gli eventi sono già nel warehouse.
 
-Una soluzione ingenua è esportare tutto in Python e poi aggregare localmente.
+Due opzioni:
 
-Ma il database possiede già indici, partizioni, motore di join, parallelismo e capacità di aggregazione.
+```text
+A. esportare 180 milioni di righe → pandas → aggregare
+B. aggregare nel warehouse → esportare solo il risultato necessario
+```
 
-Una query SQL che riduce il dato a poche decine di migliaia di righe aggregate prima del trasferimento può essere più veloce, meno costosa e più sicura.
+Se la logica è principalmente relazionale, B riduce:
 
-Il principio è semplice:
+- trasferimento dati;
+- memoria locale;
+- copie sensibili;
+- tempo di elaborazione;
+- dipendenza dal computer dell'analista.
 
-> **sposta il calcolo verso il dato quando il dato è grande e il calcolo è naturalmente relazionale.**
+> **Compute near data** è spesso una scelta di semplicità, non di sofisticazione.
 
-## 13.2.3 SQL non è sempre sufficiente
+### Quando SQL non dovrebbe diventare il martello universale
 
-SQL diventa meno naturale quando il problema richiede:
+Alcuni problemi sono esprimibili in SQL ma diventano più difficili da leggere, testare o mantenere quando richiedono:
 
-- simulazioni iterative complesse;
-- algoritmi statistici avanzati;
+- simulazioni iterative;
 - ottimizzazione numerica;
-- visualizzazioni esplorative sofisticate;
-- modelli di machine learning;
-- elaborazione di oggetti non tabellari;
-- package scientifici specializzati.
+- statistica specializzata;
+- algoritmi scientifici;
+- testo, immagini o oggetti non tabellari;
+- visual diagnostics complessi;
+- workflow modellistici con librerie dedicate.
 
-In questi casi SQL può preparare il dataset, mentre Python o R eseguono la parte analitica.
+In questi casi la divisione del lavoro può essere:
 
-## 13.2.4 Il pattern 80/20: SQL per restringere, Python/R per approfondire
+```text
+SQL → costruisce il dataset analitico
+Python/R → esegue il metodo specialistico
+SQL/table → riceve il risultato riusabile
+```
 
-Immaginiamo un'analisi churn su 12 milioni di clienti.
+Non c'è alcun premio per comprimere tutta l'analisi in una query di 1.500 righe.
 
-In SQL possiamo:
+### Pushdown vs pull-out
 
-1. definire la popolazione;
-2. costruire le feature storiche;
-3. aggregare utilizzo e billing;
-4. applicare finestre temporali coerenti;
-5. estrarre solo il dataset modellistico necessario.
+Possiamo usare una domanda molto pratica:
 
-Poi in Python o R possiamo:
+> Quale parte del lavoro dovrebbe essere **spinta verso il dato** e quale parte dovrebbe essere **portata nell'ambiente analitico**?
 
-- stimare modelli;
-- confrontare metriche;
-- calibrare probabilità;
-- produrre grafici diagnostici;
-- testare soglie decisionali.
+**Pushdown** è spesso sensato per:
 
-La scelta non è SQL *contro* Python. È una divisione del lavoro.
+- filtri;
+- join;
+- aggregazioni;
+- feature semplici;
+- dedup;
+- partizionamento della popolazione.
 
-## 13.2.5 Il rischio dell'AI-generated SQL
+**Pull-out** è spesso sensato quando serve:
 
-Con i copiloti moderni, una richiesta come:
+- interazione rapida su un dataset già ridotto;
+- algoritmo non disponibile nel motore;
+- libreria scientifica;
+- visualizzazione diagnostica;
+- simulazione.
 
-> «calcola il fatturato medio per cliente negli ultimi 12 mesi»
+### Caso simulato/composito — la query 27 volte più veloce e sbagliata
 
-può produrre in pochi secondi una query plausibile.
+Un team riscrive in SQL un processo locale e passa da 18 minuti a 40 secondi.
 
-Ma il modello non conosce necessariamente:
+Poi scopre che la nuova query usa un `INNER JOIN` con la loyalty table e rimuove tutti i clienti non iscritti.
 
-- se `orders` è a livello ordine o riga ordine;
-- se i resi sono in una tabella separata;
-- se il cliente guest deve essere escluso;
-- se il fatturato è lordo o netto;
-- se la data corretta è `order_date`, `invoice_date` o `payment_date`.
+Il sistema è molto più veloce e risponde alla popolazione sbagliata.
 
-Quindi la nuova competenza non è scrivere ogni query a memoria. È saperla revisionare semanticamente.
+Questo è il confine con il Capitolo 11:
 
-## 13.2.6 Caso realistico: query più veloce, decisione peggiore
+- **13:** SQL era il posto giusto per eseguire quel workload?
+- **11:** la trasformazione SQL conserva davvero il significato?
 
-Un team migra una query da Python a SQL e riduce il tempo di elaborazione da 18 minuti a 40 secondi.
+Servono entrambe le risposte.
 
-Sembra un grande successo.
+### SQL come asset condiviso
 
-Poi scopre che la query SQL usa un `INNER JOIN` con la tabella loyalty e quindi elimina tutti i clienti non iscritti al programma.
+Un altro motivo per spostare una trasformazione da notebook o workbook verso SQL centrale è il riuso.
 
-Il KPI viene calcolato su una popolazione molto più fedele della base reale.
+Se cinque analyst ricostruiscono ogni settimana `net_orders`, la domanda non è più soltanto “chi scrive la query meglio?”.
 
-La pipeline è 27 volte più veloce e analiticamente sbagliata.
+Potrebbe servire:
 
-Questo riassume bene il tema del libro:
+```text
+raw / source
+   ↓
+shared transformation
+   ↓
+certified analytical model
+   ↓
+consumer diversi
+```
 
-> **la performance tecnica non compensa una definizione sbagliata della popolazione.**
+Qui lo strumento diventa anche una decisione di ownership.
 
-## 13.2.7 Regola operativa
+### Campo del Tooling Decision Record
 
-Usa SQL quando il problema è principalmente:
+Per una scelta SQL annotiamo:
 
-**selezionare → collegare → filtrare → aggregare → trasformare dati strutturati**.
+```text
+data location:
+input scale:
+expected output scale:
+relational workload share:
+shared or local logic:
+execution frequency:
+compute / scan cost:
+consumer of output:
+reason not to use local processing:
+exit condition:
+```
 
-Porta il risultato in un altro ambiente quando la domanda diventa:
+Una possibile exit condition:
 
-**stimare → simulare → ottimizzare → visualizzare → modellare**.
+> Passare parte della logica a Python/R quando la metodologia richiede simulazione o diagnostica statistica che rende la query difficile da verificare.
+
+### Regola operativa
+
+> **Usa SQL quando il problema beneficia dal calcolo vicino al dato e da trasformazioni tabellari condivise. Non usarlo per dimostrare che tutto può essere scritto in SQL.**
