@@ -1,77 +1,188 @@
-## 9.1 L'unità di randomizzazione: chi stiamo davvero assegnando?
+## 9.1 Unità di randomizzazione, exposure e analisi: quattro livelli da non confondere
 
-Una delle decisioni più sottovalutate in un esperimento è scegliere l'unità di randomizzazione. Molti team partono dalla metrica e arrivano troppo tardi alla domanda fondamentale: **chi o che cosa viene assegnato al trattamento?**
+Nel Capitolo 8 abbiamo visto perché la randomizzazione può rendere credibile il controfattuale.
 
-Le opzioni più comuni sono:
+Qui la domanda è operativa:
 
-- sessione;
-- utente;
-- account;
-- device;
-- negozio;
-- area geografica;
-- venditore;
-- team;
-- giorno o fascia temporale.
+> **che cosa stiamo realmente assegnando, che cosa viene realmente esposto e su quale unità calcoliamo l'outcome?**
 
-La scelta non è puramente tecnica. Determina indipendenza, contaminazione, potenza e interpretabilità.
+Sono domande diverse.
 
-### Caso: il checkout che cambia a ogni sessione
+### Quattro unità utili
 
-Torniamo alla piattaforma e-commerce del capitolo. Il team implementa inizialmente la randomizzazione per sessione perché è semplice: ogni nuova sessione riceve A oppure B.
+**Unità di decisione**
 
-Dopo tre giorni i dati mostrano:
+Chi o che cosa subirà la policy se il test vince?
+
+**Unità di randomizzazione**
+
+L'entità a cui assegniamo stabilmente A o B.
+
+**Unità di exposure**
+
+L'entità che può effettivamente ricevere il trattamento.
+
+**Unità di analisi**
+
+Il livello a cui definiamo outcome e incertezza.
+
+Possono coincidere. Non devono farlo necessariamente.
+
+### Caso simulato/composito — QuickPay randomizzato per sessione
+
+Il team implementa QuickPay per sessione perché è tecnicamente semplice.
+
+Dopo tre giorni:
 
 | Variante | Sessioni | Conversion rate |
 |---|---:|---:|
 | A | 512.420 | 3,89% |
 | B | 510.976 | 4,11% |
 
-Il risultato sembra eccellente. Ma l'analista controlla l'identità degli utenti e scopre che circa il 27% degli utenti eleggibili ha avuto più di una sessione durante il test e che il 14% ha visto entrambe le esperienze.
+Il risultato sembra favorevole.
 
-Un utente può quindi:
+Poi l'analista controlla l'identità:
 
-1. vedere il checkout tradizionale al mattino;
-2. tornare la sera;
-3. vedere il checkout rapido;
-4. imparare dal primo percorso qualcosa che influenza il secondo.
+- 27% degli utenti ha avuto più di una sessione;
+- 14% ha visto entrambe le esperienze;
+- una quota usa sia app sia web.
 
-Il trattamento non è più isolato.
+Lo stesso cliente può quindi:
 
-La metrica di conversione è session-level, ma la decisione di acquisto appartiene spesso allo stesso utente nel tempo.
+1. vedere il checkout standard su web;
+2. tornare da app;
+3. vedere QuickPay;
+4. portare apprendimento dalla prima esperienza alla seconda.
 
-### Randomizzare al livello della decisione
+Il trattamento non è stabile a livello utente.
 
-Una buona regola pratica è:
+Se la decisione riguarda l'esperienza del cliente, randomizzare la sessione può essere il livello sbagliato.
 
-> Randomizza al livello più stabile che rappresenta l'unità decisionale rilevante, salvo forti motivi contrari.
+### Persistent bucketing
 
-Se il prodotto è individuale, l'utente è spesso preferibile alla sessione. In un SaaS B2B può essere l'account. In un marketplace con pricing lato seller può essere il venditore. In un test di layout di un negozio fisico può essere il punto vendita.
+Una randomizzazione utile deve essere **stabile** per la durata in cui la stabilità è parte del trattamento.
 
-### Cluster randomization
+Esempio concettuale:
 
-A volte non possiamo randomizzare individui senza creare contaminazione.
+```text
+hash(stable_user_id, experiment_id) -> bucket A/B
+```
 
-Immagina una catena di 180 supermercati che vuole testare una nuova procedura di picking per gli ordini online. Se randomizzassimo singoli picker nello stesso negozio, i dipendenti potrebbero copiarsi procedure e organizzazione. La soluzione può essere randomizzare interi negozi.
+I problemi iniziano quando lo `stable_user_id` non è davvero stabile:
 
-Questo però riduce il numero effettivo di unità sperimentali: 180 negozi, non magari 4.000 dipendenti. La potenza statistica cambia drasticamente.
+- cookie cancellati;
+- device diversi;
+- login tardivo;
+- account merge;
+- utenti anonimi che diventano autenticati;
+- ID rigenerati dopo update.
 
-### Il principio operativo
+Il codice di randomizzazione può essere corretto e la semantica dell'identità sbagliata.
 
-Prima di avviare un test, documenta sempre:
+### Assignment non significa exposure
 
-- unità di randomizzazione;
-- unità di analisi;
-- unità di esposizione;
-- possibilità di contaminazione tra varianti;
-- eventuale clustering.
+Un utente può essere assegnato a B ma non vedere mai la feature perché:
 
-Questi quattro livelli non devono necessariamente coincidere, ma devono essere coerenti.
+- non raggiunge il checkout;
+- non è realmente eleggibile;
+- la feature flag fallisce;
+- il client è troppo vecchio;
+- un crash avviene prima della visualizzazione;
+- il componente non carica.
 
-### Errore tipico
+Quindi dobbiamo distinguere almeno:
 
-Un errore frequente è scegliere la randomizzazione in base a ciò che è più facile implementare e solo dopo adattare l'analisi. È l'ordine sbagliato.
+```text
+assigned_B
+eligible_B
+exposed_B
+successfully_rendered_B
+```
 
-L'ordine corretto è:
+Analizzare soltanto gli `exposed_B` può però introdurre selection bias se l'exposure è influenzata dal trattamento.
 
-**decisione -> meccanismo causale -> unità di trattamento -> randomizzazione -> metrica.**
+L'Experiment Contract deve dichiarare in anticipo quale popolazione definisce l'estimand e come verranno gestiti assignment ed exposure.
+
+### Account e tenant nei prodotti B2B
+
+In un SaaS collaborativo, randomizzare singoli utenti dello stesso account può essere impossibile o indesiderabile.
+
+Se metà del team vede una nuova permission model e metà no:
+
+- l'esperienza può diventare incoerente;
+- gli utenti si influenzano;
+- le azioni di uno cambiano gli outcome degli altri.
+
+Per questo nei prodotti enterprise può essere necessario randomizzare a livello **tenant/account**.
+
+Microsoft Research discute esplicitamente le difficoltà dei tenant-randomized experiments: l'unità sperimentale è il tenant, i tenant possono differire enormemente per dimensione e metriche aggregate, e la sensibilità statistica può peggiorare rispetto alla randomizzazione individuale.[^ms-tenant]
+
+### Cluster randomization: il numero di righe non è il numero di unità
+
+Una catena di 180 supermercati testa una procedura di picking.
+
+La procedura viene condivisa tra i dipendenti dello stesso store, quindi randomizza negozi interi.
+
+Potremmo avere:
+
+- 180 store randomizzati;
+- 4.000 picker;
+- 2 milioni di ordini.
+
+Ma non abbiamo 2 milioni di unità indipendenti di trattamento.
+
+Il design deve rispettare il clustering introdotto dall'assignment.
+
+Questo influenza:
+
+- effective sample size;
+- precisione;
+- durata;
+- analisi.
+
+### Randomization unit diversa dalla metric unit
+
+Supponiamo di randomizzare utenti ma misurare `revenue per user`.
+
+Coerente.
+
+Supponiamo invece di randomizzare account e calcolare una media su tutte le singole azioni come se fossero indipendenti.
+
+Rischiamo di dare peso enorme ai tenant grandi e sottostimare l'incertezza.
+
+Prima del test bisogna decidere:
+
+> **qual è il peso decisionale corretto di ogni unità randomizzata?**
+
+### Cross-device e identity resolution
+
+Un test mobile/web può essere particolarmente fragile.
+
+Domande operative:
+
+- il bucket viene definito da account ID quando disponibile?
+- cosa succede prima del login?
+- un utente anonimo randomizzato ad A e poi autenticato su un account B cambia variante?
+- come vengono deduplicati gli outcome cross-device?
+
+Questo è il punto in cui il Capitolo 3 sull'identità incontra direttamente l'experimentation.
+
+### Randomization card
+
+```text
+Decision unit:
+Randomization unit:
+Stable identifier:
+Exposure unit:
+Analysis unit:
+Eligibility moment:
+Cross-device behavior:
+Persistent bucketing:
+Cluster/interference risk:
+Assignment vs exposure policy:
+Effective number of randomized units:
+```
+
+> **La randomizzazione non è soltanto una percentuale 50/50. È una scelta su quale entità deve vivere in un mondo sperimentale coerente.**
+
+[^ms-tenant]: Microsoft Research, *Why Tenant-Randomized A/B Test is Challenging and Tenant-Pairing May Not Work*: https://www.microsoft.com/en-us/research/articles/why-tenant-randomized-a-b-test-is-challenging-and-tenant-pairing-may-not-work/
