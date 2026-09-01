@@ -1,141 +1,137 @@
-## 13.7 AI-assisted analytics: accelerare senza delegare il giudizio
-L'AI generativa sta trasformando quasi tutti gli strumenti dell'analista.
+## 13.7 AI-assisted tooling: quando costruire costa meno, scegliere bene conta di più
 
-Oggi può:
+Il Capitolo 14 sarà dedicato al lavoro analitico assistito dall'AI: errori semantici, eval, privacy, auditability, agenti e verifica.
 
-- generare formule Excel;
-- scrivere SQL;
-- produrre codice Python o R;
-- suggerire visualizzazioni;
-- spiegare errori;
-- costruire trasformazioni;
-- documentare query;
-- proporre test;
-- riassumere risultati.
+Qui ci interessa un solo effetto sul tool selection:
 
-Questo cambia radicalmente il costo dell'esecuzione.
+> **l'AI riduce il costo marginale di costruire soluzioni in strumenti che prima richiedevano più specializzazione.**
 
-Non cambia però la responsabilità dell'analista sul significato.
+Oggi un analyst può ottenere rapidamente:
 
-## 13.7.1 Caso realistico: una query perfetta per una domanda sbagliata
+- formule spreadsheet;
+- SQL;
+- Python/R;
+- DAX;
+- trasformazioni;
+- documentazione;
+- test iniziali;
+- spiegazioni di codice legacy.
 
-Un analyst chiede a un assistente AI:
+Questo rende i confini tra strumenti più permeabili.
 
-> «Trova i clienti con churn più alto negli ultimi sei mesi e identifica le feature più importanti.»
+Non rende irrilevante scegliere il contesto di esecuzione.
 
-L'assistente produce:
+### La falsa conclusione: “ora posso usare qualsiasi tool”
 
-- query SQL;
-- dataset di training;
-- modello di classificazione;
-- feature importance;
-- grafici.
+Se un assistente può scrivere Python per noi, potremmo pensare che Python sia sempre una scelta praticabile.
 
-Il lavoro sembra completo.
+Ma restano domande che non riguardano la sintassi:
 
-Poi emerge che la variabile `cancel_reason` era stata popolata solo dopo la cancellazione ed era presente nel dataset utilizzato per predire il churn.
+- dove vive il dato?
+- dove verrà eseguito il codice?
+- chi lo revisiona?
+- come gestiamo le dipendenze?
+- chi mantiene il processo tra sei mesi?
+- cosa succede se l'output alimenta un sistema downstream?
+- possiamo verificare ciò che è stato generato?
 
-Il modello ha AUC 0,96.
+L'AI può abbassare il **build cost** senza abbassare il **ownership cost**.
 
-È quasi inutile in produzione.
+### Caso simulato/composito — modello churn in venti minuti
 
-L'AI ha accelerato ogni fase tecnica e ha accelerato anche il leakage.
+Un analyst chiede a un assistente di:
 
-## 13.7.2 Il nuovo ruolo dell'analista
+1. generare la query;
+2. costruire il training set;
+3. addestrare un classificatore;
+4. mostrare feature importance;
+5. produrre una lista clienti.
 
-Con l'AI, il lavoro si sposta da:
+In pochi minuti ottiene un modello con AUC 0,96.
 
-**scrivere tutto manualmente**
+Poi scopre che `cancel_reason` è valorizzato soltanto dopo la cancellazione.
 
-verso:
+La velocità ha ridotto il costo dell'implementazione.
 
-**specificare → generare → ispezionare → testare → correggere → interpretare**.
+Non ha ridotto il costo della comprensione del problema.
 
-Questo richiede competenze diverse:
+Anzi: ha reso possibile arrivare molto più velocemente a un sistema plausibile ma inutilizzabile.
 
-- definire bene il contesto;
-- fornire schema e grain;
-- esplicitare assunzioni;
-- costruire test;
-- riconoscere output plausibili ma sbagliati;
-- validare su esempi noti;
-- confrontare con baseline semplici.
+### AI come acceleratore di migrazione
 
-## 13.7.3 AI come junior analyst velocissimo
+C'è anche un effetto positivo importante.
 
-Una metafora utile è trattare l'AI come un collaboratore molto veloce che:
+Un team può avere un workbook cresciuto troppo, ma rimandare la migrazione perché riscrivere:
 
-- conosce molta sintassi;
-- non conosce automaticamente il contesto aziendale;
-- può inventare colonne;
-- può assumere definizioni non concordate;
-- può produrre risposte convincenti senza verificarle.
+- formule;
+- macro;
+- SQL;
+- documentazione;
 
-Quindi non basta chiedere «scrivimi la query».
+è costoso.
 
-Meglio specificare:
+L'AI può ridurre questo switching cost aiutando a:
 
-- grain delle tabelle;
-- chiavi;
-- definizione del KPI;
-- periodo;
-- inclusioni/esclusioni;
-- controlli attesi;
-- esempi di output corretto.
+- spiegare logica legacy;
+- tradurre formule in SQL/Python;
+- generare test di equivalenza;
+- documentare casi limite;
+- produrre una prima versione della migrazione.
 
-## 13.7.4 Caso realistico: l'AI trova l'errore che l'analista non vede
+Questo non rende la migrazione automatica.
 
-L'AI non è solo una fonte di rischio.
+Ma cambia l'economia della decisione “restiamo qui perché riscrivere costa troppo”.
 
-Un analyst scrive una query lunga con sei CTE. Il risultato della revenue è superiore del 14% al sistema finance.
+### Tool convergence
 
-Chiede all'assistente di revisionare esclusivamente:
+Python in Excel è un esempio concreto di convergenza: Microsoft permette di usare Python e librerie analitiche all'interno del workbook.[^python-excel-13]
 
-- cardinalità dei join;
-- possibili duplicazioni;
-- filtri post-join;
-- gestione dei NULL.
+Altri ambienti incorporano assistenti per query, dashboard o codice.
 
-L'assistente segnala che la join con `order_promotions` è one-to-many e moltiplica le righe ordine.
+Di conseguenza, una tassonomia basata soltanto sui nomi degli strumenti diventa meno utile.
 
-L'analista verifica con un controllo di conteggio e conferma il problema.
+Conta di più chiedere:
 
-Qui l'AI agisce come secondo revisore e aumenta la qualità.
+- dove gira il calcolo;
+- quali dati può vedere;
+- quale semantica eredita;
+- come viene versionato;
+- chi può approvarlo;
+- come viene distribuito l'output.
 
-## 13.7.5 Il protocollo di verifica
+### “Can build” non significa “should build”
 
-Per output generati dall'AI, usiamo almeno cinque controlli:
+Prima dell'AI un piccolo costo tecnico poteva funzionare come freno naturale:
 
-1. **schema check** — tabelle, colonne e tipi esistono davvero?
-2. **grain check** — l'output ha il livello di dettaglio corretto?
-3. **reconciliation** — i totali tornano con fonti note?
-4. **edge cases** — NULL, duplicati, date limite, zero denominator?
-5. **reasonableness** — il risultato è coerente con ordini di grandezza plausibili?
+> non costruiamo questa automazione perché richiede tre giorni.
 
-Per modelli statistici aggiungiamo:
+Ora può richiedere trenta minuti.
 
-- leakage;
-- split temporale;
-- baseline;
-- calibration;
-- robustezza;
-- causalità vs predizione.
+Quel freno è più debole.
 
-## 13.7.6 AI e convergenza degli strumenti
+Serve sostituirlo con un criterio esplicito:
 
-La distinzione tra strumenti sta diventando meno netta.
+> **quale requisito concreto rende questa automazione o questo tool migliore dell'alternativa più semplice?**
 
-Microsoft, per esempio, integra Python in Excel: il codice Python può essere scritto direttamente nelle celle, eseguito nel cloud e combinato con dati del workbook. Questo dimostra che l'interfaccia del foglio di calcolo può convivere con librerie come pandas, NumPy e statsmodels.
+### Campo del Tooling Decision Record
 
-Il punto strategico è importante: un analista futuro potrebbe passare meno tempo a scegliere un linguaggio e più tempo a scegliere **il livello di controllo, scala e governance necessario**.
+Quando l'AI influenza la scelta annotiamo:
 
-## 13.7.7 La regola più importante
+```text
+AI-assisted step:
+human owner:
+required context / schema:
+verification method:
+change in build cost:
+change in maintenance cost:
+security / data boundary:
+can output execute or only propose?:
+rollback / review for write actions:
+exit condition:
+```
 
-> **Usa l'AI per ridurre il costo della costruzione. Non usarla per ridurre il livello di verifica.**
+### Regola operativa
 
-Più la generazione diventa facile, più la validazione diventa centrale.
+> **Usa l'AI per ridurre il costo di costruzione, comprensione e migrazione. Non lasciare che il costo basso della costruzione diventi una ragione sufficiente per costruire.**
 
-### Fonti
-
-- Microsoft Support, *Introduction to Python in Excel*: https://support.microsoft.com/en-us/excel/python/introduction-to-python-in-excel
-- Microsoft Support, *Open-source libraries and Python in Excel*: https://support.microsoft.com/en-us/excel/python/open-source-libraries-and-python-in-excel
+[^python-excel-13]: Microsoft Support, *Introduction to Python in Excel*, https://support.microsoft.com/en-us/excel/python/introduction-to-python-in-excel
