@@ -1,18 +1,22 @@
-## 9.6 Stopping rules, peeking e sequential testing
+## 9.6 Peeking, monitoring e fixed-horizon stopping: guardare non significa decidere
 
-Uno dei modi più comuni per falsare inconsapevolmente un A/B test è guardare continuamente il p-value e fermarsi appena diventa favorevole.
+Un team può — e spesso deve — guardare un esperimento mentre gira.
 
-È umano: il team aspetta il risultato, apre la dashboard dieci volte al giorno e appena compare `p < 0.05` vuole dichiarare la vittoria.
+Deve monitorare:
 
-Il problema è che, se ripetiamo abbastanza controlli nel tempo usando una procedura pensata per una sola analisi finale, aumentiamo la probabilità di fermarci su una fluttuazione casuale.
+- crash;
+- errori;
+- SRM;
+- missing telemetry;
+- latency;
+- frodi;
+- guardrail gravemente danneggiati.
 
-### Caso: il bottone verde che vince alle 11:40
+Il problema nasce quando ogni refresh della dashboard diventa anche una nuova occasione per dichiarare una vittoria statistica con una procedura progettata per una sola analisi finale.
 
-Un sito travel testa un nuovo pulsante di prenotazione.
+### Caso simulato/composito — Il bottone verde che vince alle 36 ore
 
-La variante B viene osservata ogni due ore.
-
-| Ora dal lancio | Lift conversione | p-value |
+| Ore | Lift conversione | p-value nominale |
 |---|---:|---:|
 | 12 | +1,1% | 0,31 |
 | 24 | +1,7% | 0,12 |
@@ -20,66 +24,143 @@ La variante B viene osservata ogni due ore.
 | 48 | +1,4% | 0,11 |
 | 72 | +0,8% | 0,29 |
 
-Se il team avesse fermato il test a 36 ore, avrebbe dichiarato una vittoria. Continuando, l'effetto rientra nel rumore.
+Se il team avesse una regola implicita:
 
-### Perché il peeking è pericoloso
+> “Controlliamo spesso e fermiamo appena `p < 0,05`”
 
-Ogni nuova lettura è una nuova opportunità di trovare casualmente un risultato estremo.
+avrebbe selezionato una fluttuazione favorevole.
 
-La soluzione non è vietare di guardare i dati operativi. È distinguere tra:
+Il Capitolo 5 ha già spiegato il significato del p-value. Qui il problema è **procedurale**: il metodo di decisione non corrisponde più al piano statistico.
 
-- monitoraggio di sicurezza;
-- controllo qualità;
-- decisione statistica finale.
+### Tre tipi di osservazione durante il test
 
-Possiamo guardare crash rate, latency, SRM o bug ogni ora. Non dobbiamo però usare una procedura frequentista fissa come se non avessimo mai guardato prima.
+È utile separare:
+
+#### 1. Safety monitoring
+
+Serve a proteggere utenti e business.
+
+Può portare a stop immediato.
+
+Esempi:
+
+- checkout fatal errors +50%;
+- pagamenti persi;
+- severe crash;
+- security incident;
+- fraud rate fuori range.
+
+#### 2. Experiment health monitoring
+
+Serve a sapere se il test è interpretabile.
+
+Esempi:
+
+- SRM;
+- exposure rate;
+- missing telemetry;
+- identifier quality;
+- latency dei dati;
+- invariant metrics.
+
+Può portare a restart o invalidazione.
+
+#### 3. Efficacy decision
+
+Serve a decidere se la variante migliora il prodotto secondo il piano inferenziale.
+
+Qui dobbiamo rispettare la procedura scelta prima del test.
+
+Mescolare questi tre piani crea confusione.
 
 ### Fixed horizon
 
-Il metodo più semplice è stabilire in anticipo:
+La strategia più semplice è definire ex ante:
 
-- sample size;
-- durata minima;
-- data di analisi;
-- metriche;
-- soglie di decisione.
+```text
+MDE / sample requirement
+minimum duration
+outcome maturity
+analysis date
+primary metric
+alpha / interval procedure
+ship threshold
+```
 
-Poi si evita di prendere la decisione finale prima del punto stabilito, salvo motivi di sicurezza o danno evidente.
+La dashboard può essere visibile durante il test, ma la **decisione confermativa** avviene al punto previsto.
 
-### Sequential testing
+Questo è diverso dal fingere che nessuno abbia mai guardato i dati.
 
-Esistono approcci statistici progettati per analisi sequenziali, nei quali possiamo effettuare controlli intermedi mantenendo sotto controllo il tasso di errore.
+È governance: il team sa quali osservazioni autorizzano quale azione.
 
-Il punto concettuale importante per un Data Analyst non è memorizzare ogni variante matematica, ma capire che:
+### Stop per danno e stop per vittoria non sono simmetrici
 
-> se vogliamo prendere decisioni sequenziali, dobbiamo usare una procedura sequenziale.
+Se la variante causa un bug grave, non dobbiamo aspettare il sample size.
 
-Non possiamo semplicemente applicare la stessa soglia `0.05` infinite volte.
+Uno stop di sicurezza può essere definito come:
 
-### Stop per danno
+```text
+if payment_error_rate_B > payment_error_rate_A × 1.20
+and absolute excess > threshold
+then auto-shutdown
+```
 
-Un test può e deve essere interrotto prima quando emergono problemi seri:
+Microsoft ExP descrive meccanismi di alert e auto-shutdown per test egregi, proprio per evitare che un feature team debba attendere manualmente mentre gli utenti subiscono un danno.[^ms-during]
 
-- crash;
-- perdita di pagamenti;
-- aumento frodi;
-- violazioni di sicurezza;
-- danno economico oltre una soglia prestabilita.
+Questo non autorizza a usare la stessa logica per fermarsi alla prima oscillazione positiva della primary metric.
 
-Questo è diverso dal fermare il test perché la primary metric ha appena superato la soglia desiderata.
+### Futility
 
-### La regola scritta prima del test
+In alcuni contesti il team può voler fermare un test perché la probabilità di ottenere una conclusione utile è diventata molto bassa.
 
-Nel pre-analysis plan possiamo definire:
+Ma anche una futility rule deve appartenere al piano statistico.
 
-- durata minima: 14 giorni;
-- sample size minimo: 900.000 utenti per variante;
-- un'analisi finale;
-- eventuali checkpoint intermedi usando procedura sequenziale;
-- stopping rule di sicurezza: error rate checkout > +20% rispetto al controllo.
+Non significa:
 
-### Errore tipico
+> “Non ci piace come sta andando, chiudiamo.”
 
-Il problema del peeking non si risolve nascondendo la dashboard. Si risolve costruendo governance e regole decisionali coerenti.
+### Formal sequential testing viene dopo
 
-> La domanda non è “quando il risultato sembra abbastanza bello?”. È “quale procedura avevamo deciso di usare per stabilire quando l'evidenza è sufficiente?”.
+Esistono procedure progettate per prendere decisioni a checkpoint intermedi mantenendo controllato l'errore statistico.
+
+Le approfondiremo nella sezione dedicata al sequential testing.
+
+Qui fissiamo soltanto la regola:
+
+> **se la decisione è sequenziale, anche il metodo inferenziale deve essere sequenziale.**
+
+### Monitoring plan
+
+```text
+Safety metrics:
+Auto-stop thresholds:
+Experiment-health metrics:
+SRM policy:
+Fixed-horizon or sequential?
+If fixed horizon:
+  minimum N
+  minimum duration
+  maturity lag
+  final analysis time
+Who can stop for safety?
+Who can invalidate for data quality?
+Who owns efficacy decision?
+```
+
+### Un errore organizzativo comune
+
+Il PM guarda conversione.
+
+Engineering guarda crash.
+
+Risk guarda fraud.
+
+Analytics guarda SRM.
+
+Se nessuno ha definito prima **quale segnale ha autorità su quale decisione**, il test può diventare una negoziazione dopo i risultati.
+
+L'Experiment Contract serve anche a questo.
+
+> **La dashboard può essere real-time. La regola decisionale non deve essere improvvisata in real-time.**
+
+[^ms-during]: Microsoft Research, *Patterns of Trustworthy Experimentation: During-Experiment Stage*: https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/patterns-of-trustworthy-experimentation-during-experiment-stage/
