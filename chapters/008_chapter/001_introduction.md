@@ -1,51 +1,82 @@
-# Capitolo 8 - Causalità, confondenti e ragionamento controfattuale
+# Capitolo 8 — Causalità, confondenti e ragionamento controfattuale
 
-> Sapere che due fenomeni si muovono insieme è utile. Sapere che intervenire su uno cambierà davvero l'altro è un problema molto più difficile.
+> **Una differenza osservata è un fatto sui dati. Un effetto causale è una conclusione su ciò che sarebbe cambiato sotto un'alternativa credibile.**
 
-Nei capitoli precedenti abbiamo imparato a descrivere dati, stimare incertezza, confrontare gruppi, analizzare retention e prevedere il futuro. Ma molte delle decisioni più importanti richiedono una domanda diversa:
+Nei capitoli precedenti abbiamo imparato a descrivere pattern, quantificare incertezza, seguire clienti nel lifecycle e modellare il tempo.
 
-**che cosa succederebbe se facessimo qualcosa?**
+Ora la domanda cambia.
 
-Aumentare il budget advertising aumenterebbe davvero le vendite? Ridurre il prezzo aumenterebbe il margine complessivo? Un nuovo onboarding ridurrebbe il churn? Un programma di sconti farebbe crescere la frequenza d'acquisto oppure attirerebbe semplicemente clienti che avrebbero comprato comunque?
+Non chiediamo più soltanto:
 
-Queste non sono semplici domande descrittive. Sono domande causali.
+> “Che cosa è successo?”
 
-Il punto centrale è il controfattuale: per stimare l'effetto di un intervento vorremmo confrontare lo stesso soggetto, nello stesso momento e nelle stesse condizioni, sia con l'intervento sia senza. Questo confronto perfetto non è osservabile. Ogni cliente riceve o non riceve una promozione; ogni negozio applica o non applica un nuovo layout; ogni utente vede una versione del prodotto e non contemporaneamente l'altra.
+oppure:
 
-Il lavoro causale consiste quindi nel costruire un confronto credibile con ciò che sarebbe successo in assenza dell'intervento.
+> “Che cosa probabilmente succederà?”
 
-In questo capitolo useremo casi aziendali realistici per affrontare:
+Chiediamo:
 
-- correlazione e causalità;
-- controfattuali e potential outcomes;
-- confondenti;
-- causalità inversa;
-- selection bias e collider bias;
-- DAG come strumento di ragionamento;
-- esperimenti randomizzati;
-- natural experiment e quasi-esperimenti;
-- difference-in-differences;
-- limiti delle conclusioni causali.
+> **“Che cosa cambierebbe se intervenissimo?”**
 
-La regola di fondo sarà sempre la stessa:
+Aumentare il budget advertising aumenterebbe davvero le vendite incrementali? Un onboarding guidato ridurrebbe il churn? Uno sconto genererebbe ordini aggiuntivi oppure verrebbe usato soprattutto da clienti che avrebbero comprato comunque? Una chiamata del Customer Success salva clienti oppure viene semplicemente assegnata a quelli già più a rischio?
 
-> **Prima di chiedere quale modello usare, bisogna chiedere quale confronto renderebbe credibile la conclusione causale.**
+Queste sono domande causali.
 
-## Una distinzione che cambia il lavoro dell'analista
+## 8.0 Dal pattern alla causal claim
 
-Consideriamo tre frasi:
+Consideriamo tre frasi.
 
-1. I clienti che usano la nuova funzionalità hanno retention più alta.
-2. La nuova funzionalità aumenta la retention.
-3. Se rendessimo obbligatoria la nuova funzionalità, la retention aumenterebbe di 4 punti percentuali.
+1. **Associazione:** i clienti che usano la nuova feature hanno retention più alta.
+2. **Effetto causale:** rendere disponibile la feature aumenta la retention.
+3. **Effetto decisionale:** rendere disponibile la feature a questo segmento aumenterebbe la retention a 90 giorni di circa 3 punti percentuali rispetto all'esperienza attuale.
 
-La prima è un'osservazione descrittiva. La seconda è una conclusione causale. La terza aggiunge una stima quantitativa dell'effetto di un intervento.
+La distanza tra la prima e la terza frase non viene colmata da una regressione più sofisticata.
 
-Passare dalla prima alla seconda frase non è una questione di SQL più sofisticato. È una questione di identificazione causale.
+Richiede un **disegno di identificazione**.
 
-## Caso introduttivo - Il programma VIP che sembrava funzionare perfettamente
+La World Bank descrive il controfattuale come il nucleo dell'impact evaluation: tutti i principali metodi — randomizzazione, instrumental variables, regression discontinuity, Difference-in-Differences e matching — cercano, con assunzioni diverse, di costruire un gruppo di confronto capace di rappresentare ciò che sarebbe accaduto senza il programma.[^worldbank-impact]
 
-Una piattaforma e-commerce introduce un programma VIP. Dopo sei mesi il team presenta questi numeri:
+### Prima del metodo: definire l'estimand
+
+Una domanda causale deve specificare almeno:
+
+- **unità:** cliente, account, negozio, ordine, territorio;
+- **trattamento/esposizione:** che cosa cambia concretamente;
+- **alternativa:** rispetto a quale condizione confrontiamo il trattamento;
+- **outcome:** quale risultato misuriamo;
+- **orizzonte:** entro quale finestra;
+- **popolazione:** per chi vogliamo l'effetto;
+- **estimand:** quale effetto medio vogliamo stimare.
+
+Per esempio:
+
+> “Qual è l'effetto medio di una sessione tecnica aggiuntiva, rispetto al processo standard, sul rinnovo a 90 giorni degli account SMB che non hanno completato l'integrazione ERP entro il giorno 30?”
+
+È molto più preciso di:
+
+> “Il training funziona?”
+
+Quella precisione evita di cambiare domanda a metà analisi.
+
+### Identificazione e stima sono due lavori diversi
+
+È utile distinguere:
+
+**Identificazione**
+
+> Perché il confronto che stiamo usando può rappresentare il controfattuale?
+
+**Stima**
+
+> Dato quel confronto, quale effetto numerico otteniamo e con quale incertezza?
+
+Possiamo avere una stima matematicamente impeccabile di un confronto causalmente sbagliato.
+
+È uno degli errori più pericolosi nell'analytics.
+
+### Caso simulato/composito — Il programma VIP
+
+Una piattaforma e-commerce presenta:
 
 | Gruppo | Spesa media annua | Ordini medi | Retention 12 mesi |
 |---|---:|---:|---:|
@@ -54,20 +85,92 @@ Una piattaforma e-commerce introduce un programma VIP. Dopo sei mesi il team pre
 
 Il CEO conclude:
 
-> "Il programma VIP aumenta enormemente la fedeltà. Estendiamolo a tutti."
+> “Il VIP aumenta enormemente la fedeltà. Estendiamolo.”
 
-Ma l'iscrizione VIP è disponibile solo ai clienti che hanno già superato 800 € di spesa negli ultimi dodici mesi.
+Ma l'accesso al programma è riservato a clienti che hanno già superato 800 € di spesa nell'anno precedente.
 
-Il programma potrebbe avere un effetto positivo. Tuttavia i gruppi erano diversi già prima dell'intervento. I clienti VIP sono selezionati proprio perché erano più attivi, più fedeli e con maggior valore economico.
+I gruppi sono stati costruiti usando una caratteristica legata proprio alla fedeltà e al valore che vogliamo spiegare.
 
-Il confronto VIP vs non VIP mescola almeno due effetti:
+Il 27 punti percentuali di differenza nella retention è reale come **differenza osservata**.
 
-- il possibile effetto del programma;
-- le differenze preesistenti tra i clienti.
+Non è automaticamente l'effetto causale del programma.
 
-Questa è la porta d'ingresso alla causalità: capire che una differenza osservata tra gruppi non coincide automaticamente con l'effetto di un intervento.
+La domanda corretta è:
 
-## Riferimenti
+> “Quale retention avrebbero avuto clienti eleggibili e comparabili se non avessero ricevuto il programma VIP?”
 
-- Stanford University, *Potential Outcomes Model*, STATS 60/160.
-- World Bank e Inter-American Development Bank, *Impact Evaluation in Practice*, capitolo su causal inference e counterfactuals.
+Quel risultato non osservato è il controfattuale.
+
+### Un caso reale documentato — Perché i natural experiment hanno cambiato l'empirical work
+
+Nel 2021 il Premio Sveriges Riksbank per le scienze economiche ha riconosciuto David Card per contributi empirici all'economia del lavoro e Joshua Angrist e Guido Imbens per contributi metodologici all'analisi delle relazioni causali. Il comitato sottolinea il ruolo dei **natural experiments** nel permettere conclusioni su causa ed effetto quando una randomizzazione deliberata non è disponibile.[^nobel-2021]
+
+Il punto per un Data Analyst non è imitare un paper accademico.
+
+È capire la logica:
+
+> **la forza della conclusione dipende da come si è generato il confronto, non dal prestigio del modello usato dopo.**
+
+## Le quattro domande che guideranno il capitolo
+
+Per ogni causal claim chiederemo:
+
+1. **Che effetto stiamo cercando?** — estimand.
+2. **Perché alcune unità ricevono il trattamento e altre no?** — assignment mechanism.
+3. **Perché il gruppo di confronto rappresenta un controfattuale credibile?** — identification strategy e assunzioni.
+4. **Quale frase siamo autorizzati a pronunciare dopo i diagnostics?** — claim consentito.
+
+## Il Causal Identification Brief
+
+Il deliverable finale del capitolo sarà un **Causal Identification Brief**.
+
+```text
+DECISIONE
+Quale scelta dipende dalla causal claim?
+
+ESTIMAND
+Unità, trattamento, alternativa, outcome, orizzonte, popolazione.
+
+ASSIGNMENT MECHANISM
+Perché alcuni ricevono il trattamento e altri no?
+
+CAUSAL MODEL
+Confondenti, reverse causality, selection, mediatori, interference.
+
+COUNTERFACTUAL
+Chi o che cosa rappresenta il mondo senza trattamento?
+
+IDENTIFICATION STRATEGY
+Randomizzazione, natural experiment, DiD, matching, RDD, IV o altro.
+
+ASSUNZIONI
+Quali devono essere vere perché la stima sia causale?
+
+DIAGNOSTICS / FALSIFICATION
+Che cosa possiamo controllare nei dati?
+
+EFFECT + UNCERTAINTY
+Dimensione, precisione, eterogeneità.
+
+SCOPE
+A chi e a quale contesto si applica?
+
+CLAIM CONSENTITO
+Qual è la frase più forte che l'evidenza permette?
+
+PROSSIMO TEST
+Che cosa ridurrebbe maggiormente l'incertezza residua?
+```
+
+Questo schema impedisce una scorciatoia molto comune:
+
+**dati osservazionali → modello → coefficiente → verbo “causare”**.
+
+Il percorso corretto è:
+
+**domanda → estimand → processo di assegnazione → controfattuale → assunzioni → design → diagnostics → stima → claim**.
+
+> **La causalità non è una proprietà del coefficiente. È una proprietà dell'argomento che collega il confronto al controfattuale.**
+
+[^worldbank-impact]: World Bank e Inter-American Development Bank, *Impact Evaluation in Practice, Second Edition*: https://www.worldbank.org/en/programs/sief-trust-fund/publication/impact-evaluation-in-practice
+[^nobel-2021]: Nobel Prize, *The Prize in Economic Sciences 2021 — Press release*: https://www.nobelprize.org/prizes/economic-sciences/2021/press-release/
