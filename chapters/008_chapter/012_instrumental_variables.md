@@ -1,82 +1,132 @@
-## 8.11 Instrumental variables: quando serve una fonte esterna di variazione
+## 8.11 Instrumental Variables: usare una fonte esterna di variazione nel trattamento
 
-A volte il trattamento è fortemente confuso con caratteristiche non osservate e il matching non basta.
+A volte trattamento e outcome condividono confondenti difficili da osservare.
 
-Immaginiamo una fintech che vuole sapere se il contatto telefonico con un consulente riduce il default dei clienti in difficoltà.
+Matching e regressione possono allora lasciare un problema sostanziale.
 
-Problema: i consulenti chiamano più spesso proprio i clienti che percepiscono come recuperabili. Motivazione, qualità della relazione, serietà del cliente e altre caratteristiche difficili da misurare influenzano sia la probabilità di ricevere la chiamata sia il default.
+Le **Instrumental Variables (IV)** cercano una fonte di variazione che spinga alcune unità verso il trattamento senza influenzare l'outcome attraverso altri percorsi rilevanti.
 
-Il semplice confronto trattati/non trattati è quindi contaminato.
+È una strategia potente e difficile da difendere.
 
-### L'idea dello strumento
+### Caso simulato/composito — Disponibilità del consulente
 
-Una **instrumental variable (IV)** è una variabile che modifica la probabilità di ricevere il trattamento, ma che non dovrebbe influenzare direttamente l'outcome attraverso altri canali rilevanti.
+Una fintech vuole stimare se una chiamata tecnica entro 24 ore riduce il default tra clienti in difficoltà.
 
-In termini intuitivi, cerchiamo una fonte di variazione quasi esterna che spinga alcune unità verso il trattamento senza essere essa stessa parte del meccanismo che determina l'outcome.
+I consulenti, però, scelgono più spesso clienti percepiti come recuperabili.
 
-### Caso realistico: disponibilità casuale dei consulenti
+Motivazione e qualità della relazione sono poco misurate e possono influenzare sia trattamento sia default.
 
-La fintech scopre che, per ragioni di turnazione, alcune richieste vengono assegnate a consulenti con capacità residua elevata e altre a consulenti già quasi saturi.
+L'azienda nota che alcune richieste arrivano casualmente in turni con forte capacità residua e altre in turni saturi.
 
-La disponibilità del consulente influenza fortemente la probabilità che la chiamata avvenga entro 24 ore.
+La **capacità disponibile al momento dell'assegnazione** potrebbe essere candidata a strumento se:
 
-Potrebbe essere usata come strumento solo se è plausibile che:
+1. modifica davvero la probabilità di ricevere la chiamata;
+2. è plausibilmente indipendente dai fattori non osservati che influenzano il default;
+3. influenza il default soltanto attraverso il trattamento definito.
 
-1. influenzi effettivamente il trattamento;
-2. non influenzi il default se non attraverso la chiamata;
-3. non sia correlata con caratteristiche non osservate dei clienti che influenzano il default.
+Queste condizioni non sono dettagli tecnici. Sono l'identification argument.
 
-Queste condizioni sono forti.
+### Relevance: lo strumento deve muovere il trattamento
 
-### Relevance
+Uno strumento che cambia la probabilità di trattamento dal 62% al 64% offre poca variazione utile.
 
-Lo strumento deve essere rilevante: deve cambiare davvero la probabilità di trattamento.
+Uno che la cambia dal 40% all'82% ha un first stage molto più forte.
 
-Se la disponibilità del consulente aumenta la probabilità di contatto dal 62% al 64%, lo strumento è probabilmente troppo debole.
+Strumenti deboli possono produrre stime instabili e inference problematica.
 
-Se la aumenta dal 40% all'82%, il primo stadio è molto più credibile.
+Per questo non basta verificare che `Z` sia “statisticamente correlato” con `T`: bisogna guardare dimensione e stabilità del first stage.
+
+### Independence / exogeneity
+
+Lo strumento deve essere plausibilmente scollegato dalle cause non osservate dell'outcome.
+
+Nel caso fintech, il turno disponibile sarebbe problematico se:
+
+- clienti più complessi vengono instradati intenzionalmente verso certi turni;
+- alcuni orari corrispondono a segmenti geografici con rischio diverso;
+- la capacità residua dipende da picchi operativi collegati al default.
+
+La fonte di variazione deve essere capita operativamente, non soltanto inserita nel modello.
 
 ### Exclusion restriction
 
-La condizione più difficile è l'**exclusion restriction**: lo strumento non deve influenzare direttamente l'outcome attraverso altri canali.
+Lo strumento dovrebbe influenzare l'outcome **attraverso il trattamento definito**, non tramite canali alternativi rilevanti.
 
-Supponiamo che i consulenti meno occupati non solo chiamino prima, ma dedichino anche più tempo alla revisione del piano di rimborso. In quel caso la variabile "disponibilità" agisce attraverso più meccanismi e l'interpretazione diventa più complessa.
+Supponiamo che i turni meno saturi permettano non solo una chiamata entro 24 ore, ma anche:
 
-### Un esempio B2B
+- revisione del piano di rimborso;
+- priorità nelle escalation;
+- tempi di risposta migliori in seguito.
 
-Una società SaaS vuole stimare l'effetto causale delle demo personalizzate sul closing rate.
+Allora “capacità residua” modifica un pacchetto più ampio della sola chiamata.
 
-I lead migliori ricevono più spesso una demo, quindi il confronto grezzo è inutilizzabile.
+La causal claim deve essere ripensata oppure l'exclusion restriction diventa poco credibile.
 
-Per alcuni trimestri l'assegnazione dei lead ai sales engineer dipende quasi casualmente dalla disponibilità giornaliera.
+### Monotonicity e LATE
 
-Se la disponibilità influenza la probabilità di fare una demo ma non il closing attraverso altri canali, può offrire una fonte di variazione utile.
+Con molti design IV l'effetto identificato riguarda i **compliers**: unità la cui probabilità di trattamento cambia nella direzione indotta dallo strumento.
 
-Il risultato potrebbe essere:
+Questo porta al **Local Average Treatment Effect (LATE)**.
 
-- effetto osservazionale grezzo della demo: +22 punti di conversione;
-- stima IV locale: +7 punti.
+L'interpretazione richiede anche una forma di monotonicity: non dovrebbero esistere gruppi che reagiscono sistematicamente allo strumento nella direzione opposta.
 
-La differenza racconta quanto la selezione iniziale gonfiasse l'apparente efficacia delle demo.
+Il Premio Nobel 2021 sottolinea proprio il contributo di Angrist e Imbens nel chiarire quali effetti causali possano essere identificati in natural experiment con compliance non perfetta.[^nobel-iv]
 
-### Local Average Treatment Effect
+### Locale significa locale
 
-Con strumenti di questo tipo, l'effetto stimato spesso riguarda le unità il cui trattamento cambia a causa dello strumento: i cosiddetti **compliers**.
+Se la disponibilità dei consulenti modifica la chiamata soprattutto per clienti “al margine” tra essere contattati o no, l'effetto IV riguarda soprattutto quel gruppo.
 
-Non necessariamente rappresenta l'effetto medio per tutta la popolazione.
+Non possiamo automaticamente concludere che la chiamata abbia lo stesso effetto:
 
-### Perché l'IV è potente ma pericolosa
+- sui clienti che verrebbero sempre chiamati;
+- su quelli che non verrebbero mai chiamati;
+- sull'intera customer base.
 
-Le instrumental variables possono risolvere problemi che altri metodi non riescono ad affrontare, ma richiedono assunzioni difficili da verificare direttamente.
+L'estimand deve dirlo esplicitamente.
 
-Un'IV non diventa valida perché produce un coefficiente significativo.
+### Caso simulato/composito — Demo personalizzate
 
-Serve una storia causale convincente.
+Un SaaS osserva:
 
-### Regola pratica
+- conversione con demo: 46%;
+- conversione senza demo: 19%.
 
-> **Uno strumento valido non è una variabile correlata con il trattamento. È una fonte di variazione nel trattamento che può essere difesa causalmente.**
+Il gap grezzo è enorme, ma i lead migliori ricevono più demo.
 
-### Riferimenti
+Per alcuni trimestri l'assegnazione ai sales engineer dipende da rotazioni operative che cambiano fortemente la probabilità di demo.
 
-- World Bank, *Impact Evaluation in Practice*, capitolo sulle instrumental variables.
+Se il meccanismo è difendibile, una stima IV potrebbe produrre:
+
+- effetto osservazionale grezzo: `+27 pp`;
+- effetto IV locale: `+7 pp`.
+
+Il secondo numero non è “più vero” perché usa IV.
+
+È credibile solo nella misura in cui relevance, independence, exclusion e interpretazione locale reggono.
+
+### Una IV non si trova con feature engineering
+
+Cercare tra centinaia di colonne quella più correlata con il trattamento e chiamarla “instrument” è un errore concettuale.
+
+La validità nasce da una storia istituzionale, operativa o naturale sul perché quella variabile modifica il trattamento senza aprire altri percorsi verso l'outcome.
+
+### IV card
+
+```text
+Treatment:
+Outcome:
+Instrument candidate:
+Meccanismo che collega Z -> T:
+First-stage effect:
+Perché Z è plausibilmente esogena?
+Quali percorsi alternativi Z -> Y sono plausibili?
+Exclusion restriction difendibile?
+Monotonicity plausibile?
+Quali unità sono i compliers?
+Estimand: LATE per chi?
+Sensitivity / alternative explanations:
+```
+
+> **Uno strumento non è valido perché è predittivo del trattamento. È valido solo se la variazione che genera nel trattamento può essere interpretata causalmente.**
+
+[^nobel-iv]: Nobel Prize, *The Prize in Economic Sciences 2021 — Press release*: https://www.nobelprize.org/prizes/economic-sciences/2021/press-release/
