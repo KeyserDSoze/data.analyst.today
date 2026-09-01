@@ -1,167 +1,225 @@
-## 12.14 Costi cloud e architettura proporzionata: non tutto deve essere real time
+## 12.14 Architettura proporzionata: comprare affidabilità dove cambia la decisione
 
-Una buona architettura non è quella con più componenti. È quella che soddisfa il requisito decisionale con il livello di complessita' e costo appropriato.
+Ogni garanzia architetturale ha un costo.
 
-### Caso realistico: BrightMart
+Ridurre la latenza, aumentare retention, duplicare regioni, mantenere più copie, aggiungere observability o servire workload sempre disponibili può essere perfettamente giustificato.
 
-BrightMart è un retailer regionale con 180 punti vendita.
+Ma non gratis.
 
-Il management chiede una piattaforma "real time" per monitorare:
+La domanda quindi non è:
+
+> qual è l'architettura più robusta che possiamo costruire?
+
+È:
+
+> **quale livello di affidabilità, latenza e recovery è economicamente proporzionato alla decisione che il sistema supporta?**
+
+### Caso simulato/composito — BrightMart e il real time indiscriminato
+
+BrightMart vuole modernizzare il reporting di:
 
 - vendite;
 - margine;
 - stock;
 - resi;
-- performance promozionale.
+- promozioni.
 
-La prima proposta tecnica include streaming continuo, code di eventi, cluster always-on, serving layer a bassa latenza e dashboard aggiornate ogni pochi secondi.
+La prima proposta usa un percorso streaming a bassissima latenza per tutto.
 
-Costo stimato: circa 1,1 milioni di euro l'anno.
+Il discovery mostra però:
 
-Durante il discovery emerge però che:
+| Use case | Quando serve agire |
+|---|---|
+| stock-out prodotti critici | entro 10 minuti |
+| vendite negozio | ogni 30–60 minuti |
+| replenishment standard | una volta al giorno |
+| finance | giornaliero / close |
+| board | settimanale |
 
-- i direttori di negozio controllano le vendite ogni ora;
-- il pricing cambia una volta al giorno;
-- il finance usa dati giornalieri consolidati;
-- solo gli stock-out di alcuni prodotti critici richiedono alert entro 10 minuti.
-
-La soluzione viene ridisegnata.
+La soluzione diventa differenziata:
 
 ```text
-vendite e margine -> micro-batch ogni 30 minuti
-finance -> batch giornaliero
-stock critico -> near real time
-archivio storico -> object storage
-semantic model -> refresh differenziato per dominio
+critical stock events → near real time
+sales operations      → micro-batch
+finance               → reconciled daily batch
+board                  → certified weekly serving
 ```
 
-Il costo scende drasticamente senza ridurre la qualità delle decisioni.
+Non stiamo “risparmiando” degradando il servizio.
 
-### Freshness ha un prezzo
+Stiamo evitando di comprare millisecondi dove nessuno può usarli.
 
-In generale, ridurre la latenza richiede più infrastruttura, più osservabilita' e più complessita' operativa.
+### Freshness curve: il valore marginale non è lineare
 
 Passare da:
 
 ```text
-24 ore -> 1 ora
+T+24h → T+1h
 ```
 
-può essere relativamente semplice.
+può cambiare radicalmente un processo operations.
 
 Passare da:
 
 ```text
-1 ora -> 1 secondo
+1 min → 1 sec
 ```
 
-può cambiare completamente l'architettura.
+può non cambiare nulla.
 
-La domanda corretta non è:
-
-> possiamo farlo in real time?
-
-ma:
-
-> quale valore decisionale otteniamo riducendo la latenza?
-
-### Costi invisibili
-
-Il costo cloud non è solo compute.
-
-Comprende anche:
-
-- storage;
-- scansione dei dati;
-- egress;
-- orchestrazione;
-- cluster inattivi;
-- log e osservabilita';
-- ambienti duplicati;
-- copie ridondanti;
-- query ad hoc inefficienti;
-- costo umano di gestione.
-
-### Un esempio analitico
-
-Un team crea una dashboard che esegue 40 query su una fact table da 12 TB a ogni refresh.
-
-Refresh ogni 5 minuti.
-
-La dashboard viene consultata in media da 14 persone al giorno.
-
-Il problema non è soltanto tecnico. È economico.
-
-Una possibile riprogettazione:
-
-- pre-aggregazioni;
-- partition pruning;
-- semantic cache;
-- refresh meno frequente;
-- separazione tra dashboard operative e analisi esplorativa.
-
-### Build vs buy vs managed service
-
-Un altro asse di costo riguarda la gestione.
-
-Una tecnologia open source può avere costo di licenza molto basso ma richiedere:
-
-- infrastruttura;
-- patching;
-- competenze specialistiche;
-- on-call;
-- capacity planning.
-
-Un servizio gestito può costare di più per unità di compute ma ridurre molto il costo operativo.
-
-Non esiste una risposta universale.
-
-### Total Cost of Ownership
-
-Per confrontare architetture conviene pensare al **TCO**:
+Per ogni use case possiamo immaginare una curva:
 
 ```text
-TCO = infrastruttura + licenze + persone + manutenzione + incidenti + inefficienza + switching cost
+business value gained by lower latency
+vs
+engineering + infrastructure cost
 ```
 
-La formula non deve essere perfetta. Serve a ricordare che il prezzo del servizio cloud è solo una parte della decisione.
+Il punto ottimale non coincide necessariamente con la minima latenza tecnicamente raggiungibile.
 
-### Overengineering
+### Affidabilità ha una curva simile
 
-Un sintomo tipico di overengineering è quando la soluzione è piu sofisticata del problema.
+Un SLO del 99% e uno del 99,999% possono richiedere architetture molto diverse.
+
+Google SRE sottolinea che obiettivi del 100% sono spesso indesiderabili perché possono imporre soluzioni eccessivamente conservative e costose.
+
+Fonte:
+https://sre.google/sre-book/service-level-objectives/
+
+Questa idea vale anche per i data products.
+
+Un report di planning mensile non richiede lo stesso recovery design di un sistema che blocca frodi in tempo reale.
+
+### Caso reale documentato — VMO2 e TCO
+
+Nel caso Virgin Media O2 discusso in 12.8, Google Cloud riporta una riduzione del TCO di circa il 30% rispetto a piattaforme on-premises equivalenti nel percorso di consolidamento e modernizzazione.
+
+Fonte:
+https://cloud.google.com/customers/virgin-media-o2-data-platform-migration
+
+La lezione non è che cloud o serverless siano sempre più economici.
+
+È che il TCO comprende anche:
+
+- infrastruttura duplicata;
+- capacity limits;
+- licenze;
+- manutenzione;
+- skill specialistiche;
+- tempo di delivery;
+- gestione operativa.
+
+### TCO: il prezzo del compute è soltanto una riga
+
+Un modello utile è:
+
+```text
+TCO =
+infrastructure
++ managed service / licenses
++ storage and network
++ engineering time
++ on-call / incident response
++ maintenance
++ duplicated pipelines
++ change cost
++ failure cost
+```
+
+Non serve stimare ogni voce al centesimo per migliorare una decisione architetturale.
+
+Serve evitare di confrontare due soluzioni soltanto sulla tariffa per CPU.
+
+### Cost of failure
+
+La complessità aggiuntiva può essere giustificata da ciò che evita.
 
 Esempio:
 
-- 20.000 righe al giorno;
-- report aggiornato una volta ogni mattina;
-- 5 utenti;
-- pipeline streaming distribuita multi-cluster.
+```text
+pipeline A
+costa meno ma fallisce 3 volte/mese durante una decisione critica
 
-La tecnologia può essere eccellente e la scelta comunque sbagliata.
+pipeline B
+costa di più ma riduce fortemente quel rischio
+```
 
-### Underengineering
+Il confronto deve includere:
 
-Esiste anche l'errore opposto.
+- decisioni ritardate;
+- ore di analisti bloccati;
+- incident response;
+- eventuali decisioni prese su dati incompleti.
 
-Un foglio Excel condiviso manualmente può funzionare per 5 persone e fallire quando:
+### Cost of complexity
 
-- gli utenti diventano 200;
-- serve audit;
-- arrivano dati sensibili;
-- la logica deve essere riutilizzata;
-- gli aggiornamenti devono essere affidabili.
+Ogni nuovo componente introduce anche:
 
-### Framework di scelta
+- configurazione;
+- access control;
+- monitoring;
+- upgrade;
+- failure mode;
+- competenza necessaria.
 
-Prima di introdurre un nuovo componente chiedere:
+Una pipeline con 20.000 righe al giorno e un report mattutino non diventa più matura perché usa una piattaforma distribuita multi-cluster.
 
-1. qual è il volume?
-2. qual è la latenza necessaria?
-3. quante persone lo useranno?
-4. qual è il costo di un dato in ritardo?
-5. qual è il costo di un sistema più complesso?
-6. quali competenze abbiamo davvero?
-7. quanto deve scalare nei prossimi 12-24 mesi?
-8. possiamo partire più semplici?
+### Underengineering esiste
 
-**La maturita' architetturale non si misura dal numero di tecnologie. Si misura dalla capacita' di scegliere la complessita' minima sufficiente.**
+La regola “parti semplice” non significa “resta manuale per sempre”.
+
+Un foglio condiviso può essere adeguato finché:
+
+- utenti sono pochi;
+- dato non è sensibile;
+- refresh può essere manuale;
+- audit non è critico.
+
+Quando cambiano scala e rischio, il costo nascosto della soluzione semplice può superare quello di una piattaforma più strutturata.
+
+### Reversibilità architetturale
+
+Quando l'incertezza è alta, preferiamo spesso scelte che permettano di evolvere.
+
+Esempio:
+
+```text
+batch hourly oggi
+```
+
+può essere una buona scelta se:
+
+- soddisfa il requisito;
+- il raw event stream è conservato;
+- domani possiamo aggiungere un consumer near-real-time senza rifare la sorgente.
+
+Semplice non deve significare irreversibile.
+
+### Campo della Data Flow Architecture Map
+
+Per ogni componente rilevante annotiamo:
+
+```text
+business requirement it satisfies:
+cost driver:
+utilization:
+reliability/freshness gained:
+failure cost mitigated:
+operational skill required:
+scale trigger for redesign:
+can simplify? sì/no
+can evolve? sì/no
+```
+
+### Architecture review in otto domande
+
+1. quale decisione giustifica questo componente?
+2. quale SLO deve sostenere?
+3. cosa succede se lo eliminiamo?
+4. quanta capacità viene realmente usata?
+5. qual è il costo di gestione, non solo di compute?
+6. quale failure mode nuovo introduce?
+7. possiamo soddisfare il requisito con meno accoppiamento?
+8. quale segnale ci dirà che la soluzione è diventata troppo piccola?
+
+> **La maturità architetturale non consiste nel comprare la massima scalabilità. Consiste nel pagare per la complessità che riduce davvero rischio o time-to-decision, mantenendo il resto il più semplice possibile.**
