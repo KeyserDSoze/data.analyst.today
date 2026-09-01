@@ -1,84 +1,341 @@
-## 18.8 Cost management: scalare senza perdere il controllo economico
+## 18.8 Cost-to-serve: un prodotto analitico deve avere anche un'economia
+
 Una piattaforma analitica può diventare tecnicamente più sofisticata e contemporaneamente economicamente peggiore.
 
-Query più frequenti, refresh più aggressivi, copie ridondanti, modelli sovradimensionati, notebook sempre accesi e pipeline streaming dove sarebbe sufficiente il batch possono far crescere i costi senza creare valore proporzionale.
+I costi crescono attraverso migliaia di decisioni apparentemente piccole:
 
-Il problema non è “spendere meno”.
+- refresh più frequenti;
+- copie regionali;
+- query senza pruning;
+- retention eccessiva;
+- ambienti dimenticati;
+- notebook sempre accesi;
+- modello più grande del necessario;
+- streaming per decisioni giornaliere;
+- agenti che ripetono query costose;
+- dashboard che nessuno usa più.
 
-È capire se il costo cresce insieme al valore prodotto.
+Il problema non è semplicemente:
 
-## Dal costo totale al costo per unità di valore
+> “Spendiamo troppo.”
 
-La logica FinOps suggerisce di collegare costo e utilizzo a una unità di business: una transazione, un cliente, un ordine, una previsione, una raccomandazione, un milione di righe elaborate.
+È:
 
-Microsoft definisce la unit economics come il processo di calcolare il costo di una singola unità di business e collegarlo al valore generato dal cloud.
+> **“Quale prodotto, consumer o decisione genera questo costo, e il valore ottenuto giustifica il livello di servizio che stiamo pagando?”**
 
-Per un sistema analitico potremmo misurare:
+## Cost visibility prima dell'optimization
 
-- costo per dashboard refresh;
-- costo per mille query;
-- costo per pipeline eseguita;
-- costo per cliente servito da un modello;
-- costo per decisione automatizzata;
-- costo per forecast prodotto.
+Non possiamo governare un costo che vive soltanto nella fattura aggregata della piattaforma.
 
-## Caso realistico: dashboard “gratuita” da €31.000 al mese
+Per un portfolio analitico servono livelli di allocazione coerenti con il modo in cui prendiamo decisioni.
 
-Un marketplace costruisce una dashboard executive molto usata.
+Possibili dimensioni:
+
+- team;
+- domain;
+- data product;
+- workload;
+- environment;
+- consumer class;
+- region;
+- model/agent;
+- criticality tier.
+
+Non tutto deve essere allocato al centesimo.
+
+Serve abbastanza trasparenza da cambiare comportamento.
+
+## Caso reale documentato: FinOps e cost allocation
+
+La FinOps Foundation definisce l'**Allocation** come la capacità di assegnare costi e utilizzo a team, progetti o altre unità responsabili, includendo una strategia esplicita per costi condivisi e metadata.
+
+Fonte: https://www.finops.org/framework/capabilities/allocation/
+
+La stessa guida osserva che non tutti i shared cost devono necessariamente essere distribuiti con un modello estremamente sofisticato. In alcuni casi è legittimo decidere consapevolmente di mantenerli centrali: ciò che conta è che la scelta sia esplicita e utile al livello di maturità dell'organizzazione.
+
+Questa idea evita un anti-pattern frequente:
+
+> spendere più per calcolare un'allocazione perfetta di quanto l'allocazione possa far risparmiare.
+
+## Cost allocation strategy
+
+Possiamo distinguere:
+
+### Direct cost
+
+Attribuibile chiaramente a un prodotto.
+
+Esempi:
+
+- warehouse compute di una pipeline dedicata;
+- API usage di un modello;
+- licenza specifica.
+
+### Shared cost allocabile
+
+Piattaforma condivisa il cui consumo può essere stimato con:
+
+- query time;
+- bytes processed;
+- storage;
+- request count;
+- active users;
+- workload unit.
+
+### Shared central cost
+
+Capability comune che decidiamo di finanziare centralmente:
+
+- catalogo;
+- governance;
+- base observability;
+- support platform.
+
+La strategia deve essere documentata, non nascosta nei report Finance.
+
+## Dal costo totale alla unit economics analitica
+
+La FinOps Foundation definisce la **Unit Economics** come la pratica di collegare uso/costo tecnologico al valore dei prodotti, servizi o attività organizzative, distinguendo metriche di efficienza tecnica e metriche di business.
+
+Fonte: https://www.finops.org/framework/capabilities/unit-economics/
+
+Per analytics, unit metric possibili sono:
+
+- costo per 1.000 query;
+- costo per refresh;
+- costo per milione di eventi processati;
+- costo per forecast prodotto;
+- costo per account scored;
+- costo per decision feed servito;
+- costo per consumer attivo;
+- costo per workload business unit.
+
+Ma attenzione.
+
+La metrica:
+
+> costo per query
+
+può incentivare meno query anche quando una query crea valore.
+
+La unit metric deve rappresentare l'economia della capability, non soltanto ciò che il cloud provider fattura.
+
+## Caso simulato/composito: la dashboard “gratuita” da €31.000 al mese
+
+Un marketplace costruisce una executive dashboard.
+
+All'inizio costa poco.
 
 Nel tempo vengono aggiunti:
 
 - refresh ogni 10 minuti;
 - 34 visualizzazioni;
-- query non aggregate su due anni di eventi;
-- copie separate per cinque regioni;
-- calcoli ripetuti in ogni report.
+- due anni di eventi raw letti ripetutamente;
+- copie per cinque regioni;
+- cinque semantic model quasi identici;
+- export automatici;
+- caching disallineato;
+- un agente che ricalcola ogni ora summary e anomalie.
 
-Il costo mensile della piattaforma cresce fino a circa €31.000.
+Il costo attribuito al prodotto arriva a circa **€31.000/mese**.
 
-La reazione iniziale è comprare più capacità.
+La prima reazione è:
 
-Una revisione mostra invece che:
+> “Serve più capacità.”
 
-- il CEO consulta il report una volta al giorno;
-- solo due metriche richiedono freshness inferiore all'ora;
-- l'80% delle query ripete aggregazioni identiche;
-- cinque semantic model regionali potrebbero essere uno solo con policy di accesso.
+Il team ricostruisce il demand profile.
 
-La soluzione non è “ottimizzare il cloud”.
+Scopre che:
 
-È riallineare architettura, frequenza e dettaglio al bisogno decisionale.
+- il CEO la usa una volta al giorno;
+- il weekly review usa snapshot giornaliero;
+- soltanto due metriche operative richiedono freshness < 1 ora;
+- l'80% delle query ripete aggregazioni già calcolabili a monte;
+- i cinque modelli regionali possono condividere core semantics;
+- l'agente produce 24 summary al giorno, ma ne vengono letti in media 1,7.
 
-Il costo scende, ma soprattutto aumenta la chiarezza del sistema.
+La soluzione non è una micro-ottimizzazione tecnica.
 
-## Cost visibility e accountability
+È un **service-level redesign**.
 
-Per gestire i costi servono almeno:
+## Reliability ha un prezzo
 
-- allocazione per team/prodotto;
-- tagging coerente;
-- reporting sui principali driver;
-- anomaly detection sui costi;
-- budget e alert;
-- owner identificabile.
+Più reliability può richiedere:
 
-La documentazione FinOps di Microsoft insiste proprio su ingestion, allocation, reporting, anomaly management e unit economics come capacità collegate.
+- replica;
+- monitoring;
+- on-call;
+- test;
+- più frequenza;
+- recovery capability;
+- retention;
+- parallel run.
 
-## Non ottimizzare ciò che crea valore
+Quindi il cost review deve leggere insieme:
 
-Un errore opposto è tagliare costi indiscriminatamente.
+- criticality tier;
+- SLO;
+- consumer value;
+- cost-to-serve.
 
-Se un forecast da €2.000 al mese evita stock-out da €400.000, ridurre la frequenza per risparmiare €700 può essere una falsa economia.
+Un T1 sovra-ingegnerizzato può costare quanto un T3 senza creare valore equivalente.
 
-Per questo una metrica utile è:
+## Freshness economics
 
-**Cost per unit of analytical value**
+Una delle domande più potenti è:
 
-Non sarà sempre perfettamente misurabile, ma costringe a porre la domanda corretta.
+> **“Quanto vale davvero un dato più fresco?”**
 
-> **Un sistema analitico sostenibile non è quello che costa poco. È quello in cui sappiamo spiegare perché costa ciò che costa e quale valore quel costo rende possibile.**
+Esempio:
 
-## Fonti
+### Dashboard executive
 
-- Microsoft FinOps documentation: https://learn.microsoft.com/en-us/cloud-computing/finops/
-- Microsoft Unit economics: https://learn.microsoft.com/en-us/cloud-computing/finops/framework/quantify/unit-economics
+Decisione una volta al giorno.
+
+Refresh ogni 10 minuti probabilmente non crea valore proporzionale.
+
+### Fraud decision
+
+Ogni secondo può cambiare l'esito.
+
+Ridurre latency può avere valore elevato.
+
+### Inventory planning
+
+Una parte del dato può richiedere near-real-time, altre dimensioni possono essere daily.
+
+Non dobbiamo assegnare la freshness dell'elemento più urgente a tutto il prodotto.
+
+## Storage e history economics
+
+Anche la retention deve dipendere dall'uso.
+
+Conservare raw event per sempre può essere utile per:
+
+- audit;
+- backfill;
+- ricerca;
+- regolazione.
+
+Ma può essere inutile per altre sorgenti.
+
+L'Operating Contract può definire:
+
+- hot window;
+- cold/archive;
+- replay requirement;
+- legal retention;
+- delete policy;
+- cost owner.
+
+Il valore della recoverability deve essere confrontato con il costo della history.
+
+## Agent cost-to-serve
+
+Con gli agenti AI emerge una nuova categoria di costo:
+
+- token/model usage;
+- tool calls;
+- repeated query;
+- retry loop;
+- duplicate agents;
+- evaluation;
+- human review.
+
+Un agente può sembrare economico per task e diventare costoso quando:
+
+- viene chiamato troppo spesso;
+- usa sempre il modello più potente;
+- interroga dati non aggregati;
+- produce output che nessuno consuma.
+
+L'Operating Contract dell'agente deve quindi avere anche:
+
+- usage budget;
+- escalation per cost anomaly;
+- model routing;
+- cache/reuse strategy;
+- consumer/adoption metric.
+
+## Cost anomaly management
+
+Come per data quality, una variazione di costo può essere:
+
+- errore;
+- nuovo consumer;
+- crescita reale;
+- query regressiva;
+- mancato pruning;
+- runaway agent;
+- change di pricing provider.
+
+Gli alert devono portare a un owner e a un playbook.
+
+Esempio:
+
+> cost-to-serve del prodotto +45% WoW con usage +3%.
+
+Questo è un segnale molto più azionabile di:
+
+> cloud bill +8%.
+
+## Cost per unit of value
+
+La metrica ideale sarebbe:
+
+> **costo per decisione migliorata**.
+
+Spesso non possiamo misurarla direttamente.
+
+Possiamo però avvicinarci con una gerarchia:
+
+### Cost
+
+Quanto costa il prodotto?
+
+### Output
+
+Quante query/forecast/decision feed serve?
+
+### Adoption
+
+Quanti processi reali lo usano?
+
+### Outcome
+
+Quale tempo, rischio o valore economico cambia?
+
+Questa gerarchia evita di chiamare efficienza il semplice taglio di spesa.
+
+## Non ottimizzare il prodotto utile fino a renderlo inutile
+
+Un forecast costa €2.000/mese e riduce stock-out attesi per centinaia di migliaia di euro.
+
+Ridurre la frequenza per risparmiare €700 può essere una falsa economia.
+
+Viceversa, un dashboard costa €15.000 e non entra più in alcuna decisione.
+
+Qui l'optimization corretta può essere **retirement**, non tuning.
+
+## Cost review nel lifecycle
+
+Ogni prodotto T2/T3 può avere review periodica:
+
+```text
+monthly/quarterly cost
+→ key drivers
+→ allocated vs shared cost
+→ SLO cost
+→ cost per unit
+→ adoption
+→ value evidence
+→ optimize / resize / redesign / retire
+```
+
+La FinOps Foundation sottolinea che unit metric e target devono essere rivisti nel tempo e collegati agli obiettivi organizzativi.
+
+Fonte: https://www.finops.org/framework/capabilities/unit-economics/
+
+## La regola economica
+
+> **Un sistema analitico sostenibile non è quello che costa poco. È quello in cui il livello di servizio, il costo e il valore sono leggibili nello stesso Operating Contract, così possiamo capire se stiamo pagando per reliability utile o per complessità ereditata.**
