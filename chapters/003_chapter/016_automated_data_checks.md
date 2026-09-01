@@ -1,99 +1,168 @@
-## 3.15 Controlli automatici: il dato deve dimostrare di essere plausibile
+## 3.15 Controlli automatici: trasformare le aspettative in segnali
 
-Controllare manualmente un dataset una volta non basta. Se quel dato alimenta ogni giorno dashboard, modelli o decisioni operative, i controlli devono diventare parte del processo.
+Una data readiness review manuale può dirci che il dataset di oggi è plausibile.
 
-I controlli automatici non dimostrano che un dato sia vero. Possono però intercettare molte condizioni incompatibili con ciò che ci aspettiamo.
+Non garantisce che lo sarà domani.
+
+Quando una fonte alimenta analisi ricorrenti, alcune aspettative scoperte durante il profiling dovrebbero diventare controlli automatici.
+
+Il ruolo dell'analista non è necessariamente implementare tutta l'infrastruttura di observability. È però spesso l'analista a conoscere **quali violazioni cambierebbero il significato di una metrica**.
+
+### Dal sanity check alla regola
+
+Durante un'indagine possiamo osservare:
+
+> La tabella clienti contiene normalmente tra 2,3 e 2,5 milioni di account.
+
+Se quella proprietà è importante per i report, può diventare una regola:
+
+```text
+2.300.000 <= row_count(customer_daily) <= 2.550.000
+```
+
+Oppure possiamo scoprire che:
+
+> `order_id` deve essere unico nel dataset degli ordini completati.
+
+Anche questa aspettativa può diventare un test.
+
+La guida britannica per i data quality action plan raccomanda proprio di definire regole di qualità collegate allo scopo del dato, con target e livelli di performance, invece di misurare indiscriminatamente ogni campo.[^gov-dq-plan]
 
 ### Cinque famiglie di controlli
 
-**1. Schema checks**
+**1. Schema**
 
-Verificano che colonne, tipi e struttura siano coerenti.
+Verificano che la struttura attesa esista.
 
 Esempi:
 
-- `order_id` deve esistere;
-- `order_date` deve essere una data;
-- `revenue` deve essere numerico;
-- una colonna critica non deve sparire dopo una release.
+- colonna critica presente;
+- tipo compatibile;
+- enum non modificato senza gestione;
+- unità o metadati obbligatori disponibili.
 
-**2. Constraint checks**
+**2. Constraint e dominio**
 
 Verificano regole locali.
 
 Esempi:
 
-- quantità > 0;
-- sconto tra 0 e 100%;
-- paese in una lista ammessa;
-- `order_id` univoco nella tabella ordine.
+- chiave unica;
+- range ammesso;
+- data coerente con il processo;
+- stato appartenente ai valori previsti.
 
-**3. Referential checks**
+**3. Relazioni**
 
-Verificano le relazioni tra tabelle.
+Controllano che collegamenti attesi tra dataset siano plausibili.
 
-Esempio: ogni `product_id` presente nelle vendite dovrebbe esistere nella dimensione prodotto, salvo eccezioni note.
+Esempio: la quota di ordini con `product_id` non riconosciuto deve restare sotto una soglia accettabile.
 
-**4. Volume e freshness checks**
+**4. Volume e freshness**
 
-Controllano se il dataset arriva nei tempi previsti e con volumi plausibili.
+Controllano se il dato è arrivato e se la quantità osservata è compatibile con il processo.
 
-**5. Distribution checks**
+**5. Distribuzione e composizione**
 
-Confrontano la distribuzione corrente con quella attesa o storica.
+Verificano cambiamenti inattesi nelle caratteristiche del dataset.
 
-### Caso simulato: 420.000 clienti "spariti"
+Esempi:
 
-Una società SaaS possiede circa **2,4 milioni di account**. Ogni notte una pipeline aggiorna la tabella clienti usata dal CRM e dai dashboard.
+- improvviso aumento dei null;
+- una categoria che passa dal 12% al 70%;
+- distribuzione degli importi completamente diversa dallo storico;
+- segmento che scompare.
 
-Alle 7:20 di martedì mattina un controllo automatico segnala:
+### Caso simulato/composito — 420.000 account scomparsi
 
-```text
-row_count(customer_daily) = 1,981,442
-expected range = 2,300,000 - 2,550,000
-STATUS: FAIL
-```
+Una società SaaS possiede circa **2,4 milioni di account**.
 
-Il dashboard non è ancora stato consultato dal management.
+Ogni notte una pipeline aggiorna la tabella usata da CRM e dashboard.
 
-Il team scopre che una modifica alla query di ingestione ha introdotto accidentalmente un `INNER JOIN` con la tabella dei consensi marketing. Gli account privi di consenso sono quindi scomparsi dal dataset analitico.
-
-Il dato sarebbe sembrato perfettamente plausibile riga per riga. Nessuna colonna era nulla, nessuna chiave duplicata, nessun errore SQL.
-
-Era la popolazione ad essere sbagliata.
-
-Un semplice controllo sul volume ha impedito che il dataset venisse pubblicato.
-
-### Non usare soglie casuali
-
-Un controllo del tipo:
+Alle 7:20 un controllo sul volume segnala:
 
 ```text
-row_count > 0
+row_count(customer_daily) = 1.981.442
+expected range = 2.300.000 - 2.550.000
+STATUS = FAIL
 ```
 
-è quasi inutile.
+Il team scopre che una modifica alla trasformazione ha introdotto un `INNER JOIN` con la tabella dei consensi marketing.
 
-Una pipeline che passa da 2,4 milioni di righe a 12.000 soddisfa comunque il test.
+Gli account privi di consenso sono scomparsi dal dataset.
 
-Le soglie devono derivare dal comportamento del processo.
+Il risultato era "pulito" a livello di singola riga:
 
-Per un flusso stabile potremmo usare intervalli stretti. Per un business fortemente stagionale potremmo confrontare il volume con lo stesso giorno della settimana o con una baseline dinamica.
+- nessuna chiave duplicata;
+- nessun campo critico nullo;
+- tipi corretti;
+- query completata con successo.
 
-### Alert fatigue
+Era la **popolazione** a essere sbagliata.
 
-Se ogni giorno arrivano cinquanta alert irrilevanti, presto nessuno li leggerà.
+Un semplice controllo sul volume ha impedito di pubblicare un dataset semanticamente incompleto.
 
-Un buon sistema di data quality distingue almeno tra:
+### Un test che passa non dimostra che il dato sia vero
 
-- **warning**: variazione insolita ma compatibile con un evento reale;
-- **failure**: condizione che rende il dataset non affidabile;
-- **critical failure**: dato da bloccare prima della pubblicazione.
+Questo limite va reso esplicito.
 
-### Il principio del circuito chiuso
+Possiamo verificare che:
 
-Un controllo utile deve avere:
+```text
+0 <= discount_pct <= 100
+```
 
-**regola → rilevazione → owner → investigazione → decisione → correzione → documentazione**.
+ma non sapere se `discount_pct = 35` descrive davvero lo sconto applicato al cliente.
 
-Un test che fallisce ma non ha nessuno responsabile è soltanto rumore automatizzato.
+Possiamo verificare che tutti gli ordini abbiano un `customer_id`, ma non sapere se l'identity resolution abbia associato ogni ordine alla persona corretta.
+
+I test automatici dimostrano soprattutto che il dato **non viola alcune aspettative note**.
+
+Sono potenti, ma non sostituiscono riconciliazione, domain knowledge e review metodologica.
+
+### Soglie che derivano dal processo
+
+`row_count > 0` è quasi sempre troppo debole.
+
+Se una tabella passa da 2,4 milioni di righe a 12.000, il test passa comunque.
+
+Le soglie devono riflettere:
+
+- volatilità normale;
+- stagionalità;
+- giorno della settimana;
+- crescita attesa;
+- latenze;
+- eventi di business noti.
+
+In alcuni casi una soglia fissa è sufficiente. In altri serve una baseline dinamica.
+
+### Severità e blocco
+
+Non ogni anomalia deve interrompere la pubblicazione.
+
+Una classificazione utile è:
+
+- **info/warning**: variazione da investigare, ma dato ancora utilizzabile;
+- **failure**: proprietà importante violata, analisi da sospendere o limitare;
+- **critical/blocking**: il data product non deve essere pubblicato.
+
+La severità dovrebbe dipendere dall'impatto sulla decisione, non dalla stranezza tecnica dell'errore.
+
+### Alert senza owner = rumore
+
+Un controllo ha valore solo se esiste un circuito operativo:
+
+**regola → rilevazione → owner → investigazione → decisione → correzione → apprendimento**
+
+Se nessuno sa chi deve reagire o che cosa fare, cinquanta alert non aumentano l'affidabilità. Creano alert fatigue.
+
+### La domanda dell'analista
+
+Dopo una buona data readiness review, chiediti:
+
+> **Quali tre o cinque proprietà, se cambieranno domani, potrebbero rendere silenziosamente falsa la stessa analisi?**
+
+Quelle proprietà sono ottime candidate per i primi controlli automatici.
+
+[^gov-dq-plan]: UK Government Data Quality Hub, *Data quality action plan implementation guide*. https://www.gov.uk/government/publications/implement-a-data-quality-action-plan/data-quality-action-plan-implementation-guide
