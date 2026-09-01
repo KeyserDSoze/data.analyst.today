@@ -1,99 +1,165 @@
-## 8.9 Matching e propensity score: costruire un confronto più credibile
+## 8.9 Matching e propensity score: comparabilità sulle variabili osservate
 
-Quando non possiamo randomizzare, spesso il primo problema è che gruppo trattato e gruppo di controllo sono diversi già prima dell'intervento.
+Quando il trattamento non è randomizzato, una strategia possibile è costruire un gruppo di confronto che assomigli ai trattati **prima dell'intervento**.
 
-Immaginiamo una società B2B SaaS che offre un programma di onboarding premium ai clienti considerati più promettenti. Dopo sei mesi, il team Customer Success presenta un risultato impressionante:
+Matching e propensity score provano a fare questo usando covariate osservate.
 
-- churn clienti con onboarding premium: **6,8%**;
-- churn clienti senza onboarding premium: **12,9%**.
+La parola decisiva è **osservate**.
 
-La conclusione sembra ovvia: l'onboarding premium dimezza quasi il churn.
+### Caso simulato/composito — Onboarding premium
 
-Ma il programma non era stato assegnato casualmente. I clienti premium avevano mediamente:
+Un SaaS offre onboarding premium ai clienti considerati più promettenti.
 
-- ARR iniziale più alto;
-- team interni più grandi;
+Dopo sei mesi:
+
+- churn premium: 6,8%;
+- churn non premium: 12,9%.
+
+Il gap grezzo è `-6,1 pp`.
+
+Ma i clienti premium avevano già:
+
+- ARR più alto;
+- team più grandi;
 - maggiore maturità digitale;
-- più utenti attivi nella prima settimana;
+- activation iniziale migliore;
 - account manager dedicati.
 
-Quindi la differenza osservata può riflettere sia l'effetto dell'onboarding sia il fatto che i clienti trattati fossero diversi in partenza.
+Il comparison group grezzo è quindi poco credibile.
 
-### Matching
+### Matching: confrontare unità simili dove esiste comparabilità
 
-L'idea del matching è cercare, per ogni unità trattata, una o più unità non trattate sufficientemente simili rispetto alle caratteristiche osservate rilevanti.
+Possiamo cercare, per ogni cliente trattato, clienti non trattati simili su variabili **pre-treatment** come:
 
-Per esempio possiamo confrontare un cliente trattato con:
+- ARR;
+- mercato;
+- industry;
+- tenure;
+- dimensione account;
+- utilizzo prima dell'onboarding.
 
-- ARR simile;
-- stessa industry;
-- dimensione aziendale simile;
-- stesso mercato geografico;
-- activation iniziale simile;
-- stessa anzianità contrattuale.
+Dopo matching:
 
-Dopo il matching, il confronto può diventare:
+- churn trattati: 6,8%;
+- matched controls: 8,4%.
 
-- churn trattati: **6,8%**;
-- churn controlli comparabili: **8,4%**.
+L'effetto apparente scende da `-6,1 pp` a `-1,6 pp`.
 
-L'effetto apparente passa quindi da **-6,1 punti percentuali** a **-1,6 punti**.
+Non significa che `-1,6 pp` sia automaticamente causale.
 
-Il programma potrebbe ancora essere utile, ma molto meno di quanto suggerisse il confronto grezzo.
+Significa che una parte importante della differenza iniziale era spiegata da covariate osservate che rendevano i gruppi diversi.
 
-### Propensity score
+### Propensity score: probabilità di trattamento, non “causal score”
 
-Quando le caratteristiche da bilanciare sono molte, si può sintetizzare la probabilità di ricevere il trattamento in un unico punteggio:
+Il propensity score è:
 
-> **propensity score = P(trattamento | caratteristiche osservate prima del trattamento)**
+`P(T = 1 | covariate pre-treatment)`
 
-Due clienti con propensity score simile hanno, sulla base delle variabili osservate, una probabilità simile di entrare nel programma.
+È un modo per sintetizzare molte covariate nella probabilità osservata di ricevere il trattamento.
 
-Il matching sul propensity score prova quindi a confrontare unità con simile probabilità di trattamento.
+Può essere usato per:
 
-La World Bank descrive il propensity score matching come un metodo quasi-sperimentale che costruisce un gruppo di controllo artificiale abbinando unità trattate e non trattate con caratteristiche osservate simili. Sottolinea anche il limite fondamentale: se esistono confondenti non osservati importanti, il bias può rimanere elevato.
+- matching;
+- stratification;
+- weighting;
+- diagnostics di overlap.
 
-### Common support
+Ma un propensity model con AUC elevata non è necessariamente migliore causalmente.
 
-Un errore frequente è forzare confronti dove non esiste una vera controparte.
+Se predice quasi perfettamente il trattamento, può anzi rivelare **scarso overlap**: trattati e non trattati appartengono a mondi molto diversi.
 
-Se tutti i clienti enterprise sopra 500.000 euro di ARR hanno ricevuto il programma premium, non esistono clienti enterprise simili non trattati con cui confrontarli.
+### Il vero diagnostic è il balance
 
-In quella zona manca **overlap** o **common support**.
+Dopo matching o weighting la domanda non è:
 
-Non è un problema che si risolve con un algoritmo più sofisticato. È una limitazione del disegno.
+> “Quanto bene il modello predice chi è trattato?”
 
-### Variabili pre-treatment
+È:
 
-Nel propensity score devono entrare caratteristiche definite prima dell'intervento.
+> **“Le covariate pre-treatment rilevanti sono ora sufficientemente bilanciate tra i gruppi?”**
 
-Inserire, per esempio, `weekly_active_users` misurato dopo l'onboarding potrebbe controllare proprio una parte del meccanismo attraverso cui il trattamento produce effetto.
+Controlli utili includono:
 
-### Caso operativo: il programma VIP
+- standardized mean differences;
+- distribuzioni delle covariate;
+- overlap del propensity score;
+- unità estreme con pesi molto grandi;
+- dimensione effettiva del campione dopo weighting;
+- balance per covariate ritenute causalmente importanti.
 
-Una piattaforma marketplace introduce un servizio VIP per i seller con performance elevate.
+### Common support: non inventare il controfattuale
 
-Risultato grezzo a dodici mesi:
+Supponiamo che tutti gli account enterprise sopra 500.000 € di ARR ricevano onboarding premium.
 
-| Gruppo | Seller retention |
-|---|---:|
-| VIP | 91% |
-| Non VIP | 72% |
+Non esistono enterprise comparabili non trattati in quella zona.
 
-Dopo matching per fatturato precedente, categorie vendute, rating, anzianità, numero di ordini e paese:
+Nessun nearest-neighbor algorithm può creare informazione che il dataset non contiene.
 
-| Gruppo comparabile | Seller retention |
-|---|---:|
-| VIP | 91% |
-| Matched non-VIP | 86% |
+Possiamo:
 
-Il programma sembra ancora associato a una retention migliore, ma il grosso del vantaggio iniziale derivava dalla selezione dei seller migliori.
+- restringere la popolazione all'area di overlap;
+- cambiare estimand;
+- cercare un altro design;
+- progettare nuova raccolta dati o un esperimento.
 
-### Regola pratica
+Ma non dovremmo extrapolare silenziosamente.
 
-> **Il matching può rendere più comparabili i gruppi sulle variabili osservate. Non può rendere osservabile ciò che nei dati non esiste.**
+### Trimming cambia la domanda
 
-### Riferimenti
+Escludere unità senza common support può migliorare la comparabilità.
 
-- World Bank, *Impact Evaluation in Practice*, capitolo sul matching.
-- World Bank DIME Wiki, *Propensity Score Matching*.
+Ma cambia anche la popolazione a cui si riferisce l'effetto.
+
+Se rimuoviamo tutti gli account estremi, la stima potrebbe non rispondere più a:
+
+> “Qual è l'effetto su tutti i clienti?”
+
+ma a:
+
+> “Qual è l'effetto tra clienti per cui esistono trattati e controlli comparabili?”
+
+Questo cambiamento deve entrare nel Causal Identification Brief.
+
+### Solo covariate pre-treatment
+
+Usare nel propensity score una variabile generata dal trattamento — per esempio utilizzo del prodotto **dopo** l'onboarding — può introdurre post-treatment bias.
+
+Una buona regola è costruire una timeline e congelare le covariate prima del momento di assignment.
+
+### Il limite fondamentale: unobserved confounding
+
+La World Bank presenta matching e propensity score come strumenti per costruire gruppi comparabili sulle caratteristiche osservate e sottolinea che il metodo richiede forti assunzioni quando variabili rilevanti non sono osservate.[^worldbank-matching]
+
+Se la decisione di assegnare onboarding premium dipende da una valutazione qualitativa del sales team non registrata, il matching non può bilanciarla direttamente.
+
+Per questo l'output dovrebbe includere una discussione esplicita dei confondenti non misurati plausibili.
+
+### Matching non “dimostra” l'effetto
+
+Una frase prudente è:
+
+> **“Tra clienti comparabili sulle covariate pre-treatment osservate e nell'area di common support, l'onboarding premium è associato a circa 1,6 pp di churn in meno. L'interpretazione causale richiede che non rimangano confondenti non osservati materialmente importanti.”**
+
+È meno spettacolare di “l'onboarding riduce il churn del 6,1%”.
+
+È molto più difendibile.
+
+### Matching card
+
+```text
+Estimand:
+Covariate pre-treatment incluse e perché:
+Variabili importanti non osservate:
+Metodo di matching/weighting:
+Overlap:
+Unità escluse:
+Balance prima/dopo:
+Pesi estremi:
+Popolazione finale:
+Sensitivity a specifiche alternative:
+Claim consentito:
+```
+
+> **Matching può rendere osservazionalmente simili i gruppi. Non rende casuale un processo che casuale non era.**
+
+[^worldbank-matching]: World Bank e Inter-American Development Bank, *Impact Evaluation in Practice*, capitolo sul matching: https://www.worldbank.org/en/programs/sief-trust-fund/publication/impact-evaluation-in-practice
