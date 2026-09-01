@@ -1,31 +1,54 @@
-## 4.19 Caso studio: il marketplace che sembrava crescere troppo bene
+## 4.19 Caso end-to-end — Una crescita vera, ma molto meno semplice di quanto sembra
 
-Il management di **MercatoHub**, marketplace europeo di elettronica ricondizionata, riceve un report molto positivo.
+> **Caso simulato/composito.** Azienda, numeri e circostanze sono costruiti a fini didattici.
 
-Nel secondo trimestre:
+Il management di **MercatoHub**, marketplace europeo di elettronica ricondizionata, riceve il report del secondo trimestre:
 
-- GMV: +18,7% anno su anno;
-- ordini: +12,1%;
-- average order value: +5,9%;
-- clienti attivi: +9,4%.
+- GMV: **+18,7% YoY**;
+- ordini: **+12,1%**;
+- average order value: **+5,9%**;
+- clienti attivi: **+9,4%**.
 
-La presentazione del lunedì mattina apre con una frase: “La crescita sta accelerando”.
+La prima slide preparata per il management titola:
 
-Prima di accettarla, l'analista costruisce un'EDA completa.
+> **La crescita sta accelerando.**
 
-### Primo passo: distribuzioni, non soltanto medie
+I numeri sono corretti. La conclusione, però, contiene molta più informazione di quanta ne abbiano dimostrata i quattro KPI.
 
-L'AOV è passato da 286 € a 303 €.
+La domanda analitica diventa quindi:
 
-Ma l'istogramma mostra che la crescita non è uniforme. La fascia sotto 200 € è quasi stabile, mentre aumenta molto il peso degli ordini sopra 800 €.
+> **La crescita è ampia, sostenibile e accompagnata da segnali operativi coerenti, oppure è concentrata in pochi driver?**
 
-Il P50 passa da 231 € a 234 €. Il P90 passa da 612 € a 735 €.
+### Handoff dal Capitolo 3: il dataset è utilizzabile
 
-La crescita dell'AOV è quindi trainata soprattutto dalla coda alta.
+La Data Readiness Review è già stata completata. Grain, chiavi, ordini duplicati, resi e copertura temporale sono stati verificati.
 
-### Secondo passo: segmentare
+Resta un caveat noto: la definizione storica di `active_customer` è stata alterata dal lancio della nuova app. Per questo nell'EDA useremo anche `unique_buyers`, definito in modo coerente su entrambi gli anni.
 
-Per categoria:
+Questo confine è importante. Non stiamo rifacendo la data-quality review. Stiamo esplorando un dataset che sappiamo **come** usare e con quali caveat.
+
+### Passo 1 — Guardare la distribuzione, non solo l'AOV
+
+L'AOV passa da 286 € a 303 €.
+
+La mediana racconta però un movimento molto più piccolo:
+
+- P50: 231 € → 234 €;
+- P90: 612 € → 735 €.
+
+Il cliente al centro della distribuzione spende quasi quanto l'anno precedente. L'aumento medio è trainato soprattutto dalla parte alta della distribuzione.
+
+L'osservazione cambia da:
+
+> “Gli ordini valgono mediamente di più.”
+
+A:
+
+> **“È cresciuto soprattutto il peso degli ordini ad alto valore.”**
+
+La seconda frase è più precisa e suggerisce subito la domanda successiva: *quali ordini?*
+
+### Passo 2 — Scomporre la crescita per categoria
 
 | Categoria | GMV YoY |
 |---|---:|
@@ -35,68 +58,135 @@ Per categoria:
 | Fotografia | +9% |
 | Gaming GPU | +71% |
 
-Il 46% dell'incremento assoluto di GMV proviene da Gaming GPU, che rappresentava meno del 15% del business l'anno precedente.
+La categoria Gaming GPU genera il **46% dell'incremento assoluto di GMV**, pur rappresentando meno del 15% del business nel periodo precedente.
 
-### Terzo passo: guardare il denominatore
+La crescita complessiva è quindi reale, ma non è uniformemente distribuita nel catalogo.
 
-Il numero di clienti attivi cresce del 9,4%. Ma la definizione di “attivo” comprende chiunque abbia visitato il sito da autenticato almeno una volta negli ultimi 90 giorni.
+Questo non rende il risultato peggiore. Lo rende **più concentrato**.
 
-Il team marketing ha lanciato una nuova app e introdotto il login obbligatorio per salvare un prodotto nei preferiti.
+### Passo 3 — Controllare il denominatore della crescita clienti
 
-I clienti “attivi” sono quindi cresciuti anche per un cambiamento di tracking e UX.
+`active_customer` cresce del 9,4%, ma la definizione include chiunque abbia effettuato almeno una visita autenticata negli ultimi 90 giorni.
 
-Gli acquirenti unici crescono soltanto del 4,1%.
+Con la nuova app è diventato necessario fare login per salvare un prodotto nei preferiti. L'attività autenticata è quindi aumentata anche per una modifica del comportamento richiesto dall'interfaccia.
 
-### Quarto passo: osservare la dispersione per seller
+Gli **acquirenti unici**, definiti in modo stabile, crescono invece del **4,1%**.
+
+Entrambi i numeri sono veri:
+
+- utenti autenticati attivi: +9,4%;
+- persone/account che hanno acquistato: +4,1%.
+
+Ma supportano interpretazioni diverse.
+
+Dire “la base clienti cresce del 9,4%” sarebbe troppo ambiguo per una decisione di investimento.
+
+### Passo 4 — Guardare la concentrazione tra seller
 
 Il marketplace ha 1.840 seller attivi.
 
-La mediana del GMV per seller è quasi invariata. Il top 5% dei seller cresce invece del 38%.
+La mediana del GMV per seller è quasi invariata. Il top 5% cresce invece del 38%.
 
-Un box plot per seller mostra una distribuzione ancora più asimmetrica rispetto all'anno precedente.
+Il box plot e la distribuzione per decile mostrano che una quota crescente del GMV è prodotta dai seller più grandi, molti dei quali vendono proprio GPU e hardware premium.
 
-La crescita si sta concentrando.
+Ora abbiamo due concentrazioni che si sovrappongono:
 
-### Quinto passo: controllare tassi e qualità
+- concentrazione per categoria;
+- concentrazione per seller.
 
-Il return rate complessivo sembra migliorare dal 7,8% al 7,1%.
+Un KPI aggregato di crescita non rendeva visibile nessuna delle due.
 
-Separando per categoria:
+### Passo 5 — Trattare i tassi come definizioni complete
 
-- Smartphone: 6,4% → 6,5%;
-- Laptop: 7,0% → 7,2%;
-- GPU: 11,2% → 12,8%.
+Il vecchio report indica un return rate del 7,8%; il nuovo dashboard mostra 7,1%.
 
-L'apparente miglioramento aggregato nasce dal mix e da una modifica nel denominatore: il nuovo report conta i resi sulle unità spedite, mentre quello storico usava gli ordini consegnati.
+Il confronto sembra positivo, ma le due versioni usano denominatori differenti:
 
-La serie non è perfettamente comparabile.
+- storico: **ordini con almeno un reso / ordini consegnati**;
+- nuovo: **unità restituite / unità spedite**.
 
-### Sesto passo: identificare gli outlier
+Non sono la stessa metrica.
 
-Tre giornate mostrano GMV superiore di oltre quattro deviazioni standard rispetto alla media giornaliera.
+L'analista ricostruisce la serie usando una definizione coerente, `ordini con almeno un reso / ordini consegnati`, per entrambi i periodi.
 
-Non sono errori. Corrispondono al lancio di una nuova GPU ad alta domanda, venduta da pochi seller con prezzi medi oltre 1.200 €.
+Il risultato è:
 
-Rimuoverle come outlier cancellerebbe un evento reale che spiega una parte importante della crescita.
+- anno precedente: **7,8%**;
+- anno corrente: **8,3%**.
 
-### La conclusione cambia
+Per la categoria GPU il tasso passa dall'11,2% al 12,8%.
 
-La frase iniziale “la crescita sta accelerando” diventa:
+La storia non è più “crescita con qualità in miglioramento”, ma:
 
-> Il GMV cresce del 18,7%, ma la crescita è fortemente concentrata nella categoria Gaming GPU e nei seller di fascia alta. Gli acquirenti unici crescono molto meno dei clienti attivi dichiarati, perché una modifica nella UX ha alterato la metrica di attività. La crescita core del marketplace è positiva ma più moderata di quanto suggeriscano i KPI aggregati. Inoltre la concentrazione e il return rate della nuova categoria richiedono monitoraggio.
+> **crescita concentrata in una categoria che mostra anche un'esperienza post-vendita più problematica.**
 
-Questa seconda conclusione è meno spettacolare. È anche molto più utile.
+Questa è ancora descrizione, non spiegazione causale.
 
-### Le decisioni che ne derivano
+### Passo 6 — Misurare quanto il risultato dipende da pochi giorni
 
-Il management decide di non aumentare indiscriminatamente il budget marketing del 25%.
+Tre giornate hanno GMV eccezionalmente alto. Corrispondono al lancio di una GPU molto richiesta e sono eventi commerciali reali.
 
-Vengono invece approvate tre azioni:
+Non vanno cancellate come errori.
 
-1. separare nei report la crescita core dalla crescita della categoria GPU;
-2. creare guardrail su seller concentration e return rate;
-3. ridefinire formalmente active customer e rendere retrocompatibile la serie storica.
+Ma possiamo chiedere quanto influenzino la conclusione.
 
-Il valore dell'EDA non è stato produrre più grafici.
+Sensitivity analysis:
 
-È stato impedire che un aggregato vero producesse una storia sbagliata.
+- GMV YoY con tutti i giorni: **+18,7%**;
+- GMV YoY escludendo i tre giorni di lancio: **+12,6%**.
+
+La crescita resta forte. Quindi il risultato non dipende interamente da tre osservazioni.
+
+Tuttavia circa un terzo dell'accelerazione apparente rispetto alla crescita “core” è associata a un evento molto concentrato.
+
+Questa è informazione decisionale importante.
+
+### Passo 7 — Costruire l'EDA Evidence Map
+
+A questo punto l'analista non scrive ancora una spiegazione unica. Organizza ciò che l'EDA ha realmente stabilito.
+
+| Livello | Evidenza |
+|---|---|
+| **Osservato** | GMV +18,7%; ordini +12,1%; unique buyers +4,1%. |
+| **Struttura** | Crescita fortemente concentrata su GPU, ordini high-value e top seller. |
+| **Robustezza** | Senza tre launch days il GMV resta +12,6% YoY. |
+| **Segnale operativo** | Return rate coerentemente definito peggiora 7,8% → 8,3%; GPU 11,2% → 12,8%. |
+| **Ipotesi** | Nuova domanda GPU, mix premium e concentrazione seller possono spiegare gran parte dell'accelerazione. |
+| **Non dimostrato** | Che il marketing abbia causato la crescita; che il boom GPU sia persistente; che la maggiore concentrazione sia economicamente negativa. |
+| **Prossimo passo** | Analizzare contribution margin, repeat buyers, acquisizione per canale e persistenza delle coorti GPU. |
+
+Questa tabella è il vero output dell'EDA.
+
+### Dalla headline alla conclusione difendibile
+
+La headline iniziale era:
+
+> **La crescita sta accelerando.**
+
+Dopo l'EDA diventa:
+
+> **Il GMV cresce del 18,7% YoY e la crescita resta solida (+12,6%) anche escludendo i tre principali giorni di lancio. L'accelerazione è però concentrata nella categoria Gaming GPU, negli ordini di fascia alta e nei seller maggiori. Gli acquirenti unici crescono del 4,1%, molto meno della precedente metrica di “active customer”. Inoltre, usando una definizione comparabile, il return rate peggiora dal 7,8% all'8,3%. La crescita è quindi reale, ma meno diffusa e accompagnata da rischi di concentrazione e post-vendita che richiedono analisi ulteriori prima di aumentare indiscriminatamente gli investimenti.**
+
+È una conclusione più lunga, ma soprattutto è **calibrata sull'evidenza**.
+
+### Decisione
+
+Il management non approva automaticamente un aumento generalizzato del budget marketing del 25%.
+
+Decide invece di:
+
+1. separare nei report crescita core e contributo delle categorie ad alta volatilità;
+2. monitorare concentrazione seller, contribution margin e return rate della GPU;
+3. utilizzare `unique_buyers` come metrica stabile della crescita della base acquirenti;
+4. verificare nei mesi successivi se la domanda GPU produce repeat purchase e margine sostenibile;
+5. progettare test mirati prima di attribuire l'accelerazione a uno specifico canale marketing.
+
+Il valore dell'EDA non è stato trovare una frase più pessimista.
+
+È stato trasformare:
+
+> **un aggregato corretto**
+
+in:
+
+> **una descrizione della struttura abbastanza precisa da sapere quali spiegazioni meritano di essere testate.**
