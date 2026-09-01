@@ -1,24 +1,36 @@
-## 11.1 Grain, chiavi e cardinalità: il contratto invisibile di ogni query
+## 11.1 Grain, chiavi e cardinalità: il contratto invisibile di ogni join
 
-Il grain descrive cosa rappresenta una singola riga.
+Il **grain** descrive ciò che una singola riga rappresenta.
 
-Può sembrare una definizione elementare, ma è uno dei concetti più importanti dell'intera disciplina analitica.
+È una definizione semplice, ma è uno dei punti più importanti di tutto il lavoro analitico perché stabilisce quali operazioni hanno senso dopo.
 
 Una riga può rappresentare:
 
 - un ordine;
-- una linea d'ordine;
+- una linea d’ordine;
 - un pagamento;
 - una sessione;
-- un cliente al giorno;
-- un saldo a fine mese;
+- un cliente-giorno;
+- uno stock prodotto-magazzino a fine giornata;
 - un evento di login;
 - una relazione cliente-prodotto;
-- una modifica di stato.
+- una versione storica di un contratto.
 
-Due tabelle possono condividere una chiave e tuttavia non essere direttamente compatibili per una somma.
+Due tabelle possono condividere una colonna chiamata `customer_id` o `order_id` e tuttavia non essere direttamente combinabili senza cambiare il significato del dataset.
 
-### Caso simulato — Helix Travel e le prenotazioni duplicate
+### Primo campo dell’Analytical Data Contract: una frase sul grain
+
+Per ogni sorgente e per ogni trasformazione rilevante dovremmo poter scrivere una frase verificabile:
+
+> `orders`: una riga per `order_id`.
+
+> `order_lines`: una riga per coppia `order_id + line_number`.
+
+> `customer_daily_snapshot`: una riga per `customer_id + snapshot_date`.
+
+Se non riusciamo a completare questa frase, non siamo ancora pronti a fare il join.
+
+### Caso simulato/composito — Helix Travel e la prenotazione media che non era media
 
 Helix Travel vuole calcolare il valore medio delle prenotazioni per canale.
 
@@ -30,9 +42,7 @@ Il modello operativo contiene:
 | `booking_passengers` | una riga per passeggero nella prenotazione |
 | `payment_transactions` | una riga per transazione di pagamento |
 
-Una prenotazione può avere quattro passeggeri e tre transazioni: autorizzazione, cattura e rimborso parziale.
-
-Un analyst junior scrive:
+Un analyst scrive:
 
 ```sql
 SELECT
@@ -48,72 +58,71 @@ GROUP BY b.channel;
 
 La query produce numeri plausibili.
 
-Sono però ponderati implicitamente dal numero di passeggeri e transazioni. Una prenotazione con più passeggeri e più movimenti contribuisce più volte alla media.
+Il problema è che una prenotazione con quattro passeggeri e tre movimenti di pagamento può contribuire dodici volte alla media. Il peso implicito non è più “una prenotazione = un’osservazione”.
 
-Il risultato non misura più la prenotazione media. Misura qualcosa che non ha una definizione business utile.
+La metrica finale non è quindi l’average booking value. È una media ponderata accidentalmente dalla molteplicità dei record nelle tabelle figlie.
 
-### Prima regola: dichiarare il grain a parole
+### Chiave tecnica, chiave business e chiave analitica
 
-Prima di ogni trasformazione importante, scrivere una frase:
+Una chiave non è soltanto una colonna su cui fare join.
 
-> `bookings`: una riga per booking_id.
+È utile distinguere:
 
-> `payment_transactions`: una riga per transaction_id, più transazioni per booking_id.
+- **technical row key**: identifica una riga fisica;
+- **business key**: identifica l’entità nel sistema operativo;
+- **analytical identity**: identifica l’unità che vogliamo contare o seguire nell’analisi.
 
-Questa abitudine rende visibili assunzioni che altrimenti rimangono dentro la query.
+Esempio customer:
 
-### Chiave primaria e chiave analitica
+- `customer_row_id`: riga del CRM;
+- `account_id`: contratto;
+- `person_id`: individuo riconciliato tra sistemi;
+- `household_id`: nucleo familiare;
+- `workspace_id`: unità di utilizzo in un SaaS B2B.
 
-Una chiave tecnica non coincide sempre con l'identità business.
+La domanda “quanti clienti abbiamo?” non ha una risposta tecnica finché non decidiamo quale di queste identità rappresenta il concetto business richiesto.
 
-Esempio:
+### Cardinalità attesa prima del join
 
-- `customer_row_id`: chiave tecnica di riga;
-- `customer_id`: identificatore cliente nel CRM;
-- `email_hash`: possibile identità cross-system;
-- `household_id`: identità utile per alcune analisi;
-- `account_id`: identità contrattuale B2B.
+Prima di eseguire un join dovremmo dichiarare che relazione ci aspettiamo:
 
-La domanda “quanti clienti abbiamo?” non può essere risolta finché non sappiamo quale concetto di cliente stiamo contando.
+- **1:1** — ogni chiave compare al massimo una volta da entrambe le parti;
+- **1:N** — una riga a sinistra può trovare più righe a destra;
+- **N:1** — più righe a sinistra puntano a una dimensione unica;
+- **N:M** — più righe da entrambe le parti possono corrispondere.
 
-### Test operativo della cardinalità
+Il punto non è evitare ogni relazione 1:N o N:M. Il punto è sapere **quale grain produrrà il join** e quali misure verranno replicate.
 
-Prima del join possiamo misurare:
+### I test che devono precedere il join
+
+Per una chiave candidata:
 
 ```sql
 SELECT
     COUNT(*) AS rows,
-    COUNT(DISTINCT booking_id) AS unique_bookings
+    COUNT(DISTINCT booking_id) AS distinct_keys
 FROM payment_transactions;
 ```
 
-Se `rows` è molto maggiore di `unique_bookings`, sappiamo che `booking_id` non è unico.
-
-Poi possiamo cercare le molteplicità:
+Poi identifichiamo le molteplicità:
 
 ```sql
 SELECT
     booking_id,
-    COUNT(*) AS transaction_count
+    COUNT(*) AS n
 FROM payment_transactions
 GROUP BY booking_id
 HAVING COUNT(*) > 1
-ORDER BY transaction_count DESC;
+ORDER BY n DESC;
 ```
 
-Questi controlli sono spesso più importanti della query finale.
+Questi controlli rispondono a una domanda diversa da “la query gira?”:
 
-### Join uno-a-molti non significa automaticamente errore
+> la cardinalità reale coincide con quella che il nostro modello mentale presume?
 
-Un join uno-a-molti è perfettamente corretto se il grain desiderato diventa il lato “molti”.
+### Il pattern sicuro: normalizzare il grain prima del join
 
-Se vogliamo una riga per linea d'ordine, unire `orders` a `order_lines` è naturale.
-
-Diventa pericoloso quando continuiamo a trattare una misura dell'ordine come se esistesse ancora una sola volta.
-
-### Il pattern sicuro: aggregare prima del join
-
-Se vogliamo aggiungere l'ammontare incassato a una tabella a grain ordine:
+Se l’output deve restare a grain ordine, prima portiamo i pagamenti a grain ordine:
 
 ```sql
 WITH payments_by_order AS (
@@ -132,17 +141,57 @@ LEFT JOIN payments_by_order p
     ON o.order_id = p.order_id;
 ```
 
-La CTE non è importante perché “rende il codice bello”. È importante perché rende esplicito il cambio di grain.
+La CTE non “risolve i join” in generale. Rende esplicito che abbiamo trasformato una tabella a grain movimento in una tabella a grain ordine prima di combinarla con `orders`.
 
-### Metodo operativo
+### Row-count delta non basta
 
-Per ogni join rilevante:
+Un controllo frequente è confrontare il numero di righe prima e dopo il join. È utile, ma non sufficiente.
 
-1. dichiarare grain di sinistra e destra;
-2. verificare l'unicità delle chiavi;
-3. prevedere la cardinalità attesa;
-4. confrontare il numero di righe prima e dopo;
-5. controllare metriche sensibili prima e dopo;
-6. investigare le chiavi che generano molteplicità inattese.
+Un join può mantenere lo stesso row count e comunque essere sbagliato se:
 
-> **Ogni join è una trasformazione del significato del dataset, non soltanto una trasformazione del numero di righe.**
+- la chiave collega l’entità sbagliata;
+- una dimensione contiene record storici e scegliamo la versione corrente;
+- alcune righe trovano più match e altre nessuno, compensandosi nel totale;
+- un `INNER JOIN` elimina casi fuori dominio.
+
+Per questo servono almeno tre famiglie di controllo:
+
+1. **cardinality checks** — quante corrispondenze per chiave?
+2. **coverage checks** — quali righe non trovano match?
+3. **measure reconciliation** — somme/conti critici cambiano come previsto?
+
+### Un join è anche una scelta di popolazione
+
+Considera:
+
+```sql
+FROM customers c
+INNER JOIN orders o
+    ON c.customer_id = o.customer_id
+```
+
+Se partiamo da tutti i clienti, dopo l’`INNER JOIN` restano soltanto quelli con almeno un ordine.
+
+La query ha quindi modificato non solo il dataset, ma anche la **popolazione di riferimento**.
+
+Se la domanda era “qual è il tasso di acquisto tra tutti i clienti eleggibili?”, quell’`INNER JOIN` può aver eliminato proprio il denominatore che ci serve.
+
+### Il join gate dell’Analytical Data Contract
+
+Per ogni join importante documentiamo:
+
+| Campo | Esempio |
+|---|---|
+| grain sinistro | una riga per ordine |
+| grain destro | una riga per pagamento |
+| chiave | `order_id` |
+| cardinalità attesa | 1:N |
+| grain desiderato dopo join | una riga per ordine |
+| strategia | aggregare pagamenti prima del join |
+| unmatched consentiti | sì, ordini non ancora pagati |
+| invariant | `COUNT(DISTINCT order_id)` non deve aumentare |
+| reconciliation | total order value invariato |
+
+Questa tabella è spesso più importante della sintassi finale.
+
+> **Ogni join è una trasformazione del significato del dataset, non soltanto del numero di righe.**
