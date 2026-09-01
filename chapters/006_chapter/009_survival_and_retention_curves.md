@@ -1,63 +1,134 @@
-## 6.8 Survival e retention curves: guardare il tempo come una variabile
+## 6.8 Survival e retention curves: capire quando aumenta il rischio di uscita
 
-Molte analisi di retention vengono ridotte a pochi punti: Day 1, Day 7, Day 30. È utile, ma spesso insufficiente.
+Molte dashboard comprimono la retention in pochi punti: D1, D7, D30, M3, M6.
 
-Una retention curve considera l'intero percorso temporale. Per ogni istante \(t\), ci chiediamo quale quota della popolazione iniziale è ancora attiva, abbonata, non churnata o comunque “sopravvissuta” secondo la definizione scelta.
+Sono snapshot utili, ma possono nascondere **la forma del decadimento**.
 
-In statistica questa idea è formalizzata dalla **survival function**:
+Due coorti possono avere entrambe retention D30 del 50% e comportarsi in modo completamente diverso: una può perdere utenti quasi tutti nei primi tre giorni e poi stabilizzarsi; l'altra può scendere lentamente per tutto il mese.
 
-\[
-S(t) = P(T > t)
-\]
+La curva racconta quindi qualcosa che il singolo punto non può mostrare: **quando il lifecycle diventa fragile**.
 
-cioè la probabilità che il tempo fino all'evento sia superiore a \(t\). NIST usa la stessa definizione nella reliability analysis: la survival function è il complemento della distribuzione cumulativa di failure.[^nist-survival]
+### Survival function: il tempo fino all'evento
 
-### Caso: Streamly e il problema nascosto al giorno 21
+In survival analysis si considera una variabile `T`: il tempo fino a un evento, per esempio cancellazione, mancato rinnovo o guasto.
 
-Streamly è un servizio in abbonamento per corsi video professionali. La dashboard mostra:
+La survival function è:
+
+`S(t) = P(T > t)`
+
+cioè la probabilità di superare il tempo `t` senza aver ancora osservato l'evento.
+
+NIST usa la stessa definizione nella reliability analysis: la survival function è la probabilità che un'unità sopravviva oltre un certo tempo.[^nist-survival]
+
+Nel mondo prodotto possiamo tradurla come:
+
+> quale quota della popolazione iniziale è ancora presente dopo `t` giorni, settimane o mesi?
+
+### Caso simulato/composito: Streamly e il giorno 21
+
+**Streamly** è un servizio subscription di corsi video professionali. La dashboard mostra:
 
 - retention D7: 76%;
-- retention D30: 58%;
-- retention D90: 43%.
+- D30: 58%;
+- D90: 43%.
 
-Il Product Manager conclude che il principale problema sia nelle prime settimane.
+Il Product Manager interpreta il problema come un generico deterioramento nelle prime settimane.
 
-L'analista costruisce invece una curva giornaliera per le ultime sei coorti. Nota un pattern quasi identico: la discesa è moderata fino al giorno 18, poi accelera tra il giorno 19 e il giorno 24.
+L'analista costruisce una curva giornaliera per coorte.
 
-Il team controlla cosa succede in quel periodo. La prova gratuita dura 21 giorni e la prima fatturazione avviene automaticamente al termine del trial.
+Il pattern è molto più specifico: la discesa è relativamente regolare fino al giorno 18, poi accelera tra il giorno 19 e il giorno 24.
 
-Quando la coorte viene divisa tra utenti che hanno completato almeno un corso e utenti che hanno solo guardato video sparsi, le curve divergono nettamente:
+La prova gratuita dura 21 giorni.
 
-- completamento corso prima del giorno 14: retention D45 = 71%;
-- nessun corso completato: retention D45 = 29%.
+La curva suggerisce quindi una domanda nuova:
 
-Il problema non è semplicemente “retention bassa”. Il punto critico è **arrivare alla prima fatturazione senza aver sperimentato abbastanza valore**.
+> che cosa succede agli utenti quando si avvicina la prima fatturazione?
 
-### Hazard: dove aumenta il rischio di churn?
+Segmentando per comportamento precedente:
 
-La survival curve dice quanti utenti restano. La **hazard rate** aiuta a ragionare su quando aumenta il rischio di uscita, condizionatamente al fatto che l'utente sia ancora presente.
+- almeno un corso completato entro D14 → retention D45 71%;
+- nessun corso completato → retention D45 29%.
 
-NIST definisce l'hazard rate come il tasso istantaneo di failure per le unità che sono sopravvissute fino al tempo \(t\).[^nist-hazard]
+Il problema non appare più come “gli utenti si stancano”. Una quota rilevante arriva al momento del pagamento senza aver accumulato abbastanza esperienza di valore.
 
-Trasposto in un prodotto digitale, possiamo pensarlo come:
+È ancora una diagnosi osservazionale, ma localizza un momento del lifecycle molto preciso.
 
-> tra gli utenti ancora attivi oggi, in quali momenti del lifecycle il rischio di churn aumenta maggiormente?
+### Hazard: il rischio tra chi è ancora presente
 
-Questa prospettiva cambia la priorità operativa. In Streamly il picco non è al signup. È poco prima della prima fatturazione.
+La survival curve ci dice quanti rimangono. La **hazard rate** risponde a una domanda diversa:
 
-### Censoring: gli utenti che non hanno ancora avuto il tempo di churnare
+> tra coloro che sono ancora presenti al tempo `t`, quanto è elevato il rischio di uscita proprio in quel momento?
 
-Un errore molto comune è confrontare coorti con diversa maturità. Una coorte entrata 20 giorni fa non può ancora avere una retention a 90 giorni osservata.
+NIST definisce l'hazard come il tasso istantaneo di failure condizionato al fatto che l'unità sia sopravvissuta fino a `t`.[^nist-hazard]
 
-Questo è un caso di **right censoring**: sappiamo che un utente è sopravvissuto almeno fino a oggi, ma non conosciamo ancora il suo futuro.
+Nel prodotto digitale, pensare in termini di hazard aiuta a individuare:
 
-Per questo, quando si lavora con curve di retention o survival, bisogna distinguere tra utenti che hanno realmente concluso il periodo di osservazione e utenti ancora in corso.
+- fine del trial;
+- primo rinnovo;
+- scadenza della carta;
+- fine di un onboarding assistito;
+- periodi stagionali;
+- momenti in cui cambia il prezzo o il contratto.
 
-### Cosa deve imparare l'analista
+Il rischio di churn raramente è uniforme per tutto il lifecycle.
 
-Una curva temporale costringe a smettere di trattare il churn come un numero statico. Fa emergere transizioni, soglie, eventi di lifecycle e momenti di rischio.
+### Il problema degli utenti che non hanno ancora avuto il tempo di uscire
 
-E soprattutto ricorda che **il tempo non è solo una colonna del dataset: spesso è parte del meccanismo che vogliamo capire**.
+Una coorte entrata venti giorni fa non può ancora avere una retention D90 osservata.
 
-[^nist-survival]: NIST/SEMATECH Engineering Statistics Handbook, *Reliability or survival function*, https://www.itl.nist.gov/div898/handbook/apr/section1/apr122.htm
-[^nist-hazard]: NIST/SEMATECH Engineering Statistics Handbook, *Failure (or hazard) rate*, https://www.itl.nist.gov/div898/handbook/apr/section1/apr123.htm
+Questo introduce il **right censoring**: sappiamo che alcuni utenti sono rimasti almeno fino alla fine della nostra osservazione, ma non sappiamo ancora quando o se avverrà l'evento futuro.
+
+NIST tratta il censoring come una caratteristica centrale dei dati di reliability e lifetime.[^nist-censoring]
+
+Ignorarlo produce confronti distorti.
+
+### Esempio di confronto sbagliato
+
+A settembre il team confronta:
+
+- coorte gennaio: 1.200 clienti, osservati per otto mesi;
+- coorte agosto: 2.100 clienti, osservati per un solo mese.
+
+Se calcola “percentuale churnata fino a oggi”, gennaio sembrerà quasi inevitabilmente peggiore: ha avuto molto più tempo per accumulare uscite.
+
+La soluzione è confrontare le coorti **alla stessa età** oppure utilizzare metodi di survival che tengano conto delle osservazioni censurate.
+
+### Kaplan-Meier: intuizione pratica
+
+Il Kaplan-Meier estimator permette di stimare una survival curve anche quando alcuni casi sono censurati.
+
+Per un Data Analyst non è necessario derivarne immediatamente la matematica. È però importante capire il principio:
+
+- utilizziamo le informazioni disponibili fino al momento in cui ogni soggetto è osservabile;
+- non trattiamo come “retained per sempre” chi semplicemente non ha ancora raggiunto la fine del periodo;
+- aggiorniamo la probabilità di sopravvivenza quando si verificano eventi.
+
+Questo rende il confronto tra lifecycle incompleti molto più corretto di una semplice percentuale cumulata.
+
+### Survival non è solo churn
+
+Lo stesso approccio può essere usato per studiare il tempo fino a:
+
+- activation;
+- primo acquisto;
+- secondo acquisto;
+- upgrade;
+- guasto;
+- recupero da inattività;
+- completamento di un processo.
+
+La domanda diventa:
+
+> non solo *se* l'evento avviene, ma *quando* avviene e come cambia il rischio nel tempo.
+
+### La domanda operativa
+
+Quando retention o churn vengono trattati come un singolo numero, chiediamoci:
+
+**Dove cambia la pendenza della curva? Quali eventi di lifecycle coincidono con quel punto? Le coorti sono abbastanza mature da essere confrontate?**
+
+È qui che il tempo smette di essere una semplice colonna e diventa parte del meccanismo analitico.
+
+[^nist-survival]: NIST/SEMATECH Engineering Statistics Handbook, “Reliability or survival function”, https://www.itl.nist.gov/div898/handbook/apr/section1/apr122.htm
+[^nist-hazard]: NIST/SEMATECH Engineering Statistics Handbook, “Failure (or hazard) rate”, https://www.itl.nist.gov/div898/handbook/apr/section1/apr123.htm
+[^nist-censoring]: NIST/SEMATECH Engineering Statistics Handbook, “Censoring”, https://www.itl.nist.gov/div898/handbook/apr/section1/apr131.htm
