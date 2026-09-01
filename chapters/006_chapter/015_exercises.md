@@ -1,6 +1,12 @@
-## 6.14 Esercizi: ragionare su funnel, retention e churn
+## 6.14 Esercizi: costruire diagnosi di lifecycle, non soltanto KPI
 
-Gli esercizi di questo capitolo non richiedono soltanto calcoli. L'obiettivo è allenare la capacità di definire correttamente il problema prima di misurarlo.
+Gli esercizi di questo capitolo non richiedono soltanto calcoli. L'obiettivo è allenare la capacità di distinguere **presenza, valore, tempo, rischio e causalità**.
+
+Per ogni esercizio prova a separare:
+
+1. ciò che osservi;
+2. ciò che interpreti;
+3. ciò che richiede altra evidenza.
 
 ### Esercizio 1 — Activation ambigua
 
@@ -10,83 +16,170 @@ I dati mostrano:
 
 - signup mensili: 80.000;
 - utenti con almeno una call: 62.000;
-- utenti con almeno una call con un partecipante esterno: 41.000;
+- utenti con almeno una call con partecipante esterno: 41.000;
 - utenti con almeno tre call in sette giorni: 19.000;
-- retention a 60 giorni tra chi ha fatto una sola call: 18%;
-- retention a 60 giorni tra chi ha fatto almeno tre call: 57%.
+- retention D60 tra chi ha fatto una sola call: 18%;
+- retention D60 tra chi ha fatto almeno tre call: 57%.
 
 Domande:
 
-1. Quale evento useresti come activation?
-2. Quali ulteriori segmentazioni controlleresti?
-3. Quale rischio c'è nel scegliere l'evento che massimizza semplicemente la correlazione con la retention?
+1. Quali eventi considereresti candidati di activation e perché?
+2. Quale evento sembra più vicino al valore del prodotto?
+3. Quali segmentazioni controlleresti prima di adottarlo come metrica?
+4. Perché la forte correlazione con retention non dimostra che forzare tre call aumenterà causalmente la retention?
+5. Come misureresti il time-to-value?
 
-### Esercizio 2 — Funnel che migliora, revenue che peggiora
+### Esercizio 2 — Funnel che migliora, economics che peggiora
 
 Un e-commerce modifica il checkout. Dopo il redesign:
 
-- add-to-cart → checkout: dal 54% al 61%;
-- checkout → pagamento: dal 71% al 76%;
+- add-to-cart → checkout: 54% → 61%;
+- checkout → pagamento: 71% → 76%;
 - conversion rate complessivo: +9%;
 - average order value: -13%;
-- return rate: dal 8% al 12%.
+- return rate: 8% → 12%;
+- contribution margin per visitatore: -3%.
 
-Scrivi una breve nota al Product Manager spiegando perché il funnel non può essere considerato vinto sulla base del solo conversion rate.
+Prepara una nota al Product Manager di massimo 120 parole che distingua:
 
-### Esercizio 3 — Due coorti, stessa retention D30
+- miglioramento locale del funnel;
+- effetto economico complessivo;
+- evidenza mancante prima di dichiarare il redesign “vincente”.
+
+### Esercizio 3 — Due coorti, stessa D30
 
 Due coorti hanno entrambe retention D30 del 52%.
 
-Coorte A:
+| Giorno | Coorte A | Coorte B |
+| --- | ---: | ---: |
+| D1 | 86% | 63% |
+| D7 | 68% | 56% |
+| D14 | 58% | 54% |
+| D30 | 52% | 52% |
 
-- D1: 86%;
-- D7: 68%;
-- D14: 58%;
-- D30: 52%.
+Domande:
 
-Coorte B:
+1. Come descriveresti la forma delle due curve?
+2. In quale coorte il problema sembra concentrato nell'activation iniziale?
+3. In quale potrebbe esserci un decadimento più progressivo?
+4. Quali eventi di prodotto sovrapporresti alla timeline?
+5. Perché il solo D30 elimina informazione importante?
 
-- D1: 63%;
-- D7: 56%;
-- D14: 54%;
-- D30: 52%.
+### Esercizio 4 — Logo churn stabile, revenue a rischio
 
-Quali storie di prodotto potrebbero produrre due curve così diverse? Dove concentreresti l'analisi?
+Una società SaaS inizia il trimestre con 1.000 clienti e 10 milioni di euro di ARR.
 
-### Esercizio 4 — Churn o downgrade?
+Nel trimestre:
 
-Una società SaaS perde 40 clienti su 1.000 in un trimestre. Nello stesso periodo 85 clienti riducono il proprio contratto e 30 espandono l'ARR.
+- 40 clienti cancellano completamente, per 620.000 € di ARR;
+- 85 clienti riducono il contratto, per 410.000 € di contraction;
+- 30 clienti espandono il contratto, per 540.000 € di expansion.
 
-Calcola e discuti perché il logo churn da solo può essere insufficiente per descrivere la salute della base clienti.
+Calcola o descrivi:
 
-### Esercizio 5 — Il modello di churn
+- logo churn;
+- gross revenue retention;
+- net revenue retention;
+- perché i tre indicatori raccontano storie diverse.
 
-Un modello assegna un rischio elevato a clienti che:
+Poi indica quale useresti per una riunione Customer Success e quale per una valutazione della salute economica della base.
 
-- hanno meno login;
-- aprono più ticket;
-- utilizzano meno feature;
-- hanno meno utenti attivi.
+### Esercizio 5 — Churn involontario
 
-Per ciascuna variabile, proponi almeno due spiegazioni alternative. Poi indica quali interventi potresti testare senza assumere che la variabile sia causale.
+Un servizio subscription registra 2.400 cancellazioni nel mese.
 
-### Esercizio finale — Il board vuole una risposta domani
+L'indagine mostra:
 
-Sei Data Analyst di una subscription company. Il board chiede perché la retention a sei mesi è scesa dal 67% al 59%.
+- 1.650 cancellazioni volontarie;
+- 520 pagamenti falliti mai recuperati;
+- 230 account chiusi per altri motivi amministrativi.
 
-Hai queste informazioni:
+Il CRM team propone uno sconto del 20% a tutti i clienti persi.
 
-- la maggior parte del calo viene da due coorti recenti;
-- entrambe provengono in gran parte da un nuovo canale di acquisition;
-- il time-to-value è aumentato da 2,8 a 6,4 giorni;
+Spiega perché l'intervento è mal disegnato. Costruisci almeno tre segmenti di uscita e associa a ciascuno un possibile tipo di intervento.
+
+### Esercizio 6 — Reactivation o semplice apertura?
+
+Una campagna contatta 100.000 utenti inattivi.
+
+Dopo trenta giorni:
+
+- 15.000 riaprono l'app;
+- 8.000 compiono almeno un evento core;
+- 4.200 ripetono l'evento core tre volte;
+- 2.600 risultano ancora attivi dopo sessanta giorni.
+
+In una popolazione comparabile non contattata, il 6% torna spontaneamente nell'app.
+
+Domande:
+
+1. Quale reactivation rate presenteresti?
+2. Come distingueresti ritorno e durable reactivation?
+3. Perché non puoi attribuire tutti i 15.000 ritorni alla campagna?
+4. Quale esperimento progetteresti per misurare il lift incrementale?
+
+### Esercizio 7 — LTV osservato o previsto?
+
+Tre coorti hanno questi dati:
+
+| Coorte | Età | CAC | Contribution margin cumulato |
+| --- | ---: | ---: | ---: |
+| Gennaio | 12 mesi | 75 € | 164 € |
+| Giugno | 7 mesi | 68 € | 121 € |
+| Novembre | 2 mesi | 54 € | 61 € |
+
+Un manager conclude che novembre è la coorte migliore perché ha già quasi recuperato il CAC.
+
+Quali controlli faresti prima di accettare la conclusione? Distingui valore osservato, payback e LTV futuro previsto.
+
+### Esercizio 8 — Il churn model trova clienti impossibili da salvare
+
+Un modello assegna score di rischio elevatissimi a clienti che hanno già comunicato la disdetta.
+
+Il Customer Success può contattare soltanto 200 account.
+
+Progetta una tabella di prioritizzazione con almeno queste colonne:
+
+- risk score;
+- ARR a rischio;
+- giorni al rinnovo;
+- motivo/problema osservato;
+- actionability;
+- stato della disdetta.
+
+Spiega perché il ranking finale potrebbe essere diverso dal ranking del modello.
+
+### Esercizio finale — Il board vuole sapere perché la retention è scesa
+
+Sei Data Analyst di una subscription company. La retention M6 è scesa dal 67% al 59%.
+
+Sai che:
+
+- il calo è concentrato in due coorti recenti;
+- entrambe provengono soprattutto da un nuovo canale di acquisition;
+- il time-to-value è passato da 2,8 a 6,4 giorni;
 - il pricing è aumentato nello stesso periodo;
-- una parte del tracking dell'onboarding è cambiata;
-- non esiste ancora un esperimento causale.
+- il tracking di una parte dell'onboarding è cambiato;
+- i clienti con TTV sotto tre giorni mostrano retention molto più alta;
+- non esiste ancora evidenza causale sull'onboarding o sul pricing.
 
-Prepara una risposta in tre sezioni:
+Costruisci una **Lifecycle Diagnostic Map** con questi campi:
 
-1. cosa sappiamo;
-2. cosa è plausibile ma non ancora dimostrato;
-3. cosa faresti nelle prossime due settimane per ridurre l'incertezza.
+| Campo | La tua risposta |
+| --- | --- |
+| KPI iniziale |  |
+| Chi |  |
+| Quando |  |
+| Dove |  |
+| Activation/TTV |  |
+| Persistenza |  |
+| Valore economico da verificare |  |
+| Cosa sappiamo |  |
+| Cosa è plausibile |  |
+| Cosa non è dimostrato |  |
+| Problema di data quality/tracking |  |
+| Prossimo metodo |  |
 
-Questo è il tipo di risposta che distingue una dashboard da un'analisi.
+Chiudi con una risposta al board di massimo 180 parole.
+
+La risposta migliore non deve “trovare una causa” a tutti i costi. Deve mostrare con precisione **quanto abbiamo ristretto il problema e quale evidenza serve per restringerlo ancora**.
