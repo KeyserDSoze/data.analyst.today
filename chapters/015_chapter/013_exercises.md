@@ -1,126 +1,408 @@
-## 15.12 Esercizi
-Gli esercizi di questo capitolo non chiedono soltanto di calcolare numeri. Chiedono di trasformare evidenze in decisioni.
+## 15.12 Esercizi: costruire decisioni, non soltanto analisi
 
-## Esercizio 1 — Il finding che non basta
+Gli esercizi di questo capitolo non chiedono principalmente di calcolare numeri.
 
-Un'app subscription osserva che gli utenti che completano almeno tre sessioni nella prima settimana hanno churn a 90 giorni del 12%, contro il 31% degli altri.
+Chiedono di produrre **Decision Record difendibili**.
 
-Domande:
+Per ogni caso, quando mancano dati, non inventarli silenziosamente. Indica:
 
-1. Qual è il finding?
-2. Quali interpretazioni causali sarebbero premature?
-3. Quali variabili potrebbero confondere la relazione?
-4. Quale esperimento o quasi-esperimento proporresti?
-5. Quale decisione sarebbe ragionevole prima di avere evidenza causale più forte?
+- assunzione;
+- informazione mancante;
+- se vale la pena ottenerla;
+- quale stato del Decision Quality Gate assegneresti.
 
-## Esercizio 2 — Decision threshold
+---
 
-Un modello segnala una probabilità del 68% che un fornitore critico consegni in ritardo.
+## Esercizio 1 — Un'associazione forte, una decisione ancora aperta
 
-Il costo di un ordine alternativo preventivo è €18.000. Il costo stimato dello stock-out è €120.000.
+Un'app subscription osserva:
 
-Domande:
+```text
+churn D90
+utenti con ≥3 sessioni nella prima settimana: 12%
+altri utenti: 31%
+```
 
-1. È sufficiente conoscere la probabilità del 68%?
-2. Quali altri costi devono entrare nella decisione?
-3. Come cambierebbe la soglia se l'ordine alternativo fosse annullabile?
-4. Come cambierebbe se il fornitore fosse strategico e l'ordine alternativo danneggiasse la relazione?
+### Compito
 
-## Esercizio 3 — Sensitivity analysis
+Costruisci la prima metà del Decision Record.
+
+Deve contenere:
+
+- finding;
+- materialità;
+- claim level;
+- possibili confondenti;
+- almeno quattro alternative, incluso business as usual;
+- una possibile azione reversibile prima di avere evidenza causale forte;
+- quale informazione potrebbe cambiare la scelta;
+- quale deliverable dei Capitoli 8–9 useresti se volessi sostenere un causal claim.
+
+Non concludere automaticamente che “tre sessioni riducono il churn”.
+
+---
+
+## Esercizio 2 — Supplier risk: trovare la soglia, non fissarsi sul 68%
+
+Un modello stima:
+
+```text
+P(delivery delay) = 68%
+```
+
+Un ordine alternativo preventivo costa €18.000.
+
+Uno stock-out potrebbe costare circa €120.000, ma il range plausibile è €60k–€200k.
+
+L'ordine alternativo è annullabile con una penale di €4.000 fino a 48 ore prima della consegna.
+
+### Compito
+
+1. Definisci le alternative.
+2. Calcola o ragiona sul break-even probability / switching threshold rilevante.
+3. Mostra come la reversibilità dell'ordine alternativo modifica la decisione.
+4. Aggiungi almeno due impatti non monetari.
+5. Distingui la qualità del risk score dalla qualità della decision policy.
+6. Assegna uno stato: `DECIDE / PILOT-STAGE / WAIT FOR X / NO ACTION`.
+
+---
+
+## Esercizio 3 — Expected value senza decimali decorativi
+
+Tre iniziative competono per lo stesso team.
+
+### A — Payment reliability
+
+- upside plausibile: €1,4M–€2,0M annui;
+- evidenza forte;
+- costo: €250k;
+- time to value: 2 mesi;
+- downside limitato.
+
+### B — Referral redesign
+
+- upside: €0–€3M;
+- evidenza debole;
+- costo: €450k;
+- time to value: 5 mesi.
+
+### C — Pricing redesign
+
+- upside: €1M–€4M;
+- evidenza media;
+- costo: €900k;
+- downside plausibile: churn e sales friction;
+- difficile rollback sui contratti annuali.
+
+### Compito
+
+Non assegnare probabilità puntuali se non puoi difenderle.
+
+Costruisci una Decision Scorecard con:
+
+- expected/range value;
+- evidence strength;
+- downside;
+- reversibilità;
+- time to value;
+- capacity fit;
+- opportunity cost;
+- switching assumption.
+
+Raccomanda una priorità e completa:
+
+> “Cambierei scelta se…”
+
+---
+
+## Esercizio 4 — Switching value
 
 Un progetto di automazione ha:
 
 - investimento iniziale: €350.000;
-- risparmio annuo stimato: €240.000;
-- durata attesa: 3 anni;
-- costo manutenzione annuo: €60.000.
+- risparmio annuo centrale: €240.000;
+- manutenzione annua: €60.000;
+- orizzonte previsto: 3 anni;
+- adoption completa prevista dopo 4 mesi.
 
-Costruisci almeno tre scenari modificando:
+### Compito
 
-- risparmio;
-- costo implementazione;
-- costo manutenzione;
-- tempo di adozione.
+Costruisci almeno questi switching values:
 
-Individua lo switching value più importante.
+- risparmio annuo minimo;
+- costo implementazione massimo;
+- ritardo massimo di adozione;
+- manutenzione massima.
 
-## Esercizio 4 — Pre-mortem
+Poi rispondi:
 
-La tua azienda vuole lanciare un sistema AI che assegna automaticamente priorità ai lead commerciali.
+1. Quale variabile è più vicina alla decision boundary?
+2. Su quale variabile compreresti informazione aggiuntiva?
+3. Quanto deve essere precisa la stima perché la decisione sia robusta?
+4. Esiste una versione staged/pilot con maggiore option value?
 
-Immagina che tra sei mesi il progetto sia considerato un fallimento.
+---
 
-Scrivi almeno otto possibili motivi, dividendoli in:
+## Esercizio 5 — Scenari coerenti, non ±20%
 
-- dati;
-- modello;
-- processo commerciale;
-- incentivi;
+Aster Logistics deve scegliere tra:
+
+- BAU;
+- nuovo hub completo;
+- hub modulare;
+- outsourcing per 24 mesi.
+
+### Compito
+
+Costruisci tre scenari **coerenti**:
+
+1. domanda debole;
+2. crescita centrale;
+3. crescita forte + fuel inflation.
+
+Per ogni scenario valuta qualitativamente:
+
+- volume;
+- saving logistico;
+- capacità;
+- capex;
+- reversibilità;
+- time to value.
+
+Poi indica:
+
+- opzioni dominate;
+- opzione con massimo upside;
+- opzione più robusta;
+- informazione che potrebbe cambiare il ranking.
+
+---
+
+## Esercizio 6 — Caso reale documentato: leggere una decisione come NASA
+
+NASA descrive la Decision Analysis come un processo che identifica criteri e alternative, valuta performance e incertezza, analizza la robustezza del ranking e documenta recommendation e decisione finale.
+
+Fonte: https://www.nasa.gov/reference/6-8-decision-analysis/
+
+### Compito
+
+Scegli una decisione analitica aziendale, per esempio:
+
+- build vs buy;
+- nuovo data warehouse;
+- nuovo mercato;
+- rollout di un pricing;
+- migrazione BI.
+
+Ristrutturala usando:
+
+```text
+objectives
+→ criteria
+→ alternatives
+→ uncertainty
+→ robustness of ranking
+→ recommendation
+→ final decision
+```
+
+Quali elementi aggiunge questa struttura rispetto a un normale business case “progetto proposto + ROI”? 
+
+---
+
+## Esercizio 7 — Pre-mortem prima del go-live
+
+Un'azienda vuole lanciare un sistema AI che assegna priorità ai lead commerciali.
+
+Assumi:
+
+> “Tra sei mesi il progetto è considerato un fallimento.”
+
+### Compito
+
+Genera almeno dieci failure mode divisi tra:
+
+- data;
+- model;
+- sales process;
+- incentives;
+- adoption;
 - governance;
-- misurazione.
+- measurement;
+- feedback loop.
 
-Per ogni failure mode proponi un controllo preventivo.
+Per i cinque più importanti definisci:
 
-## Esercizio 5 — Decision quality vs outcome
+```text
+leading indicator:
+guardrail:
+mitigation:
+stop condition:
+owner:
+```
 
-Un team approva una campagna sulla base di un A/B test ben progettato che stima un uplift del 4% con intervallo plausibile tra 1% e 7%. La campagna viene lanciata, ma nel mese successivo le vendite diminuiscono del 3%.
+Poi spiega quali failure mode dovrebbero cambiare il design **prima** del rollout.
 
-Domande:
+Riferimento sulla tecnica pre-mortem:
 
-1. Possiamo concludere che la decisione fosse sbagliata?
-2. Quali shock esterni dovremmo considerare?
-3. Quali informazioni del decision record vorremmo rileggere?
-4. Come distingueresti un problema di decisione da un problema di esecuzione o contesto?
+https://hbr.org/2007/09/performing-a-project-premortem
 
-## Esercizio 6 — Aurora Home, secondo round
+---
 
-Riprendi il caso Aurora Home del capitolo.
+## Esercizio 8 — Decision quality vs outcome quality
 
-Supponiamo che il surcharge sui prodotti bulky migliori il contribution margin di 1,4 punti, ma riduca conversione del 3,2% nel segmento interessato.
+Un team approva una campagna sulla base di un A/B test ben progettato.
 
-Costruisci una raccomandazione che includa:
+Stima pre-rollout:
 
-- impatto sul margine;
-- impatto sui volumi;
-- rischio di lungo periodo;
-- segmentazione;
-- soglia di rollback;
-- piano di misurazione.
+```text
+uplift centrale: +4%
+plausible interval: +1% to +7%
+```
 
-## Esercizio 7 — Scrivere un decision memo
+La campagna viene lanciata.
 
-Scegli un problema reale o simulato e prepara un memo di una pagina con questa struttura:
+Nel mese successivo le vendite totali dell'azienda diminuiscono del 3%.
+
+### Compito
+
+Non giudicare subito la decisione.
+
+Costruisci una review separando:
+
+**Decision quality**
+
+- design dell'esperimento;
+- alternative;
+- economics;
+- guardrail;
+- evidence threshold.
+
+**Execution quality**
+
+- rollout;
+- exposure;
+- targeting;
+- implementazione.
+
+**Outcome quality**
+
+- performance della campagna;
+- traffico totale;
+- stagionalità;
+- competitor/macroeconomia;
+- altri shock.
+
+Concludi spiegando che cosa sarebbe necessario osservare per affermare che la scelta di rollout era ex ante debole.
+
+---
+
+## Esercizio 9 — Aurora Home: secondo round
+
+Riprendi il caso Aurora Home.
+
+Dopo quattro settimane il pilot mostra:
+
+- contribution margin per visitor: +1,8%;
+- conversion sul segmento esposto: -3,2%;
+- AOV: +4,1%;
+- complaints: +6%;
+- competitor price gap invariato;
+- confidence interval sul contribution margin ancora ampio.
+
+Il guardrail originario era:
+
+```text
+conversion delta non oltre -3%
+```
+
+### Compito
+
+1. Il guardrail è stato superato materialmente o siamo troppo vicini alla soglia per dirlo?
+2. Quale switching value conta di più?
+3. Quale nuova informazione compreresti?
+4. Continueresti, fermeresti o restringeresti il pilot?
+5. Aggiorna il Decision Record senza riscrivere retroattivamente quello originale.
+
+---
+
+## Esercizio 10 — Decision Record completo
+
+Scegli un problema reale o simulato e compila:
+
+```text
+Decision
+Owner + deadline
+Objective + constraints
+Alternatives incl. BAU
+Evidence + claim levels
+Key assumptions
+Dominant uncertainty
+Value + downside
+Non-monetizable impacts
+Reversibility
+Switching values
+Scenarios
+Pre-mortem
+Recommendation
+What would change our mind
+Chosen decision
+Guardrails / rollback
+Learning plan
+Review date
+```
+
+Il vincolo è che **recommendation e final decision devono essere distinguibili**.
+
+---
+
+## Esercizio 11 — Decision memo da una pagina
+
+Dopo aver compilato l'esercizio precedente, crea una sintesi da una pagina per il decision owner.
+
+Deve contenere soltanto:
 
 1. decisione richiesta;
-2. evidenza principale;
-3. alternative;
+2. alternative;
+3. evidenza che discrimina le alternative;
 4. raccomandazione;
-5. impatto atteso;
-6. principali assunzioni;
-7. incertezza;
-8. rischi;
-9. stop condition;
-10. data della review.
+5. upside/downside;
+6. incertezza decisiva;
+7. switching condition;
+8. guardrail;
+9. decisione richiesta oggi.
 
-Il vincolo è importante: **una pagina**.
+Non raccontare cronologicamente tutta l'analisi.
 
-Se non riesci a sintetizzare la decisione in una pagina, probabilmente non hai ancora separato ciò che è essenziale da ciò che è soltanto interessante.
+Il Capitolo 16 mostrerà come trasformare questo contenuto in una comunicazione executive ancora più efficace.
+
+---
 
 ## Chiusura del capitolo
 
-L'analisi non termina quando otteniamo un numero corretto.
+L'analisi non termina quando abbiamo prodotto un numero corretto.
 
-Termina quando quel numero entra in un processo decisionale coerente con:
+E non termina nemmeno quando abbiamo trovato una spiegazione interessante.
 
-- obiettivi;
-- alternative;
-- rischio;
-- incertezza;
-- reversibilità;
-- apprendimento.
+Termina quando abbiamo costruito un processo in cui:
 
-Il lavoro dell'analista non consiste nel eliminare l'incertezza.
+```text
+objective
+→ alternatives
+→ evidence
+→ uncertainty
+→ value/downside
+→ reversibility
+→ switching logic
+→ recommendation
+→ decision
+→ learning
+```
 
-Consiste nel ridurla abbastanza, rappresentarla correttamente e aiutare l'organizzazione a prendere una decisione migliore di quella che avrebbe preso senza l'analisi.
+sono espliciti abbastanza da poter essere discussi, approvati e rivisti.
 
-**Dati migliori non garantiscono decisioni migliori. Servono anche un processo migliore e persone capaci di usare l'evidenza senza fingere che il futuro sia certo.**
+Il lavoro dell'analista non consiste nell'eliminare l'incertezza.
+
+Consiste nel ridurla dove vale la pena, accettarla dove non è eliminabile e impedire che venga nascosta proprio nel momento in cui scegliamo.
+
+> **Dati migliori non garantiscono decisioni migliori. Una decisione migliora quando evidenza, alternative, rischio e condizioni per cambiare idea sono visibili prima che l'esito ci racconti una storia troppo semplice.**
