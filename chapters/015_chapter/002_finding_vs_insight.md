@@ -1,33 +1,61 @@
-## 15.1 Finding, insight e spiegazione: non sono la stessa cosa
+## 15.1 Finding, insight, explanation e implication: quattro livelli da non confondere
+
 Uno degli errori più comuni nel lavoro analitico è chiamare *insight* qualsiasi numero non ovvio.
 
-Ma un finding può essere sorprendente senza essere utile, e una spiegazione può essere plausibile senza essere dimostrata.
+Ma sorpresa, spiegazione e utilità decisionale sono proprietà diverse.
 
-## Tre livelli diversi
+### Livello 1 — Finding
 
-### 1. Finding
-
-> “La conversione desktop è stabile, quella mobile è scesa del 9%.”
+> “La conversion desktop è stabile; quella mobile è scesa del 9%.”
 
 Descrive il fenomeno.
 
-### 2. Insight
+### Livello 2 — Structure / localization
 
-> “Il calo mobile è concentrato sulle sessioni che usano il nuovo checkout e spiega circa il 78% della perdita di ordini.”
+> “Il calo mobile è concentrato sulle sessioni che attraversano il nuovo checkout e spiega circa il 78% della perdita di ordini.”
 
-Collega il fenomeno alla struttura del problema.
+Localizza dove vive il fenomeno.
 
-### 3. Spiegazione causale
+### Livello 3 — Explanation hypothesis
 
-> “Il nuovo checkout ha causato il calo.”
+> “Il nuovo checkout potrebbe aver introdotto frizione.”
 
-Questa è un'affermazione più forte e richiede evidenza più forte.
+Propone un meccanismo compatibile con l'evidenza.
 
-Il fatto che un pattern sia utile per investigare non significa che sia già causale.
+### Livello 4 — Decision implication
 
-## Caso realistico: il canale che sembrava “peggiore”
+> “Poiché il problema è concentrato in un flusso reversibile e ad alta esposizione, conviene congelare il rollout e testare il vecchio checkout come controllo.”
 
-Un e-commerce confronta la repeat purchase rate a 90 giorni per canale di acquisizione:
+Collega l'evidenza a una scelta.
+
+Questa sequenza evita due salti pericolosi:
+
+```text
+pattern → causa
+pattern → azione
+```
+
+senza aver esplicitato né il livello di evidenza né le alternative.
+
+### Insight come compressione decisionale
+
+In questo libro useremo *insight* in senso operativo:
+
+> **un insight è una sintesi dell'evidenza che modifica in modo materiale la rappresentazione del problema e quindi lo spazio delle decisioni plausibili.**
+
+Non deve essere sempre causale.
+
+Deve però rispondere almeno a una di queste domande:
+
+- dove è concentrato il valore o il rischio?
+- quale popolazione è diversa da quella che credevamo?
+- quale assunzione precedente non regge?
+- quale alternativa diventa più o meno attraente?
+- quale ulteriore informazione vale la pena raccogliere?
+
+### Caso simulato/composito — Paid Social sembrava il canale peggiore
+
+Un e-commerce confronta repeat purchase a 90 giorni:
 
 | Canale | Repeat rate |
 |---|---:|
@@ -36,55 +64,150 @@ Un e-commerce confronta la repeat purchase rate a 90 giorni per canale di acquis
 | Paid Search | 27% |
 | Paid Social | 19% |
 
-Il finding è chiaro: Paid Social ha retention peggiore.
+Il finding è chiaro:
 
-La conclusione immediata sarebbe ridurre il budget.
+> Paid Social ha la repeat rate più bassa.
 
-Ma il team segmenta per tipo di cliente e scopre che Paid Social porta una quota molto più alta di first-time category buyers, clienti che storicamente hanno retention più bassa in tutti i canali.
+Una possibile decisione immediata sarebbe tagliare il budget.
+
+Il team segmenta però per tipo di cliente e scopre che Paid Social porta una quota molto più alta di **first-time category buyers**, che hanno retention inferiore in tutti i canali.
 
 Dopo standardizzazione per mix, il gap si riduce fortemente.
 
-Il finding non scompare.
+Il finding non sparisce.
 
-Cambia il significato.
+Cambia il suo significato.
 
-L'insight diventa:
+Prima:
 
-> “Paid Social acquisisce un mix di clienti strutturalmente più difficile da trattenere; la performance del canale va valutata separando qualità del traffico, composizione del pubblico e activation post-acquisto.”
+> “Paid Social acquisisce clienti peggiori.”
 
-Questo produce una decisione molto diversa da:
+Dopo:
 
-> “Paid Social non funziona.”
+> “Una parte importante del gap di retention dipende dal mix di clienti acquisiti. La decisione sul budget deve separare channel execution, audience composition e activation post-acquisto.”
 
-## Il test dell'insight
+Il secondo insight apre tre alternative differenti:
 
-Un possibile test è chiedere:
+```text
+A — ridurre Paid Social
+B — cambiare targeting
+C — cambiare activation per quel mix di clienti
+```
 
-**Se questa informazione fosse falsa, cambierebbe la decisione?**
+Il valore non è aver trovato una frase più sofisticata.
 
-Se la risposta è no, probabilmente stiamo descrivendo qualcosa di interessante ma non decision-relevant.
+È aver evitato una falsa scelta binaria.
 
-Un secondo test:
+### Materialità: un pattern può essere vero e irrilevante
 
-**Quale comportamento o scelta cambia grazie a questa informazione?**
+Supponiamo di trovare:
 
-Se non sappiamo rispondere, l'analisi potrebbe essere ancora incompleta.
+```text
+conversion:
+3,842% → 3,807%
+```
 
-## Gli insight automatici non sono decisioni automatiche
+Statisticamente il delta può anche essere preciso.
 
-Strumenti moderni possono trovare automaticamente trend, anomalie e correlazioni. La documentazione Power BI, per esempio, descrive funzionalità di Insights che analizzano report e visualizzazioni per evidenziare trend, anomalie e pattern interessanti.
+Ma se produce €4.000 di impatto annuo in un business da miliardi e richiede tre mesi di engineering, non è un insight prioritario.
 
-Fonte pubblica: https://learn.microsoft.com/en-us/power-bi/explore-reports/end-user-insight-types
+Ogni finding dovrebbe quindi passare un **materiality check**:
 
-Queste funzionalità sono utili per discovery.
+```text
+quanto cambia il KPI?
+quanta popolazione coinvolge?
+quale valore/rischio economico rappresenta?
+quanto è persistente?
+quanto è azionabile?
+```
 
-Ma trovare un pattern non risolve automaticamente:
+Materialità non significa soltanto euro.
 
-- se il pattern è materialmente importante;
-- se è stabile;
-- se dipende dal mix;
-- se è causale;
-- se è azionabile;
-- se il costo dell'intervento è giustificato.
+Può includere:
 
-> **L'automazione può aumentare il numero di finding. Il lavoro dell'analista è aumentarne la qualità decisionale.**
+- compliance;
+- sicurezza;
+- customer harm;
+- reputazione;
+- rischio operativo;
+- fairness;
+- strategia.
+
+### Il decision-relevance test
+
+Per ogni candidate insight chiediamo:
+
+> **Se questa informazione fosse falsa, quale decisione cambierebbe?**
+
+Se nessuna scelta cambia, potrebbe essere un finding interessante ma non decision-relevant.
+
+Poi chiediamo:
+
+> **Quale alternativa guadagna o perde credibilità grazie a questa evidenza?**
+
+Se non sappiamo rispondere, siamo probabilmente ancora nella fase esplorativa.
+
+### Un insight deve trasportare il proprio claim level
+
+Il Capitolo 14 ha introdotto la disciplina del claim.
+
+La stessa vale qui.
+
+Esempio:
+
+```text
+finding:
+refund rate +2,1 pp
+
+localization:
+82% del delta in due seller
+
+hypothesis:
+catalog quality deterioration
+
+causal status:
+non identificato
+
+decision implication:
+sospendere temporaneamente autopublish per quei seller e testare QC
+```
+
+Non serve trasformare l'ipotesi in causa per proporre una mitigazione reversibile.
+
+Serve però essere chiari su ciò che sappiamo e ciò che stiamo usando come working hypothesis.
+
+### Insight automatici: discovery, non decision authority
+
+Strumenti moderni possono trovare automaticamente trend, anomalie e pattern.
+
+La documentazione Power BI, per esempio, descrive funzionalità di Insights che cercano pattern nelle visualizzazioni.
+
+Fonte: https://learn.microsoft.com/en-us/power-bi/explore-reports/end-user-insight-types
+
+Queste funzioni aumentano la velocità di discovery.
+
+Non risolvono automaticamente:
+
+- materialità;
+- stabilità;
+- composizione;
+- causalità;
+- actionability;
+- economics;
+- alternative.
+
+### Campo del Decision Record
+
+Ogni insight che entra nella decisione dovrebbe essere sintetizzato così:
+
+```text
+finding:
+materiality:
+where concentrated:
+what changed in our understanding:
+claim level:
+key alternative explanation:
+decision implication:
+```
+
+> **L'automazione può aumentare il numero di finding. Il lavoro dell'analista è trasformare pochi finding in informazione che cambia davvero lo spazio delle scelte.**
