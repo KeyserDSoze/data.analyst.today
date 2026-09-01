@@ -1,104 +1,165 @@
-## 10.13 Feature importance e interpretabilità: capire cosa usa il modello senza inventare causalità
+## 10.13 Feature importance e interpretabilità: spiegare il modello, non inventare una leva
 
-Quando un modello produce buone previsioni, la domanda successiva arriva quasi sempre:
+Quando un modello funziona bene, la domanda successiva è quasi inevitabile:
 
-> quali variabili contano di più?
+> **perché ha assegnato questo score?**
 
-È una domanda legittima, ma pericolosa se viene interpretata male.
+Oppure:
 
-### Feature importance non significa causa
+> **quali informazioni usa di più?**
 
-Se una variabile è molto importante per il modello, significa che contribuisce alla sua capacità predittiva.
+Sono domande utili. Ma non sono equivalenti a:
 
-Non significa automaticamente che modificare quella variabile cambierà il risultato.
+> **che cosa dovremmo cambiare per modificare l'outcome?**
 
-Un esempio semplice: nei modelli di churn, il numero di chiamate al supporto può essere altamente predittivo.
+La prima coppia riguarda interpretabilità predittiva. L'ultima riguarda causalità e intervento.
 
-Ma ridurre artificialmente il numero di chiamate non elimina necessariamente il problema del cliente. Potrebbe soltanto nascondere il segnale.
+### Caso simulato/composito — NovaBank
 
-### Caso simulato: NovaBank e la variabile “numero di contatti”
+NovaBank prevede chiusura del conto entro 60 giorni.
 
-NovaBank costruisce un modello per prevedere quali clienti chiuderanno il conto nei prossimi 60 giorni.
+Le feature più informative nel modello sono:
 
-Le feature più importanti risultano:
-
-1. numero di contatti al call center;
-2. riduzione del saldo medio;
-3. numero di login nell'app;
-4. reclami aperti;
-5. anzianità cliente.
+1. contatti al call center;
+2. riduzione del saldo;
+3. reclami aperti;
+4. riduzione dei login;
+5. tenure.
 
 Il responsabile operations propone:
 
-> “Se i contatti al call center aumentano il churn, riduciamo il numero di contatti.”
+> "Riduciamo i contatti al call center: è la feature più importante del churn."
 
-Il ragionamento confonde previsione e causalità.
+Il modello non sostiene questa conclusione.
 
-I contatti potrebbero essere semplicemente un sintomo di problemi già esistenti.
+I contatti possono essere una conseguenza di problemi già esistenti. Sono utili per anticipare il rischio, non necessariamente una leva da ridurre.
 
-### Permutation importance
+Il Capitolo 8 ci dà il linguaggio corretto: **feature predictive importance ≠ treatment effect**.
 
-Una tecnica utile consiste nel misurare quanto peggiora la performance del modello quando i valori di una feature vengono rimescolati.
+### Prima regola: valutare il modello prima dell'importance
 
-Se permutare una variabile distrugge una parte importante della performance, il modello dipende molto da quella feature.
+Scikit-learn sottolinea un punto spesso dimenticato: feature importance su un modello che generalizza male è poco utile.
 
-La documentazione ufficiale di scikit-learn sottolinea però due punti fondamentali:
+Prima chiediamo:
 
-- l'importanza è relativa a **quel modello** e a **quella metrica**;
-- è preferibile calcolarla su dati held-out se vogliamo capire quali feature contribuiscono alla generalizzazione.
+> il modello predice davvero fuori campione?
+
+Solo dopo:
+
+> quali feature contribuiscono a quella performance?
 
 Fonte: https://scikit-learn.org/stable/modules/permutation_importance.html
 
-### Caso pubblico documentato: feature casuali nel Titanic esteso
+### Permutation importance
 
-Nella documentazione scikit-learn sulla permutation importance viene mostrato un esempio con un dataset Titanic arricchito da feature casuali. L'esempio evidenzia anche un limite delle impurity-based importances degli alberi: feature ad alta cardinalità possono apparire artificialmente importanti, mentre la permutation importance su dati held-out è più utile per capire il contributo alla performance fuori dal training set.
+La permutation importance misura quanto peggiora una metrica quando una feature viene rimescolata, rompendo il rapporto che il modello stava usando.
 
-Questo è un ottimo esempio di un principio generale:
+Se la performance scende molto, quella feature è importante **per quel modello, su quel dataset e rispetto a quella metrica**.
 
-> una feature può sembrare importante perché il modello l'ha usata per adattarsi al training set, non perché sia davvero informativa nel mondo reale.
+Queste condizioni devono essere parte della frase.
 
-### Feature correlate
+Un'importance calcolata sul training set può premiare feature che aiutano l'overfitting. Per capire il contributo alla generalizzazione è spesso più informativo calcolarla su validation/test appropriato.
 
-Quando due variabili contengono informazione simile, l'importanza può distribuirsi in modo instabile.
+### Caso reale documentato — Titanic con feature casuali
 
-Per esempio:
+La documentazione scikit-learn aggiunge al dataset Titanic feature casuali e confronta importance degli alberi basata su impurity con permutation importance.
 
-- spesa ultimi 30 giorni;
-- spesa ultimi 28 giorni;
-- numero ordini ultimi 30 giorni;
-- valore medio ordine.
+Le impurity-based importance possono attribuire peso elevato a feature ad alta cardinalità anche quando non hanno vero valore predittivo fuori campione.
 
-Se sono molto correlate, rimuovere o permutare una può lasciare alle altre abbastanza informazione da compensare.
+Permutation importance calcolata su dati held-out rende più evidente il problema.
 
-Quindi una bassa importance individuale non implica necessariamente inutilità concettuale.
+Fonte: https://scikit-learn.org/stable/modules/permutation_importance.html
 
-### Interpretabilità locale e globale
+La lezione non è che una tecnica sia sempre "vera" e l'altra "falsa". È che ogni importance misura qualcosa di specifico e deve essere interpretata nel contesto della generalizzazione.
 
-È utile distinguere:
+### Feature correlate: l'informazione può essere condivisa
 
-- **interpretabilità globale**: quali pattern usa mediamente il modello;
-- **interpretabilità locale**: perché un singolo caso ha ricevuto un certo punteggio.
+Supponiamo che il modello usi:
 
-In ambito credito, frodi o customer service, questa distinzione è importante perché la domanda può essere diversa:
+- revenue 30d;
+- orders 30d;
+- AOV 30d;
+- revenue 28d.
 
-- “Quali variabili guidano il modello in generale?”
-- “Perché questo cliente specifico ha ricevuto score 0,87?”
+Se permutiamo una feature, le altre possono conservare molta informazione equivalente.
 
-### Metodo operativo
+L'importance individuale può quindi essere bassa anche se il **gruppo concettuale** è fondamentale.
 
-Quando presenti feature importance:
+Viceversa, con feature ridondanti, coefficienti o ranking di importance possono cambiare molto tra retraining pur lasciando performance quasi invariata.
 
-1. specifica quale tecnica hai usato;
-2. indica su quale dataset è stata calcolata;
-3. ricorda che è model-dependent;
-4. controlla feature correlate;
-5. non trasformare importanza predittiva in causalità;
-6. collega sempre l'interpretazione a una domanda business concreta.
+Per questo può essere utile analizzare:
 
-La frase corretta è:
+- gruppi di feature;
+- correlazioni;
+- stabilità delle importance tra periodi/fold;
+- performance dopo ablation di un intero gruppo.
 
-> “Il modello usa molto questa informazione per prevedere.”
+### Interpretabilità globale e locale
+
+**Globale** risponde a domande come:
+
+- quali informazioni sostengono maggiormente il ranking complessivo?
+- quali pattern usa mediamente il modello?
+
+**Locale** risponde a:
+
+- perché questo account ha score 0,87?
+- quali feature hanno contribuito maggiormente a questo caso?
+
+Un explanation locale è particolarmente utile per:
+
+- debugging;
+- review umana;
+- supporto operativo;
+- controlli di plausibilità.
+
+Ma anche una spiegazione locale descrive il comportamento del modello. Non è automaticamente una prescrizione causale.
+
+### Actionability: un terzo concetto ancora diverso
+
+Una feature può essere:
+
+- molto predittiva e non modificabile, come tenure;
+- modificabile ma non causalmente efficace;
+- causalmente importante ma poco predittiva individualmente;
+- sia predittiva sia una leva plausibile.
+
+Conviene quindi non chiamare automaticamente le feature importanti "drivers".
+
+Una tabella più rigorosa può essere:
+
+| Feature/gruppo | Predictive importance | Modificabile? | Evidenza causale? | Uso |
+|---|---|---|---|---|
+| failed payments | alta | parzialmente | da verificare | risk signal |
+| tenure | media | no | non rilevante | segmentation/risk |
+| response time support | media | sì | esperimento disponibile | possibile leva |
+
+Questa struttura impedisce di passare direttamente dal modello alla strategia.
+
+### Interpretability drift
+
+Se le feature importance cambiano molto nel tempo possiamo avere:
+
+- nuovo comportamento della popolazione;
+- cambi di feature engineering;
+- sostituzione tra feature correlate;
+- concept drift;
+- retraining instability.
+
+Il cambio non è automaticamente un incidente, ma può essere un ottimo segnale diagnostico.
+
+### Regola di comunicazione
+
+Preferisci:
+
+> **"Su questo validation set, il modello perde maggiormente performance quando questa informazione viene rimossa o permutata."**
+
+oppure:
+
+> **"Per questo caso, queste feature contribuiscono maggiormente allo score secondo il metodo di explanation adottato."**
 
 Non:
 
-> “Questa variabile causa il risultato.”
+> "Questa è la causa principale dell'outcome."
+
+> **Interpretare un modello significa capire come costruisce la previsione. Decidere che cosa cambiare nel mondo richiede un'altra catena di evidenza.**
