@@ -1,58 +1,101 @@
-## 4.4 Istogrammi e forma dei dati
+## 4.4 Istogrammi e forma: vedere ciò che le statistiche comprimono
 
-Una tabella di statistiche riassuntive può nascondere strutture importanti. Un istogramma mostra invece come le osservazioni si distribuiscono lungo l'intervallo dei valori.
+Media, mediana e percentili sono sintesi utili. Ma nessuna di queste statistiche, da sola, ci mostra **come** le osservazioni occupano lo spazio dei valori.
 
-### Caso: lo scontrino medio nasconde due clienti diversi
+L'istogramma serve proprio a questo: divide la scala in intervalli e mostra quante osservazioni cadono in ciascuno.
 
-Una catena retail osserva uno scontrino medio di 47,80 euro.
+NIST include gli istogrammi tra le tecniche fondamentali dell'EDA e mostra come forme differenti — simmetriche, asimmetriche, bimodali, a coda lunga — richiedano interpretazioni differenti.[^nist-hist]
+
+### Caso simulato/composito — Lo scontrino medio che non descrive quasi nessuno
+
+Una catena retail osserva un average basket value di **47,80 euro**.
 
 Il management immagina un cliente tipico che spende circa 50 euro.
 
-L'istogramma racconta un'altra storia.
+L'istogramma mostra invece due concentrazioni:
 
-Emergono due picchi distinti:
-
-- un gruppo molto numeroso tra 15 e 30 euro;
+- molti acquisti tra 15 e 30 euro;
 - un secondo gruppo tra 75 e 110 euro.
 
-La distribuzione è bimodale.
+La distribuzione è **bimodale**.
 
-Un'analisi successiva mostra che il primo gruppo è composto soprattutto da clienti che acquistano prodotti di consumo quotidiano; il secondo da clienti che acquistano bundle e prodotti premium.
+Approfondendo, emerge che il primo gruppo acquista soprattutto prodotti di consumo ricorrente, mentre il secondo compra bundle e linee premium.
 
-La media di 47,80 euro descrive bene il totale contabile, ma male entrambi i comportamenti reali.
+La media è corretta come rapporto tra ricavi e numero di ordini. Ma descrive male entrambi i comportamenti.
 
-### Le forme da riconoscere
+La forma della distribuzione suggerisce quindi una nuova domanda:
 
-Un analista dovrebbe imparare a riconoscere almeno:
+> stiamo osservando una popolazione unica o due processi di acquisto differenti mescolati insieme?
 
-- distribuzioni simmetriche;
-- distribuzioni con coda a destra;
-- distribuzioni con coda a sinistra;
-- distribuzioni bimodali o multimodali;
-- distribuzioni troncate;
-- concentrazioni artificiali su valori specifici;
-- heaping, cioè accumuli anomali su numeri tondi.
+### Forme che vale la pena riconoscere
 
-### Heaping: quando i dati raccontano come sono stati raccolti
+**Simmetrica**
 
-In un'indagine interna, molti dipendenti dichiarano di lavorare esattamente 40, 45 o 50 ore a settimana.
+Media e mediana tendono a essere vicine e le code sono relativamente bilanciate.
 
-Questo non significa necessariamente che gli orari siano davvero così precisi.
+**Asimmetrica a destra**
 
-Può indicare che le persone stanno arrotondando mentalmente.
+Molte osservazioni piccole o moderate e pochi valori molto grandi. Ricavi per cliente, importi di ordine e durata di ticket spesso hanno questa forma.
 
-La distribuzione ci sta quindi parlando non soltanto del fenomeno, ma anche del processo di misurazione.
+**Asimmetrica a sinistra**
 
-### Scegliere i bin
+La coda più lunga si trova verso i valori bassi.
 
-Un istogramma può cambiare aspetto in funzione dell'ampiezza dei bin. Bin troppo larghi nascondono struttura; bin troppo stretti enfatizzano rumore casuale.
+**Bimodale o multimodale**
 
-Per questo la visualizzazione non va trattata come decorazione. È una scelta analitica.
+Più picchi possono indicare segmenti, regimi o processi differenti.
 
-### Domanda pratica
+**Troncata**
 
-Quando una distribuzione mostra due o più modalità, chiedersi:
+La distribuzione sembra interrompersi artificialmente. Potrebbe esistere una soglia di processo, una regola di censura o un limite di misurazione.
 
-**"Sto osservando una sola popolazione o più popolazioni mescolate?"**
+**Heaping**
 
-Questa domanda porta spesso direttamente alla segmentazione.
+Le osservazioni si accumulano su valori tondi o preferiti.
+
+### Heaping: quando la distribuzione racconta come è stato raccolto il dato
+
+In una survey interna molti dipendenti dichiarano di lavorare esattamente 40, 45 o 50 ore settimanali.
+
+Non dobbiamo concludere automaticamente che gli orari reali siano così discretizzati.
+
+Potrebbe esserci arrotondamento mentale.
+
+La distribuzione sta quindi descrivendo contemporaneamente:
+
+- il fenomeno;
+- il modo in cui il fenomeno è stato misurato o ricordato.
+
+La Data Readiness Review del Capitolo 3 ci aiuta a distinguere i problemi noti di misurazione; l'EDA può far emergere strutture che non avevamo anticipato.
+
+### I bin sono una scelta analitica
+
+Lo stesso dataset può apparire molto diverso con intervalli differenti.
+
+Bin troppo larghi possono cancellare bimodalità e code. Bin troppo stretti possono trasformare il rumore campionario in una sequenza di picchi apparentemente significativi.
+
+Per questo non dovremmo interpretare una forma senza verificare che sia ragionevolmente stabile rispetto a scelte sensate dei bin.
+
+### Non usare l'istogramma come test di normalità
+
+L'istogramma aiuta a vedere asimmetria, code e modalità, ma non deve diventare un rituale del tipo:
+
+> "se non sembra una campana, il dato è sbagliato".
+
+Molti fenomeni di business non sono affatto normali e non hanno alcun motivo per esserlo.
+
+Il compito dell'EDA è descrivere la struttura osservata, non forzarla verso una forma desiderata.
+
+### Dalla forma alla prossima domanda
+
+Una distribuzione interessante dovrebbe generare domande come:
+
+- quali segmenti producono i diversi picchi?
+- la coda dipende da pochi clienti o da un'intera categoria?
+- il limite osservato deriva da una regola del processo?
+- la forma è stabile nel tempo?
+- media e mediana stanno raccontando esperienze diverse?
+
+> **La distribuzione è il fenomeno. Le statistiche descrittive sono viste parziali della distribuzione.**
+
+[^nist-hist]: NIST/SEMATECH, *Histogram*. https://www.itl.nist.gov/div898/handbook/eda/section3/histogra.htm
