@@ -1,108 +1,163 @@
-## 13.4 BI e semantic layer: quando il risultato deve diventare condiviso
-Una buona analisi può vivere in un notebook. Una buona metrica aziendale, invece, spesso deve vivere in un sistema condiviso.
+## 13.4 BI: scegliere una superficie di consumo quando la domanda si stabilizza
 
-Gli strumenti di Business Intelligence entrano in gioco quando il problema non è più soltanto analizzare, ma distribuire una lettura coerente del business a molte persone.
+Il Capitolo 11 ha trattato la semantica delle metriche e il Capitolo 12 il serving layer dell'architettura.
 
-## 13.4.1 Dashboard non significa automaticamente BI matura
+Qui il problema è più semplice:
 
-È facile costruire un dashboard. È molto più difficile costruire un sistema di metriche affidabile.
+> **Quando un risultato deve smettere di essere un'analisi personale e diventare un'interfaccia ricorrente per altri utenti?**
 
-Un ambiente BI maturo richiede:
+È questo il momento in cui gli strumenti di Business Intelligence diventano particolarmente utili.
 
+### BI non è “fare grafici”
+
+Un dashboard è soltanto l'ultima superficie di una catena.
+
+Per essere utile nel tempo deve appoggiarsi a:
+
+- dati sufficientemente stabili;
 - definizioni condivise;
-- modello semantico;
-- relazioni coerenti;
+- refresh affidabile;
 - permessi;
-- refresh controllati;
-- metriche certificate;
-- lineage;
-- ownership.
+- ownership;
+- percorsi di drill-down coerenti.
 
-Il grafico è la parte visibile. La semantica è l'infrastruttura invisibile.
+Il motivo per scegliere BI non è quindi la disponibilità di visualizzazioni.
 
-## 13.4.2 Caso realistico: cinque dashboard, cinque conversion rate
+È la necessità di **distribuire una domanda ricorrente**.
 
-Un'azienda SaaS ha cinque dashboard create da team diversi.
+### Caso simulato/composito — il sesto dashboard non risolve cinque conversion rate
 
-Il conversion rate varia tra 7,4% e 11,8%.
+Un SaaS ha cinque dashboard con conversion rate tra 7,4% e 11,8%.
 
-Le differenze derivano da definizioni diverse:
+Ogni team usa un denominatore diverso:
 
-- lead creati;
-- lead qualificati;
-- opportunity create;
-- trial started;
-- account con almeno un utente attivo.
+- lead;
+- qualified lead;
+- opportunity;
+- trial;
+- activated account.
 
-Nessun grafico è tecnicamente rotto. È il linguaggio del business a non essere condiviso.
+La tentazione è creare un dashboard executive “ufficiale”.
 
-La soluzione non è costruire un sesto dashboard. Serve un semantic layer.
+Ma se le definizioni non vengono prima separate e nominate, il sesto dashboard aggiunge un altro numero al conflitto.
 
-## 13.4.3 Il semantic layer come contratto analitico
+La soluzione può essere:
 
-Il semantic layer traduce strutture tecniche in concetti utilizzabili dal business.
+```text
+lead_to_opportunity_conversion
+trial_to_activation_conversion
+checkout_to_paid_conversion
+```
 
-Può definire:
+con owner e significato dichiarati.
 
-- Revenue Netta;
-- Cliente Attivo;
-- Churn;
-- Gross Margin;
-- Conversion Rate;
-- Retention D30;
-- ARR;
-- NRR.
+BI serve poi a distribuire queste metriche. Non a inventarne il significato.
 
-Queste definizioni diventano riusabili e riducono la duplicazione della logica.
+### La domanda deve essere abbastanza stabile
 
-## 13.4.4 Self-service non significa «ognuno calcola quello che vuole»
+Un errore frequente è industrializzare troppo presto una fase diagnostica.
 
-Il vero self-service analytics separa due livelli:
+### Caso simulato/composito — dashboard per un'indagine che cambia ogni giorno
 
-**governed core**
+Strategy deve capire un calo di contribution margin.
 
-- dati certificati;
-- dimensioni condivise;
-- metriche ufficiali;
-- controlli di accesso;
+Il primo giorno guarda mix e sconti.
 
-**exploration layer**
+Il secondo emergono freight e resi.
 
-- filtri;
-- segmentazioni;
-- drill-down;
-- analisi ad hoc;
-- prototipi.
+Il terzo servono FX, marketplace fee e nuove cohort.
 
-Il self-service funziona quando gli utenti possono esplorare senza dover reinventare la semantica.
+Se costruiamo subito un dashboard formalizzato, ogni nuova ipotesi diventa una modifica al prodotto BI.
 
-## 13.4.5 Quando usare la BI
+In una fase del genere è spesso più efficiente:
 
-La BI è appropriata quando:
+```text
+SQL / notebook → investigazione
+                 ↓
+          pattern stabile
+                 ↓
+           BI / monitoraggio
+```
 
-- il consumo è ricorrente;
-- molte persone usano gli stessi KPI;
-- serve monitoraggio continuo;
-- devono esistere permessi e governance;
-- il risultato deve essere aggiornato automaticamente;
-- il consumo è soprattutto visuale e interattivo.
+> **La BI industrializza una domanda. Non dovrebbe essere il costo di scoprire quale domanda dobbiamo fare.**
 
-È meno adatta come ambiente principale quando l'analisi è ancora fortemente esplorativa, statistica o sperimentale.
+### Self-service: libertà sul consumo, non anarchia sulla definizione
 
-## 13.4.6 Caso realistico: il dashboard usato per una domanda che cambia ogni giorno
+Un buon ambiente self-service consente agli utenti di:
 
-Un team Strategy chiede un dashboard per investigare un calo improvviso della redditività.
+- filtrare;
+- segmentare;
+- cambiare periodo;
+- esplorare dimensioni;
+- fare drill-down;
 
-Ogni giorno emergono nuove ipotesi:
+senza dover ricostruire da zero:
 
-- mix prodotto;
-- sconti;
-- freight;
-- resi;
-- FX;
-- nuovi clienti;
-- marketplace fees.
+- numeratori;
+- denominatori;
+- calendario;
+- identity logic;
+- filtri fondamentali.
 
-Costruire subito un dashboard formalizzato rallenta l'indagine. È più efficiente esplorare prima con SQL/notebook e costruire il dashboard solo quando le metriche e i percorsi diagnostici si stabilizzano.
+Questo è il confine tra **exploration** e **semantic ownership**.
 
-> **La BI è eccellente per industrializzare una domanda stabile. È meno adatta per scoprire quale sia la domanda giusta.**
+### Quando BI è una buona scelta
+
+BI è particolarmente sensata quando:
+
+- la domanda è ricorrente;
+- il pubblico è ampio o non tecnico;
+- gli stessi KPI vengono consultati ripetutamente;
+- serve refresh automatico;
+- servono permessi e distribuzione controllata;
+- la visualizzazione/interazione è parte del prodotto;
+- il dato deve essere consumato senza scrivere codice.
+
+È meno naturale come ambiente principale per:
+
+- ricerca metodologica;
+- analisi una tantum;
+- simulazioni sofisticate;
+- domande ancora instabili;
+- debugging profondo del dato.
+
+### Dashboard as product, non dashboard as archive
+
+Quando scegliamo BI, una domanda utile è:
+
+> quale comportamento vogliamo rendere più facile?
+
+Per esempio:
+
+```text
+Operations → vedere eccezioni e agire
+Sales      → prioritizzare account
+Finance    → monitorare actual vs plan
+Executive  → capire scostamento e decisione richiesta
+```
+
+Se il dashboard contiene “tutto ciò che potremmo mostrare”, probabilmente non abbiamo ancora definito bene il prodotto.
+
+Il Capitolo 16 entrerà nel design visuale. Qui ci interessa il **fit dello strumento rispetto al consumo**.
+
+### Campo del Tooling Decision Record
+
+Per una soluzione BI annotiamo:
+
+```text
+recurring question:
+consumer personas:
+usage frequency:
+certified metrics required:
+interaction needed:
+refresh / freshness:
+access model:
+ownership:
+upstream source of truth:
+exploratory needs kept outside BI:
+exit / redesign condition:
+```
+
+### Regola operativa
+
+> **Scegli BI quando devi rendere economico e coerente il consumo ripetuto di una domanda abbastanza stabile. Non costruire un dashboard per evitare di fare prima l'analisi.**
