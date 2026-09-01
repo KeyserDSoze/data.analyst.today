@@ -43,14 +43,14 @@ La CI costruisce automaticamente Markdown aggregato, DOCX e PDF a ogni modifica 
 
 ### Ultima build validata
 
-Dopo la revisione editoriale dei Capitoli 0–5:
+Dopo la revisione editoriale dei Capitoli 0–6:
 
 - **20 capitoli**;
 - **321 file Markdown**;
-- **180.385 parole stimate**;
-- **1.297.633 caratteri**;
-- **123 URL esterni distinti**;
-- **794 pagine PDF**;
+- **184.963 parole stimate**;
+- **1.332.216 caratteri**;
+- **127 URL esterni distinti**;
+- **816 pagine PDF**;
 - build Markdown, DOCX e PDF completata con successo.
 
 Il numero di pagine non è una metrica editoriale da massimizzare. Può salire o scendere durante la revisione: alcuni passaggi vengono compressi perché ridondanti, altri vengono resi più chiari con esempi, tabelle, casi operativi e fonti reali più forti.
@@ -94,9 +94,9 @@ La struttura è valida e le sorgenti risultano normalizzate.
 
 Resta **un solo warning globale**:
 
-- notazione matematica/LaTeX presente in **19 file**, da gestire nella pipeline tipografica.
+- notazione matematica/LaTeX presente in **14 file**, da gestire nella pipeline tipografica.
 
-Il numero è sceso progressivamente da 25 a 19 durante la revisione: formule semplici sono state rese leggibili in notazione testuale quando il typesetting non aggiungeva valore; le formule che hanno reale funzione didattica restano invece in sorgente matematica.
+Il numero è sceso progressivamente da 25 a 14 durante la revisione: formule semplici sono state rese leggibili in notazione testuale quando il typesetting non aggiungeva valore; le formule che hanno reale funzione didattica restano invece in sorgente matematica.
 
 Per una release candidata:
 
@@ -158,6 +158,7 @@ Ogni caso reale importante deve avere:
 - Il Capitolo 3 usa il Government Data Quality Framework britannico e include il Mars Climate Orbiter come caso reale documentato sulla semantica delle unità.
 - Il Capitolo 4 usa NIST per EDA, scatter plot, time series, smoothing e box plot; include il quartetto di Anscombe e il caso Berkeley 1973 per composizione e Simpson's paradox.
 - Il Capitolo 5 usa NIST per distribuzioni, CLT e confidence intervals; AAPOR per sampling, margin of sampling error e fonti di errore nelle survey; ASA per l'interpretazione del p-value; include il **Literary Digest 1936** come caso reale documentato sul fallimento di una grande numerosità ottenuta con un meccanismo di selezione inadeguato.
+- Il Capitolo 6 usa Duolingo Q4/FY 2024 come caso reale documentato di engagement/retention, Canal+ per segmentazione comportamentale e retention, Microsoft Learn per cohort analysis, Google Analytics per funnel aperti/chiusi e sequenza degli step, Stripe per churn involontario/revenue recovery e NIST per survival, hazard e censoring.
 
 ### Da fare prima della release
 
@@ -189,7 +190,8 @@ Obiettivo della revisione:
 | 3 — Capire il dato prima di analizzarlo | **Revisionato** | Indagine di data readiness: record/grain → identità → tempo → qualità → missing/duplicati/outlier → unità → profiling → lineage → riconciliazione → contract/check automatici → verdetto **PRONTO / CON CAVEAT / NON PRONTO**. Caso ProntoVeloce e Mars Climate Orbiter. |
 | 4 — Statistica descrittiva ed Exploratory Data Analysis | **Revisionato** | Processo di controllo dell'interpretazione: centro → dispersione → code/forma → confronti/Simpson → relazioni → tempo → sensitivity → denominatori/comparabilità → caso MercatoHub. Deliverable: **EDA Evidence Map**. |
 | 5 — Probabilità, campionamento e incertezza | **Revisionato** | Rifondato come capitolo dell'incertezza. Distingue variabilità del processo e incertezza della stima; probabilità/condizionamento/dipendenza → distribuzioni/expected value/Bayes → sampling/sampling distribution/SE/CLT/CI → sample size → hypothesis test/p-value → Type I-II/power → materialità → multiple testing. Deliverable: **Uncertainty Brief**. Caso reale Literary Digest; ASA come riferimento centrale sul p-value. |
-| 6–19 | **Da revisionare** | Procedere in ordine, controllando anche sovrapposizioni inter-capitolo. |
+| 6 — Segmentazione, coorti e lifecycle analysis | **Revisionato** | Segmento = chi; coorte = quando/a quale età; funnel = dove; activation/TTV = primo valore; retention/survival = persistenza e momento fragile; churn = perdita di relazione/valore e involuntary churn; reactivation = ritorno vs recupero duraturo; cohort value/LTV = economics; prediction distinta da causalità/actionability. Deliverable: **Lifecycle Diagnostic Map**. Casi reali Duolingo e Canal+; Stripe e NIST come riferimenti operativi. |
+| 7–19 | **Da revisionare** | Procedere in ordine, controllando anche sovrapposizioni inter-capitolo. |
 
 ## 8. Sovrapposizioni concettuali da governare
 
@@ -231,6 +233,13 @@ Deliverable:
 
 **EDA Evidence Map → Uncertainty Brief**.
 
+### Capitolo 4 / 6 — segmentazione esplorativa vs lifecycle
+
+- **4:** segmentare per verificare se un pattern aggregato cambia tra sottogruppi;
+- **6:** segmentare per identificare popolazioni con traiettorie di activation, retention, churn o valore abbastanza diverse da richiedere diagnosi e azioni differenti.
+
+Regola: il Capitolo 6 non deve rispiegare la segmentazione come tecnica EDA generale.
+
 ### Capitolo 5 / 9 — inferenza vs experimentation
 
 - **5:** significato di effect size, CI, p-value, Type I/II, power, sample size e multiple testing;
@@ -247,6 +256,15 @@ Regola: il Capitolo 5 insegna a leggere l'evidenza; il 9 insegna a costruire un 
 
 - **5:** quantificare incertezza, effect size e precisione;
 - **15:** combinare evidenza, economia, scenari, expected value, soglie e reversibilità in una raccomandazione.
+
+### Capitolo 6 / 8 / 9 / 10 — lifecycle, causalità, intervento e prediction
+
+- **6:** localizzare dove il lifecycle differisce e distinguere rischio, valore e actionability;
+- **8:** identificare effetti causali e ragionare sul controfattuale;
+- **9:** testare interventi con esperimenti affidabili;
+- **10:** costruire e monitorare modelli predittivi.
+
+Regola: in Ch. 6 una feature associata a retention o churn è un segnale/ipotesi; non diventa automaticamente una leva causale.
 
 ### Capitolo 4 / 7 / 8 — tempo e causalità
 
@@ -267,17 +285,17 @@ La sequenza resta coerente:
 
 **mentalità → domanda → dati → statistica → comportamento → tempo → causalità → esperimenti → modelli → SQL → architettura → strumenti → AI → decisione → comunicazione → casi completi → scala → futuro**.
 
-Nei primi sei capitoli il percorso operativo è ora esplicito:
+Nei primi sette capitoli il percorso operativo è ora esplicito:
 
-**Analytical Brief → Data Readiness Review → EDA Evidence Map → Uncertainty Brief → analisi del lifecycle**.
+**Analytical Brief → Data Readiness Review → EDA Evidence Map → Uncertainty Brief → Lifecycle Diagnostic Map**.
 
-Il Capitolo 6 dovrà trasformare segmenti, coorti, funnel, activation, retention, churn e reactivation in un unico sistema di lettura del comportamento nel tempo, senza ripetere EDA generale né anticipare causalità e predictive modeling.
+Il Capitolo 6 trasforma segmenti, coorti, funnel, activation, retention, churn, survival, reactivation e LTV in un unico sistema di lettura del comportamento e del valore nel tempo, fermandosi intenzionalmente prima di attribuire causalità o costruire il modello predittivo.
 
 ## 10. Lunghezza
 
 La misura corrente viene dalla pipeline reale.
 
-Dopo i Capitoli 0–5 revisionati il PDF è di **794 pagine**. La revisione può quindi continuare liberamente a comprimere ripetizioni o ad ampliare esempi e casi che aumentano la comprensione senza alcun rischio rispetto all'obiettivo minimo di 400+ pagine.
+Dopo i Capitoli 0–6 revisionati il PDF è di **816 pagine**. La revisione può quindi continuare liberamente a comprimere ripetizioni o ad ampliare esempi e casi che aumentano la comprensione senza alcun rischio rispetto all'obiettivo minimo di 400+ pagine.
 
 L'obiettivo è massimizzare **densità di valore per pagina**, non il page count.
 
@@ -323,4 +341,4 @@ Poi controllo manuale di:
 
 Il contenuto principale del libro è strutturalmente completo.
 
-La revisione editoriale ha completato i **Capitoli 0–5**. Il lavoro successivo continua dal Capitolo 6, con il compito di unificare segmentazione, coorti, funnel, activation, retention, churn, survival, reactivation e LTV in una sola logica di **lifecycle analysis**.
+La revisione editoriale ha completato i **Capitoli 0–6**. Il lavoro successivo continua dal Capitolo 7, con il compito di separare chiaramente descrizione temporale, anomaly detection e forecasting, evitando sia di ripetere l'EDA del Capitolo 4 sia di trasformare una previsione in una spiegazione causale.
