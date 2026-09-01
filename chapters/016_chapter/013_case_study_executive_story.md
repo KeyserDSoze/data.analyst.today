@@ -1,159 +1,261 @@
-## 16.12 Caso studio: da dashboard confusa a decisione chiara
+## 16.12 Caso studio — Dalla dashboard di picco alla decisione sulla capacità
+
+**Caso simulato/composito.** Numeri, azienda e circostanze sono costruiti per la didattica.
+
 ## Il contesto
 
-BlueHarbor Foods è un'azienda alimentare omnicanale con circa €620 milioni di fatturato annuo.
+NorthRiver Logistics gestisce fulfilment e consegna per diversi retailer europei.
 
-Il team commerciale segnala che il margine del canale online è peggiorato negli ultimi due trimestri.
+A sei settimane dal picco natalizio, il team operations deve decidere se acquistare **capacità temporanea aggiuntiva da un carrier esterno**.
 
-La dashboard esistente contiene:
+Il contratto richiede un commitment minimo di €780.000.
 
-- revenue;
-- gross margin;
-- contribution margin;
-- ordini;
-- clienti;
-- CAC;
-- AOV;
-- resi;
-- promozioni;
-- costi logistici;
-- 11 filtri;
-- 9 tab.
+La domanda non è:
 
-Il management guarda la dashboard e conclude:
+> “Come sta andando la logistica?”
 
-> “Le promozioni stanno distruggendo il margine.”
+È:
 
-L'analyst riceve la richiesta di preparare una presentazione per decidere se ridurre gli sconti.
+> **“Dobbiamo comprare ora capacità aggiuntiva, e quanta?”**
 
-## Primo errore: partire dalla slide
+## Il Decision Record disponibile
 
-La tentazione è aprire PowerPoint e cercare il grafico migliore.
+L'analisi produce tre alternative:
 
-Ma il problema non è ancora visivo.
+### A — Nessuna capacità extra
 
-La domanda decisionale è:
+- costo incrementale: €0;
+- rischio elevato di backlog se il forecast supera P50;
+- alta esposizione a penali e ritardi.
 
-> “Ridurre le promozioni migliorerebbe abbastanza il contribution margin da compensare l'eventuale perdita di volume?”
+### B — Capacità extra per 18.000 pacchi/giorno
 
-Serve quindi scomporre il deterioramento.
+- commitment: €780k;
+- copertura sufficiente fino a uno scenario vicino a P80;
+- parte della capacità può restare inutilizzata nello scenario basso.
 
-## L'analisi
+### C — Capacità extra per 30.000 pacchi/giorno
 
-Il contribution margin passa dal 21,6% al 18,9%.
+- commitment: €1,24M;
+- copertura molto ampia;
+- rischio alto di overcapacity.
 
-La decomposition mostra:
+Recommendation analytics: **B**, con opzione di espansione contrattuale se due indicatori anticipatori superano soglia.
 
-- promozioni: -0,5 pp;
-- costo prodotto: -0,8 pp;
-- mix verso prodotti chilled: -0,7 pp;
-- last-mile logistics: -0,9 pp;
-- altri effetti: +0,2 pp.
+## La dashboard originale
 
-Le promozioni contribuiscono, ma non sono il driver principale.
+La pagina preparata per il COO contiene:
 
-Inoltre il maggiore sconto è concentrato su clienti ad alta frequenza, dove la riduzione promozionale potrebbe avere un impatto non banale sulla retention.
+- volumi giornalieri;
+- forecast per deposito;
+- forecast accuracy;
+- backlog;
+- cost per parcel;
+- carrier utilization;
+- SLA;
+- overtime;
+- staffing;
+- weather;
+- 13 filtri;
+- due mappe;
+- una tabella con 47 righe.
 
-## La prima visualizzazione
+Tutto è utile a qualcuno.
 
-Un waterfall mostra la transizione dal 21,6% al 18,9%.
+Il COO però non riesce a capire in pochi minuti se deve firmare il contratto da €780k.
 
-È molto più utile di cinque grafici separati perché risponde alla domanda:
+## Errore 1 — Mostrare il forecast senza la capacità
 
-> “Quali componenti spiegano il delta?”
+Il primo grafico mostra una previsione di picco a 162.000 pacchi/giorno.
 
-Il titolo non dice:
+Senza la linea di capacità interna, il numero non ha significato decisionale.
 
-> Contribution margin bridge
+La prima visualizzazione viene quindi ridisegnata:
 
-ma:
+- forecast centrale;
+- prediction interval P20–P80;
+- capacità interna affidabile: 148.000 pacchi/giorno;
+- capacità con opzione B: 166.000;
+- data limite per attivare il contratto.
 
-> **Logistica e mix spiegano circa il 59% del deterioramento del contribution margin**
+Titolo:
 
-## La seconda visualizzazione
+> **La capacità interna copre lo scenario centrale solo marginalmente; l'opzione B copre il picco fino a circa P80.**
 
-Uno small multiple confronta contribution margin e repeat rate per quattro segmenti di cliente.
+Il visual non dice “comprate B”. Mostra il trade-off che rende B plausibile.
 
-Il segmento più sensibile agli sconti mostra anche il repeat rate più alto.
+## Errore 2 — Nascondere l'asimmetria dei costi
 
-Questo non prova causalità, ma rende visibile il trade-off che deve essere testato.
+La dashboard originale mostra `cost per parcel`, ma non mostra quanto costano gli errori opposti.
 
-## La terza visualizzazione
+L'analisi stima:
 
-Un grafico di scenario mostra tre opzioni:
+### Under-capacity
 
-| Scenario | Riduzione promo | Impatto stimato CM | Rischio volume |
-|---|---:|---:|---|
-| A | nessuna | baseline | basso |
-| B | selettiva | +0,3–0,5 pp | medio-basso |
-| C | generalizzata | +0,7–1,0 pp | alto |
+Possibili effetti:
 
-L'analyst non presenta lo scenario C come “migliore” solo perché ha il massimo upside teorico.
+- penali SLA;
+- expedited shipping;
+- overtime;
+- cancellazioni;
+- customer support;
+- rischio reputazionale.
 
-Evidenzia che l'incertezza sul volume lo rende poco robusto.
+Nello scenario centrale alto, il costo incrementale stimato è €1,4M–€2,2M.
 
-## L'executive summary
+### Over-capacity
 
-La prima slide dice:
+Se la domanda resta bassa, parte del commitment da €780k non verrà utilizzata.
 
-> **Non raccomandiamo un taglio generalizzato delle promozioni. Le promozioni spiegano solo una parte del calo di margine; logistica e mix hanno un impatto maggiore. Proponiamo un test selettivo sugli sconti e un intervento separato sui costi last-mile.**
+Il downside è più visibile e contrattualmente limitato.
 
-Sotto:
+La seconda pagina executive mostra quindi **downside asimmetrico**, non altri KPI operativi.
 
-- contribution margin: 21,6% → 18,9%;
-- circa 59% del deterioramento associato a logistica + mix;
-- promozioni: circa 0,5 pp del delta;
-- rischio principale: danneggiare retention nei clienti ad alta frequenza;
-- next step: test controllato su segmenti selezionati.
+## Errore 3 — Forecast interval senza switching value
+
+Dire:
+
+> “Il P80 è 171.000 pacchi/giorno”
+
+non basta.
+
+Il Decision Record identifica il punto in cui B perde convenienza:
+
+> se il picco aggiornato atteso scende sotto circa 151.000 pacchi/giorno e i costi di under-capacity restano sotto la stima base, il commitment non è più giustificato.
+
+Questo valore entra nella Decision Communication Pack come **switching condition**.
+
+## Errore 4 — Nessuna data maturity
+
+Il forecast dipende anche dai preorder di tre retailer.
+
+Uno dei feed è incompleto e verrà riconciliato entro 36 ore.
+
+La prima dashboard non lo mostra.
+
+La nuova pagina dice:
+
+> **Forecast provisional: preorder retailer C completo all'82%; refresh finale atteso domani alle 18:00.**
+
+Il COO può quindi decidere se:
+
+- firmare subito;
+- negoziare un'opzione di 48 ore;
+- aspettare il feed finale.
+
+L'incertezza viene collegata alla reversibilità.
+
+## La Decision Communication Pack
+
+### Audience
+
+COO, CFO, Head of Logistics.
+
+### Decision question
+
+Acquistare capacità temporanea per il picco e quale opzione scegliere.
+
+### Decision requested
+
+Autorizzare l'opzione B, subordinata alla conferma del feed preorder entro 36 ore.
+
+### Headline
+
+> **La capacità interna è fragile nello scenario di domanda centrale-alto; 18.000 pacchi/giorno aggiuntivi coprono il rischio fino a circa P80 con downside finanziario limitato rispetto al costo potenziale di under-capacity.**
+
+### Primary evidence
+
+1. forecast distribution vs capacità;
+2. costo under-capacity vs commitment;
+3. scenario table A/B/C;
+4. switching condition e data maturity.
+
+### Caveat decision-critical
+
+Feed preorder retailer C incompleto.
+
+### Guardrail
+
+Rivalutare se il forecast reconciliato scende sotto la switching condition.
+
+### Provenance
+
+- forecast version;
+- timestamp;
+- capacità affidabile per sito;
+- contract terms;
+- assunzioni sui costi SLA;
+- appendix con forecast error storico.
+
+## La prima slide
+
+Non dice:
+
+> “Peak readiness dashboard.”
+
+Dice:
+
+> **Decisione oggi: riservare 18k pacchi/giorno di capacità temporanea, con conferma finale dopo la reconciliation preorder.**
+
+Sotto compaiono soltanto:
+
+- capacità interna: 148k/giorno;
+- forecast centrale: 162k;
+- P80: 171k;
+- capacità con B: 166k;
+- commitment: €780k;
+- under-capacity downside stimato nello scenario alto: €1,4–2,2M;
+- caveat: feed retailer C all'82%.
 
 ## Il meeting
 
 Il CFO chiede:
 
-> “Quindi le promozioni non sono un problema?”
+> “Perché non aspettare 36 ore?”
 
-La risposta corretta non è sì/no.
+La risposta non è “perché il forecast è alto”.
 
 È:
 
-> “Sono parte del problema, ma il dato non supporta un taglio generalizzato come prima leva. Se interveniamo solo lì rischiamo di sacrificare volume senza risolvere la maggior parte del deterioramento.”
+> “Possiamo aspettare se il carrier mantiene l'opzione senza repricing. Se la finestra commerciale chiude oggi, il costo di perdere la capacità è superiore al valore informativo atteso dal feed mancante. Sto verificando questo vincolo con procurement.”
 
 Il COO chiede:
 
-> “Quanto siamo sicuri che la logistica sia davvero il driver?”
+> “Perché non comprare 30k e stare tranquilli?”
 
-L'analyst mostra il backup:
+La risposta:
 
-- costo per consegna;
-- mix geografico;
-- peso medio ordine;
-- surcharge dei carrier;
-- confronto per area.
+> “L'opzione C migliora poco il downside nei nostri scenari plausibili ma aggiunge €460k di commitment. B resta la soluzione dominante fino a un picco molto più alto del P80 attuale.”
+
+La comunicazione porta quindi il meeting sulle **alternative e sui threshold**, non sul catalogo dei KPI.
 
 ## La decisione
 
-Il management approva:
+Procurement ottiene un'opzione di 24 ore senza repricing.
 
-1. test selettivo di riduzione promozioni;
-2. revisione delle regole di free delivery;
-3. negoziazione sui carrier per ordini chilled;
-4. monitoraggio separato di margin, volume e repeat rate.
+Il management sceglie:
+
+1. attendere la reconciliation;
+2. mantenere riservata B;
+3. firmare se il forecast reconciliato resta sopra la switching condition;
+4. rivalutare C soltanto se il nuovo P80 supera la capacità di B di oltre la safety margin concordata.
+
+Il giorno successivo il forecast viene aggiornato e la decisione viene registrata nel Decision Record.
 
 ## La lezione
 
-La dashboard originale conteneva quasi tutti i numeri necessari.
+La dashboard originale conteneva più dati.
 
-Ciò che mancava era una struttura decisionale.
+La Decision Communication Pack conteneva **più decisione**.
 
-L'analyst non ha creato valore aggiungendo altri grafici.
+Il valore è nato da:
 
-Ha creato valore:
+- partire dal Decision Record;
+- mostrare forecast e capacità nella stessa grammatica;
+- rendere visibile l'asimmetria dei costi;
+- comunicare la maturity del dato;
+- mostrare lo switching value;
+- mantenere l'alternativa C visibile senza darle salienza indebita;
+- collegare il caveat a una scelta reversibile.
 
-- scegliendo la domanda;
-- decomponendo il delta;
-- usando visualizzazioni coerenti con il ragionamento;
-- mostrando l'incertezza;
-- distinguendo evidenza e raccomandazione;
-- preparando il meeting attorno alla decisione.
-
-**Data storytelling non significa trasformare i dati in una storia convincente. Significa trasformare un'analisi complessa in una sequenza di evidenze che permette a qualcuno di decidere senza perdere il significato originale.**
+> **Data storytelling non significa trasformare i dati in una storia convincente. Significa costruire un percorso di evidenze che consenta al destinatario di scegliere senza perdere il significato, l'incertezza e le alternative contenute nell'analisi originale.**
