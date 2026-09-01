@@ -1,23 +1,23 @@
-## 8.15 Caso studio completo: quale intervento riduce davvero il churn?
+## 8.15 Caso simulato/composito — Quale intervento riduce davvero il churn?
 
-Una società SaaS B2B da 42 milioni di euro di ARR osserva un aumento del churn annualizzato dal 9,6% all'11,8%.
+**Asteria Cloud** è un SaaS B2B immaginario con 42 milioni di euro di ARR. Il churn annualizzato è salito dal 9,6% all'11,8%.
 
-Il management vuole investire 1,2 milioni di euro in Customer Success e chiede al team analytics:
+Il management vuole aumentare l'investimento in Customer Success e chiede:
 
-> **Quale intervento riduce davvero il churn e su quali clienti dobbiamo concentrarlo?**
+> **“Quale intervento riduce davvero il churn e su quali clienti dovremmo usarlo?”**
 
-Il team parte da quattro azioni già in uso:
+Sono già in uso quattro azioni:
 
-1. chiamata proattiva del Customer Success;
+1. chiamata proattiva Customer Success;
 2. sessione di training aggiuntiva;
 3. sconto temporaneo del 15%;
 4. revisione tecnica dell'integrazione.
 
-### Primo errore: guardare i risultati osservati
+### 1. Il confronto osservato produce la conclusione sbagliata
 
-Dai dati storici emerge:
+Churn a 90 giorni:
 
-| Intervento | Churn a 90 giorni |
+| Intervento osservato | Churn |
 |---|---:|
 | nessun intervento | 8,1% |
 | chiamata CS | 19,4% |
@@ -25,133 +25,211 @@ Dai dati storici emerge:
 | sconto | 22,1% |
 | revisione tecnica | 17,3% |
 
-Se prendessimo questi numeri alla lettera, concluderemmo che tutti gli interventi peggiorano il churn.
+Una lettura ingenua direbbe che ogni intervento peggiora il churn.
 
-È chiaramente plausibile un problema di **confounding by indication**: gli interventi vengono assegnati proprio ai clienti già a rischio.
+Ma il trattamento non è assegnato a caso.
 
-### Ricostruire il processo decisionale
+Gli operatori intervengono quando vedono rischio.
 
-Il team intervista Customer Success e scopre che:
+### 2. Prima del modello: ricostruire l'assignment mechanism
 
-- la chiamata viene fatta soprattutto quando l'health score scende sotto 65;
-- lo sconto è proposto ai clienti che hanno già espresso intenzione di cancellare;
-- la revisione tecnica viene attivata quando esistono errori di integrazione;
-- il training viene offerto più spesso ai clienti con bassa adoption ma relazione commerciale ancora buona.
+Intervistando Customer Success emerge:
 
-Il dataset quindi incorpora il comportamento degli operatori.
+- chiamata: quasi automatica quando `health_score < 65`;
+- training: offerto soprattutto a clienti con bassa adoption ma relationship ancora buona;
+- sconto: deciso dopo conversazioni qualitative con procurement o champion;
+- revisione tecnica: proposta quando sono presenti problemi di integrazione;
+- alcuni account ricevono più interventi insieme.
 
-### Disegno 1: soglia quasi-sperimentale
+Questa intervista vale quanto molte ore di modellazione.
 
-Per la chiamata CS esiste una regola abbastanza rigida: health score < 65.
+Rivela che non esiste “un dataset neutro degli interventi”.
 
-Il team usa una regression discontinuity locale confrontando clienti con score 62-64 e 65-67.
+Il dataset registra **decisioni operative già basate sul rischio**.
 
-Risultato:
+### 3. Scrivere quattro estimand diversi
 
-- churn senza chiamata vicino alla soglia: 16,2%;
-- churn con chiamata vicino alla soglia: 12,7%;
-- effetto locale stimato: **-3,5 punti percentuali**.
+Il team evita la domanda vaga “quale intervento funziona?”.
 
-La chiamata sembra utile almeno vicino alla soglia.
+Definisce quattro estimand.
 
-### Disegno 2: matching per il training
+**Chiamata CS**
 
-Il training non segue una soglia. Il team costruisce un propensity score usando caratteristiche pre-treatment:
+> Effetto della chiamata entro 48 ore sul churn D90 per account con health score vicino a 65.
+
+**Training**
+
+> Effetto del training aggiuntivo sul churn D90 tra account con bassa adoption e area di overlap osservabile.
+
+**Sconto**
+
+> Effetto del 15% discount sul rinnovo tra account eleggibili e ancora contendibili.
+
+**Revisione tecnica**
+
+> Effetto di una sessione tecnica standardizzata sul rinnovo D90 tra account con integrazione incompleta.
+
+Ora è evidente che non serve necessariamente lo stesso metodo per tutti.
+
+### 4. Chiamata CS — Opportunità RDD
+
+La policy `health_score < 65` è applicata in modo abbastanza rigido.
+
+Il team verifica:
+
+- distribuzione dello score vicino a 65;
+- assenza di manipolazione evidente;
+- continuità di ARR, tenure e usage pre-treatment;
+- nessun altro benefit che scatti esattamente a 65;
+- risultati con più bandwidth ragionevoli.
+
+Vicino alla soglia:
+
+- churn stimato senza chiamata: 16,2%;
+- churn con chiamata: 12,7%;
+- discontinuità locale: circa `-3,5 pp`.
+
+**Claim consentito:**
+
+> “Vicino alla soglia di health score 65, l'assegnazione della chiamata è compatibile con una riduzione locale del churn di circa 3,5 punti percentuali, sotto le assunzioni RDD.”
+
+Non:
+
+> “Le chiamate riducono il churn di 3,5 punti per tutti.”
+
+### 5. Training — Matching con limite esplicito
+
+Non esiste una soglia o fonte quasi-random.
+
+Il team usa covariate pre-treatment:
 
 - ARR;
 - industry;
-- numero di utenti;
-- activation iniziale;
 - tenure;
-- health score precedente;
-- numero ticket nei 60 giorni precedenti;
-- adozione delle feature core.
+- utenti;
+- adoption pre-intervento;
+- health score storico;
+- ticket precedenti.
 
-Dopo matching e verifica del common support:
+Controlla overlap e balance. Una parte degli account enterprise viene esclusa perché non esistono controlli comparabili.
 
-- churn trattati: 14,8%;
-- churn controlli comparabili: 17,1%;
-- differenza stimata: **-2,3 punti**.
+Nel campione con common support:
 
-Risultato promettente, ma meno robusto di un esperimento perché dipende dall'assenza di confondenti non osservati rilevanti.
+- churn training: 14,8%;
+- matched comparison: 17,1%;
+- differenza: `-2,3 pp`.
 
-### Disegno 3: lo sconto
+Ma dalle interviste emerge che “qualità del champion interno” influenza fortemente la decisione di offrire training e non è registrata bene.
 
-Per lo sconto emerge un problema più grave.
+**Claim consentito:**
 
-La decisione dipende spesso da conversazioni qualitative non registrate nel CRM: intenzione di cancellare, pressione sul budget, relazione con il procurement.
+> “Nel segmento con overlap, il training è associato a circa 2,3 pp di churn in meno dopo bilanciamento delle covariate osservate; confounding non osservato rimane plausibile.”
 
-Il matching non può catturare queste informazioni.
+Questa è una buona analisi anche se non produce una frase causale forte.
 
-Il team decide quindi di non presentare un effetto causale dello sconto dai dati storici.
+### 6. Sconto — Il dato storico non identifica l'effetto
 
-Propone invece un esperimento controllato su clienti eleggibili e realmente contendibili.
+Gli sconti vengono proposti dopo conversazioni qualitative come:
 
-Questa è una conclusione analitica valida: **non sempre il dato esistente permette una risposta causale credibile**.
+- “il procurement ha già chiesto exit terms”;
+- “il champion sta lasciando l'azienda”;
+- “il budget è stato congelato”.
 
-### Disegno 4: revisione tecnica
+Queste informazioni non sono strutturate nel CRM storico.
 
-La revisione tecnica sembra particolarmente utile per clienti con integrazioni complesse.
+Matching e regressione non possono controllarle in modo credibile.
 
-L'effetto medio stimato con un pilot randomizzato è:
+Il team decide quindi:
 
-- controllo: churn 18,0%;
-- trattamento: churn 14,9%;
-- differenza: -3,1 pp.
+> **nessuna causal estimate dallo storico.**
 
-Ma l'effetto eterogeneo mostra:
+Propone un esperimento su account eleggibili per cui esiste vera incertezza operativa sulla concessione dello sconto.
 
-| Segmento | Effetto stimato |
+Dire “non identificabile con questi dati” evita di spendere un budget importante su una causal claim inventata.
+
+### 7. Revisione tecnica — Pilot randomizzato
+
+Per nuovi account con integrazione incompleta, l'azienda randomizza la disponibilità immediata di una sessione tecnica standardizzata.
+
+Nel pilot:
+
+- controllo: churn D90 18,0%;
+- trattamento: 14,9%;
+- differenza: `-3,1 pp`.
+
+L'analisi di heterogeneity, definita prima del test, mostra:
+
+| Complessità integrazione | Effetto stimato |
 |---|---:|
-| integrazione semplice | -0,6 pp |
-| integrazione media | -2,7 pp |
-| integrazione complessa | -7,9 pp |
+| semplice | -0,6 pp |
+| media | -2,7 pp |
+| complessa | -7,9 pp |
 
-L'effetto medio nasconde quindi un segmento ad altissimo valore.
+Gli intervalli sono più larghi nei sottogruppi, quindi il team tratta il pattern come una combinazione di evidenza pre-specificata e bisogno di replica.
 
-### Dalla causalità alla decisione
+### 8. Una tabella non deve fingere che tutte le evidenze siano equivalenti
 
-Il team costruisce una matrice operativa:
+| Intervento | Design disponibile | Scope | Claim |
+|---|---|---|---|
+| Chiamata CS | RDD | account vicino a score 65 | causale locale, se assumptions reggono |
+| Training | matching | area di common support | causale solo sotto no-unmeasured-confounding |
+| Sconto | storico fortemente selettivo | nessuno affidabile | effetto non identificato |
+| Revisione tecnica | randomized pilot | account eleggibili al pilot | effetto sperimentale nella popolazione studiata |
 
-| Intervento | Evidenza causale | Effetto stimato | Costo medio | Target consigliato |
-|---|---|---:|---:|---|
-| chiamata CS | RDD locale | -3,5 pp | €45 | health score vicino a 65 |
-| training | matching | -2,3 pp | €120 | bassa adoption, buon fit |
-| sconto | insufficiente | non stimabile | €600+ | da testare |
-| revisione tecnica | RCT pilot | -7,9 pp nel segmento complesso | €280 | integrazioni complesse |
+Questa tabella è più utile di una classifica di coefficienti.
 
-La raccomandazione non è più "aumentiamo il Customer Success".
+Dice **quanto possiamo fidarci di ogni riga**.
 
-Diventa:
+### 9. Causal Identification Brief finale
 
-1. automatizzare l'identificazione dei clienti appena sotto la soglia health score;
-2. dare priorità alle revisioni tecniche nei clienti ad alta complessità;
-3. usare training solo sui segmenti con evidenza plausibile;
-4. sperimentare gli sconti invece di dedurne l'effetto dai dati storici;
-5. misurare incremental churn saved e valore economico netto.
+```text
+DECISIONE
+Allocare capacità Customer Success tra quattro interventi.
 
-### Il risultato economico
+ESTIMAND
+Definito separatamente per ogni trattamento.
 
-Il piano precedente prevedeva 1,2 milioni distribuiti uniformemente sui clienti ad alto rischio.
+ASSIGNMENT
+Soglia / giudizio umano / randomizzazione a seconda dell'intervento.
 
-Il nuovo piano concentra circa 760.000 euro sugli interventi e segmenti con maggiore effetto atteso, riservando 140.000 euro alla sperimentazione e lasciando il resto come capacità adattiva.
+CONFOUNDING
+Molto forte nello storico, soprattutto per sconto e problemi tecnici.
 
-La previsione interna passa da circa 720 churn evitati a **1.050 churn evitati equivalenti**, con forte incertezza dichiarata sui segmenti non ancora sperimentati.
+IDENTIFICATION
+RDD per chiamata; matching per training; nessuna stima storica per sconto;
+RCT pilot per revisione tecnica.
 
-Il numero non viene presentato come certezza. Viene accompagnato da intervalli e da una roadmap di validazione.
+DIAGNOSTICS
+Continuity e bandwidth RDD; overlap/balance matching;
+compliance e baseline checks nel pilot.
 
-### Cosa rende questo un buon lavoro analitico
+EFFECT
+Non un unico numero: effetti con scope e incertezza differenti.
 
-Il valore non è stato scegliere una tecnica sofisticata.
+EXTERNAL VALIDITY
+RDD locale; matching solo nell'area di overlap;
+pilot applicabile alla popolazione eleggibile studiata.
 
-Il valore è stato:
+DECISIONE
+Prioritizzare evidence-generating rollout e interventi con effect × economics favorevole;
+testare lo sconto prima di scalarlo.
 
-- riconoscere il bias di selezione;
-- ricostruire il processo operativo che genera il trattamento;
-- scegliere un metodo diverso per ogni intervento;
-- dichiarare dove l'identificazione causale non era credibile;
-- tradurre gli effetti in priorità operative ed economiche.
+PROSSIMO TEST
+Replica del technical pilot e randomized eligibility per discount.
+```
 
-### Regola finale
+### 10. La lezione professionale
 
-> **La causalità non serve a produrre un coefficiente più elegante. Serve a evitare di investire denaro su interventi che sembrano efficaci solo perché sono stati applicati a persone diverse.**
+Il contributo dell'analista non è stato applicare quattro tecniche sofisticate.
+
+È stato:
+
+- rifiutare il confronto grezzo;
+- ricostruire come nasce il trattamento;
+- specificare l'estimand;
+- scegliere il design dalla struttura operativa;
+- distinguere causalità forte, causalità condizionata e associazione;
+- dire esplicitamente dove il dato non consente una risposta;
+- collegare evidenza e prossima decisione.
+
+> **La migliore causal analysis non è quella che produce una stima per ogni domanda. È quella che sa distinguere quali domande il sistema di dati può identificare, quali richiedono nuove assunzioni e quali richiedono un nuovo esperimento.**
