@@ -1,6 +1,6 @@
 ## 3.15 Controlli automatici: trasformare le aspettative in segnali
 
-Una data readiness review manuale può dirci che il dataset di oggi è plausibile.
+Una Data Readiness Review manuale può dirci che il dataset di oggi è plausibile.
 
 Non garantisce che lo sarà domani.
 
@@ -159,7 +159,7 @@ Se nessuno sa chi deve reagire o che cosa fare, cinquanta alert non aumentano l'
 
 ### La domanda dell'analista
 
-Dopo una buona data readiness review, chiediti:
+Dopo una buona Data Readiness Review, chiediti:
 
 > **Quali tre o cinque proprietà, se cambieranno domani, potrebbero rendere silenziosamente falsa la stessa analisi?**
 
