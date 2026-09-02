@@ -140,4 +140,4 @@ Ma restringe enormemente il problema e indica dove deve lavorare il team.
 
 > **Lifecycle analysis significa trasformare una base clienti in una sequenza di stati, transizioni e valore nel tempo.**
 
-[^duolingo-2024]: Duolingo, *Q4/FY 2024 Shareholder Letter / Form 8-K*, 27 febbraio 2025: https://investors.duolingo.com/static-files/d0adccff-bfe0-4d10-a5bc-f116d746afd2
+[^duolingo-2024]: Duolingo, *Q4/FY 2024 Shareholder Letter / Form 8-K*, 27 febbraio 2025: https://www.sec.gov/Archives/edgar/data/1562088/000156208825000039/q4fy24duolingo12-31x24shar.htm
