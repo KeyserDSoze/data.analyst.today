@@ -8,6 +8,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CHAPTERS_DIR = ROOT / "chapters"
+FRONT_MATTER_DIR = ROOT / "front_matter"
+REFERENCE_DIR = ROOT / "reference"
 PREFIX_RE = re.compile(r"^(\d+)")
 SECTION_RE = re.compile(r"^#{1,6}\s+(\d+)\.(\d+)\b")
 PLACEHOLDER_RE = re.compile(r"\b(?:TODO|FIXME|TBD)\b", re.IGNORECASE)
@@ -18,6 +20,26 @@ LATEX_COMMAND_RE = re.compile(r"\\(?:frac|sqrt|sum|prod|int|alpha|beta|sigma|mu|
 ASCII_ACCENT_RE = re.compile(
     r"(?<!\w)(?:e'|piu'|puo'|cosi'|perche'|gia'|pero'|qualita'|attivita'|realta'|probabilita'|modalita'|unita'|societa')(?!\w)",
     re.IGNORECASE,
+)
+CANONICAL_TERMS = (
+    "Analytical Brief",
+    "Data Readiness Review",
+    "EDA Evidence Map",
+    "Uncertainty Brief",
+    "Lifecycle Diagnostic Map",
+    "Temporal Decision Brief",
+    "Causal Identification Brief",
+    "Experiment Contract",
+    "Predictive Decision Card",
+    "Analytical Data Contract",
+    "Data Flow Architecture Map",
+    "Tooling Decision Record",
+    "AI Analysis Control Sheet",
+    "Decision Record",
+    "Decision Communication Pack",
+    "Capstone Routing Canvas",
+    "Analytics Operating Contract",
+    "Personal Career Operating Plan",
 )
 
 
@@ -38,6 +60,32 @@ def numbered_sections(text: str, chapter_num: int) -> list[int]:
     # X.0 is allowed as an introductory/preparatory section and does not
     # advance the normal X.1, X.2, ... sequence used by subsequent files.
     return [number for value in pattern.findall(text) if (number := int(value)) > 0]
+
+
+def check_canonical_term_case(path: Path, text: str, errors: list[str]) -> None:
+    for canonical in CANONICAL_TERMS:
+        for match in re.finditer(re.escape(canonical), text, flags=re.IGNORECASE):
+            observed = match.group(0)
+            if observed != canonical:
+                errors.append(
+                    f"{path}: nome canonico scritto come {observed!r}; usare {canonical!r}."
+                )
+
+
+def check_supporting_file(path: Path, errors: list[str], warnings: list[str]) -> None:
+    text = path.read_text(encoding="utf-8")
+    if not text.strip():
+        errors.append(f"{path}: file vuoto.")
+        return
+    if "utm_source=chatgpt.com" in text:
+        errors.append(f"{path}: contiene utm_source=chatgpt.com.")
+    if PLACEHOLDER_RE.search(text):
+        warnings.append(f"{path}: contiene TODO/FIXME/TBD da verificare.")
+    if ASCII_ACCENT_RE.search(text):
+        warnings.append(f"{path}: contiene grafie ASCII da normalizzare.")
+    if DISPLAY_MATH_RE.search(text) or LATEX_COMMAND_RE.search(text):
+        warnings.append(f"{path}: contiene notazione matematica/LaTeX da verificare.")
+    check_canonical_term_case(path, text, errors)
 
 
 def main() -> int:
@@ -125,6 +173,8 @@ def main() -> int:
             if PLACEHOLDER_RE.search(text):
                 warnings.append(f"{path}: contiene TODO/FIXME/TBD da verificare.")
 
+            check_canonical_term_case(path, text, errors)
+
             first = first_nonempty_line(text)
             if index == 0:
                 if not first.startswith("# "):
@@ -157,19 +207,28 @@ def main() -> int:
                     f"{path}: sezione interna in H1; usare ##. Il builder la normalizza, ma la sorgente va ripulita."
                 )
 
+    supporting_files: list[Path] = []
+    for directory in (FRONT_MATTER_DIR, REFERENCE_DIR):
+        if not directory.exists():
+            continue
+        for path in sorted(directory.glob("*.md"), key=lambda p: (prefix(p), p.name.casefold())):
+            supporting_files.append(path)
+            check_supporting_file(path, errors, warnings)
+
     approx_pages_300 = total_words / 300 if total_words else 0
     approx_pages_250 = total_words / 250 if total_words else 0
 
     print("Book lint")
     print(f"- capitoli: {len(chapter_dirs)}")
-    print(f"- file Markdown: {total_files}")
-    print(f"- parole stimate: {total_words:,}".replace(",", "."))
-    print(f"- caratteri: {total_chars:,}".replace(",", "."))
-    print(f"- URL esterni distinti: {len(external_urls)}")
-    print(f"- file con notazione matematica/LaTeX: {len(math_files)}")
-    print(f"- file con accenti ASCII da normalizzare: {len(ascii_accent_files)}")
+    print(f"- file Markdown corpo: {total_files}")
+    print(f"- file apparati scansionati: {len(supporting_files)}")
+    print(f"- parole stimate corpo: {total_words:,}".replace(",", "."))
+    print(f"- caratteri corpo: {total_chars:,}".replace(",", "."))
+    print(f"- URL esterni distinti corpo: {len(external_urls)}")
+    print(f"- file corpo con notazione matematica/LaTeX: {len(math_files)}")
+    print(f"- file corpo con accenti ASCII da normalizzare: {len(ascii_accent_files)}")
     print(
-        f"- pagine indicative: {approx_pages_300:.0f} a 300 parole/pagina; "
+        f"- pagine indicative corpo: {approx_pages_300:.0f} a 300 parole/pagina; "
         f"{approx_pages_250:.0f} a 250 parole/pagina"
     )
 
@@ -198,7 +257,7 @@ def main() -> int:
     if errors or (args.strict and warnings):
         return 1
 
-    print("\nStruttura valida.")
+    print("\nStruttura e convenzioni editoriali valide.")
     return 0
 
 
