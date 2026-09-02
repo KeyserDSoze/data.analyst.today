@@ -4,15 +4,11 @@ Due eventi sono **indipendenti** quando conoscere il verificarsi di uno non camb
 
 Formalmente, se `A` e `B` sono indipendenti:
 
-\[
-P(A|B)=P(A)
-\]
+`P(A|B) = P(A)`
 
 ed equivalentemente:
 
-\[
-P(A \cap B)=P(A)P(B)
-\]
+`P(A ∩ B) = P(A)P(B)`
 
 È importante usare parole precise: indipendenza statistica non significa semplicemente che due eventi “non si causano”. È una proprietà della loro distribuzione congiunta.
 
