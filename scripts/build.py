@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from urllib.parse import urlparse
 from xml.sax.saxutils import escape
 
 import yaml
@@ -28,9 +29,12 @@ from reportlab.platypus import (
 ROOT = Path(__file__).resolve().parents[1]
 CHAPTERS_DIR = ROOT / "chapters"
 FRONT_MATTER_DIR = ROOT / "front_matter"
+REFERENCE_DIR = ROOT / "reference"
 BUILD_DIR = ROOT / "build"
 CONFIG_PATH = ROOT / "book.yml"
 SECTION_HEADING_RE = re.compile(r"^\d+\.\d+(?:\s|\b)")
+URL_RE = re.compile(r"https?://[^\s)>]+")
+REAL_CASE_RE = re.compile(r"\b(?:un\s+)?caso reale documentato\b", re.IGNORECASE)
 
 
 def load_config() -> dict:
@@ -54,6 +58,12 @@ def front_matter_files() -> list[Path]:
     return sorted(FRONT_MATTER_DIR.glob("*.md"), key=source_sort_key)
 
 
+def reference_files() -> list[Path]:
+    if not REFERENCE_DIR.exists():
+        return []
+    return sorted(REFERENCE_DIR.glob("*.md"), key=source_sort_key)
+
+
 def source_files() -> list[Path]:
     chapters = sorted(
         [p for p in CHAPTERS_DIR.iterdir() if p.is_dir() and p.name.endswith("_chapter")],
@@ -65,25 +75,117 @@ def source_files() -> list[Path]:
     return files
 
 
-def chapter_index(files: list[Path]) -> str:
-    entries: list[str] = []
-    seen_chapters: set[Path] = set()
+def first_h1(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    return next(
+        (line[2:].strip() for line in text.splitlines() if line.startswith("# ")),
+        path.stem,
+    )
 
+
+def chapter_titles(files: list[Path]) -> dict[Path, str]:
+    titles: dict[Path, str] = {}
     for path in files:
-        if path.parent in seen_chapters:
-            continue
-        seen_chapters.add(path.parent)
-        text = path.read_text(encoding="utf-8")
-        title = next(
-            (line[2:].strip() for line in text.splitlines() if line.startswith("# ")),
-            path.parent.name,
-        )
-        entries.append(f"- {title}")
+        if path.parent not in titles:
+            titles[path.parent] = first_h1(path)
+    return titles
 
+
+def chapter_index(files: list[Path]) -> str:
+    titles = chapter_titles(files)
+    entries = [f"- {title}" for title in titles.values()]
     return "# Indice dei capitoli\n\n" + "\n".join(entries) + "\n\n"
 
 
-def assemble_markdown(config: dict, files: list[Path], front_files: list[Path]) -> str:
+def real_case_index(files: list[Path]) -> str:
+    titles = chapter_titles(files)
+    grouped: dict[str, list[str]] = {}
+    seen: set[tuple[str, str]] = set()
+
+    for path in files:
+        chapter = titles[path.parent]
+        for line in path.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if not re.match(r"^#{1,6}\s+", stripped):
+                continue
+            heading = re.sub(r"^#{1,6}\s+", "", stripped).strip()
+            if not REAL_CASE_RE.search(heading):
+                continue
+            label = REAL_CASE_RE.sub("", heading)
+            label = re.sub(r"\s*[—:–-]\s*", " — ", label).strip(" —:-")
+            if not label:
+                continue
+            key = (chapter, label.casefold())
+            if key in seen:
+                continue
+            seen.add(key)
+            grouped.setdefault(chapter, []).append(label)
+
+    chunks = [
+        "# Indice dei casi reali documentati\n\n",
+        "Questo indice raccoglie i casi che il manoscritto identifica esplicitamente come reali e documentati. I casi simulati/compositi non sono inclusi.\n\n",
+    ]
+    for chapter, labels in grouped.items():
+        chunks.append(f"## {chapter}\n\n")
+        for label in labels:
+            chunks.append(f"- {label}\n")
+        chunks.append("\n")
+    return "".join(chunks)
+
+
+def source_label(line: str, url: str) -> str:
+    label = line.replace(url, " ")
+    label = re.sub(r"^\s*\[\^[^\]]+\]:\s*", "", label)
+    label = label.strip().lstrip("- ").strip()
+    label = label.rstrip(" :;,.—-")
+    if URL_RE.search(label):
+        return ""
+    if label.casefold() in {"fonte", "fonti", "url", "url canonico"}:
+        return ""
+    if len(label) > 180:
+        label = label[:177].rstrip() + "..."
+    return label
+
+
+def source_index(files: list[Path]) -> str:
+    titles = chapter_titles(files)
+    seen_urls: set[str] = set()
+    entries: list[tuple[str, str, str, str]] = []
+
+    for path in files:
+        chapter = titles[path.parent]
+        for line in path.read_text(encoding="utf-8").splitlines():
+            for match in URL_RE.findall(line):
+                url = match.rstrip(".,;:")
+                if url in seen_urls:
+                    continue
+                seen_urls.add(url)
+                domain = urlparse(url).netloc.removeprefix("www.")
+                label = source_label(line, url) or domain
+                entries.append((domain.casefold(), label.casefold(), label, chapter, url))
+
+    entries.sort(key=lambda item: (item[0], item[1], item[4]))
+    chunks = [
+        "# Indice delle fonti\n\n",
+        f"Questo indice consolida **{len(entries)} URL esterni distinti** presenti nel corpo del libro. Le fonti restano citate anche nel punto in cui sostengono il claim; qui vengono ordinate per dominio per facilitarne il ritrovamento.\n\n",
+    ]
+    current_domain: str | None = None
+    for _, _, label, chapter, url in entries:
+        domain = urlparse(url).netloc.removeprefix("www.")
+        if domain != current_domain:
+            current_domain = domain
+            chunks.append(f"## {domain}\n\n")
+        chunks.append(f"- {label} — [{domain}]({url}) — {chapter}\n")
+    chunks.append("\n")
+    return "".join(chunks)
+
+
+def assemble_markdown(
+    config: dict,
+    files: list[Path],
+    front_files: list[Path],
+    ref_files: list[Path],
+) -> str:
     front = (
         f"# {config['title']}\n\n"
         f"## {config.get('subtitle', '')}\n\n"
@@ -96,6 +198,10 @@ def assemble_markdown(config: dict, files: list[Path], front_files: list[Path]) 
     chunks.append(chapter_index(files))
     for path in files:
         chunks.append(path.read_text(encoding="utf-8").strip() + "\n\n")
+    for path in ref_files:
+        chunks.append(path.read_text(encoding="utf-8").strip() + "\n\n")
+    chunks.append(real_case_index(files))
+    chunks.append(source_index(files))
     return "".join(chunks)
 
 
@@ -455,12 +561,13 @@ def main() -> None:
     config = load_config()
     files = source_files()
     front_files = front_matter_files()
+    ref_files = reference_files()
     if not files:
         raise SystemExit("Nessun file Markdown trovato in chapters/.")
 
     BUILD_DIR.mkdir(parents=True, exist_ok=True)
     basename = config.get("output_basename", "book")
-    markdown = assemble_markdown(config, files, front_files)
+    markdown = assemble_markdown(config, files, front_files, ref_files)
 
     md_path = BUILD_DIR / f"{basename}.md"
     docx_path = BUILD_DIR / f"{basename}.docx"
@@ -471,8 +578,8 @@ def main() -> None:
     build_pdf(markdown, pdf_path, config)
 
     print(
-        f"Build completata con {len(files)} file capitolo e "
-        f"{len(front_files)} file front matter:"
+        f"Build completata con {len(files)} file capitolo, "
+        f"{len(front_files)} file front matter e {len(ref_files)} file reference:"
     )
     print(f"- {md_path.relative_to(ROOT)}")
     print(f"- {docx_path.relative_to(ROOT)}")
