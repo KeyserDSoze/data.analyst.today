@@ -224,7 +224,7 @@ Progetta una procedura di calibrazione con:
 
 Riferimento: Google Cloud documenta l'uso di human ratings come ground truth per valutare la qualità di judge model.
 
-Fonte: https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/evaluate-judge-model
+Fonte: https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/evaluate-judge-model
 
 ---
 
