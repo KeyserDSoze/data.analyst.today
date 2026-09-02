@@ -20,9 +20,7 @@ La probabilità condizionata di `A` dato `B` si può leggere così:
 
 La formula è:
 
-\[
-P(A|B)=\frac{P(A \cap B)}{P(B)}
-\]
+`P(A|B) = P(A ∩ B) / P(B)`
 
 quando `P(B) > 0`.
 
