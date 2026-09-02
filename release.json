@@ -1,0 +1,6 @@
+{
+  "tag": "v1.0.0-rc1",
+  "name": "Data Analyst Today v1.0.0-rc1",
+  "prerelease": true,
+  "notes_file": "release-notes/v1.0.0-rc1.md"
+}
