@@ -40,14 +40,74 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+
+          from docx import Document
+          from docx.oxml.ns import qn
           from pypdf import PdfReader
 
           pdf = Path("build/data-analyst-today.pdf")
           docx = Path("build/data-analyst-today.docx")
           md = Path("build/data-analyst-today.md")
 
-          pages = len(PdfReader(str(pdf)).pages)
+          assembled = md.read_text(encoding="utf-8")
+          if "[^" in assembled:
+              raise SystemExit("Markdown assemblato: footnote [^...] non risolta.")
+
+          reader = PdfReader(str(pdf))
+          pages = len(reader.pages)
+
+          def count_outline(items):
+              total = 0
+              for item in items:
+                  if isinstance(item, list):
+                      total += count_outline(item)
+                  else:
+                      total += 1
+              return total
+
+          outline_count = count_outline(reader.outline)
+          if outline_count < 20:
+              raise SystemExit(
+                  f"PDF: outline insufficiente ({outline_count} voci); attese almeno 20."
+              )
+
+          document = Document(str(docx))
+          unresolved_docx = []
+          for paragraph in document.paragraphs:
+              if "[^" in paragraph.text:
+                  unresolved_docx.append(paragraph.text)
+          for table in document.tables:
+              for row in table.rows:
+                  for cell in row.cells:
+                      for paragraph in cell.paragraphs:
+                          if "[^" in paragraph.text:
+                              unresolved_docx.append(paragraph.text)
+          if unresolved_docx:
+              raise SystemExit("DOCX: footnote [^...] non risolta nell'output.")
+
+          missing_headers = []
+          for index, table in enumerate(document.tables, start=1):
+              tr_pr = table.rows[0]._tr.trPr
+              if tr_pr is None or tr_pr.find(qn("w:tblHeader")) is None:
+                  missing_headers.append(index)
+          if missing_headers:
+              raise SystemExit(
+                  "DOCX: tabelle senza repeating header: "
+                  + ", ".join(map(str, missing_headers[:20]))
+              )
+
+          section = document.sections[0]
+          if not section.different_first_page_header_footer:
+              raise SystemExit("DOCX: il frontespizio non usa first-page footer separato.")
+          first_footer = "\n".join(
+              paragraph.text for paragraph in section.first_page_footer.paragraphs
+          ).strip()
+          if first_footer:
+              raise SystemExit("DOCX: il frontespizio contiene un footer visibile.")
+
           print(f"PDF pages: {pages}")
+          print(f"PDF outline entries: {outline_count}")
+          print(f"DOCX tables with repeating header: {len(document.tables)}")
           print(f"PDF size: {pdf.stat().st_size:,} bytes")
           print(f"DOCX size: {docx.stat().st_size:,} bytes")
           print(f"Markdown size: {md.stat().st_size:,} bytes")
