@@ -175,5 +175,5 @@ Quali metriche sono solo esplorative?
 
 > **Una metrica sperimentale non è soltanto una formula. È una regola concordata su quale evidenza può cambiare la decisione.**
 
-[^ms-metric-patterns]: Microsoft Research, *Patterns of Trustworthy Experimentation: During-Experiment Stage*: https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/patterns-of-trustworthy-experimentation-during-experiment-stage/
+[^ms-metric-patterns]: Microsoft Research, *Patterns of Trustworthy Experimentation: During-Experiment Stage*: https://www.microsoft.com/en-us/research/articles/patterns-of-trustworthy-experimentation-during-experiment-stage/
 [^ms-alerting]: Microsoft Research, *Alerting in Microsoft’s Experimentation Platform (ExP)*: https://www.microsoft.com/en-us/research/articles/alerting-in-microsofts-experimentation-platform-exp/
