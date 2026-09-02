@@ -211,4 +211,4 @@ Evita che il team **riscriva le regole dopo aver visto il risultato**.
 
 > **La trustworthy experimentation non consiste nel calcolare correttamente una differenza. Consiste nel preservare la credibilità del confronto dal primo bucket fino alla decisione di ship.**
 
-[^ms-data-quality]: Microsoft Research, *Data Quality: Fundamental Building Blocks for Trustworthy A/B testing Analysis*: https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/data-quality-fundamental-building-blocks-for-trustworthy-a-b-testing-analysis
+[^ms-data-quality]: Microsoft Research, *Data Quality: Fundamental Building Blocks for Trustworthy A/B testing Analysis*: https://www.microsoft.com/en-us/research/articles/data-quality-fundamental-building-blocks-for-trustworthy-a-b-testing-analysis/
