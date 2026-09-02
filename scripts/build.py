@@ -27,6 +27,7 @@ from reportlab.platypus import (
 
 ROOT = Path(__file__).resolve().parents[1]
 CHAPTERS_DIR = ROOT / "chapters"
+FRONT_MATTER_DIR = ROOT / "front_matter"
 BUILD_DIR = ROOT / "build"
 CONFIG_PATH = ROOT / "book.yml"
 SECTION_HEADING_RE = re.compile(r"^\d+\.\d+(?:\s|\b)")
@@ -47,6 +48,12 @@ def source_sort_key(path: Path) -> tuple[int, str]:
     return numeric_prefix(path), path.name.casefold()
 
 
+def front_matter_files() -> list[Path]:
+    if not FRONT_MATTER_DIR.exists():
+        return []
+    return sorted(FRONT_MATTER_DIR.glob("*.md"), key=source_sort_key)
+
+
 def source_files() -> list[Path]:
     chapters = sorted(
         [p for p in CHAPTERS_DIR.iterdir() if p.is_dir() and p.name.endswith("_chapter")],
@@ -58,7 +65,25 @@ def source_files() -> list[Path]:
     return files
 
 
-def assemble_markdown(config: dict, files: list[Path]) -> str:
+def chapter_index(files: list[Path]) -> str:
+    entries: list[str] = []
+    seen_chapters: set[Path] = set()
+
+    for path in files:
+        if path.parent in seen_chapters:
+            continue
+        seen_chapters.add(path.parent)
+        text = path.read_text(encoding="utf-8")
+        title = next(
+            (line[2:].strip() for line in text.splitlines() if line.startswith("# ")),
+            path.parent.name,
+        )
+        entries.append(f"- {title}")
+
+    return "# Indice dei capitoli\n\n" + "\n".join(entries) + "\n\n"
+
+
+def assemble_markdown(config: dict, files: list[Path], front_files: list[Path]) -> str:
     front = (
         f"# {config['title']}\n\n"
         f"## {config.get('subtitle', '')}\n\n"
@@ -66,6 +91,9 @@ def assemble_markdown(config: dict, files: list[Path]) -> str:
         "---\n\n"
     )
     chunks = [front]
+    for path in front_files:
+        chunks.append(path.read_text(encoding="utf-8").strip() + "\n\n")
+    chunks.append(chapter_index(files))
     for path in files:
         chunks.append(path.read_text(encoding="utf-8").strip() + "\n\n")
     return "".join(chunks)
@@ -426,12 +454,13 @@ def build_pdf(markdown: str, output: Path, config: dict) -> None:
 def main() -> None:
     config = load_config()
     files = source_files()
+    front_files = front_matter_files()
     if not files:
         raise SystemExit("Nessun file Markdown trovato in chapters/.")
 
     BUILD_DIR.mkdir(parents=True, exist_ok=True)
     basename = config.get("output_basename", "book")
-    markdown = assemble_markdown(config, files)
+    markdown = assemble_markdown(config, files, front_files)
 
     md_path = BUILD_DIR / f"{basename}.md"
     docx_path = BUILD_DIR / f"{basename}.docx"
@@ -441,7 +470,10 @@ def main() -> None:
     build_docx(markdown, docx_path, config)
     build_pdf(markdown, pdf_path, config)
 
-    print(f"Build completata con {len(files)} file sorgente:")
+    print(
+        f"Build completata con {len(files)} file capitolo e "
+        f"{len(front_files)} file front matter:"
+    )
     print(f"- {md_path.relative_to(ROOT)}")
     print(f"- {docx_path.relative_to(ROOT)}")
     print(f"- {pdf_path.relative_to(ROOT)}")
