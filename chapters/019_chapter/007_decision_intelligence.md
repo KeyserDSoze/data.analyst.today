@@ -1,171 +1,231 @@
-## 19.6 Decision intelligence: dal dato alla qualità della decisione
-Se una parte crescente dell'esecuzione tecnica può essere delegata a sistemi AI, il valore dell'analista tende a spostarsi ancora di più verso la qualità del processo decisionale.
+## 19.6 Decision span: quanto vicino lavori alla scelta?
 
-Questo significa che il futuro del Data Analyst non è semplicemente “fare analytics più velocemente”.
+Il Capitolo 15 ha già costruito il Decision Record e distinto finding, insight, recommendation e decisione.
 
-È contribuire a sistemi che collegano in modo esplicito:
+Qui non serve ripetere quel metodo.
 
-**domanda → evidenza → alternative → trade-off → decisione → azione → feedback**
+Ci interessa una conseguenza professionale.
 
-Questa idea viene spesso ricondotta al concetto di **decision intelligence**.
+Quando la produzione tecnica diventa più economica, una parte del valore dell'analista può spostarsi verso **quanto bene riesce a collegare evidenza, alternative, vincoli, azione e apprendimento**.
 
-Il termine può essere usato in modi diversi, ma per questo libro ci interessa una definizione operativa: progettare e migliorare il modo in cui un'organizzazione prende decisioni usando dati, modelli, esperimenti, conoscenza del dominio e feedback.
+Chiamiamo questa ampiezza **decision span**.
 
-## Dal reporting alla decisione
+## Cinque livelli di decision span
 
-Un sistema di reporting risponde bene a domande come:
+### Livello 1 — Output
 
-- quanto abbiamo venduto?
-- quanto è il churn?
-- come sta andando la conversione?
-- dove stanno aumentando i costi?
+Produco:
 
-Un sistema orientato alla decisione deve andare oltre:
+- query;
+- report;
+- dashboard;
+- dataset;
+- modello.
 
-- quali opzioni abbiamo?
-- quale decisione cambia davvero in funzione di questo dato?
-- quali conseguenze ci aspettiamo?
-- quale rischio accettiamo?
-- cosa osserviamo dopo l'azione?
-- quando cambiamo idea?
+Il consumer decide che cosa farne.
 
-La differenza è sostanziale.
+### Livello 2 — Evidence
 
-Una dashboard può mostrare perfettamente un problema e non aiutare affatto a decidere.
+Produco un'analisi con:
 
-## Caso realistico: il churn è al 7,8%. E quindi?
+- fenomeno;
+- segmenti;
+- incertezza;
+- caveat;
+- interpretazione.
 
-Una società SaaS monitora il churn mensile.
+Il lavoro riduce già ambiguità.
 
-La dashboard mostra:
+### Livello 3 — Alternatives
 
-- churn: 7,8%;
-- target: 6,5%;
-- segmento Enterprise: 4,1%;
-- SMB: 10,9%;
-- clienti con basso product usage: 18,3%.
+Collego l'evidenza alle opzioni disponibili.
 
-L'analisi è corretta.
+Domande:
 
-Ma il management continua a chiedere:
+- quali leve abbiamo?
+- che cosa costa ciascuna?
+- quali guardrail servono?
+- qual è lo switching value?
 
-> “Che cosa dobbiamo fare?”
+### Livello 4 — Decision design
 
-Un approccio di decision intelligence ristruttura il problema.
+Contribuisco a progettare:
 
-Prima identifica le azioni disponibili:
+- policy;
+- experiment;
+- rollout;
+- allocation rule;
+- escalation;
+- feedback loop.
 
-1. customer-success call;
-2. onboarding aggiuntivo;
-3. sconto;
-4. technical review;
+Non sto soltanto descrivendo il mondo.
+
+Sto aiutando a costruire il meccanismo con cui l'organizzazione agirà.
+
+### Livello 5 — Decision system
+
+Lavoro sul processo ricorrente:
+
+- quale evidenza entra;
+- chi possiede la semantica;
+- quali alternative vengono considerate;
+- quale automazione è consentita;
+- come viene misurato l'outcome;
+- come il sistema impara.
+
+Qui entriamo nella zona del Capitolo 18.
+
+## Aumentare decision span non significa prendere il posto del manager
+
+Questo punto è importante.
+
+L'analista può migliorare il processo decisionale senza possedere tutte le conseguenze della decisione.
+
+Un CFO, un Product VP o un COO può conoscere vincoli strategici, politici, contrattuali o organizzativi non interamente presenti nei dati.
+
+Per questo il Decision Record distingue:
+
+- analytics recommendation;
+- chosen decision;
+- decision owner.
+
+La maturità dell'analista consiste nel portare **più struttura e meno ambiguità** alla decisione, non nell'usurpare authority che non possiede.
+
+## Caso simulato/composito: churn 7,8%
+
+Una SaaS company mostra:
+
+- churn mensile 7,8%;
+- target 6,5%;
+- Enterprise 4,1%;
+- SMB 10,9%;
+- clienti low-usage 18,3%.
+
+Un output-level analyst prepara un breakdown.
+
+Un analyst con maggiore decision span chiede:
+
+> “Quale decisione è realmente aperta?”
+
+Le alternative operative includono:
+
+1. Customer Success call;
+2. onboarding intensivo;
+3. technical review;
+4. discount;
 5. nessun intervento.
 
-Poi associa a ciascuna azione:
+Poi collega ogni opzione a:
 
 - costo;
-- capacità disponibile;
-- probabilità di successo;
-- effetto incrementale atteso;
-- valore economico del cliente;
-- rischio di effetti collaterali.
+- capacità;
+- customer value;
+- treatment opportunity;
+- rischio di effetti collaterali;
+- misurazione incrementale.
 
-A quel punto il problema non è più “chi ha churn risk alto?”.
+La domanda cambia da:
 
-Diventa:
+> “Chi ha churn risk alto?”
 
-> **Su quali clienti, con quale intervento, il valore atteso dell'azione supera il costo e il rischio?**
+verso:
 
-Questa è una trasformazione decisiva.
+> **“Su quali account, con quale intervento e dato quale vincolo operativo, abbiamo sufficiente valore atteso per agire?”**
 
-## Prediction non è decision
+Il modello predittivo resta utile.
 
-Un modello può stimare:
+Ma è un input del sistema di decisione.
 
-\[
-P(Churn \mid X) = 0.82
-\]
+## Prediction → policy è un salto professionale
 
-Ma questo non dice ancora se dobbiamo intervenire.
+Una probabilità di churn dell'82% non contiene automaticamente una recommendation.
 
-Per decidere servono almeno altre quantità:
+Servono anche:
 
-- valore economico del cliente;
+- valore del cliente;
 - costo dell'intervento;
-- probabilità che l'intervento cambi davvero il comportamento;
-- capacità operativa;
-- effetti collaterali.
+- uplift plausibile;
+- capacity;
+- alternative;
+- guardrail.
 
-Una rappresentazione semplificata potrebbe essere:
+Questo vale oltre il churn.
 
-\[
-EV(intervento) = P(successo\ incrementale) \times valore\ salvato - costo\ intervento
-\]
+### Forecast
 
-Il cliente con churn risk più alto non è necessariamente quello con il più alto expected value dell'intervento.
+Non basta prevedere la domanda.
 
-## L'AI rende questa distinzione più importante
+Serve collegare la distribuzione prevista a staffing/inventory/capacity.
 
-Un agente può generare in pochi secondi:
+### Experiment
 
-- segmentazioni;
-- propensity scores;
-- forecast;
+Non basta stimare un uplift.
+
+Serve una rollout policy.
+
+### Causal analysis
+
+Non basta stimare un effetto medio.
+
+Serve capire per quale popolazione e decisione è valido.
+
+### AI agent
+
+Non basta misurare task completion.
+
+Serve definire authority, failure cost e escalation.
+
+Aumentare decision span significa imparare a fare questi passaggi senza saltare le assunzioni.
+
+## Outcome ownership vs outcome awareness
+
+Un analyst non possiede necessariamente l'outcome finale.
+
+Ma dovrebbe sviluppare **outcome awareness**.
+
+Dopo una recommendation chiedere:
+
+- quale decisione è stata presa?
+- cosa è stato implementato davvero?
+- quali guardrail si sono mossi?
+- quale parte dell'outcome è attribuibile all'esecuzione?
+- quale assunzione era sbagliata?
+- cosa aggiorniamo la prossima volta?
+
+Questo feedback trasforma il lavoro da produzione di analisi a apprendimento professionale.
+
+## Il rischio dell'AI: saltare direttamente alla recommendation
+
+Un agente può generare molto rapidamente:
+
 - scenari;
-- raccomandazioni.
+- ranking;
+- recommendation;
+- executive summary.
 
-Proprio perché produrre alternative diventa facile, aumenta il valore di chi sa costruire un **sistema di decisione**.
+La velocità crea una tentazione:
 
-Il compito dell'analista diventa sempre meno:
+**output → recommendation**.
 
-> “Posso produrre questa analisi?”
+Il lavoro analitico maturo preserva invece i passaggi intermedi:
 
-e sempre più:
+**evidence → alternatives → uncertainty → trade-off → recommendation**.
 
-> “Quale decisione deve migliorare, quali evidenze servono e come sapremo se la decisione è stata buona?”
+Quanto più facile diventa generare una recommendation, tanto più importante diventa saperne verificare il percorso.
 
-## Decision intelligence e feedback loop
+## Una traiettoria di crescita
 
-Un'organizzazione matura non considera la decisione come punto finale.
+Per sviluppare decision span possiamo cercare progetti in cui passiamo progressivamente da:
 
-La tratta come una nuova fonte di dati.
+- “mi dai i dati?”
+- a “qual è la decisione?”
+- a “quali alternative esistono?”
+- a “cosa cambierebbe il ranking?”
+- a “come misuriamo l'outcome?”
+- a “come rendiamo il processo ricorrente?”.
 
-Dopo una decisione bisogna osservare:
+Questo non richiede necessariamente una promozione formale.
 
-- quale azione è stata scelta;
-- per chi;
-- con quali condizioni;
-- quale risultato è seguito;
-- quali assunzioni erano corrette;
-- quali erano sbagliate.
+Richiede che il nostro lavoro si avvicini alla struttura delle decisioni.
 
-Questo crea un ciclo:
-
-**Decisione → Azione → Outcome → Apprendimento → Decisione successiva**
-
-Nel tempo il sistema non migliora soltanto i modelli.
-
-Migliora il modo in cui l'organizzazione decide.
-
-## Il Data Analyst come designer del processo decisionale
-
-Questo ruolo richiede competenze che il libro ha già costruito:
-
-- business understanding;
-- semantica;
-- probabilità;
-- causalità;
-- forecasting;
-- experimentation;
-- unit economics;
-- comunicazione;
-- governance;
-- AI orchestration.
-
-Non significa che ogni analista debba diventare un teorico delle decisioni.
-
-Significa riconoscere che il prodotto finale dell'analytics non è il grafico.
-
-È una decisione migliore.
-
-> **Quando la produzione di analisi diventa economica, la progettazione delle decisioni diventa una delle competenze più preziose.**
+> **Quando produrre analisi diventa economico, una delle competenze più preziose è sapere quanto lontano possiamo accompagnare l'evidenza verso una decisione senza oltrepassare il claim o l'authority che possediamo.**
