@@ -1,13 +1,14 @@
 # Nota sull'autore e sull'edizione
 
-**Autore:** KeyserDSoze  
+**Autore:** Alessandro Rapiti  
 **Progetto:** data.analyst.today  
+**Repository GitHub:** KeyserDSoze/data.analyst.today  
 **Edizione:** settembre 2026  
 **Lingua:** italiano
 
 ## Sul progetto
 
-**data.analyst.today** è un progetto editoriale tecnico dedicato al lavoro del Data Analyst nell'era dell'AI.
+**data.analyst.today** è un progetto editoriale tecnico di Alessandro Rapiti dedicato al lavoro del Data Analyst nell'era dell'AI. Il repository è pubblicato attraverso l'account GitHub **KeyserDSoze**.
 
 Il libro nasce con un obiettivo preciso: descrivere la professione attraverso il suo sistema di responsabilità, non attraverso una lista temporanea di software.
 
@@ -24,7 +25,7 @@ Il filo conduttore dell'edizione è quindi la capacità di trasformare ambiguit�
 
 ## Sul metodo editoriale
 
-Il manoscritto è mantenuto in Markdown come source of truth e viene trasformato automaticamente in versioni Markdown, DOCX e PDF.
+Il manoscritto è mantenuto in Markdown come source of truth e viene trasformato automaticamente in versioni Markdown, DOCX, PDF ed EPUB.
 
 La release editoriale include:
 
