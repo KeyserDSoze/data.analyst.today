@@ -1,123 +1,154 @@
 # Capitolo 19 — Il Data Analyst nel 2026–2035
 
-## Il ruolo cambia, il problema resta
+## 19.0 Il futuro non è un tool: è un portafoglio di responsabilità
 
-Ogni volta che una nuova tecnologia entra nel lavoro analitico, riemerge la stessa paura:
+Ogni volta che una nuova tecnologia entra nel lavoro analitico, riemerge la stessa domanda:
 
-> “Se questa macchina sa fare una parte del mio lavoro, allora il mio lavoro sparirà?”
+> “Se una macchina sa fare una parte del mio lavoro, allora il mio lavoro sparirà?”
 
-La domanda è comprensibile, ma spesso è formulata male.
+La domanda è comprensibile.
 
-Un ruolo professionale non è una lista immutabile di task. È un insieme di responsabilità che evolve quando cambiano strumenti, costi, velocità e aspettative.
+Ma confonde **task** e **professione**.
 
-Il Data Analyst del passato poteva spendere gran parte del proprio tempo in attività come:
+Una professione non è una lista immutabile di attività manuali.
 
-- raccogliere manualmente dati da sistemi diversi;
-- costruire formule;
+È un insieme di responsabilità, capacità e relazioni che cambia quando cambiano il costo dell'esecuzione, la velocità dei sistemi e le aspettative dell'organizzazione.
+
+Il Data Analyst degli anni passati poteva spendere una parte importante del proprio tempo in:
+
+- raccogliere dati da sistemi diversi;
 - scrivere query ripetitive;
+- correggere formule;
+- costruire grafici;
 - aggiornare report;
-- preparare grafici;
+- preparare prime bozze di analisi;
 - cercare documentazione;
 - trasformare richieste vaghe in estrazioni ad hoc.
 
-Una parte crescente di queste attività diventa automatizzabile.
+Una quota crescente di questi task è già assistibile o automatizzabile.
 
-Questo non implica automaticamente che scompaia il bisogno di analisi.
+Questo non ci dice ancora che cosa accadrà alla professione.
 
-Implica che cambia **dove si concentra il valore umano**.
+Ci dice però qualcosa di molto utile:
 
-## Il primo errore: difendere la sintassi
+> **il valore si sposta quando cambia ciò che è scarso.**
 
-Quando una tecnologia automatizza una parte del lavoro, una reazione possibile è difendere proprio quella parte.
+Se produrre SQL, codice, grafici e sintesi costa meno, diventano relativamente più scarse capacità come:
 
-Un analista potrebbe pensare:
+- definire il problema;
+- stabilire il significato corretto;
+- scegliere quale evidenza serve;
+- riconoscere un failure mode;
+- valutare assunzioni;
+- progettare verifiche;
+- decidere quale rischio accettare;
+- collegare l'evidenza a un'azione;
+- assumersi responsabilità sull'outcome.
 
-> “Il mio valore è sapere scrivere SQL molto bene.”
+Questo capitolo non prova quindi a prevedere quale software vincerà nel 2035.
 
-Oppure:
+Prova a costruire un **career operating model** che resti utile anche se quella previsione fosse completamente sbagliata.
 
-> “Il mio valore è conoscere tutti i dettagli di una specifica piattaforma BI.”
+## Partire dall'esposizione dei task, non dalla paura per il titolo
 
-Queste competenze restano utili.
+L'International Labour Organization, nel suo aggiornamento 2025 su Generative AI e lavoro, stima che circa **un lavoratore su quattro** nel mondo si trovi in un'occupazione con qualche grado di esposizione alla GenAI. La stessa analisi sottolinea però che, poiché molti task continuano a richiedere input umano, per la maggior parte delle occupazioni l'esito più probabile è **trasformazione del lavoro**, non completa ridondanza del ruolo.
 
-Ma se l’AI riduce drasticamente il costo di generare una query, una formula, una visualizzazione o una prima bozza di modello, il mercato tenderà a pagare meno la mera capacità di produrre sintassi standard.
+Fonte pubblica: https://www.ilo.org/publications/generative-ai-and-jobs-2025-update
 
-Il valore si sposta verso domande più difficili:
+Questa distinzione è fondamentale.
 
-- la query risponde alla domanda giusta?
-- la metrica è definita correttamente?
-- i dati sono affidabili?
-- il modello usa informazioni disponibili al momento giusto?
-- la correlazione viene confusa con causalità?
-- il risultato è materialmente rilevante?
-- quale decisione cambia?
-- quali rischi stiamo introducendo?
+Un lavoro può cambiare molto anche senza scomparire.
 
-Il futuro del Data Analyst non si gioca quindi sulla possibilità di fare più velocemente quello che già faceva.
+E può diventare più difficile da svolgere bene proprio mentre alcuni dei suoi task diventano più facili.
 
-Si gioca sulla capacità di **governare un processo analitico più ampio, più veloce e più automatizzato**.
+## I segnali sul mercato delle competenze
 
-## Un cambiamento già visibile
+Il World Economic Forum, nel *Future of Jobs Report 2025*, stima che quasi il 40% delle skill richieste sul lavoro cambierà entro il 2030.
 
-Il World Economic Forum, nel *Future of Jobs Report 2025*, rileva che quasi il 40% delle skill richieste sul lavoro potrebbe cambiare entro il 2030. AI e big data sono indicate tra le competenze in maggiore crescita, ma il report segnala contemporaneamente analytical thinking, creative thinking, leadership, resilienza e collaborazione come capacità ancora centrali.
+AI e big data sono tra le competenze in maggiore crescita, ma **analytical thinking** resta la core skill più citata dagli employer; continuano inoltre a contare creative thinking, resilienza, leadership, collaborazione, curiosità e lifelong learning.
 
-Il messaggio è importante.
+Fonte pubblica: https://www.weforum.org/publications/the-future-of-jobs-report-2025/digest/
 
-Il futuro non sembra richiedere soltanto più tecnologia.
+Il messaggio non è:
 
-Richiede una combinazione di:
+> “la tecnica non conta più”.
 
-**tecnologia + ragionamento + contesto + capacità di guidare decisioni.**
+È quasi l'opposto.
 
-Microsoft, nel *Work Trend Index 2025*, descrive una traiettoria organizzativa in cui l’AI passa da assistente a “digital colleague”, fino a sistemi in cui gli esseri umani definiscono la direzione e gli agenti eseguono parti sempre più estese del workflow.
+Serve una combinazione di:
 
-Il report usa persino un’espressione significativa: **agent boss**.
+**tecnica + ragionamento + contesto + capacità di dirigere sistemi più potenti**.
 
-È la stessa idea che abbiamo introdotto nel Capitolo 0.
+## Dal 2025 al 2026: da agent boss a human agency
 
-Il lavoro non consiste più soltanto nell’eseguire.
+Nel Work Trend Index 2025 Microsoft ha reso popolare l'idea di **agent boss**: persone che costruiscono, delegano e gestiscono agenti.
 
-Consiste anche nel costruire, delegare, verificare e dirigere capacità automatiche.
+Nell'edizione 2026 il framing si sposta ulteriormente verso la **human agency**: man mano che agenti e AI assorbono una parte dell'esecuzione, le persone possono avere più spazio per dirigere il lavoro, prendere decisioni e possedere gli outcome.
 
-## Non tutto si muove alla stessa velocità
+Microsoft riporta inoltre che, in una propria analisi privacy-preserving di oltre 100.000 conversazioni Microsoft 365 Copilot, il 49% dei goal classificati supportava lavoro cognitivo come analisi, problem solving, valutazione e pensiero creativo.
 
-Parlare del “Data Analyst del 2035” come se esistesse una singola traiettoria sarebbe ingenuo.
+Fonte pubblica: https://www.microsoft.com/en-us/worklab/work-trend-index/agents-human-agency-and-the-opportunity-for-every-organization
+
+Non è una prova che tutte le aziende lavoreranno così.
+
+È un segnale utile: il cambiamento non riguarda soltanto **quali task può svolgere l'AI**, ma **come viene ridisegnato il lavoro quando quella capacità diventa disponibile**.
+
+## Non tutto si muoverà alla stessa velocità
+
+Parlare del “Data Analyst del 2035” come se esistesse una traiettoria unica sarebbe ingenuo.
 
 Le aziende differiscono per:
 
 - settore;
-- dimensione;
-- maturità dei dati;
 - regolamentazione;
-- infrastruttura;
+- maturità dei dati;
 - qualità del semantic layer;
-- accesso all’AI;
 - cultura decisionale;
-- tolleranza al rischio.
+- infrastruttura;
+- accesso all'AI;
+- tolleranza al rischio;
+- capacità di change management.
 
-In un’azienda, nel 2030, un analyst potrebbe orchestrare agenti con accesso governato a metriche certificate.
+Nel 2030 un analyst potrebbe dirigere agenti con accesso governato a metriche certificate.
 
-In un’altra potrebbe ancora ricevere CSV via email.
+In un'altra organizzazione potrebbe ancora ricevere CSV via email.
 
-Le due realtà possono coesistere per anni.
+Le due realtà possono coesistere a lungo.
 
-Per questo questo capitolo non prova a prevedere esattamente quali strumenti useremo.
+Questo significa che una carriera robusta non può dipendere da una sola previsione sul livello di automazione futuro.
 
-Prova invece a capire **quali competenze restano preziose quando gli strumenti cambiano**.
+Deve avere **optionalità**.
 
-## La domanda più utile
+## Il Career Operating Model
+
+Nel resto del capitolo useremo una domanda più utile di:
+
+> “Quale tool devo imparare?”
+
+Costruiremo invece un modello personale con nove componenti:
+
+1. **task exposure** — quali attività stanno diventando economiche;
+2. **responsibility moat** — quali responsabilità restano difficili da delegare interamente;
+3. **delegation boundary** — cosa delegare e con quale profondità di verifica;
+4. **skill portfolio** — fondamenta lente, metodi, dominio, sistemi e AI;
+5. **domain leverage** — quale conoscenza del business rende migliori le ipotesi;
+6. **decision ownership** — quali decisioni sappiamo migliorare;
+7. **learning loop** — come impariamo senza inseguire ogni novità;
+8. **deskilling safeguards** — quali competenze devono restare vive per poter verificare;
+9. **career optionality** — quanto facilmente possiamo cambiare tool, dominio o livello di responsabilità.
+
+Alla fine del capitolo questi elementi confluiranno in un **Personal Career Operating Plan**.
+
+## La domanda guida
 
 Invece di chiedere:
 
-> “Quale software devo imparare per essere competitivo tra dieci anni?”
+> “Come faccio a non essere sostituito?”
 
-è più utile chiedere:
+useremo una domanda più professionale:
 
-> **“Quali problemi continueranno a essere difficili anche quando produrre codice, query e grafici costerà molto meno?”**
+> **“Quale responsabilità voglio essere capace di possedere quando produrre l'output diventerà molto più economico?”**
 
-Questo capitolo parte da lì.
+È una domanda meno rassicurante.
 
-Fonti pubbliche di riferimento:
-
-- World Economic Forum, *Future of Jobs Report 2025*: https://www.weforum.org/publications/the-future-of-jobs-report-2025/
-- Microsoft, *2025 Work Trend Index — The Year the Frontier Firm Is Born*: https://www.microsoft.com/en-us/worklab/work-trend-index/2025-the-year-the-frontier-firm-is-born
+Ma è molto più utile.
