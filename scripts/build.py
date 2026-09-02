@@ -8,6 +8,8 @@ from xml.sax.saxutils import escape
 import yaml
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 from docx.shared import Inches, Pt
 from markdown_it import MarkdownIt
 from reportlab.lib import colors
@@ -391,6 +393,14 @@ def parse_table(tokens, start: int, render_cell) -> tuple[list[list[str]], int]:
     return rows, i
 
 
+def mark_docx_header_row(row) -> None:
+    """Repeat the first table row after page breaks in Word/LibreOffice."""
+    tr_pr = row._tr.get_or_add_trPr()
+    tbl_header = OxmlElement("w:tblHeader")
+    tbl_header.set(qn("w:val"), "true")
+    tr_pr.append(tbl_header)
+
+
 def configure_docx_styles(doc: Document) -> None:
     normal = doc.styles["Normal"]
     normal.font.name = "Aptos"
@@ -408,6 +418,7 @@ def configure_docx_styles(doc: Document) -> None:
     section.bottom_margin = Inches(0.8)
     section.left_margin = Inches(0.85)
     section.right_margin = Inches(0.85)
+    section.different_first_page_header_footer = True
 
 
 def build_docx(markdown: str, output: Path, config: dict) -> None:
@@ -466,6 +477,7 @@ def build_docx(markdown: str, output: Path, config: dict) -> None:
                         if r_idx == 0:
                             for run in table.cell(r_idx, c_idx).paragraphs[0].runs:
                                 run.bold = True
+                mark_docx_header_row(table.rows[0])
                 doc.add_paragraph()
             continue
 
@@ -490,9 +502,12 @@ def build_docx(markdown: str, output: Path, config: dict) -> None:
 
         i += 1
 
-    footer = doc.sections[0].footer.paragraphs[0]
+    section = doc.sections[0]
+    footer = section.footer.paragraphs[0]
     footer.alignment = WD_ALIGN_PARAGRAPH.CENTER
     footer.add_run(config["title"])
+    first_footer = section.first_page_footer.paragraphs[0]
+    first_footer.text = ""
     doc.save(output)
 
 
