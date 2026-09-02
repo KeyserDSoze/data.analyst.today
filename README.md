@@ -4,7 +4,7 @@ Un libro open source sull'analisi dati nell'era dell'AI.
 
 L'obiettivo non è insegnare una collezione di tool. Il progetto parte dal ragionamento analitico: capire il problema, definire metriche e popolazione, verificare i dati, scegliere il metodo, calibrare il claim e trasformare l'evidenza in una decisione. SQL, Excel, Python, BI, cloud e AI sono strumenti dentro questo processo.
 
-Il corpo principale comprende i **Capitoli 0–19**. La review capitolo-per-capitolo, il source/factual audit globale, la normalizzazione delle formule residue, il front matter e il reference layer sono completati. La fase corrente è il **proofread globale e consistency pass**, seguito dal layout QA PDF/DOCX e dalla release candidate.
+Il corpo principale comprende i **Capitoli 0–19**. Review capitolo-per-capitolo, source/factual audit, formula cleanup, front matter, reference layer, proofread/consistency pass, layout QA PDF/DOCX e freshness recheck sono completati. La fase corrente è **release candidate**.
 
 ## Struttura del repository
 
@@ -13,6 +13,7 @@ data.analyst.today/
 ├── README.md
 ├── EDITORIAL_AUDIT.md
 ├── SOURCE_FACTUAL_AUDIT.md
+├── RELEASE_CANDIDATE.md
 ├── book.yml
 ├── requirements.txt
 ├── front_matter/
@@ -63,7 +64,7 @@ Markdown è la source of truth. DOCX e PDF sono artefatti generati e non vanno m
 18. **Costruire un sistema analitico che scala**.
 19. **Il Data Analyst nel 2026–2035**.
 
-La build genera inoltre automaticamente un **Indice dei capitoli**, un **Indice dei casi reali documentati** e un **Indice delle fonti** consolidato dai riferimenti presenti nel corpo.
+La build genera automaticamente un **Indice dei capitoli**, un **Indice dei casi reali documentati**, le sezioni **Note e fonti** e un **Indice delle fonti** consolidato dai riferimenti presenti nel corpo.
 
 ## Convenzioni editoriali
 
@@ -138,11 +139,12 @@ pip install -r requirements.txt
 
 ## Controllare il manoscritto
 
-Prima della build:
+Il release gate locale è:
 
 ```bash
 python scripts/normalize_sources.py --check
-python scripts/lint_book.py
+python scripts/lint_book.py --strict
+python scripts/build.py
 ```
 
 Il lint controlla, tra le altre cose:
@@ -156,13 +158,10 @@ Il lint controlla, tra le altre cose:
 - URL contaminati;
 - grafie ASCII legacy;
 - notazione LaTeX residua;
+- casing dei deliverable canonici;
 - conteggio di parole, caratteri e URL distinti.
 
-Per trattare anche i warning editoriali come errori:
-
-```bash
-python scripts/lint_book.py --strict
-```
+In CI, dopo la build vengono verificati anche gli output: footnote risolte, outline PDF presente, repeating header delle tabelle DOCX e frontespizio DOCX senza footer visibile.
 
 ## Costruire il libro
 
@@ -178,10 +177,11 @@ Lo script:
 2. inserisce i file di `front_matter/`;
 3. genera l'indice dei capitoli dai titoli H1 correnti;
 4. assembla i 321 file del corpo in ordine numerico;
-5. inserisce glossario e indice degli artefatti da `reference/`;
-6. genera l'indice dei casi reali documentati;
-7. genera l'indice consolidato delle fonti a partire dagli URL del corpo;
-8. produce Markdown, DOCX e PDF.
+5. risolve le footnote Markdown in riferimenti numerici e sezioni **Note e fonti** per capitolo;
+6. inserisce glossario e indice degli artefatti da `reference/`;
+7. genera l'indice dei casi reali documentati;
+8. genera l'indice consolidato delle fonti a partire dagli URL del corpo;
+9. produce Markdown, DOCX e PDF, con outline di navigazione nel PDF e repeating header nelle tabelle DOCX.
 
 Output:
 
@@ -203,17 +203,22 @@ Il lint del corpo principale riporta:
 - **0 file con LaTeX residuo**;
 - **0 file con grafie ASCII legacy**.
 
-La build validata con front matter e reference layer contiene inoltre:
+L'ultima build validata dal release gate contiene inoltre:
 
 - **3 file front matter**;
 - **2 file reference curati**;
 - indice capitoli generato;
 - indice casi reali generato;
 - indice fonti generato;
-- **1.210 pagine PDF** nella build tecnica corrente;
+- footnote risolte in **Note e fonti**;
+- **389 bookmark PDF**;
+- **213/213 tabelle DOCX** con repeating header;
+- frontespizio PDF senza numero pagina stampato;
+- frontespizio DOCX senza footer visibile;
+- **1.209 pagine PDF** nella build tecnica corrente;
 - build Markdown, DOCX e PDF: **SUCCESS**.
 
-Il page count è una misura tecnica della build, non un obiettivo editoriale. Potrà cambiare durante il layout QA.
+Il page count è una misura tecnica della build, non un obiettivo editoriale.
 
 ## Filosofia del progetto
 
@@ -237,23 +242,26 @@ Completati:
 - review editoriale capitolo-per-capitolo;
 - source/factual audit globale;
 - canonicalizzazione delle fonti individuate;
+- release-gate freshness recheck;
 - normalizzazione delle formule/LaTeX residue;
 - front matter e navigazione;
 - glossario e indice degli artefatti;
 - indice automatico dei casi reali e delle fonti;
+- proofread globale / consistency pass;
+- layout QA PDF/DOCX;
+- build-output guardrails in CI;
 - build multiformato validata in CI.
 
-Prossimi gate:
+Fase corrente:
 
 ```text
-proofread globale + consistency pass
-→ layout QA PDF/DOCX
-→ recheck fonti freshness-sensitive
-→ release candidate
+release candidate
+→ eventuali metadata di pubblicazione
+→ tag/release quando desiderato
 ```
 
-Il dettaglio operativo è mantenuto in `EDITORIAL_AUDIT.md`; il ledger delle fonti è in `SOURCE_FACTUAL_AUDIT.md`.
+Il dettaglio operativo è mantenuto in `EDITORIAL_AUDIT.md`; il ledger delle fonti è in `SOURCE_FACTUAL_AUDIT.md`; il manifest della candidate è in `RELEASE_CANDIDATE.md`.
 
 ## Licenza
 
-La licenza del progetto verrà definita prima della pubblicazione della prima release stabile.
+La licenza del progetto verrà definita prima della pubblicazione della prima release stabile. La release candidate non inventa una licenza non ancora scelta.
