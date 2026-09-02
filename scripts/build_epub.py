@@ -15,38 +15,72 @@ SECTION_HEADING_RE = re.compile(r"^\d+\.\d+(?:\s|\b)")
 
 EPUB_CSS = """
 body {
-  font-family: serif;
-  line-height: 1.5;
-  margin: 5%;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.58;
+  margin: 6%;
+  color: #20252b;
 }
-h1, h2, h3 {
-  line-height: 1.2;
+h1 {
+  font-size: 2.2em;
+  line-height: 1.12;
+  color: #1f365c;
+  margin-top: 1.35em;
+  margin-bottom: 0.8em;
+  padding-bottom: 0.35em;
+  border-bottom: 0.12em solid #1f365c;
+  break-before: page;
+  page-break-before: always;
+}
+h2 {
+  font-size: 1.45em;
+  line-height: 1.22;
+  color: #1f365c;
+  margin-top: 1.5em;
+  margin-bottom: 0.55em;
+}
+h3 {
+  font-size: 1.18em;
+  line-height: 1.25;
+  color: #1f365c;
+  margin-top: 1.25em;
+  margin-bottom: 0.45em;
+}
+p {
+  margin-top: 0;
+  margin-bottom: 0.85em;
 }
 pre, code {
-  font-family: monospace;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
 }
 pre {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  padding: 0.75em;
-  background: #f5f5f5;
+  padding: 0.85em;
+  background: #f4f6f8;
+  border-left: 0.22em solid #1f365c;
 }
 table {
   border-collapse: collapse;
   width: 100%;
   font-size: 0.9em;
+  margin: 1em 0 1.25em 0;
 }
 th, td {
-  border: 1px solid #999;
-  padding: 0.35em;
+  border: 1px solid #aeb5bd;
+  padding: 0.4em;
   vertical-align: top;
 }
+th {
+  background: #eef2f6;
+}
 blockquote {
-  margin-left: 1em;
-  padding-left: 1em;
-  border-left: 0.2em solid #bbb;
+  margin-left: 0.5em;
+  margin-right: 0;
+  padding: 0.25em 0 0.25em 1em;
+  border-left: 0.22em solid #1f365c;
 }
 a {
+  color: #1f365c;
   overflow-wrap: anywhere;
 }
 """.strip()
