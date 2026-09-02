@@ -31,7 +31,7 @@ jobs:
         run: python scripts/normalize_sources.py --check
 
       - name: Lint manuscript
-        run: python scripts/lint_book.py
+        run: python scripts/lint_book.py --strict
 
       - name: Build book
         run: python scripts/build.py
