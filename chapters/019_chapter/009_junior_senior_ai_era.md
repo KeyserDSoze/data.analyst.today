@@ -1,116 +1,276 @@
-## 19.8 Junior e senior nell'era AI
+## 19.8 Junior, senior e scope di responsabilità nell'era AI
+
 L'AI non elimina la differenza tra junior e senior.
 
-La cambia.
+Rende più debole uno dei vecchi segnali della differenza: **la quantità di esecuzione tecnica che una persona riesce a produrre senza assistenza**.
 
-Per molti anni una parte importante della seniority era legata alla velocità con cui una persona sapeva:
+Un junior può oggi generare molto rapidamente:
 
-- scrivere query complesse;
-- ricordare sintassi;
-- costruire modelli;
-- debuggare codice;
-- trovare velocemente la funzione giusta.
-
-Queste capacità restano utili, ma sono sempre meno sufficienti per distinguere il livello professionale.
-
-## Dove si sposta la seniority
-
-Un profilo senior tende a essere riconoscibile per la capacità di:
-
-- definire bene un problema ambiguo;
-- individuare rapidamente le assunzioni critiche;
-- capire quale dato non deve essere preso alla lettera;
-- scegliere il livello di rigore proporzionato alla decisione;
-- distinguere correlazione, predizione e causalità;
-- riconoscere quando il modello sta rispondendo alla domanda sbagliata;
-- gestire stakeholder con incentivi diversi;
-- progettare controlli;
-- prevedere failure mode;
-- tradurre un insight in una decisione implementabile;
-- assumersi la responsabilità del risultato.
-
-## Caso realistico: stesso agente, due analisti
-
-Un junior e un senior ricevono la stessa domanda:
-
-> “Perché il conversion rate è sceso del 12%?”
-
-Entrambi hanno accesso allo stesso agente AI.
-
-L'agente genera:
-
-- query SQL;
-- segmentazione per country;
-- breakdown per device;
+- query;
+- codice;
 - grafici;
-- cinque possibili cause.
+- modelli baseline;
+- documentazione;
+- presentazioni.
 
-Il junior prende l'ipotesi con la correlazione maggiore e prepara una slide.
+Questo può comprimere anni di attrito operativo.
 
-Il senior nota invece tre cose:
+Non comprime automaticamente anni di esposizione a:
 
-1. la metrica di conversion è stata modificata due settimane prima;
-2. il traffico paid è cresciuto molto nel periodo;
-3. il calo è concentrato sugli utenti che hanno ricevuto una nuova release.
+- incidenti;
+- metriche ambigue;
+- stakeholder in conflitto;
+- esperimenti falliti;
+- dati incompleti;
+- false causal claim;
+- forecast sbagliati;
+- rollout con effetti collaterali;
+- sistemi che cambiano significato senza cambiare schema.
 
-Il senior non è necessariamente più veloce a scrivere SQL.
+La seniority si sposta quindi verso **scope di responsabilità e qualità del judgment**.
 
-È più veloce a capire **dove potrebbe essere sbagliato il ragionamento**.
+## Quattro dimensioni della seniority
 
-Questa è una forma di seniority che l'AI tende ad amplificare, non a cancellare.
+### 1. Ambiguity span
 
-## Il rischio per i junior
+Quanto è poco definito il problema che riesci a strutturare?
 
-Storicamente molte competenze venivano costruite attraverso lavoro ripetitivo:
+Un junior lavora meglio quando:
 
-- pulizia dati;
+- task;
+- dati;
+- output;
+- criteri di accettazione
+
+sono abbastanza chiari.
+
+Un senior riesce a trasformare una richiesta come:
+
+> “La crescita è sana?”
+
+in un percorso di decisione e evidenza senza chiedere che il problema venga già pre-segmentato.
+
+### 2. Failure span
+
+Quanto è grave il failure mode che sei capace di anticipare e governare?
+
+Non soltanto:
+
+- syntax error;
+- query lenta;
+
+ma anche:
+
+- semantic drift;
+- leakage;
+- selection;
+- causal overclaim;
+- metric gaming;
+- operational capacity mismatch;
+- irreversible rollout.
+
+### 3. Coordination span
+
+Quante dipendenze sai orchestrare?
+
+- stakeholder;
+- team;
+- semantic owner;
+- engineer;
+- specialist;
+- agent;
+- external source;
+- decision owner.
+
+Più aumenta il sistema, meno il lavoro è individuale.
+
+### 4. Decision span
+
+Quanto vicino sai accompagnare l'evidenza verso:
+
+- alternative;
+- trade-off;
+- recommendation;
+- policy;
+- rollout;
+- feedback loop?
+
+La seniority cresce quando questi quattro span aumentano senza perdere rigore.
+
+## Una progressione più utile
+
+### Junior — Task reliability
+
+Sa:
+
+- eseguire task relativamente ben definiti;
+- usare AI e tool;
+- controllare grain, denominatori e output di base;
+- chiedere chiarimenti;
+- riconoscere quando non è sicuro;
+- documentare cosa ha fatto.
+
+Success metric:
+
+> **l'output è corretto e sa spiegare i controlli principali.**
+
+### Mid-level — Problem ownership
+
+Sa:
+
+- trasformare problemi moderatamente ambigui;
+- scegliere metodi;
+- costruire ipotesi;
+- coordinare stakeholder;
+- progettare verification;
+- collegare evidence e recommendation.
+
+Success metric:
+
+> **l'analisi riduce davvero una decision uncertainty.**
+
+### Senior — Decision/system ownership
+
+Sa:
+
+- definire risk/claim level;
+- anticipare failure mode;
+- orchestrare persone e agenti;
+- progettare stop/escalation;
+- scegliere cosa non analizzare;
+- proteggere semantica e causalità;
+- collegare decisione a economics e rollout;
+- rendere il processo riutilizzabile quando necessario.
+
+Success metric:
+
+> **il sistema prende decisioni migliori senza dipendere dalla sua presenza continua.**
+
+### Lead / Principal — Organizational capability
+
+Sa migliorare:
+
+- standard;
+- operating model;
+- metric governance;
+- experimentation culture;
+- AI/agent governance;
+- talent development;
+- decision quality cross-team.
+
+Success metric:
+
+> **molte persone e sistemi lavorano meglio perché la capacità è stata incorporata nell'organizzazione.**
+
+## Caso simulato/composito: stesso agente, due risultati professionali
+
+Un junior e un senior ricevono:
+
+> “Perché la conversion è scesa del 12%?”
+
+Entrambi hanno lo stesso agente.
+
+L'agente produce:
+
+- SQL;
+- breakdown geografico;
+- device segmentation;
+- grafici;
+- cinque spiegazioni plausibili.
+
+Il junior sceglie l'ipotesi con correlazione più forte.
+
+Il senior prima controlla:
+
+1. definizione e denominator;
+2. data readiness;
+3. traffic mix;
+4. release/change log;
+5. timing dell'anomalia;
+6. alternative hypothesis.
+
+Scopre che:
+
+- la definizione di conversion è cambiata due settimane prima;
+- paid traffic ha spostato il mix;
+- una release è sovrarappresentata nel segmento residuo.
+
+Il vantaggio senior non è aver scritto più SQL.
+
+È aver capito **in quale ordine il sistema poteva ingannarlo**.
+
+## Il problema dell'apprendistato
+
+Storicamente molte intuizioni venivano costruite attraverso attività ripetitive:
+
+- pulizia;
 - query semplici;
 - debugging;
-- riconciliazioni;
-- reporting manuale.
+- reconciliation;
+- reporting manuale;
+- code review.
 
-Se l'AI elimina troppo presto tutte queste attività, può comparire un problema: il junior ottiene output corretti senza aver sviluppato il modello mentale necessario per riconoscere quelli sbagliati.
+Se l'AI assorbe immediatamente tutta questa superficie, un junior può ottenere output senior-looking senza aver attraversato abbastanza failure mode.
 
-Questo crea un paradosso.
+Questo crea un problema di **experience compression apparente**.
 
-L'AI può rendere un junior produttivo più rapidamente, ma può anche impedirgli di costruire alcune intuizioni fondamentali.
+La produzione accelera.
 
-## La soluzione non è tornare indietro
+L'esperienza no.
 
-Non avrebbe senso obbligare le persone a fare manualmente ciò che può essere automatizzato solo per “imparare come si faceva una volta”.
+## Non serve conservare lavoro inutile
 
-Serve invece progettare nuovi percorsi di apprendimento.
+La risposta non è obbligare un junior a passare sei mesi a copiare CSV “perché così si impara”.
 
-Un junior dovrebbe essere esposto deliberatamente a:
+Serve progettare apprenticeship più deliberato.
 
-- output AI sbagliati da diagnosticare;
-- query da revisionare;
-- metriche ambigue da definire;
-- incidenti dati da investigare;
-- esperimenti da criticare;
-- forecast da stressare;
-- decisioni da difendere.
+Per esempio:
 
-In altre parole, meno pratica sulla pura digitazione della soluzione e più pratica sulla **valutazione della soluzione**.
+- review di query AI con bug nascosti;
+- metric definition exercise;
+- data incident shadowing;
+- causal claim critique;
+- experiment design review;
+- forecast stress test;
+- postmortem;
+- decision record review;
+- agent eval failure analysis.
 
-## Una nuova scala di seniority
+Meno lavoro ripetitivo senza feedback.
 
-Possiamo immaginare una progressione:
+Più esposizione intenzionale ai failure mode.
 
-### Junior
+## Review depth come strumento di crescita
 
-Sa usare strumenti e AI per eseguire task ben definiti e sa applicare controlli di base.
+Per un junior, la review può essere più profonda:
 
-### Mid-level
+- leggere SQL completo;
+- ricostruire denominator;
+- spiegare join;
+- verificare sample;
+- replicare un risultato.
 
-Sa trasformare problemi relativamente ambigui in analisi affidabili, scegliere metodi e gestire stakeholder.
+Con esperienza, parte della review può diventare risk-based.
 
-### Senior
+Ma dovrebbe essere una **compressione conquistata**, non una fiducia concessa automaticamente perché l'agente ha una buona reputazione.
 
-Sa progettare il sistema analitico, anticipare errori, governare trade-off, orchestrare persone e agenti e collegare evidenza a decisioni ad alto impatto.
+## La seniority non è sapere tutto
 
-### Lead / Principal
+Un senior forte dice anche:
 
-Sa migliorare il modo in cui un'intera organizzazione usa dati e AI per decidere.
+> “Qui non ho sufficiente profondità.”
 
-> **La seniority nell'era AI sarà sempre meno “quanto lavoro riesci a fare da solo” e sempre più “quanto bene sai governare lavoro, evidenze e decisioni prodotti da sistemi complessi”.**
+E coinvolge:
+
+- statistician;
+- security;
+- legal/privacy;
+- ML engineer;
+- domain expert;
+- Finance.
+
+Escalare correttamente un rischio che non possiamo governare è un comportamento senior.
+
+## Una definizione più robusta
+
+> **La seniority nell'era AI si misura sempre meno dalla quantità di lavoro che sappiamo eseguire da soli e sempre più dall'ampiezza di ambiguità, rischio e responsabilità che sappiamo governare senza perdere il controllo su significato ed evidenza.**
