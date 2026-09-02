@@ -11,9 +11,7 @@ L'**intervallo di confidenza** rende visibile la seconda parte.
 
 Per una media, in un caso classico, la struttura generale è:
 
-\[
-\text{stima} \pm \text{valore critico} \times \text{standard error}
-\]
+`stima ± valore critico × standard error`
 
 L'intervallo dipende quindi da:
 
