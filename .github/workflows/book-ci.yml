@@ -34,12 +34,15 @@ jobs:
         run: python scripts/lint_book.py --strict
 
       - name: Build book
-        run: python scripts/build.py
+        run: |
+          python scripts/build.py
+          python scripts/build_epub.py
 
       - name: Inspect outputs
         run: |
           python - <<'PY'
           from pathlib import Path
+          from zipfile import ZIP_STORED, ZipFile
 
           from docx import Document
           from docx.oxml.ns import qn
@@ -47,6 +50,7 @@ jobs:
 
           pdf = Path("build/data-analyst-today.pdf")
           docx = Path("build/data-analyst-today.docx")
+          epub = Path("build/data-analyst-today.epub")
           md = Path("build/data-analyst-today.md")
 
           assembled = md.read_text(encoding="utf-8")
@@ -105,11 +109,30 @@ jobs:
           if first_footer:
               raise SystemExit("DOCX: il frontespizio contiene un footer visibile.")
 
+          with ZipFile(epub) as archive:
+              members = archive.infolist()
+              if not members or members[0].filename != "mimetype":
+                  raise SystemExit("EPUB: il primo elemento ZIP non è mimetype.")
+              if members[0].compress_type != ZIP_STORED:
+                  raise SystemExit("EPUB: mimetype deve essere non compresso.")
+              if archive.read("mimetype") != b"application/epub+zip":
+                  raise SystemExit("EPUB: mimetype non valido.")
+              names = set(archive.namelist())
+              if "META-INF/container.xml" not in names:
+                  raise SystemExit("EPUB: META-INF/container.xml mancante.")
+              xhtml_count = sum(name.endswith(".xhtml") for name in names)
+              if xhtml_count < 20:
+                  raise SystemExit(
+                      f"EPUB: documenti XHTML insufficienti ({xhtml_count}); attesi almeno 20."
+                  )
+
           print(f"PDF pages: {pages}")
           print(f"PDF outline entries: {outline_count}")
           print(f"DOCX tables with repeating header: {len(document.tables)}")
+          print(f"EPUB XHTML documents: {xhtml_count}")
           print(f"PDF size: {pdf.stat().st_size:,} bytes")
           print(f"DOCX size: {docx.stat().st_size:,} bytes")
+          print(f"EPUB size: {epub.stat().st_size:,} bytes")
           print(f"Markdown size: {md.stat().st_size:,} bytes")
           PY
 
@@ -121,4 +144,104 @@ jobs:
             build/data-analyst-today.md
             build/data-analyst-today.docx
             build/data-analyst-today.pdf
+            build/data-analyst-today.epub
           if-no-files-found: error
+
+  publish-release:
+    needs: validate-and-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout release metadata
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect release manifest change
+        id: release_gate
+        shell: bash
+        run: |
+          if git diff --name-only "${{ github.event.before }}" "$GITHUB_SHA" | grep -Fxq "release.json"; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Read release metadata
+        if: steps.release_gate.outputs.publish == 'true'
+        id: release_meta
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          manifest = Path("release.json")
+          if not manifest.exists():
+              raise SystemExit("release.json modificato/rimosso ma non presente nell'head.")
+
+          data = json.loads(manifest.read_text(encoding="utf-8"))
+          tag = str(data.get("tag", "")).strip()
+          name = str(data.get("name", "")).strip()
+          notes_file = str(data.get("notes_file", "")).strip()
+          prerelease = bool(data.get("prerelease", False))
+
+          if not tag.startswith("v"):
+              raise SystemExit("release.json: tag deve iniziare con 'v'.")
+          if not name:
+              raise SystemExit("release.json: name è obbligatorio.")
+          if not notes_file or not Path(notes_file).is_file():
+              raise SystemExit("release.json: notes_file deve puntare a un file esistente.")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"tag={tag}\n")
+              output.write(f"name={name}\n")
+              output.write(f"notes_file={notes_file}\n")
+              output.write(f"prerelease={str(prerelease).lower()}\n")
+          PY
+
+      - name: Download validated build
+        if: steps.release_gate.outputs.publish == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: data-analyst-today-build
+          path: build
+
+      - name: Publish GitHub Release assets
+        if: steps.release_gate.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release_meta.outputs.tag }}
+          RELEASE_NAME: ${{ steps.release_meta.outputs.name }}
+          RELEASE_NOTES: ${{ steps.release_meta.outputs.notes_file }}
+          RELEASE_PRERELEASE: ${{ steps.release_meta.outputs.prerelease }}
+        shell: bash
+        run: |
+          assets=(
+            build/data-analyst-today.docx
+            build/data-analyst-today.pdf
+            build/data-analyst-today.epub
+          )
+
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG già esistente: aggiorno gli asset in modo idempotente."
+            gh release upload "$RELEASE_TAG" "${assets[@]}" \
+              --repo "$GITHUB_REPOSITORY" \
+              --clobber
+          else
+            args=(
+              "$RELEASE_TAG"
+              "${assets[@]}"
+              --repo "$GITHUB_REPOSITORY"
+              --title "$RELEASE_NAME"
+              --notes-file "$RELEASE_NOTES"
+              --target "$GITHUB_SHA"
+            )
+            if [[ "$RELEASE_PRERELEASE" == "true" ]]; then
+              args+=(--prerelease)
+            fi
+            gh release create "${args[@]}"
+          fi
