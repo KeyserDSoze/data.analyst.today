@@ -134,5 +134,5 @@ Precision gain:
 
 > **Variance reduction non crea più evidenza dal nulla. Riduce il rumore sfruttando informazione pre-treatment che sappiamo già essere predittiva dell'outcome.**
 
-[^ms-vr]: Microsoft Research, *Deep Dive Into Variance Reduction*: https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/deep-dive-into-variance-reduction
+[^ms-vr]: Microsoft Research, *Deep Dive Into Variance Reduction*: https://www.microsoft.com/en-us/research/articles/deep-dive-into-variance-reduction/
 [^ms-infra]: Microsoft Research, *A/B Testing Infrastructure Changes at Microsoft ExP*: https://www.microsoft.com/en-us/research/articles/a-b-testing-infrastructure-changes-at-microsoft-exp
