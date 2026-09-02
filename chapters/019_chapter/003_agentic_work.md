@@ -1,155 +1,245 @@
-## 19.2 Dal singolo assistente ai team di agenti
-Il cambiamento più profondo potrebbe non essere che ogni analyst utilizzerà un chatbot più bravo.
+## 19.2 Dal lavoro assistito al leverage agentico
 
-Potrebbe essere che una parte crescente del lavoro analitico venga svolta da **sistemi composti da più agenti con ruoli diversi**.
+Il cambiamento più importante non è che ogni analyst avrà un chatbot più bravo.
 
-Microsoft, nel Work Trend Index 2025, descrive una traiettoria in tre fasi:
+È che una singola persona può progressivamente dirigere **più capacità di esecuzione di quanta ne potrebbe produrre con le proprie mani**.
 
-1. AI come assistente;
-2. agenti come “digital colleagues” che svolgono task specifici sotto direzione umana;
-3. sistemi in cui gli esseri umani impostano la direzione e gli agenti gestiscono parti intere del processo, intervenendo quando serve.
+Questo è leverage.
 
-Il punto interessante per l’analista non è il nome commerciale dell’agente.
+Nel lavoro tradizionale, il throughput individuale è limitato da:
 
-È il cambiamento del modello operativo.
+- ore disponibili;
+- velocità di scrittura;
+- capacità di cambiare contesto;
+- memoria;
+- tempo necessario per documentare e verificare.
 
-## Un possibile team analitico del futuro
+Con sistemi agentici una parte di questi vincoli si allenta.
 
-Immaginiamo una domanda:
+Ma ne emergono altri.
 
-> “Perché il margine è sceso in Germania e cosa possiamo fare?”
+## Il leverage non è output volume
 
-Un analyst potrebbe coordinare:
+Supponiamo che un analyst possa coordinare dieci agenti.
 
-- un agente che verifica data freshness;
-- uno che controlla le definizioni di margin;
-- uno che decomprime il delta per volume, price, mix e cost;
-- uno che cerca anomalie nei supplier cost;
-- uno che controlla le promozioni;
-- uno che analizza resi e logistica;
-- uno che produce contro-ipotesi;
-- uno che prepara scenari economici;
-- uno che verifica le query;
-- uno che prepara una sintesi per il CFO.
+Se ciascuno genera:
 
-In termini di capacità grezza, una singola persona può quindi dirigere più lavoro di quanto avrebbe potuto eseguire manualmente.
+- cinque query;
+- quattro grafici;
+- tre ipotesi;
+- due scenari;
 
-Ma questo crea una nuova classe di problemi.
+abbiamo prodotto moltissimo materiale.
 
-## La produzione non è più il collo di bottiglia
+Non abbiamo necessariamente creato più valore.
 
-Con molti agenti, il rischio è ottenere troppo output.
+Il leverage utile è meglio descritto come:
 
-Se dieci agenti generano ciascuno cinque ipotesi, non abbiamo necessariamente cinquanta insight.
+> **capacità di aumentare la quantità di lavoro affidabile che arriva a una decisione senza aumentare proporzionalmente errori, rumore e bisogno di coordinamento.**
 
-Abbiamo cinquanta elementi da ordinare.
+Quindi un analyst agentico non dovrebbe ottimizzare:
 
-Il collo di bottiglia diventa:
+`output per ora`.
 
+Dovrebbe migliorare qualcosa di più vicino a:
+
+`evidenza utile e verificata per unità di attenzione umana`.
+
+Non è necessariamente una metrica da mettere in dashboard.
+
+È un principio di design del lavoro.
+
+## Dal singolo assistente al portafoglio di capacità
+
+Una domanda complessa può essere decomposta in capacità differenti.
+
+### Caso simulato/composito
+
+Un'azienda consumer vede il contribution margin europeo sotto piano.
+
+Un analyst può distribuire il lavoro tra agenti che:
+
+- controllano readiness e incident;
+- riconciliano la metrica con Finance;
+- decompongono volume, price, mix e cost;
+- analizzano surcharge logistici;
+- verificano campagne e sconti;
+- cercano mix shift;
+- producono ipotesi concorrenti;
+- costruiscono scenari economici;
+- fanno review indipendente delle query;
+- preparano una prima Decision Communication Pack.
+
+Il valore umano non è eseguire manualmente tutti questi passaggi.
+
+È definire:
+
+- quali passaggi servono davvero;
+- quali possono essere eseguiti in parallelo;
+- quali dipendono dall'output di altri;
+- quali richiedono verifica indipendente;
+- quale evidenza deve arrivare prima di proseguire;
+- quali risultati sono incompatibili tra loro;
+- quando fermarsi.
+
+Questa è orchestrazione analitica.
+
+## Il collo di bottiglia cambia
+
+Quando l'esecuzione diventa abbondante, i colli di bottiglia possono spostarsi verso:
+
+- definizione dell'intento;
 - priorità;
-- coordinamento;
-- semantica;
-- verifica;
-- risoluzione dei conflitti;
-- comprensione del business;
-- decisione.
+- context quality;
+- semantic consistency;
+- attention allocation;
+- verification;
+- conflict resolution;
+- stakeholder coordination;
+- judgment.
 
-Questo cambia anche il modo in cui valutiamo la seniority.
+In altre parole:
 
-Il senior analyst del futuro non è necessariamente chi scrive più codice.
+**la produzione si scala più velocemente della capacità di capire.**
 
-Potrebbe essere chi sa:
+Questa asimmetria è una delle ragioni per cui il lavoro agentico può aumentare contemporaneamente produttività e rischio.
 
-- dividere bene un problema;
-- assegnare task agli agenti appropriati;
-- costruire criteri di accettazione;
-- riconoscere output incoerenti;
-- decidere quando serve un essere umano specialista;
-- sapere quando fermare il workflow.
+## Il Delegation Boundary
 
-## Il rischio della falsa abbondanza
+Un career operating model dovrebbe rendere esplicito anche **quanto lavoro possiamo delegare senza perdere la capacità di governarlo**.
 
-Quando l’AI rende economica la produzione di analisi, può emergere una nuova illusione:
+Possiamo immaginare cinque livelli.
 
-> più analisi = più conoscenza.
+### Livello A — Human execution
 
-Non è vero.
+L'analista esegue direttamente.
 
-Un’organizzazione potrebbe passare da 50 report a 5.000 report generati automaticamente senza migliorare una sola decisione.
+Utile quando:
 
-La scarsità si sposta.
+- sta costruendo una competenza fondamentale;
+- il task è nuovo e poco specificato;
+- serve comprendere profondamente il meccanismo;
+- il costo di una delega sbagliata supera il beneficio.
 
-Da:
+### Livello B — AI draft
 
-**“non abbiamo abbastanza capacità analitica”**
+L'AI produce una prima versione.
 
-verso:
+L'analista revisiona quasi tutto.
 
-**“non sappiamo distinguere quali analisi meritano attenzione.”**
+Esempi:
 
-## Caso realistico: 23 spiegazioni per un solo calo
+- query candidate;
+- documentazione;
+- grafico;
+- hypothesis list.
 
-Un’azienda subscription registra un calo del 7% nelle conversioni.
+### Livello C — AI execution + targeted verification
 
-Gli agenti generano 23 spiegazioni plausibili:
+Il sistema esegue il task, mentre l'analista concentra la review sui failure mode principali.
 
-- prezzo;
-- competitor;
-- campagne;
-- lentezza del sito;
-- mix geografico;
-- payment failures;
-- nuova release;
-- stagionalità;
-- tracking incompleto;
-- ecc.
+Per esempio:
 
-Il sistema sembra potente.
+- cardinality check;
+- reconciliation;
+- temporal boundary;
+- holdout integrity;
+- guardrail.
 
-Ma senza un metodo di ranking, l’abbondanza crea paralisi.
+### Livello D — Agent workflow + sampling/audit
 
-L’analista costruisce quindi una matrice:
+Il processo è sufficientemente stabile da non richiedere full review di ogni run.
 
-| Ipotesi | Evidenza iniziale | Impatto potenziale | Verificabilità | Costo del test |
-|---|---:|---:|---:|---:|
-| payment failures | alta | alta | alta | basso |
-| price increase | media | alta | media | medio |
-| competitor | bassa | media | bassa | alto |
-| tracking bug | alta | alta | alta | basso |
+Servono:
 
-Il workflow cambia subito.
+- eval;
+- observability;
+- sample review;
+- escalation;
+- drift monitoring.
 
-La qualità non deriva dal numero di ipotesi generate.
+### Livello E — Bounded autonomous service
 
-Deriva dalla capacità di trasformarle in un **ordine di investigazione**.
+L'agente può agire entro limiti predefiniti.
 
-## L’agent boss non è un titolo
+Qui entrano i meccanismi del Capitolo 18:
 
-Microsoft usa l’espressione “agent boss” per descrivere lavoratori che costruiscono, delegano e gestiscono agenti.
+- authority budget;
+- rollback;
+- criticality tier;
+- incident response;
+- revoke path.
 
-Per un Data Analyst, possiamo tradurla così:
+Il punto non è raggiungere sempre il livello E.
 
-> **diventare responsabili di un sistema di capacità analitiche, non soltanto dell’output delle proprie mani.**
+Il punto è scegliere il livello coerente con **risk, reversibility e verification capability**.
 
-Questo è un ampliamento del ruolo.
+## Delegation depth deve seguire verification depth
 
-Ma comporta anche più accountability.
+Una regola personale utile è:
 
-Quando un workflow diventa potente, aumenta la necessità di sapere:
+> **non aumentare l'autonomia più velocemente della tua capacità di capire come il sistema può fallire.**
 
-- cosa può fare;
-- cosa non può fare;
-- a quali dati accede;
-- quali controlli esegue;
-- quali azioni richiedono approvazione;
-- cosa succede quando due agenti non sono d’accordo.
+Se un analyst non sa ancora riconoscere:
 
-Il futuro del lavoro agentico non elimina quindi il principio del Capitolo 0.
+- fan-out join;
+- leakage;
+- denominator drift;
+- selection bias;
+- SRM;
+- coverage failure;
 
-Lo rende ancora più importante:
+non dovrebbe ridurre troppo presto la review proprio su quei temi.
 
-> **più capacità deleghiamo, più dobbiamo essere chiari su ciò che resta sotto la nostra responsabilità.**
+L'AI può accelerare l'apprendimento.
 
-Fonte pubblica di riferimento:
+Non elimina il bisogno di costruire la competenza che permette di delegare in sicurezza.
 
-- Microsoft, *2025 Work Trend Index — The Year the Frontier Firm Is Born*: https://www.microsoft.com/en-us/worklab/work-trend-index/2025-the-year-the-frontier-firm-is-born
+## La falsa abbondanza di ipotesi
+
+### Caso simulato/composito
+
+Una conversion metric scende del 7%.
+
+Un gruppo di agenti produce 23 spiegazioni plausibili.
+
+Il workflow diventa utile soltanto quando qualcuno ordina le ipotesi rispetto a:
+
+| Ipotesi | Evidenza iniziale | Impatto | Verificabilità | Costo verifica | Failure cost se ignorata |
+|---|---:|---:|---:|---:|---:|
+| payment failure | alta | alta | alta | basso | alto |
+| tracking change | alta | alta | alta | basso | molto alto |
+| price increase | media | alta | media | medio | medio |
+| competitor move | bassa | media | bassa | alto | medio |
+
+La qualità non deriva dalla quantità di idee.
+
+Deriva dal **routing dell'attenzione**.
+
+## Il segnale del Work Trend Index 2026
+
+Microsoft descrive nel Work Trend Index 2026 una dinamica in cui agenti e AI assorbono più execution mentre aumenta lo spazio umano per dirigere lavoro, prendere decisioni e possedere outcome.
+
+Fonte pubblica: https://www.microsoft.com/en-us/worklab/work-trend-index/agents-human-agency-and-the-opportunity-for-every-organization
+
+Il dato va letto con cautela: è ricerca Microsoft sul proprio ecosistema e non una legge del mercato del lavoro.
+
+Ma il framing è utile per il nostro modello professionale.
+
+Il vantaggio non è diventare “boss degli agenti” come titolo.
+
+È imparare a trasformare capacità automatica in **leverage controllato**.
+
+## Una nuova domanda sulla produttività
+
+Nel lavoro tradizionale potevamo chiederci:
+
+> “Quanto riesco a produrre in una giornata?”
+
+Nel lavoro agentico la domanda più interessante diventa:
+
+> **“Quanto lavoro affidabile riesco a dirigere senza diventare il collo di bottiglia della verifica o perdere comprensione del sistema?”**
+
+È una domanda che mette insieme produttività e responsabilità.
+
+> **Il leverage professionale cresce quando deleghiamo più esecuzione senza delegare inconsapevolmente il giudizio che rende quell'esecuzione utile.**
