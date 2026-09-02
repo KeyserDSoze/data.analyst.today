@@ -14,6 +14,8 @@ data.analyst.today/
 ├── EDITORIAL_AUDIT.md
 ├── SOURCE_FACTUAL_AUDIT.md
 ├── RELEASE_CANDIDATE.md
+├── release.json                 # manifest che attiva la pubblicazione di una release
+├── release-notes/
 ├── book.yml
 ├── requirements.txt
 ├── front_matter/
@@ -31,15 +33,17 @@ data.analyst.today/
 │   └── 002_artefatti_operativi.md
 ├── scripts/
 │   ├── build.py
+│   ├── build_epub.py
 │   ├── lint_book.py
 │   └── normalize_sources.py
 └── build/
     ├── data-analyst-today.md
     ├── data-analyst-today.docx
-    └── data-analyst-today.pdf
+    ├── data-analyst-today.pdf
+    └── data-analyst-today.epub
 ```
 
-Markdown è la source of truth. DOCX e PDF sono artefatti generati e non vanno modificati manualmente.
+Markdown è la source of truth. DOCX, PDF ed EPUB sono artefatti generati e non vanno modificati manualmente.
 
 ## Indice del corpo principale
 
@@ -145,6 +149,7 @@ Il release gate locale è:
 python scripts/normalize_sources.py --check
 python scripts/lint_book.py --strict
 python scripts/build.py
+python scripts/build_epub.py
 ```
 
 Il lint controlla, tra le altre cose:
@@ -161,7 +166,7 @@ Il lint controlla, tra le altre cose:
 - casing dei deliverable canonici;
 - conteggio di parole, caratteri e URL distinti.
 
-In CI, dopo la build vengono verificati anche gli output: footnote risolte, outline PDF presente, repeating header delle tabelle DOCX e frontespizio DOCX senza footer visibile.
+In CI, dopo la build vengono verificati anche gli output: footnote risolte, outline PDF presente, repeating header delle tabelle DOCX, frontespizio DOCX senza footer visibile e struttura EPUB valida.
 
 ## Costruire il libro
 
@@ -169,9 +174,10 @@ Dalla root:
 
 ```bash
 python scripts/build.py
+python scripts/build_epub.py
 ```
 
-Lo script:
+`scripts/build.py`:
 
 1. assembla il frontespizio da `book.yml`;
 2. inserisce i file di `front_matter/`;
@@ -183,13 +189,43 @@ Lo script:
 8. genera l'indice consolidato delle fonti a partire dagli URL del corpo;
 9. produce Markdown, DOCX e PDF, con outline di navigazione nel PDF e repeating header nelle tabelle DOCX.
 
+`scripts/build_epub.py` usa il Markdown assemblato e produce un EPUB con documenti separati per gli H1 top-level e indice di navigazione.
+
 Output:
 
 ```text
 build/data-analyst-today.md
 build/data-analyst-today.docx
 build/data-analyst-today.pdf
+build/data-analyst-today.epub
 ```
+
+## Pubblicare una release
+
+La pipeline usa `release.json` come manifest esplicito di pubblicazione. Una normale push su `main` valida e costruisce i formati ma **non pubblica** una GitHub Release. La pubblicazione parte soltanto quando `release.json` viene creato o modificato nello stesso commit che si vuole rilasciare.
+
+Esempio:
+
+```json
+{
+  "tag": "v1.0.0-rc1",
+  "name": "Data Analyst Today v1.0.0-rc1",
+  "prerelease": true,
+  "notes_file": "release-notes/v1.0.0-rc1.md"
+}
+```
+
+Dopo che il job `validate-and-build` è verde, il job `publish-release`:
+
+1. legge e valida il manifest;
+2. scarica l'artifact costruito dalla stessa run;
+3. crea il tag/release se non esiste;
+4. allega alla GitHub Release i tre formati distributivi:
+   - `data-analyst-today.docx`;
+   - `data-analyst-today.pdf`;
+   - `data-analyst-today.epub`.
+
+Il Markdown assemblato rimane nell'artifact della CI, ma non viene allegato alla release pubblica.
 
 ## Stato misurato — 2 settembre 2026
 
@@ -216,7 +252,7 @@ L'ultima build validata dal release gate contiene inoltre:
 - frontespizio PDF senza numero pagina stampato;
 - frontespizio DOCX senza footer visibile;
 - **1.209 pagine PDF** nella build tecnica corrente;
-- build Markdown, DOCX e PDF: **SUCCESS**.
+- build Markdown, DOCX, PDF ed EPUB validate in CI.
 
 Il page count è una misura tecnica della build, non un obiettivo editoriale.
 
@@ -250,14 +286,15 @@ Completati:
 - proofread globale / consistency pass;
 - layout QA PDF/DOCX;
 - build-output guardrails in CI;
-- build multiformato validata in CI.
+- build multiformato Markdown/DOCX/PDF/EPUB validata in CI.
 
 Fase corrente:
 
 ```text
 release candidate
-→ eventuali metadata di pubblicazione
-→ tag/release quando desiderato
+→ pubblicazione prerelease tramite release.json
+→ feedback / eventuali bugfix
+→ release stabile
 ```
 
 Il dettaglio operativo è mantenuto in `EDITORIAL_AUDIT.md`; il ledger delle fonti è in `SOURCE_FACTUAL_AUDIT.md`; il manifest della candidate è in `RELEASE_CANDIDATE.md`.
