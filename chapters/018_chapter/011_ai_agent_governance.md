@@ -1,135 +1,270 @@
-## 18.10 Governance per AI e agenti
-Quando un sistema analitico incorpora AI o agenti, la superficie di rischio cambia.
+## 18.10 AI e agenti come servizi operativi
 
-Un processo tradizionale esegue una sequenza relativamente definita.
+Nel Capitolo 14 abbiamo costruito workflow AI-assisted controllabili attraverso Context Pack, permission boundary, Verification Bundle, eval ed escalation.
 
-Un agente può invece:
+Quando quel workflow diventa ricorrente, il problema cambia ancora.
 
-- scegliere strumenti;
-- generare query;
-- interrogare fonti diverse;
-- sintetizzare evidenze;
-- proporre azioni;
-- iterare autonomamente.
+Non stiamo più governando soltanto una singola analisi.
 
-Questo aumenta la capacità, ma rende ancora più importante definire confini.
+Stiamo operando **un servizio che può agire molte volte, su dati che cambiano, con tool che cambiano e sotto pressioni diverse**.
 
-## Governance non significa bloccare l'autonomia
+La domanda quindi non è più soltanto:
 
-L'obiettivo non è richiedere approvazione umana per ogni operazione.
+> “Questo agente ha prodotto una risposta corretta?”
 
-È graduare l'autonomia in base al rischio.
+È:
 
-Un agente che prepara una bozza di descrizione KPI può avere libertà elevata.
+> **“Possiamo mantenerlo affidabile, osservabile e revocabile mentre il sistema evolve?”**
 
-Un agente che modifica un semantic model certificato deve avere controlli molto più forti.
+## Dal prompt al servizio
 
-Un agente che può inviare ordini, modificare prezzi o agire su clienti richiede soglie ancora più alte.
+Un agente operativo comprende almeno:
 
-## Le dimensioni da governare
+- modello;
+- system instructions;
+- Context Pack o knowledge source;
+- tool e API;
+- permission scope;
+- semantic layer disponibile;
+- policy;
+- memory/state;
+- eval suite;
+- monitoring;
+- escalation path;
+- owner.
 
-### Accesso
+Cambiarne uno può cambiare il comportamento del sistema anche se il prompt principale resta identico.
 
-Quali dati può leggere?
+Per questo l'oggetto operativo non è il prompt.
 
-Quali sistemi può modificare?
+È l'**agent configuration effettivamente eseguita**.
 
-### Autorità
+## Agent Operating Profile
 
-Può soltanto suggerire o può anche eseguire?
+Per ogni agente ricorrente l'Analytics Operating Contract dovrebbe collegarsi a un profilo minimo.
 
-### Evidenza
+| Campo | Esempio |
+|---|---|
+| Agent purpose | triage anomalie revenue |
+| Criticality | T2 business-critical |
+| Owner | Analytics Platform |
+| Decision owner | VP Finance |
+| Allowed data | certified finance + commerce marts |
+| Allowed tools | read-only SQL, lineage, incident ticket |
+| Forbidden actions | write warehouse, publish KPI, change metric definitions |
+| Autonomy | investigate + recommend, no irreversible action |
+| Eval suite | semantic, SQL, anomaly, abstention, escalation |
+| Runtime budget | max 12 tool call per investigation |
+| Stop conditions | source conflict, non-ready data, unsupported causal claim |
+| Escalation | on-call analytics + metric owner |
+| Audit | full execution manifest retained |
+| Review cadence | monthly + on model/tool/policy change |
 
-Deve conservare query, fonti, trasformazioni e risultati intermedi?
+La tabella serve a rendere l'agente trattabile come un prodotto operativo, non come una capacità indefinita.
 
-### Verifica
+## Il lifecycle operativo
 
-Quali controlli deterministici devono essere superati?
+Un agente maturo dovrebbe attraversare stati riconoscibili.
 
-### Escalation
+### 1. REGISTER
 
-Quando deve fermarsi e chiedere una decisione umana?
+Documentiamo purpose, owner, data boundary, tool boundary, risk tier e consumer.
 
-### Audit
+Un agente non registrato che può accedere a sistemi produttivi è **shadow AI**.
 
-Possiamo ricostruire cosa ha fatto e perché?
+### 2. EVALUATE
 
-### Versioning
-
-Quale modello, prompt, toolset e policy erano in uso?
-
-## Caso realistico: l'agente che ottimizza troppo bene
-
-Un retailer costruisce un agente per ottimizzare automaticamente la spesa promozionale.
-
-L'obiettivo assegnato è massimizzare il contribution margin settimanale.
-
-L'agente riduce drasticamente gli incentivi su clienti con bassa probabilità di conversione.
-
-Nel breve periodo il margine migliora.
-
-Dopo alcune settimane emerge però che il sistema ha quasi eliminato l'acquisizione in segmenti nuovi e poco conosciuti, perché il modello aveva maggiore incertezza proprio su quei clienti.
-
-L'agente ha ottimizzato correttamente il criterio assegnato.
-
-Il criterio era incompleto.
-
-Mancavano guardrail su:
-
-- acquisizione nuovi clienti;
-- esplorazione;
-- copertura segmenti;
-- rischio di feedback loop.
-
-## Human oversight come design, non come frase
-
-Scrivere “human in the loop” in una policy non basta.
-
-Bisogna specificare:
-
-- chi è l'owner;
-- quali eventi richiedono review;
-- quali soglie fermano l'agente;
-- quali azioni sono reversibili;
-- quanto tempo ha il reviewer;
-- quali evidenze deve vedere.
-
-Questo riprende il principio del Capitolo 0:
-
-> **Possiamo delegare l'esecuzione. Non possiamo delegare la responsabilità.**
-
-## Risk-based autonomy
-
-Una matrice semplice può usare due dimensioni:
-
-| Impatto | Reversibilità | Autonomia consigliata |
-|---|---|---|
-| basso | alta | elevata |
-| medio | alta | moderata |
-| alto | media | limitata |
-| alto | bassa | approvazione umana obbligatoria |
-
-Non è una legge universale, ma costringe il team a esplicitare il rischio.
-
-## Governance degli eval
-
-Un agente non dovrebbe essere valutato soltanto su esempi ideali.
-
-Gli eval dovrebbero includere:
+Prima del deploy verifichiamo almeno:
 
 - casi normali;
 - edge case;
 - dati incompleti;
 - conflitti tra fonti;
-- istruzioni ambigue;
-- tentativi di azione fuori scope;
-- situazioni in cui la risposta corretta è fermarsi.
+- richieste fuori scope;
+- prompt injection o input ostili quando rilevante;
+- tool failure;
+- situazioni in cui la risposta corretta è `STOP` o `ESCALATE`.
 
-Il sistema più maturo non è quello che agisce sempre.
+Il risultato deve essere legato ai failure mode più costosi, non soltanto a una media aggregata.
 
-È quello che sa quando **non** agire.
+### 3. DEPLOY
 
-## Fonti
+Il rollout dovrebbe essere proporzionato al rischio.
 
-- NIST AI Risk Management Framework: https://www.nist.gov/itl/ai-risk-management-framework
+Possibili modalità:
+
+- shadow mode;
+- suggestion-only;
+- human approval;
+- limited audience;
+- limited action scope;
+- full autonomy solo dove impatto e reversibilità lo permettono.
+
+### 4. MONITOR
+
+Dopo il deploy monitoriamo non soltanto uptime e latency.
+
+Possibili indicatori:
+
+- abstention/escalation rate;
+- tool failure;
+- unsupported-claim rate;
+- query/data reconciliation failure;
+- costo per run;
+- tool call per task;
+- human override rate;
+- downstream incident;
+- distribution shift dei task;
+- tasso di azioni rollbackate;
+- qualità su un campione continuamente riesaminato.
+
+### 5. INCIDENT
+
+Un agente può generare incidenti diversi da una pipeline tradizionale.
+
+Esempi:
+
+- usa un asset deprecated;
+- rafforza una causal claim;
+- sceglie un tool fuori dal percorso atteso;
+- entra in loop e consuma risorse;
+- usa dati incompleti senza degradare il claim;
+- propaga una stessa assunzione sbagliata su molti consumer.
+
+Il runbook deve poter:
+
+- disabilitare l'agente;
+- revocare un tool;
+- ridurre l'autonomia;
+- forzare suggestion-only;
+- passare a last-known-good configuration;
+- notificare i consumer di output già prodotti.
+
+### 6. CHANGE
+
+Una modifica a modello, tool, permission, knowledge source o policy deve avere un change classification.
+
+Per esempio:
+
+- cambio copy del prompt → low risk;
+- nuovo warehouse tool → capability change;
+- write permission → authority change;
+- semantic model v2 → context/semantic change;
+- modello differente → behavior change.
+
+I cambi più importanti richiedono re-eval e rollout controllato.
+
+### 7. REVOKE / RETIRE
+
+Un agente deve poter essere spento.
+
+Possibili trigger:
+
+- owner assente;
+- eval sotto soglia;
+- sistema sostituito;
+- cost-to-serve eccessivo;
+- permission non più giustificate;
+- processo business non più esistente;
+- incident rate incompatibile con il tier.
+
+L'assenza di una retirement policy crea agenti orfani con credenziali e autorità che sopravvivono al loro scopo.
+
+## Human oversight deve avere capacità reale
+
+Scrivere `human-in-the-loop` in un diagramma non risolve il problema.
+
+La review deve specificare:
+
+- **chi** approva;
+- **che cosa** vede;
+- **entro quanto tempo** deve reagire;
+- **quale autorità** ha per bloccare o rollbackare;
+- **che cosa succede** se non risponde.
+
+Se il reviewer riceve cento richieste al giorno, senza priorità e senza evidenza sufficiente, abbiamo costruito **approval theater**.
+
+Il controllo esiste formalmente ma non operativamente.
+
+## Budget di autonomia
+
+L'autonomia non è soltanto `read` vs `write`.
+
+Possiamo limitare anche:
+
+- numero di tool call;
+- spesa per task;
+- durata;
+- profondità di iterazione;
+- numero di consumer coinvolti;
+- valore economico massimo dell'azione;
+- ampiezza del rollout;
+- frequenza di esecuzione.
+
+Questi limiti trasformano un'autonomia generica in un **budget operativo**.
+
+## Caso simulato/composito: l'agente che ottimizza il criterio sbagliato
+
+Un retailer usa un agente per proporre automaticamente la pressione promozionale settimanale.
+
+Objective iniziale:
+
+> massimizzare contribution margin nelle quattro settimane successive.
+
+L'agente riduce gli incentivi sui segmenti nei quali il modello ha bassa probabilità di conversione.
+
+Nel breve periodo il margine migliora.
+
+Dopo qualche settimana emerge però che la policy ha quasi eliminato l'esplorazione su clienti nuovi e segmenti poco conosciuti.
+
+Il sistema non ha violato il proprio objective.
+
+Ha rivelato che l'objective era incompleto.
+
+Il redesign aggiunge guardrail su:
+
+- quota new customers;
+- exploration budget;
+- coverage dei segmenti;
+- concentrazione della spesa;
+- long-term value;
+- feedback loop.
+
+E riduce l'autonomia da `execute` a `recommend + bounded rollout` finché gli eval non coprono meglio il failure mode.
+
+## Governance dei failure correlati
+
+Con molti agenti emerge un rischio organizzativo nuovo.
+
+Cinque workflow possono sembrare indipendenti ma usare:
+
+- la stessa semantic metric sbagliata;
+- lo stesso modello;
+- la stessa knowledge source;
+- la stessa assunzione sul business;
+- lo stesso tool con un bug.
+
+Quindi la governance deve poter rispondere anche a:
+
+> **“Quali agenti e decisioni sono esposti a questo componente?”**
+
+Servono registry, lineage delle dipendenze e capability di revoca trasversale.
+
+## Il legame con il framework NIST
+
+Il NIST AI Risk Management Framework e il profilo per la Generative AI trattano la trustworthiness come una proprietà da gestire lungo design, sviluppo, uso ed evaluation di prodotti e sistemi AI.
+
+Per il nostro operating model la lezione è semplice:
+
+**un eval pre-deploy non sostituisce monitoring, ownership e change management dopo il deploy**.
+
+Fonti pubbliche:
+
+- NIST AI RMF: https://www.nist.gov/itl/ai-risk-management-framework
 - NIST Generative AI Profile: https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
+
+## Una regola operativa
+
+> **Un agente pronto per una demo non è automaticamente pronto per possedere una parte di un processo ricorrente.**
+
+La maturità si vede quando il sistema sa non soltanto agire, ma anche **degradare, fermarsi, essere revisionato, perdere autorità ed essere ritirato**.
