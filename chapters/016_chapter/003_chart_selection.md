@@ -140,4 +140,4 @@ Poi controlliamo che scala, denominatore, baseline e titolo non gli facciano per
 ### Fonti
 
 - Office for National Statistics, *Data visualisation guidance — Axes and gridlines*: https://service-manual.ons.gov.uk/data-visualisation/guidance/axes-and-gridlines
-- Government Analysis Function, *Accessible charts: a checklist of the basics*: https://analysisfunction.civilservice.gov.uk/policy-store/accessible-charts-a-checklist-of-the-basics/
+- Government Analysis Function, *Accessible charts: a checklist of the basics*: https://analysisfunction.civilservice.gov.uk/policy-store/charts-a-checklist/
