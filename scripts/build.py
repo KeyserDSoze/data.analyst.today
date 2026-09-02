@@ -157,11 +157,13 @@ def real_case_index(files: list[Path]) -> str:
             if not re.match(r"^#{1,6}\s+", stripped):
                 continue
             heading = re.sub(r"^#{1,6}\s+", "", stripped).strip()
-            if not REAL_CASE_RE.search(heading):
+            case_match = REAL_CASE_RE.search(heading)
+            if not case_match:
                 continue
-            label = REAL_CASE_RE.sub("", heading, count=1).strip()
-            # Remove only the separator immediately after the case label.
-            # Internal hyphens such as ``trade-off`` must remain untouched.
+            # Keep only the meaningful label after "Caso reale documentato".
+            # Prefixes such as "11." or "Esercizio 6 —" are structural and
+            # should not leak into the generated index.
+            label = heading[case_match.end():].strip()
             label = re.sub(r"^[\s—:–-]+", "", label).strip()
             if not label:
                 continue
@@ -532,7 +534,10 @@ def build_pdf(markdown: str, output: Path, config: dict) -> None:
     def make_heading(content: str, plain: str, style, level: int) -> Paragraph:
         nonlocal bookmark_counter
         paragraph = Paragraph(content, style)
-        if level <= 2:
+        should_bookmark = level == 1 or (
+            level == 2 and SECTION_HEADING_RE.match(plain.strip()) is not None
+        )
+        if should_bookmark:
             bookmark_counter += 1
             paragraph._bookmark_key = f"bookmark-{bookmark_counter}"
             paragraph._bookmark_title = plain
