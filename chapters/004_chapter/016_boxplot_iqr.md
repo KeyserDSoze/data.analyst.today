@@ -4,23 +4,17 @@ Il box plot è utile perché comprime in poco spazio **posizione e dispersione**
 
 Il cuore del grafico è l'**interquartile range**, o IQR:
 
-\[
-IQR = Q3 - Q1
-\]
+`IQR = Q3 − Q1`
 
 `Q1` è il 25° percentile e `Q3` il 75° percentile. Tra i due si trova quindi il 50% centrale delle osservazioni.
 
 Una costruzione molto diffusa segnala come valori esterni ai *whisker* quelli inferiori a:
 
-\[
-Q1 - 1,5 \times IQR
-\]
+`Q1 − 1,5 × IQR`
 
 o superiori a:
 
-\[
-Q3 + 1,5 \times IQR
-\]
+`Q3 + 1,5 × IQR`
 
 NIST descrive questa come una delle costruzioni standard del box plot.[^nist-boxplot]
 
