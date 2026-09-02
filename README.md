@@ -2,9 +2,9 @@
 
 Un libro open source sull'analisi dati nell'era dell'AI.
 
-L'obiettivo non è insegnare una collezione di tool. Il progetto parte dal ragionamento analitico: capire il problema, definire le metriche, verificare i dati, scegliere il metodo, usare lo strumento giusto e trasformare l'analisi in decisioni. SQL, Excel, Python, BI, cloud e AI sono strumenti dentro questo processo.
+L'obiettivo non è insegnare una collezione di tool. Il progetto parte dal ragionamento analitico: capire il problema, definire metriche e popolazione, verificare i dati, scegliere il metodo, calibrare il claim e trasformare l'evidenza in una decisione. SQL, Excel, Python, BI, cloud e AI sono strumenti dentro questo processo.
 
-Il corpo principale del manoscritto comprende oggi i **Capitoli 0–19** ed è entrato nella fase di revisione editoriale, tecnica e di impaginazione.
+Il corpo principale comprende i **Capitoli 0–19**. La review capitolo-per-capitolo, il source/factual audit globale, la normalizzazione delle formule residue, il front matter e il reference layer sono completati. La fase corrente è il **proofread globale e consistency pass**, seguito dal layout QA PDF/DOCX e dalla release candidate.
 
 ## Struttura del repository
 
@@ -12,14 +12,22 @@ Il corpo principale del manoscritto comprende oggi i **Capitoli 0–19** ed è e
 data.analyst.today/
 ├── README.md
 ├── EDITORIAL_AUDIT.md
-├── requirements.txt
+├── SOURCE_FACTUAL_AUDIT.md
 ├── book.yml
+├── requirements.txt
+├── front_matter/
+│   ├── 001_come_usare_questo_libro.md
+│   ├── 002_legenda_editoriale.md
+│   └── 003_nota_autore_edizione.md
 ├── chapters/
 │   ├── 000_chapter/        # Al timone
 │   ├── 001_chapter/
 │   ├── 002_chapter/
 │   ├── ...
 │   └── 019_chapter/
+├── reference/
+│   ├── 001_glossario.md
+│   └── 002_artefatti_operativi.md
 ├── scripts/
 │   ├── build.py
 │   ├── lint_book.py
@@ -30,18 +38,16 @@ data.analyst.today/
     └── data-analyst-today.pdf
 ```
 
-Ogni capitolo ha una cartella numerata. Dentro la cartella, ogni sezione importante è un file Markdown separato. L'ordine è determinato dai prefissi numerici delle cartelle e dei file.
+Markdown è la source of truth. DOCX e PDF sono artefatti generati e non vanno modificati manualmente.
 
-Questo permette di lavorare su una sezione alla volta senza trasformare il manoscritto in un unico file enorme.
-
-## Indice attuale
+## Indice del corpo principale
 
 0. **Al timone** — lavorare con l'AI senza delegare la responsabilità.
 1. **Tutto è cambiato. Il problema è rimasto lo stesso** — mentalità analitica nell'era AI.
-2. **Dal problema di business al problema analitico** — analytical brief, metriche, ipotesi e priorità.
-3. **Capire i dati prima di analizzarli** — grain, chiavi, qualità, lineage e contratti.
+2. **Dal problema di business al problema analitico** — Analytical Brief, metriche, ipotesi e priorità.
+3. **Capire i dati prima di analizzarli** — Data Readiness Review, grain, qualità e comparabilità.
 4. **Statistica descrittiva ed EDA** — distribuzioni, dispersione, correlazioni, trend e anomalie.
-5. **Probabilità e incertezza** — campionamento, intervalli, test e A/B testing fundamentals.
+5. **Probabilità e incertezza** — campionamento, intervalli, test e decisione sotto incertezza.
 6. **Segmentazione, coorti, funnel, retention e churn**.
 7. **Serie temporali, anomalie e forecasting**.
 8. **Causalità, confondenti e ragionamento controfattuale**.
@@ -57,26 +63,52 @@ Questo permette di lavorare su una sezione alla volta senza trasformare il manos
 18. **Costruire un sistema analitico che scala**.
 19. **Il Data Analyst nel 2026–2035**.
 
+La build genera inoltre automaticamente un **Indice dei capitoli**, un **Indice dei casi reali documentati** e un **Indice delle fonti** consolidato dai riferimenti presenti nel corpo.
+
 ## Convenzioni editoriali
 
-- Cartelle dei capitoli: `000_chapter`, `001_chapter`, `002_chapter`, ...
-- File delle sezioni: `001_nome.md`, `002_nome.md`, `003_nome.md`, ...
-- I prefissi dei file devono essere univoci e contigui all'interno di ogni capitolo.
-- Il primo heading del capitolo usa `#`.
-- Le sezioni interne usano `##`, `###`, ecc.
-- Il file introduttivo può contenere una sezione `X.0` e, quando editorialmente utile, anche la prima sezione numerata `X.1`; il lint ricava quindi la sequenza effettiva dal contenuto del capitolo invece di assumere rigidamente che `002_*.md` sia sempre `X.1`.
-- Citazioni e fonti vengono inserite direttamente nel Markdown.
-- Il testo sorgente rimane sempre in Markdown; DOCX e PDF sono artefatti generati.
-- Non modificare manualmente i file dentro `build/`: vengono ricreati dallo script.
+- Cartelle capitoli: `000_chapter`, `001_chapter`, ... `019_chapter`.
+- File sezione: `001_nome.md`, `002_nome.md`, ...
+- I prefissi devono essere univoci e contigui nel capitolo.
+- Il primo heading del capitolo usa `#`; le sezioni interne usano `##`, `###`, ecc.
+- Citazioni e fonti rimangono vicino al claim che sostengono.
+- Non vengono accettati URL con `utm_source=chatgpt.com`.
+- Le fonti privilegiano documentazione ufficiale, standard, governi, fonti primarie e letteratura accademica riconosciuta quando disponibili.
 
 ### Casi reali e casi simulati
 
 Il libro distingue esplicitamente:
 
-- **caso reale documentato**: organizzazione, evento o pratica sostenuti da una fonte pubblica attendibile;
-- **caso simulato/composito**: scenario costruito a fini didattici, con nomi, numeri o circostanze che possono essere inventati.
+- **caso reale documentato** — organizzazione, evento o pratica sostenuti da una fonte pubblica attendibile e con claim proporzionato;
+- **caso simulato/composito** — scenario costruito a fini didattici, con nomi, numeri o circostanze che possono essere inventati.
 
-I casi con aziende fittizie devono essere interpretati come simulati/compositi. La distinzione serve a non confondere evidenza documentata e ricostruzione pedagogica.
+La distinzione impedisce di confondere evidenza documentata e ricostruzione pedagogica.
+
+## Il vocabolario operativo
+
+Il libro costruisce una serie di artefatti riutilizzabili:
+
+```text
+Analytical Brief
+→ Data Readiness Review
+→ EDA Evidence Map
+→ Uncertainty Brief
+→ Lifecycle Diagnostic Map
+→ Temporal Decision Brief
+→ Causal Identification Brief
+→ Experiment Contract
+→ Predictive Decision Card
+→ Analytical Data Contract
+→ Data Flow Architecture Map
+→ Tooling Decision Record
+→ AI Analysis Control Sheet
+→ Decision Record
+→ Decision Communication Pack
+```
+
+Il Capitolo 17 aggiunge il **Capstone Routing Canvas**, il Capitolo 18 l'**Analytics Operating Contract** e il Capitolo 19 il **Personal Career Operating Plan**.
+
+Non sono una checklist obbligatoria: sono un vocabolario di rischi e controlli da attivare quando servono.
 
 ## Installazione
 
@@ -98,7 +130,7 @@ Su Windows PowerShell:
 .venv\Scripts\Activate.ps1
 ```
 
-Poi installa le dipendenze:
+Poi:
 
 ```bash
 pip install -r requirements.txt
@@ -113,21 +145,20 @@ python scripts/normalize_sources.py --check
 python scripts/lint_book.py
 ```
 
-`normalize_sources.py --check` impedisce di reintrodurre heading numerati interni come H1 e alcune vecchie grafie ASCII (`e'`, `piu'`, `puo'`, ecc.) nel testo italiano.
-
 Il lint controlla, tra le altre cose:
 
-- continuità delle cartelle dei capitoli;
+- continuità e numerazione dei capitoli;
 - prefissi duplicati o mancanti;
-- corrispondenza tra ordine dei file e numero delle sezioni;
-- heading interni scritti accidentalmente come H1;
+- corrispondenza tra file e sezioni;
+- heading interni H1 accidentali;
 - file vuoti;
-- placeholder editoriali `TODO`, `FIXME` o `TBD`;
-- link contenenti `utm_source=chatgpt.com`;
-- presenza di notazione matematica ancora da tipografare;
-- conteggio indicativo di parole e pagine.
+- placeholder `TODO`, `FIXME`, `TBD`;
+- URL contaminati;
+- grafie ASCII legacy;
+- notazione LaTeX residua;
+- conteggio di parole, caratteri e URL distinti.
 
-Per trasformare anche i warning editoriali in errori:
+Per trattare anche i warning editoriali come errori:
 
 ```bash
 python scripts/lint_book.py --strict
@@ -135,7 +166,7 @@ python scripts/lint_book.py --strict
 
 ## Costruire il libro
 
-Dalla root del repository:
+Dalla root:
 
 ```bash
 python scripts/build.py
@@ -143,15 +174,16 @@ python scripts/build.py
 
 Lo script:
 
-1. trova tutte le cartelle `chapters/*_chapter`;
-2. le ordina numericamente con un tie-break deterministico;
-3. ordina le sezioni;
-4. crea un unico Markdown completo;
-5. interpreta heading, liste, citazioni, codice e tabelle Markdown;
-6. genera il file Word `.docx`;
-7. genera il file PDF `.pdf`.
+1. assembla il frontespizio da `book.yml`;
+2. inserisce i file di `front_matter/`;
+3. genera l'indice dei capitoli dai titoli H1 correnti;
+4. assembla i 321 file del corpo in ordine numerico;
+5. inserisce glossario e indice degli artefatti da `reference/`;
+6. genera l'indice dei casi reali documentati;
+7. genera l'indice consolidato delle fonti a partire dagli URL del corpo;
+8. produce Markdown, DOCX e PDF.
 
-Gli output vengono scritti in `build/`:
+Output:
 
 ```text
 build/data-analyst-today.md
@@ -159,19 +191,29 @@ build/data-analyst-today.docx
 build/data-analyst-today.pdf
 ```
 
-Il Markdown aggregato è utile anche per controllare esattamente quale testo è entrato nella build.
+## Stato misurato — 2 settembre 2026
 
-## Dimensione misurata del manoscritto
-
-L'audit automatico del 31 agosto 2026 ha misurato:
+Il lint del corpo principale riporta:
 
 - **20 capitoli** (`0–19`);
-- **321 file Markdown**;
-- circa **166.160 parole**;
-- **119 URL esterni distinti**;
-- una build PDF tecnica corrente di **745 pagine**.
+- **321 file Markdown** nel corpo;
+- **251.126 parole stimate**;
+- **1.860.230 caratteri**;
+- **190 URL esterni distinti**;
+- **0 file con LaTeX residuo**;
+- **0 file con grafie ASCII legacy**.
 
-Le 745 pagine non sono ancora il page count editoriale definitivo: font, formule, tabelle, indice e impaginazione finale potranno modificarlo. Dimostrano però che il progetto ha già superato ampiamente l'obiettivo iniziale di un libro da 400+ pagine.
+La build validata con front matter e reference layer contiene inoltre:
+
+- **3 file front matter**;
+- **2 file reference curati**;
+- indice capitoli generato;
+- indice casi reali generato;
+- indice fonti generato;
+- **1.210 pagine PDF** nella build tecnica corrente;
+- build Markdown, DOCX e PDF: **SUCCESS**.
+
+Il page count è una misura tecnica della build, non un obiettivo editoriale. Potrà cambiare durante il layout QA.
 
 ## Filosofia del progetto
 
@@ -181,20 +223,36 @@ Il libro distingue continuamente tre livelli:
 2. **Analysis** — formulare ipotesi, scegliere metriche e confronti, interpretare risultati e incertezza.
 3. **Decision intelligence** — capire quale problema vale la pena risolvere e trasformare l'evidenza in una decisione.
 
-L'AI rende il primo livello sempre più economico. Per questo il libro dedica particolare attenzione ai livelli due e tre, senza rinunciare alla conoscenza tecnica necessaria per dirigere e verificare strumenti, automazioni e agenti AI.
+L'AI rende molte attività di execution più economiche. Questo aumenta, non riduce, l'importanza di semantica, verifica, judgment, risk management e accountability.
+
+La definizione finale del libro è:
+
+> **Il Data Analyst è la persona che trasforma domande ambigue e dati imperfetti in evidenza sufficientemente affidabile da migliorare una decisione.**
 
 ## Stato editoriale
 
-Il manoscritto principale è completo nei Capitoli 0–19. La pipeline CI verifica ora normalizzazione delle sorgenti, struttura, lint, build Markdown/DOCX/PDF e page count del PDF.
+Completati:
 
-La fase corrente riguarda soprattutto:
+- corpo Capitoli 0–19;
+- review editoriale capitolo-per-capitolo;
+- source/factual audit globale;
+- canonicalizzazione delle fonti individuate;
+- normalizzazione delle formule/LaTeX residue;
+- front matter e navigazione;
+- glossario e indice degli artefatti;
+- indice automatico dei casi reali e delle fonti;
+- build multiformato validata in CI.
 
-- revisione di coerenza e riduzione delle ripetizioni;
-- verifica puntuale delle fonti e della distinzione tra casi documentati e simulati;
-- tipografia delle formule matematiche;
-- revisione visiva di DOCX/PDF, tabelle e blocchi di codice;
-- front matter, indice e apparati editoriali;
-- preparazione della prima release stabile.
+Prossimi gate:
+
+```text
+proofread globale + consistency pass
+→ layout QA PDF/DOCX
+→ recheck fonti freshness-sensitive
+→ release candidate
+```
+
+Il dettaglio operativo è mantenuto in `EDITORIAL_AUDIT.md`; il ledger delle fonti è in `SOURCE_FACTUAL_AUDIT.md`.
 
 ## Licenza
 
