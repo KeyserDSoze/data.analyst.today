@@ -141,7 +141,7 @@ Possiamo correggere la logica e riprocessare senza richiedere nuovamente i dati 
 
 Le best practice di affidabilità Databricks collegano esplicitamente layer raw/curated/final alla possibilità di rebuild e recovery.
 
-Fonte: https://docs.databricks.com/aws/en/lakehouse-architecture/reliability-best-practices
+Fonte: https://docs.databricks.com/aws/en/lakehouse-architecture/reliability/best-practices
 
 ### Non moltiplicare layer per moda
 
