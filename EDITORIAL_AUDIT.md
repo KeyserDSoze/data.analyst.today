@@ -9,15 +9,18 @@ Questo documento è la dashboard editoriale del manoscritto. Markdown resta la s
 - Corpo principale **Capitoli 0–19**: **COMPLETO**.
 - Review editoriale capitolo-per-capitolo: **COMPLETATA**.
 - Source/factual audit globale: **COMPLETATO**; dettaglio in `SOURCE_FACTUAL_AUDIT.md`.
+- Recheck release-gate delle fonti freshness-sensitive: **COMPLETATO**.
 - Normalizzazione delle formule/LaTeX residue: **COMPLETATA**.
 - Front matter e navigazione: **COMPLETATI**.
-- Reference layer: **COMPLETATO** nella struttura iniziale di release.
-- CI attiva su `main` con normalizzazione, lint e build Markdown/DOCX/PDF.
-- Fase corrente: **release editorial pass — proofread globale e consistency pass**.
+- Reference layer: **COMPLETATO**.
+- Proofread globale / consistency pass di release: **COMPLETATO**.
+- Layout QA PDF/DOCX: **COMPLETATO**.
+- CI attiva su `main` con normalizzazione, lint strict, build Markdown/DOCX/PDF e controlli sugli output generati.
+- Fase corrente: **release candidate**.
 
 ### Ultima build validata
 
-Run Book CI sull'head `6eb347630ba2f283bf79a6b2303ed8f9d37ce8c5`: **SUCCESS**.
+Run Book CI sull'head `ccff96add69f53af5393e03918068a164288fb83`: **SUCCESS**.
 
 Corpo principale:
 
@@ -29,14 +32,19 @@ Corpo principale:
 - **0 file con notazione matematica/LaTeX rilevata dal linter**;
 - **0 file con accenti ASCII legacy**.
 
-Apparati di release:
+Apparati e output di release:
 
 - **3 file front matter**;
 - **2 file reference curati**;
 - indice capitoli generato automaticamente;
 - indice casi reali documentati generato automaticamente;
 - indice delle **190 fonti URL distinte** generato automaticamente;
-- **1.210 pagine PDF** nella build tecnica corrente;
+- note Markdown risolte in riferimenti numerici e sezioni **Note e fonti** a fine capitolo;
+- **389 bookmark PDF** per navigazione a capitoli e sezioni numerate;
+- **213/213 tabelle DOCX** con header ripetibile su page break;
+- frontespizio PDF senza numero pagina stampato;
+- frontespizio DOCX senza footer visibile;
+- **1.209 pagine PDF** nella build tecnica corrente;
 - build Markdown, DOCX e PDF: **SUCCESS**.
 
 Il page count non è un obiettivo da massimizzare. La priorità resta densità di valore, affidabilità editoriale e leggibilità della release.
@@ -47,11 +55,19 @@ La pipeline esegue:
 
 ```bash
 python scripts/normalize_sources.py --check
-python scripts/lint_book.py
+python scripts/lint_book.py --strict
 python scripts/build.py
 ```
 
-Il lint del corpo verifica continuità dei capitoli, prefissi, heading, file vuoti, TODO/FIXME/TBD, URL contaminati, grafie ASCII legacy, formule/LaTeX e conteggi strutturali.
+Il lint verifica continuità dei capitoli, prefissi, heading, file vuoti, TODO/FIXME/TBD, URL contaminati, grafie ASCII legacy, formule/LaTeX, termini canonici e conteggi strutturali. I warning editoriali sono errori in CI grazie a `--strict`.
+
+Dopo la build, la CI verifica inoltre che:
+
+- non restino footnote Markdown `[^...]` irrisolte nell'assemblato;
+- il PDF contenga un outline di navigazione;
+- il DOCX non contenga footnote Markdown irrisolte;
+- tutte le tabelle DOCX abbiano repeating header;
+- il frontespizio DOCX usi un first-page footer separato e vuoto.
 
 Il builder:
 
@@ -60,6 +76,7 @@ book.yml / frontespizio
 → front_matter/
 → indice capitoli generato
 → chapters/
+→ note e fonti risolte per capitolo
 → reference/
 → indice casi reali generato
 → indice fonti generato
@@ -106,12 +123,20 @@ Correzioni principali:
 
 Non risultano URL `http://` nel manoscritto né link contaminati da `utm_source=chatgpt.com`.
 
-### Recheck al release gate
+### Recheck release-gate — completato il 2 settembre 2026
 
-Non va ripetuto l'intero audit. Prima della release candidata vanno ricontrollate soltanto fonti con freshness o stato editoriale variabile, soprattutto:
+Sono state ricontrollate soltanto le fonti con stato editoriale o freshness variabile, senza ripetere l'intero audit dei 190 URL.
 
-- Government Analysis Function, *Communicating quality, uncertainty and change*, attualmente pubblicata ma indicata come pagina sotto revisione;
-- fonti 2025–2026 usate per trend AI/lavoro quando il claim dipende dall'attualità.
+Risultato:
+
+- ILO, *Generative AI and jobs: A 2025 update*: ancora raggiungibile e coerente con il framing esposizione/trasformazione;
+- World Economic Forum, *Future of Jobs Report 2025*: ancora raggiungibile e coerente con i claim sulle skill;
+- Microsoft, *2026 Work Trend Index*: ancora raggiungibile e coerente con il framing su agenti, execution e human agency;
+- Microsoft Research, CHI 2025 sul critical thinking: ancora raggiungibile; il manoscritto mantiene correttamente linguaggio associativo/self-report e non causale;
+- Government Analysis Function, *Communicating quality, uncertainty and change*: ancora pubblicata e ancora marcata **under review**; continua a supportare il claim del libro e non richiede una sostituzione nella release corrente;
+- NIST AI RMF 1.0 resta la versione pubblicata usata dal manoscritto; la revisione in corso non rende errato il riferimento alla versione 1.0.
+
+**Esito: nessuna correzione al manoscritto richiesta dal freshness recheck.**
 
 ## 5. Front matter e navigazione — completati
 
@@ -123,14 +148,14 @@ Sorgenti curate:
 
 La build genera inoltre l'**Indice dei capitoli** direttamente dai primi H1 delle introduzioni, evitando un indice manuale che possa divergere dal manoscritto.
 
-Restano volutamente non definiti fino al release gate:
+Restano volutamente non definiti fino alla pubblicazione:
 
 - copyright definitivo;
 - licenza definitiva.
 
 Non vengono inventate condizioni di utilizzo nel front matter.
 
-## 6. Reference layer — completato nella struttura di release
+## 6. Reference layer — completato
 
 Sorgenti curate:
 
@@ -140,9 +165,10 @@ Sorgenti curate:
 Sezioni generate:
 
 - **Indice dei casi reali documentati** — derivato dagli heading effettivi del manoscritto;
-- **Indice delle fonti** — derivato dai 190 URL distinti del corpo e ordinato per dominio.
+- **Indice delle fonti** — derivato dai 190 URL distinti del corpo e ordinato per dominio;
+- **Note e fonti** per capitolo — derivate dalle footnote Markdown sorgente.
 
-Questa scelta evita di mantenere manualmente una seconda bibliografia scollegata dalle citazioni nel testo.
+L'indice dei casi è stato verificato per evitare che prefissi strutturali o trattini interni (`trade-off`) vengano alterati durante la generazione.
 
 ## 7. Convenzione casi e claim
 
@@ -156,7 +182,7 @@ Può usare nomi, numeri e circostanze costruiti per la didattica, ma deve essere
 
 ### Claim level
 
-Il proofread deve preservare la distinzione:
+Il proofread preserva la distinzione:
 
 ```text
 descrittivo
@@ -217,7 +243,7 @@ Il Capitolo 17 introduce il **Capstone Routing Canvas**, il Capitolo 18 l'**Anal
 
 Gli artefatti sono un vocabolario di rischi, non una checklist obbligatoria.
 
-## 10. Confini concettuali da proteggere nel proofread
+## 10. Confini concettuali protetti nel proofread
 
 ### 0 / 14 / 18 / 19 — AI
 
@@ -258,7 +284,57 @@ AI Analysis Control Sheet
 - **18:** capacità ricorrente come servizio affidabile;
 - **19:** portafoglio professionale robusto all'incertezza tecnologica.
 
-## 11. Tesi e chiusura da preservare
+## 11. Proofread + consistency pass — completato
+
+Il pass globale di release ha incluso:
+
+- grafie italiane ad alta probabilità di errore;
+- branding e nomi tecnici ricorrenti;
+- termini canonici dei deliverable;
+- rimandi numerici e riferimenti ai capitoli;
+- casing dei nomi propri degli artefatti;
+- distinzione tra termini canonici e locuzioni generiche;
+- protezione dei template fenced-code da falsi positivi del linter.
+
+Il controllo dei termini canonici è ora parte della CI. Il linter ignora i fenced code block e non forza capitalizzazione quando una locuzione è semanticamente generica.
+
+## 12. Layout QA PDF/DOCX — completato
+
+Il QA è stato effettuato sugli artifact prodotti dalla CI, non su build locali divergenti.
+
+### PDF
+
+Sono stati verificati front matter, indice, inizi capitolo, tabelle, code block, note/fonti, reference layer e chiusura. Correzioni applicate:
+
+- risoluzione delle footnote Markdown;
+- aggiunta di bookmark PDF;
+- riduzione dell'outline a capitoli + sezioni numerate;
+- pulizia dell'indice dei casi reali;
+- rimozione del numero pagina stampato dal frontespizio.
+
+Stato corrente:
+
+- **1.209 pagine**;
+- **389 bookmark**;
+- nessuna sintassi footnote `[^...]` residua;
+- nessun markup Markdown grezzo rilevato nei controlli sull'output.
+
+### DOCX
+
+Il documento è stato anche convertito con LibreOffice per verificare una seconda catena di rendering. Il QA ha individuato e corretto:
+
+- footer visibile sul frontespizio;
+- mancata ripetizione della riga header nelle tabelle multipagina.
+
+Stato corrente:
+
+- **213/213 tabelle** con repeating header;
+- frontespizio con first-page footer vuoto;
+- nessuna footnote Markdown irrisolta;
+- conversione LibreOffice completa e senza anomalie di pagine vuote nel controllo automatico;
+- campionamento visuale delle zone ad alto rischio completato, inclusa la continuazione del Tooling Decision Record.
+
+## 13. Tesi e chiusura da preservare
 
 Definizione finale:
 
@@ -268,7 +344,7 @@ Ultima riga del corpo principale:
 
 > **Gli strumenti cambieranno. Il timone resta una responsabilità.**
 
-## 12. Release editorial pass — stato
+## 14. Release editorial pass — stato finale
 
 ### A. Chapter review — **COMPLETATO**
 
@@ -280,64 +356,44 @@ Ultima riga del corpo principale:
 
 ### E. Reference layer — **COMPLETATO**
 
-### F. Proofread + consistency pass — **IN CORSO / PROSSIMO BLOCCO**
+### F. Proofread + consistency pass — **COMPLETATO**
 
-Controllare in modo globale:
+### G. Layout QA PDF/DOCX — **COMPLETATO**
 
-- ortografia e punteggiatura;
-- inglesismi e capitalizzazione;
-- termini canonici;
-- rimandi tra capitoli;
-- ripetizioni residue;
-- numeri e unità;
-- concordanze;
-- caso reale vs composito;
-- claim level e causal wording;
-- coerenza dei nomi degli artefatti.
+### H. Freshness recheck — **COMPLETATO**
 
-### G. Layout QA — **DA FARE**
+### I. Release candidate — **FASE CORRENTE**
 
-Controllare:
+Non aggiungere altro corpo al libro salvo una lacuna dimostrata. Da questo punto le modifiche dovrebbero essere limitate a problemi di release, metadata o difetti verificabili.
 
-- tabelle larghe;
-- code block;
-- notazione matematica Unicode;
-- blockquote;
-- heading/page break;
-- widows/orphans dove possibile;
-- link e note;
-- indice;
-- numerazione pagine;
-- resa PDF e DOCX.
+## 15. Release gate
 
-## 13. Release gate
-
-Prima della release candidata:
+Il gate automatico corrente è:
 
 ```bash
 python scripts/normalize_sources.py --check
 python scripts/lint_book.py --strict
 python scripts/build.py
+# + inspect outputs in Book CI
 ```
 
-Poi controllo manuale di:
+La run corrente verifica inoltre PDF outline, footnote risolte, repeating header DOCX e frontespizio DOCX.
 
-- fonti freshness-sensitive;
-- tabelle e codice;
-- casi reali/compositi;
-- ortografia;
-- link/note;
-- page break e indice;
-- continuità dei deliverable canonici;
-- prime/ultime pagine del PDF e del DOCX.
+Il release gate editoriale è **PASS** sull'head `ccff96add69f53af5393e03918068a164288fb83`.
 
-## 14. Ordine aggiornato
+Restano decisioni di pubblicazione, non debito editoriale del manoscritto:
+
+- eventuale numero/versione di release;
+- copyright definitivo;
+- licenza definitiva;
+- eventuale tag/release GitHub e distribuzione degli artifact.
+
+## 16. Ordine aggiornato
 
 ```text
-1. proofread globale + consistency pass
-2. layout QA PDF/DOCX
-3. recheck fonti freshness-sensitive
-4. release candidate
+1. definire/registrare la release candidate
+2. decidere metadata di pubblicazione ancora volontariamente aperti
+3. creare tag/release quando desiderato
 ```
 
-Da questo punto l'obiettivo non è aggiungere altro corpo al libro, salvo lacune dimostrate. È ridurre attrito, inconsistenza e rischio residuo fino a una release editoriale verificata e pubblicabile.
+Il manoscritto ha superato il release editorial pass. Da qui l'obiettivo è congelare una build verificata e trasformarla in una release pubblicabile senza riaprire il lavoro editoriale già chiuso.
