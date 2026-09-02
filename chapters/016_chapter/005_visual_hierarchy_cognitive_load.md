@@ -162,4 +162,4 @@ Questa non è una limitazione creativa. È una buona disciplina comunicativa anc
 ### Fonti
 
 - W3C, *WCAG 2.2 — Understanding 1.4.1 Use of Color*: https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html
-- Government Analysis Function, *Accessible charts: a checklist of the basics*: https://analysisfunction.civilservice.gov.uk/policy-store/accessible-charts-a-checklist-of-the-basics/
+- Government Analysis Function, *Accessible charts: a checklist of the basics*: https://analysisfunction.civilservice.gov.uk/policy-store/charts-a-checklist/
