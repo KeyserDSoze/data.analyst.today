@@ -35,7 +35,7 @@ jobs:
 
       - name: Build book
         run: |
-          python scripts/build.py
+          python scripts/build_release.py
           python scripts/build_epub.py
 
       - name: Inspect outputs
@@ -48,6 +48,7 @@ jobs:
           from docx.oxml.ns import qn
           from pypdf import PdfReader
 
+          expected_author = "Alessandro Rapiti"
           pdf = Path("build/data-analyst-today.pdf")
           docx = Path("build/data-analyst-today.docx")
           epub = Path("build/data-analyst-today.epub")
@@ -56,9 +57,14 @@ jobs:
           assembled = md.read_text(encoding="utf-8")
           if "[^" in assembled:
               raise SystemExit("Markdown assemblato: footnote [^...] non risolta.")
+          if f"**Autore:** {expected_author}" not in assembled:
+              raise SystemExit("Markdown assemblato: autore editoriale non corretto.")
 
           reader = PdfReader(str(pdf))
           pages = len(reader.pages)
+          pdf_author = str(getattr(reader.metadata, "author", "") or "").strip()
+          if pdf_author != expected_author:
+              raise SystemExit(f"PDF: autore metadata inatteso: {pdf_author!r}")
 
           def count_outline(items):
               total = 0
@@ -76,6 +82,14 @@ jobs:
               )
 
           document = Document(str(docx))
+          if document.core_properties.author != expected_author:
+              raise SystemExit(
+                  f"DOCX: autore metadata inatteso: {document.core_properties.author!r}"
+              )
+          heading1_size = document.styles["Heading 1"].font.size
+          if heading1_size is None or heading1_size.pt < 27:
+              raise SystemExit("DOCX: titolo capitolo non sufficientemente gerarchizzato.")
+
           unresolved_docx = []
           for paragraph in document.paragraphs:
               if "[^" in paragraph.text:
@@ -125,11 +139,24 @@ jobs:
                   raise SystemExit(
                       f"EPUB: documenti XHTML insufficienti ({xhtml_count}); attesi almeno 20."
                   )
+              opf_names = [name for name in names if name.endswith(".opf")]
+              if not opf_names:
+                  raise SystemExit("EPUB: package OPF mancante.")
+              opf = archive.read(opf_names[0]).decode("utf-8", errors="replace")
+              if expected_author not in opf:
+                  raise SystemExit("EPUB: autore non presente nei metadata OPF.")
+              css_names = [name for name in names if name.endswith("book.css")]
+              if not css_names:
+                  raise SystemExit("EPUB: stylesheet editoriale mancante.")
+              css = archive.read(css_names[0]).decode("utf-8", errors="replace")
+              if "page-break-before: always" not in css or "font-size: 2.2em" not in css:
+                  raise SystemExit("EPUB: stile capitolo atteso non presente.")
 
           print(f"PDF pages: {pages}")
           print(f"PDF outline entries: {outline_count}")
           print(f"DOCX tables with repeating header: {len(document.tables)}")
           print(f"EPUB XHTML documents: {xhtml_count}")
+          print(f"Author metadata: {expected_author}")
           print(f"PDF size: {pdf.stat().st_size:,} bytes")
           print(f"DOCX size: {docx.stat().st_size:,} bytes")
           print(f"EPUB size: {epub.stat().st_size:,} bytes")
