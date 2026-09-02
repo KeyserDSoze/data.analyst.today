@@ -129,7 +129,7 @@ Ma non dovrebbe diventare automaticamente il ground truth.
 
 Google Cloud, nella documentazione per valutare un judge model, propone di preparare dataset con **human ratings come ground truth** e confrontare i punteggi del judge con quelle valutazioni.
 
-Fonte: https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/evaluate-judge-model
+Fonte: https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/evaluate-judge-model
 
 Per il nostro workflow:
 
