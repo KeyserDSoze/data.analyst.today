@@ -168,4 +168,4 @@ Carryover plausibile?
 
 > **Quando A può modificare il mondo in cui vive B, il problema non è “più rumore”. È che il confronto può non rappresentare più la policy che vogliamo valutare.**
 
-[^ms-interactions]: Microsoft Research, *A/B Interactions: A Call to Relax*: https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/a-b-interactions-a-call-to-relax/
+[^ms-interactions]: Microsoft Research, *A/B Interactions: A Call to Relax*: https://www.microsoft.com/en-us/research/articles/a-b-interactions-a-call-to-relax/
