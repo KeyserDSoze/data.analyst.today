@@ -1,120 +1,272 @@
-## 19.9 Deskilling, apprendimento e manutenzione delle competenze
-Uno dei rischi più sottovalutati dell'AI è il **deskilling**.
+## 19.9 Deskilling: quali competenze devi mantenere per poter delegare
 
-Quando uno strumento esegue correttamente una parte crescente del lavoro, una persona può perdere gradualmente la capacità di svolgere o valutare quel lavoro senza assistenza.
+Uno dei rischi professionali più interessanti dell'AI non è la sostituzione immediata.
 
-Questo non è necessariamente un problema.
+È il **deskilling graduale**.
 
-Nessuno considera grave non saper più calcolare manualmente una regressione lineare con carta e penna.
+Quando un sistema esegue bene una parte crescente del lavoro, possiamo perdere lentamente la capacità di:
 
-Il problema nasce quando perdiamo proprio le competenze necessarie a riconoscere che il sistema sta sbagliando.
+- svolgerlo;
+- valutarlo;
+- diagnosticare quando cambia;
+- intervenire quando l'automazione esce dai confini attesi.
 
-## Quali competenze devono restare vive
+Non ogni perdita di skill è negativa.
 
-Per un Data Analyst, alcune competenze non devono essere necessariamente esercitate ogni giorno, ma devono rimanere abbastanza solide da permettere controllo e giudizio:
+Nessuno ha bisogno di mantenere la capacità di consultare a memoria ogni funzione di un database.
 
-- grain e cardinalità;
-- logica dei join;
-- denominatori;
-- distribuzioni e variabilità;
-- probabilità e incertezza;
-- causalità;
+Il problema nasce quando esternalizziamo **la competenza che ci serviva per controllare il sistema che stiamo delegando**.
+
+## Tre categorie di competenze
+
+Per evitare nostalgia eccessiva, distinguiamo.
+
+### Categoria A — Must internalize
+
+Modelli mentali che devono restare abbastanza forti da guidare verifica e decisione.
+
+Per un Data Analyst:
+
+- grain;
+- cardinality;
+- denominator;
+- population;
+- time semantics;
+- distribution/uncertainty;
+- causal vs predictive claim;
 - leakage;
-- validazione temporale;
-- metriche di performance;
+- randomization;
+- baseline;
+- cost asymmetry;
 - unit economics;
-- semantica di business.
+- decision threshold.
 
-Un analista può chiedere all'AI di scrivere una query complessa.
+Possiamo usare AI su questi temi.
 
-Ma deve riuscire a guardarla e chiedersi:
+Ma non possiamo permetterci di non capire quando vengono violati.
 
-> “Questa join può duplicare le righe?”
+### Categoria B — Can delegate, must inspect
 
-Può chiedere all'AI di costruire un modello.
+Attività che possono essere eseguite spesso dall'AI, purché resti la capacità di review.
 
-Ma deve sapere chiedere:
+Esempi:
 
-> “Il target era disponibile davvero al momento della previsione?”
+- SQL complesso;
+- feature pipeline;
+- visualization code;
+- experiment analysis;
+- forecast code;
+- documentation;
+- test generation.
 
-Può chiedere all'AI un A/B test.
+Non serve ricordare ogni dettaglio di sintassi.
 
-Ma deve sapere chiedere:
+Serve capire abbastanza da leggere struttura, failure mode e output.
 
-> “Qual era l'unità di randomizzazione? C'è contaminazione?”
+### Categoria C — Safe to externalize
 
-## Imparare nel 2030
+Conoscenza a basso responsibility moat che può essere recuperata on demand.
 
-Se l'AI è sempre disponibile, l'apprendimento non può più essere basato principalmente sulla memorizzazione di sintassi.
+Esempi:
 
-Una strategia più robusta potrebbe avere quattro livelli.
+- flag di una CLI;
+- nome preciso di una funzione;
+- boilerplate di configurazione;
+- sintassi rara;
+- conversione meccanica tra formati.
 
-### 1. Costruire modelli mentali
+Spendere molta memoria professionale qui può avere ritorno decrescente.
 
-Capire perché un metodo funziona, quali assunzioni richiede e come fallisce.
+## Verification reserve
 
-### 2. Eseguire abbastanza manualmente da capire
+Introduciamo un concetto personale:
 
-Non serve fare tutto senza AI, ma alcune volte è utile costruire da zero una query, un modello o un test per comprenderne la struttura.
+**verification reserve** = capacità residua di controllare un processo anche quando l'AI fa quasi tutta l'esecuzione.
 
-### 3. Usare l'AI intensamente
+Se un agente SQL lavora bene da un anno, la verification reserve include ancora saper chiedere:
 
-Delegare davvero l'esecuzione e imparare a orchestrare sistemi più potenti.
+- questa join può moltiplicare il grain?
+- il filtro è pre o post aggregation?
+- il denominator è coerente?
+- la data è `as-of`?
+- stiamo usando una snapshot o un event log?
 
-### 4. Fare review deliberata
+Se il reserve scende a zero, la delega diventa dipendenza.
 
-Confrontare output, cercare errori, creare controesempi, verificare assunzioni.
-
-## Il principio della palestra analitica
-
-Un atleta non si allena soltanto facendo la gara.
-
-Allo stesso modo, un analista non dovrebbe allenare le proprie capacità soltanto producendo output di lavoro.
-
-Serve una **palestra analitica**.
-
-Per esempio:
-
-- una volta al mese diagnosticare una query con bug nascosti;
-- criticare un esperimento mal progettato;
-- ricostruire una metrica a partire dalla definizione business;
-- fare un pre-mortem di una decisione;
-- confrontare una risposta AI con un'analisi indipendente;
-- spiegare un modello senza usare gergo tecnico.
-
-## Caso realistico: l'agente che diventa troppo bravo
+## Caso simulato/composito: l'agente SQL che diventa troppo affidabile
 
 Un team usa un agente SQL da 18 mesi.
 
-La qualità media è molto alta.
+La qualità media è elevata.
 
-Gradualmente gli analisti smettono di leggere le query complete e controllano solo l'output finale.
+Gradualmente gli analyst smettono di leggere la query e controllano soltanto il risultato finale.
 
-Poi cambia il modello dati: `customer_status` passa da snapshot giornaliero a tabella event-based.
+Poi `customer_status` cambia modello:
 
-L'agente continua a generare query sintatticamente corrette, ma interpreta il campo come se fosse ancora uno snapshot.
+prima:
 
-Il problema non viene rilevato per tre settimane.
+> snapshot giornaliero;
 
-Non perché l'AI sia improvvisamente peggiorata.
+dopo:
 
-Perché il team ha smesso di esercitare la competenza necessaria a riconoscere il problema.
+> event history.
 
-## Il nuovo obiettivo della formazione
+L'agente continua a generare SQL sintatticamente corretto ma tratta la tabella come se ogni riga fosse lo stato corrente.
 
-L'obiettivo non è mantenere artificialmente lavori manuali.
+I customer count risultano duplicati.
 
-È mantenere la capacità di:
+L'errore resta invisibile per tre settimane.
 
-- comprendere;
-- verificare;
-- criticare;
-- intervenire quando il sistema esce dai confini attesi.
+Non perché il modello AI sia improvvisamente peggiorato.
 
-Il World Economic Forum, nel Future of Jobs Report 2025, colloca AI e big data tra le skill in più rapida crescita ma mantiene analytical thinking, systems thinking, curiosità e lifelong learning tra le competenze centrali verso il 2030. Il messaggio è coerente con questa idea: la capacità tecnica e quella cognitiva devono crescere insieme.
+Perché il sistema umano ha perso la routine di controllo che avrebbe riconosciuto il cambio di grain temporale.
 
-> **Usare meno una competenza non significa poter smettere di possederla. Se serve per controllare il sistema, deve restare viva.**
+## Un segnale dalla ricerca sul knowledge work
 
-### Fonti
+Uno studio Microsoft Research presentato a CHI 2025 ha intervistato 319 knowledge worker, raccogliendo 936 esempi di utilizzo della GenAI nel lavoro.
 
-- World Economic Forum, *Future of Jobs Report 2025 — Skills outlook*: https://www.weforum.org/publications/the-future-of-jobs-report-2025/in-full/3-skills-outlook/
+Lo studio rileva, nel campione auto-riferito, che maggiore fiducia nella GenAI è associata a minore enactment/effort di critical thinking, mentre l'uso dell'AI sposta parte del lavoro critico verso:
+
+- verification;
+- response integration;
+- task stewardship.
+
+Fonte: https://www.microsoft.com/en-us/research/publication/the-impact-of-generative-ai-on-critical-thinking-self-reported-reductions-in-cognitive-effort-and-confidence-effects-from-a-survey-of-knowledge-workers/
+
+Va interpretato correttamente.
+
+È uno studio survey/self-report e non dimostra causalmente che l'AI provochi deskilling.
+
+Ma suggerisce un failure mode coerente con il nostro problema:
+
+> quando la fiducia nell'automazione cresce, dobbiamo progettare deliberatamente il mantenimento del critical engagement.
+
+## La palestra analitica
+
+Non dobbiamo conservare artificialmente lavoro manuale inefficiente.
+
+Dobbiamo creare **deliberate practice** sui modelli mentali che servono al controllo.
+
+Una palestra analitica può includere:
+
+### Bug hunt
+
+Revisionare query o pipeline con failure nascosto.
+
+### Semantic reconstruction
+
+Partire da una definizione business e costruire grain, population, denominator e time rule.
+
+### Causal critique
+
+Prendere una recommendation e cercare confounding, selection, post-treatment e alternative explanation.
+
+### Experiment review
+
+Diagnosticare SRM, contamination, peeking, guardrail e metric contract.
+
+### Forecast stress test
+
+Cercare bias per horizon, regime change e cost asymmetry.
+
+### AI red-team
+
+Chiedere all'AI una soluzione e poi provare deliberatamente a falsificarla.
+
+### Explain without tool
+
+Spiegare a voce:
+
+- cosa sta misurando;
+- quale assunzione conta;
+- quale risultato cambierebbe la decisione.
+
+Se non sappiamo farlo, la comprensione può essere troppo legata all'interfaccia.
+
+## Deliberate friction
+
+Per imparare, a volte è utile introdurre **frizione volontaria**.
+
+Non sempre.
+
+Non in produzione se crea rischio inutile.
+
+Ma in training possiamo:
+
+- scrivere una query prima di chiedere la soluzione AI;
+- stimare l'ordine di grandezza prima di vedere il risultato;
+- definire il test plan prima di generare codice;
+- formulare tre failure mode prima di chiedere una review all'agente;
+- fare una prediction del risultato prima di eseguire l'analisi.
+
+Questa frizione costringe il cervello a costruire un modello invece di limitarsi a riconoscere un output plausibile.
+
+## AI come coach, non soltanto esecutore
+
+Possiamo usare la stessa tecnologia anche per contrastare deskilling.
+
+Chiedere all'AI di:
+
+- generare casi con bug;
+- criticare una nostra causal claim;
+- fare domande socratiche;
+- simulare uno stakeholder ostile;
+- costruire edge case;
+- confrontare due design;
+- nascondere la soluzione finché non abbiamo formulato un'ipotesi.
+
+Quindi AI non implica automaticamente meno apprendimento.
+
+Dipende dal **learning design**.
+
+## Una manutenzione delle competenze
+
+Una possibile routine personale:
+
+### Ogni settimana
+
+Una review profonda di un output AI reale.
+
+### Ogni mese
+
+Un esercizio “senza scorciatoia” su una competenza fondamentale.
+
+### Ogni trimestre
+
+Un caso end-to-end fuori dalla propria comfort zone.
+
+### Dopo ogni incidente
+
+Aggiornare:
+
+- failure-mode library;
+- checklist;
+- eval;
+- cosa non avevamo capito.
+
+### Ogni anno
+
+Chiedersi quali skill sono diventate:
+
+- più delegabili;
+- più importanti per verification;
+- obsolete;
+- nuove responsabilità da costruire.
+
+Non è necessario seguire queste cadenze alla lettera.
+
+Il principio è importante: **le competenze critiche richiedono manutenzione, come un sistema operativo**.
+
+## Il nuovo obiettivo dell'apprendimento
+
+Nel mondo pre-AI potevamo confondere competenza con capacità di produrre.
+
+Nel mondo AI dobbiamo aggiungere:
+
+- capacità di specificare;
+- capacità di verificare;
+- capacità di falsificare;
+- capacità di intervenire;
+- capacità di spiegare il sistema senza dipenderne completamente.
+
+> **Usare meno una competenza non significa poter smettere di possederla. Se quella competenza protegge il confine tra output plausibile ed evidenza affidabile, deve restare viva.**
