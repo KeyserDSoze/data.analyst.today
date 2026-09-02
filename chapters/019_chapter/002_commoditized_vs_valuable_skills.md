@@ -1,143 +1,191 @@
-## 19.1 Cosa diventa commodity e cosa aumenta di valore
-L’AI tende a comprimere il valore economico delle attività che hanno tre caratteristiche:
+## 19.1 Task exposure e responsibility moat
 
-1. input relativamente chiari;
-2. output verificabile rapidamente;
-3. procedura standardizzabile.
+Dire che “SQL diventa commodity” è utile fino a un certo punto.
 
-Molti task analitici rientrano almeno in parte in questa categoria.
+Rischia di farci pensare che alcune competenze spariscano mentre altre restino intatte.
 
-## Attività che diventano più economiche
+La realtà è più interessante.
 
-Tra le attività sempre più assistibili o automatizzabili troviamo:
+Un'attività può diventare molto più economica da eseguire senza rendere economica **la responsabilità di sapere se quell'attività è stata eseguita correttamente per il problema giusto**.
+
+Per questo separiamo due concetti.
+
+## Task exposure
+
+È quanto un'attività può essere assistita, compressa o automatizzata da AI e software.
+
+L'esposizione tende a essere maggiore quando:
+
+- l'input è relativamente ben specificato;
+- l'output ha pattern ricorrenti;
+- esistono molti esempi;
+- il risultato è verificabile rapidamente;
+- il failure cost è limitato;
+- il contesto necessario può essere fornito al sistema.
+
+Nel lavoro analitico rientrano spesso in questa categoria:
 
 - generazione di SQL standard;
-- traduzione tra SQL dialect;
-- formule di foglio elettronico;
-- boilerplate Python;
-- grafici di base;
-- documentazione tecnica iniziale;
-- profiling esplorativo;
-- riassunti di dashboard;
-- conversione di requisiti in query candidate;
-- ricerca di errori sintattici;
+- traduzione tra dialect;
+- formule di spreadsheet;
+- boilerplate Python/R;
+- visualizzazioni di base;
+- profiling iniziale;
 - refactoring semplice;
-- generazione di test iniziali;
-- preparazione di una prima bozza di presentazione.
+- generazione di documentazione;
+- prime bozze di test;
+- sintesi di report;
+- ricerca tecnica;
+- costruzione di query candidate.
 
-Questo non significa che tali attività non servano più.
+Queste attività non smettono di servire.
 
-Significa che diventano meno rare.
+Semplicemente **costano meno**.
 
-E quando una capacità diventa meno rara, da sola tende a differenziare meno.
+## Responsibility moat
 
-## Caso realistico: la query che prima richiedeva due ore
+È la parte della responsabilità professionale che resta difficile comprimere perché richiede una combinazione di:
+
+- contesto non completamente formalizzato;
+- scelta tra obiettivi in conflitto;
+- semantica business;
+- valutazione del rischio;
+- responsabilità sugli effetti downstream;
+- capacità di riconoscere quando la specifica stessa è sbagliata;
+- coordinamento con stakeholder;
+- judgment sotto incertezza.
+
+Esempi:
+
+- decidere quale definizione di churn è adatta a una decisione;
+- stabilire se un confronto è semanticamente valido;
+- riconoscere che il dato disponibile non identifica una causal claim;
+- scegliere se il valore di altra informazione giustifica aspettare;
+- decidere quale guardrail impedisce a un'ottimizzazione locale di danneggiare il sistema;
+- stabilire quando un agente deve perdere autorità;
+- difendere una recommendation davanti a Finance, Product e Operations con incentivi diversi.
+
+Questa è la zona in cui il valore umano può restare elevato anche se l'esecuzione materiale viene automatizzata.
+
+## Caso simulato/composito: una query da tre minuti e un errore da tre mesi
 
 Un analyst deve calcolare la repeat purchase rate a 90 giorni per paese e canale.
 
-In passato potrebbe aver impiegato due ore per:
+Con semantic context e AI, una prima query arriva in tre minuti.
 
-- capire le tabelle;
-- ricordare la sintassi delle window function;
-- scrivere la query;
-- correggere errori;
-- documentare il risultato.
+La sintassi è corretta.
 
-Con un buon semantic context e un assistente AI, una prima versione può arrivare in pochi minuti.
+Ma la richiesta nasconde almeno sette decisioni:
 
-Il lavoro difficile però resta.
+- la coorte parte dal primo ordine creato o pagato?
+- i refund annullano il primo acquisto?
+- un guest che poi crea un account è la stessa persona?
+- i 90 giorni sono dalla data ordine o consegna?
+- il denominatore include clienti che non hanno ancora avuto 90 giorni completi di osservazione?
+- il canale è acquisition channel o repeat-order channel?
+- le acquisizioni recenti vengono censurate correttamente?
 
-L’analista deve ancora decidere:
+Supponiamo che l'AI includa nel denominatore anche clienti con solo 20 giorni di osservazione.
 
-- la coorte è definita sul primo ordine o sul primo ordine pagato?
-- i resi annullano l’acquisto?
-- i clienti guest vengono riconciliati?
-- i 90 giorni sono rolling o calendario?
-- il denominatore include clienti che non hanno ancora avuto 90 giorni di osservazione?
-- il canale è quello di acquisizione o quello del repeat order?
+La query continuerà a girare perfettamente.
 
-La sintassi è diventata economica.
+La metrica resterà depressa per mesi.
 
-La semantica no.
+Qui il task di scrittura SQL era altamente esposto.
 
-## Le competenze che salgono di valore
+La responsabilità semantica no.
 
-Quando produrre output diventa più facile, aumenta il valore delle competenze che determinano se quell’output merita fiducia.
+## Una matrice più utile
 
-### Problem framing
-
-Trasformare una domanda vaga in un problema analitico ben definito.
-
-### Business understanding
-
-Capire economia, processi, vincoli e incentivi dell’organizzazione.
-
-### Semantica
-
-Sapere cosa significa realmente una metrica, un evento, un’entità, una coorte.
-
-### Data judgment
-
-Capire quando il dato è incompleto, distorto, obsoleto o non comparabile.
-
-### Causal reasoning
-
-Distinguere associazione, previsione e intervento.
-
-### Decision analysis
-
-Collegare evidenza, costi, rischi, trade-off e azione.
-
-### Verification
-
-Sapere come mettere alla prova un risultato, anche quando è stato prodotto da un agente.
-
-### Communication
-
-Presentare il problema al livello di dettaglio corretto per chi deve decidere.
-
-### System thinking
-
-Capire dipendenze tra metriche, processi, incentivi, sistemi e comportamento umano.
-
-## Una matrice utile
-
-Possiamo pensare alle competenze lungo due dimensioni:
-
-- facilità di automazione;
-- valore della responsabilità associata.
-
-| Attività | Automazione potenziale | Responsabilità decisionale |
+| Attività | Task exposure | Responsibility moat |
 |---|---:|---:|
 | scrivere una query standard | alta | bassa-media |
-| scegliere la definizione di churn | bassa | alta |
-| produrre un grafico | alta | media |
-| decidere cosa mostrare al CEO | media | alta |
-| fare profiling di una tabella | alta | media |
-| stabilire se manca un segmento critico | media | alta |
-| generare un forecast | alta | media |
-| decidere se il forecast è utilizzabile per inventory planning | bassa-media | alta |
-| creare un modello churn | alta | media |
-| decidere su chi intervenire e con quale trattamento | bassa | molto alta |
+| verificare grain/cardinality | media-alta | alta |
+| generare un grafico | alta | media |
+| scegliere quale evidenza mostrare al CEO | media | alta |
+| produrre un forecast candidate | alta | media |
+| decidere quale forecast è utilizzabile per staffing | media | alta |
+| creare uno score churn | alta | media |
+| definire chi trattare dato uplift, costo e capacity | bassa-media | molto alta |
+| generare un causal DAG candidate | alta | media |
+| decidere se l'effetto è identificato | media | molto alta |
+| creare un executive summary | alta | media |
+| scegliere claim level e caveat decision-critical | media | molto alta |
 
-La carriera resiliente tende a spostarsi verso la parte destra della tabella.
+Il punto non è cercare la casella “impossibile da automatizzare”.
 
-## Il rischio opposto: pensare che la tecnica non serva più
+Probabilmente quella casella cambierà continuamente.
 
-Sarebbe però un errore concludere:
+Il punto è costruire capacità che restano preziose quando **l'automazione sale di livello**.
 
-> “Se l’AI scrive SQL, non devo più capire SQL.”
+## La tecnica cambia funzione
 
-Per poter verificare un sistema bisogna comprenderne abbastanza il funzionamento.
+Da qui nasce un errore opposto:
 
-Un analyst che non capisce join, grain, leakage, baseline o confidence interval non diventa più strategico usando l’AI.
+> “Se l'AI scrive SQL, non devo più capire SQL.”
 
-Diventa più dipendente dall’output che riceve.
+È falso.
 
-La tecnica quindi non scompare.
+Per verificare un output dobbiamo possedere un modello mentale abbastanza profondo del sistema.
 
-Cambia funzione.
+Un analyst che non capisce:
 
-Da competenza puramente esecutiva diventa anche **competenza di controllo**.
+- grain;
+- join;
+- leakage;
+- randomizzazione;
+- standard error;
+- baseline;
+- backtest;
+- unit economics;
 
-> **Non serve essere il più veloce a scrivere ogni riga. Serve capire abbastanza bene il sistema da riconoscere quando quella riga porta nella direzione sbagliata.**
+non diventa più strategico grazie all'AI.
+
+Diventa più dipendente.
+
+La tecnica quindi passa almeno attraverso tre ruoli.
+
+### Execution skill
+
+So produrre l'output.
+
+### Verification skill
+
+So capire se l'output è plausibile, coerente e metodologicamente valido.
+
+### Design skill
+
+So progettare il problema, il metodo e i controlli in modo che l'output abbia una possibilità reale di essere utile.
+
+L'AI riduce soprattutto il premio relativo sulla prima.
+
+Può aumentare quello sulle altre due.
+
+## La fonte pubblica: esposizione non equivale a sostituzione
+
+L'ILO, nel rapporto 2025 sulla GenAI e il lavoro, studia l'esposizione a livello di task e conclude che la trasformazione dei lavori è generalmente più plausibile della completa automazione, proprio perché le occupazioni contengono mix diversi di attività e continuano a richiedere input umano.
+
+Fonte: https://www.ilo.org/publications/generative-ai-and-jobs-2025-update
+
+Questo è un buon antidoto a due narrazioni semplicistiche:
+
+- “l'AI cancellerà il ruolo”;
+- “non cambierà nulla”.
+
+Più probabilmente cambierà **la composizione del ruolo e il premio relativo associato alle diverse capacità**.
+
+## Il test personale
+
+Per ogni attività importante del proprio lavoro possiamo chiedere:
+
+1. quanto sta scendendo il costo di esecuzione?
+2. quale parte richiede ancora giudizio o contesto?
+3. che cosa succede se l'output è plausibile ma sbagliato?
+4. quale competenza mi serve per verificarlo?
+5. quale responsabilità posso imparare a possedere a un livello superiore?
+
+Queste cinque domande sono più utili di chiedere semplicemente:
+
+> “L'AI può fare questa cosa?”
+
+> **La carriera resiliente non si costruisce difendendo i task costosi di ieri. Si costruisce diventando più forti nelle responsabilità che emergono quando quei task diventano economici.**
