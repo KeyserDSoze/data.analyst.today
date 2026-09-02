@@ -85,17 +85,23 @@ def pdf_styles():
 
 
 def polish_docx_title_page(path: Path, config: dict) -> None:
-    """Center and space the title-page subtitle and author in the DOCX."""
+    """Center the title page and embed editorial metadata in the DOCX."""
     doc = Document(str(path))
     nonempty = [paragraph for paragraph in doc.paragraphs if paragraph.text.strip()]
+
+    title = str(config.get("title", "")).strip()
+    subtitle = str(config.get("subtitle", "")).strip()
+    author = str(config.get("author", "")).strip()
+
+    doc.core_properties.title = title
+    doc.core_properties.subject = subtitle
+    doc.core_properties.author = author
+    doc.core_properties.last_modified_by = author
 
     if nonempty:
         nonempty[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
         nonempty[0].paragraph_format.space_before = Pt(80)
         nonempty[0].paragraph_format.space_after = Pt(20)
-
-    subtitle = str(config.get("subtitle", "")).strip()
-    author = str(config.get("author", "")).strip()
 
     for paragraph in nonempty[:8]:
         text = paragraph.text.strip()
