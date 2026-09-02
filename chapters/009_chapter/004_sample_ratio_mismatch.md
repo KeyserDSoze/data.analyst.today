@@ -189,5 +189,5 @@ Salvage / restart decision:
 
 > **Se l'SRM fallisce, la domanda “A o B?” viene sospesa. La prima domanda diventa “possiamo ancora fidarci del confronto?”.**
 
-[^ms-dq]: Microsoft Research, *Data Quality: Fundamental Building Blocks for Trustworthy A/B testing Analysis*: https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/data-quality-fundamental-building-blocks-for-trustworthy-a-b-testing-analysis
+[^ms-dq]: Microsoft Research, *Data Quality: Fundamental Building Blocks for Trustworthy A/B testing Analysis*: https://www.microsoft.com/en-us/research/articles/data-quality-fundamental-building-blocks-for-trustworthy-a-b-testing-analysis/
 [^ms-srm-case]: Microsoft Research, *Diagnosing Sample Ratio Mismatch in A/B Testing*: https://www.microsoft.com/en-us/research/articles/diagnosing-sample-ratio-mismatch-in-a-b-testing/
