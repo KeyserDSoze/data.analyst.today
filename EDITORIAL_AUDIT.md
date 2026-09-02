@@ -7,26 +7,27 @@ Questo documento è la dashboard editoriale del manoscritto.
 ## 1. Stato attuale
 
 - Corpo principale completo: **Capitoli 0–19**.
-- Review completata: **Capitoli 0–18**.
-- Da revisionare: **Capitolo 19**.
+- Review editoriale capitolo-per-capitolo: **COMPLETATA, Capitoli 0–19**.
+- Nessun capitolo resta nello stato `Da revisionare`.
 - Markdown è la source of truth.
 - CI attiva su `main` con lint + build Markdown/DOCX/PDF.
 - Casi pubblici e casi simulati/compositi devono essere distinti esplicitamente.
+- Fase corrente del progetto: **release editorial pass**.
 
 ### Ultima build validata
 
-Dopo la review del Capitolo 18:
+Dopo la review del Capitolo 19:
 
 - **20 capitoli**;
 - **321 file Markdown**;
-- **246.711 parole stimate**;
-- **1.824.203 caratteri**;
+- **251.152 parole stimate**;
+- **1.860.563 caratteri**;
 - **190 URL esterni distinti**;
-- **8 file con LaTeX**;
-- **1.148 pagine PDF**;
+- **7 file con LaTeX**;
+- **1.178 pagine PDF**;
 - build Markdown, DOCX e PDF: **SUCCESS**.
 
-Il page count non è un obiettivo da massimizzare. La priorità è la densità di valore per pagina.
+Il page count non è un obiettivo da massimizzare. La priorità resta la densità di valore per pagina e la qualità editoriale della release.
 
 ## 2. Controlli automatici
 
@@ -44,7 +45,7 @@ Il lint verifica continuità dei capitoli, prefissi, heading, file vuoti, TODO/F
 
 Resta un solo warning globale:
 
-- notazione matematica/LaTeX in **8 file**.
+- notazione matematica/LaTeX in **7 file**.
 
 Prima della release bisognerà usare un renderer matematico o normalizzare editorialmente le formule residue.
 
@@ -62,7 +63,14 @@ Può usare nomi, numeri e circostanze costruiti per la didattica, ma deve essere
 
 La review privilegia standard/governi, documentazione ufficiale, letteratura accademica riconosciuta e fonti primarie per i casi pubblici.
 
-Prima della release resta un audit globale dei **190 URL** per link, redirect, supporto del claim e uniformità delle note.
+Prima della release resta un audit globale dei **190 URL** per:
+
+- raggiungibilità;
+- redirect;
+- supporto reale del claim;
+- preferenza per fonte primaria;
+- data/freshness quando rilevante;
+- uniformità della presentazione delle fonti.
 
 ## 4. Stato capitolo per capitolo
 
@@ -87,9 +95,9 @@ Prima della release resta un audit globale dei **190 URL** per link, redirect, s
 | 16 — Storytelling/dashboard | **Revisionato** | **Decision Communication Pack**. |
 | 17 — Casi end-to-end | **Revisionato** | **Capstone Routing Canvas / Capstone Case File**. |
 | 18 — Sistema analitico che scala | **Revisionato** | **Analytics Operating Contract**. |
-| 19 — Data Analyst 2026–2035 | **Da revisionare** | Skill, agent management, deskilling, carriera. |
+| 19 — Data Analyst 2026–2035 | **Revisionato** | **Personal Career Operating Plan**. |
 
-## 5. Deliverable canonici
+## 5. Vocabolario operativo del libro
 
 ```text
 Analytical Brief
@@ -111,33 +119,20 @@ Analytical Brief
 
 Il Capitolo 17 introduce il **Capstone Routing Canvas**, che seleziona quali artefatti attivare in base a decisione, failure cost, claim necessario, readiness e stop rule.
 
-Il Capitolo 18 introduce l'**Analytics Operating Contract**, che entra in gioco quando una capacità analitica ricorrente merita di diventare un servizio operativo.
+Il Capitolo 18 introduce l'**Analytics Operating Contract**, che entra in gioco quando una capacità ricorrente merita di diventare un servizio operativo.
 
-```text
-recurring decision
-→ criticality tier
-→ product boundary
-→ ownership
-→ SLI/SLO
-→ tests/observability
-→ serving/degraded state
-→ incident/recovery
-→ change/compatibility
-→ adoption
-→ cost-to-serve
-→ AI/agent lifecycle
-→ review / retirement
-```
+Il Capitolo 19 porta la stessa logica sul professionista attraverso il **Personal Career Operating Plan**.
 
-Non ogni analisi richiede tutti gli artefatti. Sono un vocabolario operativo per rischi differenti.
+Questi artefatti non sono una checklist obbligatoria da applicare sempre. Sono un vocabolario operativo per rischi differenti.
 
 ## 6. Confini concettuali principali
 
-### 0 / 14 / 19 — AI
+### 0 / 14 / 18 / 19 — AI
 
 - **0:** ownership e supervisione umana;
-- **14:** workflow operativo, boundary, verification, eval, privacy e auditability;
-- **19:** conseguenze su skill, ruoli, apprendimento e carriera.
+- **14:** progettazione e verifica del singolo workflow AI-assisted;
+- **18:** agenti ricorrenti come servizi operativi con lifecycle, monitoring e revoke/retire;
+- **19:** conseguenze su skill, delegation boundary, deskilling, seniority e carriera.
 
 ### 3 / 4 / 5 — qualità, pattern, inferenza
 
@@ -179,27 +174,12 @@ AI Analysis Control Sheet
 - **17:** come risolvere bene una decisione complessa una volta;
 - **18:** quando e come quella capacità deve diventare un sistema ripetibile con ownership, reliability, change management, adoption e cost control.
 
-### 12 / 18 — architettura vs operating contract
+### 18 / 19 — capacità organizzativa vs capacità professionale
 
-- **12:** come il dato si muove dalla sorgente al consumer e con quali failure boundary;
-- **18:** quale promessa operativa facciamo al consumer, chi ne risponde e come gestiamo failure/change/lifecycle.
+- **18:** come l'organizzazione rende affidabile e riutilizzabile una promessa analitica;
+- **19:** come il professionista costruisce un portafoglio di capacità robusto quando cambia il costo dei task e aumenta la delega all'AI.
 
-### 13 / 18 — workflow locale vs operating model
-
-- **13:** scelta/migrazione del singolo workflow;
-- **18:** standard e ownership organizzativi che permettono di scalare.
-
-### 14 / 18 — AI workflow vs AI service
-
-- **14:** progettare e verificare una singola analisi AI-assisted;
-- **18:** operare agenti ricorrenti con registry, eval, deploy, monitoring, incident, change, revoke e retirement.
-
-### 18 / 19 — capacità organizzativa vs carriera
-
-- **18:** come l'organizzazione rende l'analytics affidabile e riutilizzabile;
-- **19:** come il professionista costruisce competenze resilienti dentro un sistema sempre più automatizzato.
-
-## 7. Note review Capitoli 17–18
+## 7. Note review Capitoli 17–19
 
 ### Capitolo 17 — Capstone Routing Canvas
 
@@ -223,36 +203,15 @@ messy question
 → outcome review
 ```
 
-Il **Capstone Routing Canvas** usa:
+Punti chiave:
 
-```text
-decision
-→ failure cost
-→ claim needed
-→ readiness
-→ necessary deliverables
-→ stop rule
-```
-
-Concetti rafforzati:
-
-- il titolo del caso non suggerisce automaticamente la tecnica;
-- **method gate**: ogni tecnica deve chiudere un rischio decisionale esplicito;
-- deliverable necessari vs deliverable volutamente saltati;
+- method gate: ogni tecnica deve chiudere un rischio decisionale esplicito;
+- deliverable necessari vs volutamente saltati;
 - Evidence Ledger: `observed / inferred / still unknown`;
 - stop state: `DECIDE / PILOT / WAIT FOR X / BUY INFORMATION / NO ACTION / NOT IDENTIFIED`;
-- prediction ≠ persuadibilità ≠ economics nel churn;
-- elasticity estimate ≠ pricing policy;
-- attribution ≠ incrementality ≠ marginal ROI;
-- forecast accuracy ≠ decision loss;
-- anomaly ≠ incident root cause e ruolo del semantic drift;
-- experiment significance ≠ experiment trustworthiness ≠ rollout policy;
-- unit economics richiede denominatore e cost boundary coerenti;
-- outcome review separata da decision quality ex ante.
+- outcome review distinta dalla decision quality ex ante.
 
 ### Capitolo 18 — Analytics Operating Contract
-
-Il capitolo è stato separato dall'architettura del Capitolo 12 e dall'AI workflow governance del Capitolo 14.
 
 Percorso:
 
@@ -264,37 +223,83 @@ recurring decision
 → ownership
 → reliability contract
 → testing pyramid
-→ serving / degraded states
-→ incident / recovery
-→ change / semantic diff
+→ serving/degraded states
+→ incident/recovery
+→ change/semantic diff
 → self-service
 → adoption ladder
 → cost-to-serve
 → agent lifecycle
-→ review / retirement
+→ review/retirement
 ```
 
-Concetti rafforzati:
+Punti chiave:
 
 - `T0 Exploratory / T1 Team / T2 Business-critical / T3 High-consequence`;
-- ownership separata in decision, semantic, product/technical, source e governance owner;
-- SLI/SLO analitici ed error budget legati al consumer;
-- stati `READY / READY WITH CAVEATS / STALE BUT SERVABLE / PARTIAL / BLOCKED`;
-- pipeline health distinta da data/decision readiness;
-- change classification: technical, structural, semantic, operating;
-- Compatibility Contract e semantic diff;
-- self-service come autonomia entro product boundary e standard condivisi;
-- CI/CD con shadow/parallel run e recovery/replay;
+- decision/semantic/product/source/governance ownership separate;
+- SLI/SLO ed error budget legati al consumer;
+- `READY / READY WITH CAVEATS / STALE BUT SERVABLE / PARTIAL / BLOCKED`;
+- semantic diff e Compatibility Contract;
 - testing pyramid basata sui failure mode;
-- cost allocation, freshness economics e cost-to-serve;
 - adoption ladder: `availability → discoverability → usage → effective use → decision embedding → outcome`;
 - Agent Operating Profile: register, evaluate, deploy, monitor, incident, change, revoke/retire;
-- human approval distinto da approval theater;
 - retirement come parte del lifecycle.
 
-Il caso finale Helios Mobility è simulato/composito e dimostra un sistema che degrada esplicitamente durante un failure di sorgente, gestisce un semantic breaking change e riduce temporaneamente l'autorità di un agente dopo un failure di dipendenza.
+Il caso Helios Mobility è simulato/composito.
 
-Fonti principali: Google SRE, Microsoft Fabric Adoption Roadmap, NIST AI RMF/Generative AI Profile, AWS data-product/data-mesh guidance e FinOps Foundation.
+### Capitolo 19 — Personal Career Operating Plan
+
+Il capitolo finale è stato trasformato da previsione sul mercato del lavoro a **career operating model robusto all'incertezza tecnologica**.
+
+Percorso:
+
+```text
+task exposure
+→ responsibility moat
+→ delegation boundary
+→ semantic leverage
+→ Capability Portfolio
+→ career optionality
+→ decision span
+→ specialization direction
+→ seniority spans
+→ verification reserve
+→ scenario stress test
+→ Personal Career Operating Plan
+```
+
+Concetti principali:
+
+- task exposure distinto da scomparsa della professione;
+- **responsibility moat**: valore che resta in semantica, risk/judgment, stakeholder e outcome accountability;
+- tecnica distinta in `execution / verification / design skill`;
+- agentic leverage come evidenza utile per unità di attenzione, non output volume;
+- Delegation Boundary `A–E`, da human execution a bounded autonomous service;
+- delegation depth deve seguire verification depth;
+- **semantic leverage**: l'interfaccia naturale aumenta il valore della formalizzazione del significato;
+- Capability Portfolio: `breadth / depth / domain / operating responsibility`;
+- **escalation literacy** come competenza senior;
+- skill portfolio con half-life differenti e novelty/FOMO filter;
+- **career optionality** su tool, domain, method, role e AI;
+- **decision span** da output a decision system;
+- specializzazioni espresse come `problema × metodo × operating responsibility`, non come previsione di job title;
+- seniority attraverso `ambiguity span / failure span / coordination span / decision span`;
+- experience compression apparente: output senior-looking non equivale a esperienza;
+- **verification reserve** e deliberate practice contro il deskilling;
+- scenario planning 2035: agent-rich, high-regulation, low-maturity/partial automation;
+- Personal Career Operating Plan con stati `STRONG / DEVELOPING / DEPENDENT / UNKNOWN` e azioni `KEEP / DELEGATE MORE / REBUILD SKILL / SPECIALIZE / ESCALATE / RETIRE`.
+
+Fonti principali: ILO *Generative AI and jobs: A 2025 update*, World Economic Forum *Future of Jobs Report 2025*, Microsoft *Work Trend Index 2026*, Microsoft Research CHI 2025 sul critical thinking nel knowledge work.
+
+La conclusione finale torna al Capitolo 0 senza framing difensivo: il punto non è preservare il vecchio lavoro, ma usare più capacità senza perdere il controllo su intento, significato, evidenza, rischio e decisione.
+
+Definizione finale mantenuta:
+
+> **Il Data Analyst è la persona che trasforma domande ambigue e dati imperfetti in evidenza sufficientemente affidabile da migliorare una decisione.**
+
+Ultima riga del corpo principale:
+
+> **Gli strumenti cambieranno. Il timone resta una responsabilità.**
 
 ## 8. Arco complessivo
 
@@ -316,22 +321,74 @@ mentalità
 → comunicazione
 → capstone
 → scala
-→ futuro
+→ futuro / carriera
 ```
 
-## 9. Lavori ancora necessari prima della release
+La review capitolo-per-capitolo è conclusa.
 
-- review Capitolo 19;
-- audit link/fonti globale;
-- formula rendering;
-- frontespizio, copyright/licenza, autore e bio;
-- “come usare il libro” e indice automatico;
-- glossario/bibliografia/indice fonti;
-- ringraziamenti e numero/versione release;
-- proofread ortografico finale;
-- controllo tabelle, code block, footnote e page break nel PDF/DOCX.
+## 9. Release editorial pass — lavori ancora necessari
+
+### A. Fonti e factual audit
+
+- verificare tutti i **190 URL**;
+- rimuovere link morti o redirect inutili;
+- confermare che ogni claim sia effettivamente supportato;
+- privilegiare fonti primarie quando disponibili;
+- uniformare la presentazione delle fonti;
+- verificare date e wording dei casi pubblici.
+
+### B. Formula rendering
+
+- individuare i **7 file LaTeX** residui;
+- decidere se renderizzare matematicamente o convertire in notazione editoriale;
+- controllare formula wrapping in PDF e DOCX.
+
+### C. Front matter e navigazione
+
+- frontespizio;
+- autore e bio;
+- copyright/licenza;
+- versione/edizione;
+- “come usare questo libro”;
+- legenda casi reali/compositi;
+- indice automatico;
+- eventuale prefazione/introduzione editoriale.
+
+### D. Reference layer
+
+- glossario;
+- bibliografia/indice fonti;
+- eventuale indice dei casi reali;
+- cross-reference tra deliverable canonici;
+- elenco dei template operativi riutilizzabili.
+
+### E. Proofread e consistency pass
+
+- ortografia/punteggiatura;
+- inglesismi e capitalizzazione;
+- termini canonici;
+- rimandi tra capitoli;
+- ripetizioni residue;
+- numeri e unità;
+- caso reale vs composito;
+- claim level e causal wording.
+
+### F. Layout QA
+
+- tabelle larghe;
+- code block;
+- formule;
+- blockquote;
+- heading/page break;
+- widows/orphans dove possibile;
+- footnote/link;
+- indice;
+- numerazione pagine;
+- resa PDF e DOCX.
 
 ## 10. Release gate
+
+Prima di una release candidata:
 
 ```bash
 python scripts/normalize_sources.py --check
@@ -339,25 +396,34 @@ python scripts/lint_book.py --strict
 python scripts/build.py
 ```
 
-Poi controllo manuale di indice, formule, tabelle, codice, fonti, casi reali/compositi, ripetizioni, ortografia, footnote, page break e continuità dei deliverable canonici.
+Poi controllo manuale di:
+
+- fonti;
+- formule;
+- tabelle;
+- codice;
+- casi reali/compositi;
+- ortografia;
+- footnote/link;
+- page break;
+- indice;
+- continuità dei deliverable canonici.
 
 ## 11. Prossimo blocco
 
-La review continua dal **Capitolo 19 — Il Data Analyst nel 2026–2035**.
+La fase di **chapter review è conclusa**.
 
-Direzione editoriale:
+Il prossimo lavoro editoriale raccomandato è il **source/factual audit globale**, perché può modificare claim e riferimenti prima dell'ultimo proofread tipografico.
+
+Ordine consigliato:
 
 ```text
-stable responsibility
-→ task exposure
-→ human/agent comparative advantage
-→ skill portfolio
-→ verification depth
-→ domain leverage
-→ learning system
-→ deskilling safeguards
-→ career optionality
-→ personal operating plan
+1. source/factual audit
+2. formula rendering
+3. front matter + indice + reference layer
+4. proofread globale
+5. layout QA PDF/DOCX
+6. release candidate
 ```
 
-Il Capitolo 19 non deve prevedere quali tool vinceranno nel 2035 e non deve ripetere il Capitolo 0. Deve aiutare il lettore a costruire un **career operating model** robusto all'incertezza tecnologica: quali attività delegare, quali competenze preservare per poter verificare, come allenare judgment e come misurare il proprio valore rispetto agli outcome invece che alla quantità di output prodotto.
+Da questo punto l'obiettivo non è aggiungere altro corpo al libro, salvo lacune dimostrate dall'audit. È trasformare il manoscritto revisionato in una **release editoriale verificata e pubblicabile**.
