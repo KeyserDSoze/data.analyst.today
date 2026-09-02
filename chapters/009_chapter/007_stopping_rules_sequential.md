@@ -163,4 +163,4 @@ L'Experiment Contract serve anche a questo.
 
 > **La dashboard può essere real-time. La regola decisionale non deve essere improvvisata in real-time.**
 
-[^ms-during]: Microsoft Research, *Patterns of Trustworthy Experimentation: During-Experiment Stage*: https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/patterns-of-trustworthy-experimentation-during-experiment-stage/
+[^ms-during]: Microsoft Research, *Patterns of Trustworthy Experimentation: During-Experiment Stage*: https://www.microsoft.com/en-us/research/articles/patterns-of-trustworthy-experimentation-during-experiment-stage/
