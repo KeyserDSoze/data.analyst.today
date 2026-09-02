@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from io import BytesIO
 from pathlib import Path
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt, RGBColor
+from pypdf import PdfReader, PdfWriter
+from reportlab.pdfgen import canvas
 
 import build
 
@@ -122,6 +125,52 @@ def polish_docx_title_page(path: Path, config: dict) -> None:
     doc.save(str(path))
 
 
+def polish_pdf_title_page(path: Path, config: dict) -> None:
+    """Center subtitle/author on the PDF title page without rebuilding the body."""
+    reader = PdfReader(str(path))
+    if not reader.pages:
+        return
+
+    page = reader.pages[0]
+    width = float(page.mediabox.width)
+    height = float(page.mediabox.height)
+    subtitle = str(config.get("subtitle", "")).strip()
+    author = str(config.get("author", "")).strip()
+
+    buffer = BytesIO()
+    overlay_canvas = canvas.Canvas(buffer, pagesize=(width, height))
+
+    # Cover the original left-aligned subtitle/author block while leaving the
+    # large title untouched, then redraw a cleaner centered composition.
+    overlay_canvas.setFillColorRGB(1, 1, 1)
+    overlay_canvas.rect(0, height * 0.742, width, height * 0.131, stroke=0, fill=1)
+
+    if subtitle:
+        overlay_canvas.setFillColor(build.colors.HexColor(f"#{ACCENT}"))
+        overlay_canvas.setFont("Helvetica-Oblique", 13)
+        overlay_canvas.drawCentredString(width / 2, height * 0.836, subtitle)
+
+    if author:
+        overlay_canvas.setFillColorRGB(0.12, 0.14, 0.16)
+        overlay_canvas.setFont("Helvetica", 10.5)
+        overlay_canvas.drawCentredString(width / 2, height * 0.805, author)
+
+    overlay_canvas.setStrokeColor(build.colors.HexColor("#9BAAC0"))
+    overlay_canvas.setLineWidth(0.7)
+    overlay_canvas.line(width / 2 - 80, height * 0.780, width / 2 + 80, height * 0.780)
+    overlay_canvas.save()
+    buffer.seek(0)
+
+    overlay_page = PdfReader(buffer).pages[0]
+    writer = PdfWriter(clone_from=reader)
+    writer.pages[0].merge_page(overlay_page, over=True)
+
+    temp_path = path.with_suffix(".styled.pdf")
+    with temp_path.open("wb") as handle:
+        writer.write(handle)
+    temp_path.replace(path)
+
+
 def main() -> None:
     build.configure_docx_styles = configure_docx_styles
     build.pdf_styles = pdf_styles
@@ -130,6 +179,7 @@ def main() -> None:
     config = build.load_config()
     basename = config.get("output_basename", "book")
     polish_docx_title_page(build.BUILD_DIR / f"{basename}.docx", config)
+    polish_pdf_title_page(build.BUILD_DIR / f"{basename}.pdf", config)
 
 
 if __name__ == "__main__":
