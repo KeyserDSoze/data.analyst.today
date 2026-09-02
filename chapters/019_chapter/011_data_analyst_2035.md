@@ -1,144 +1,249 @@
-## 19.10 Un possibile profilo del Data Analyst del 2035
-Fare previsioni sul lavoro a dieci anni è pericoloso.
+## 19.10 Il Data Analyst del 2035: tre futuri plausibili, non una previsione
 
-I tool cambiano troppo rapidamente.
+Fare una descrizione precisa del Data Analyst del 2035 sarebbe poco credibile.
 
-È però possibile descrivere alcune capacità che, se le tendenze attuali continueranno, potrebbero caratterizzare un Data Analyst molto forte nel 2035.
+Dieci anni sono un tempo enorme per software, interfacce e organizzazioni.
 
-## Non un super-programmatore
+Possiamo però fare qualcosa di più utile: costruire **scenari plausibili** e chiedere quali competenze restano preziose attraverso scenari molto diversi.
 
-Il profilo del 2035 non sarà necessariamente la persona che scrive più codice.
+È un metodo di stress test.
 
-Potrebbe scriverne molto meno di oggi.
+Una buona strategia di carriera non deve funzionare soltanto se la nostra previsione preferita si avvera.
 
-Ma saprà:
+Deve conservare valore anche se il mondo evolve più lentamente, più velocemente o in modo più regolamentato di quanto immaginiamo oggi.
 
-- definire problemi con precisione;
-- scegliere e combinare agenti;
-- costruire metriche e semantica affidabili;
-- progettare esperimenti e quasi-esperimenti;
-- ragionare in termini probabilistici;
-- usare forecast per decisioni operative;
-- valutare trade-off economici;
-- progettare sistemi di verifica;
-- capire architettura e lineage abbastanza da diagnosticare problemi;
-- comunicare a persone con livelli tecnici molto diversi;
-- assumersi la responsabilità di un processo analitico distribuito.
+## Scenario A — Agent-rich e semantic-mature
 
-## Il desk non è più il centro del lavoro
+Immaginiamo un'organizzazione nel 2035 con:
 
-Oggi immaginiamo ancora l'analista davanti a una dashboard, a un notebook o a un editor SQL.
-
-Nel 2035 il lavoro potrebbe essere più simile alla gestione di un **control room analitico**.
-
-Un analista potrebbe supervisionare:
-
-- agenti che monitorano metriche;
-- agenti che investigano anomalie;
-- sistemi che propongono esperimenti;
-- modelli che aggiornano forecast;
-- agenti che preparano decision briefs;
+- semantic layer certificato;
+- data product osservabili;
+- metriche con owner e lineage;
+- agenti con tool access governato;
+- workflow che producono automaticamente query, analisi, forecast e prime recommendation;
+- eval e audit integrati;
 - sistemi che registrano outcome e aggiornano conoscenza.
 
-La persona interviene soprattutto quando:
+Qui il costo di esecuzione è molto basso.
 
-- le evidenze sono in conflitto;
-- la decisione è ad alto impatto;
-- il sistema incontra qualcosa di nuovo;
-- serve contesto non presente nei dati;
-- bisogna negoziare un trade-off;
-- le assunzioni non reggono più.
+Un analyst può dirigere contemporaneamente più investigazioni.
 
-## Caso futuro realistico: il lunedì mattina nel 2035
+### Un lunedì mattina possibile
 
-Alle 8:30 un responsabile analytics apre il workspace.
+Alle 08:30 un responsabile analytics apre il proprio control workspace.
 
-Durante la notte cinque agenti hanno lavorato.
+Durante la notte:
 
-Uno segnala che il contribution margin in Europa è sotto la soglia prevista.
+- un agente ha rilevato contribution margin europeo sotto soglia;
+- uno ha certificato freshness e reconciliation;
+- uno ha scomposto il delta in price, mix, volume e logistics cost;
+- uno ha prodotto tre explanation candidates;
+- uno ha costruito scenari operativi;
+- uno ha preparato un Decision Record candidate.
 
-Un secondo ha escluso problemi di data freshness e riconciliato gli ordini con il ledger.
+L'analista non parte scrivendo SQL.
 
-Un terzo ha individuato due spiegazioni principali:
+Parte dalle **assunzioni**.
 
-- aumento dei costi logistici;
-- mix shift verso prodotti bulky.
+Nota che il modello logistico usa una tariffa contrattuale non aggiornata agli ultimi surcharge.
 
-Un quarto ha simulato tre interventi operativi.
+Chiede verifica sulla fonte più recente.
 
-Un quinto ha preparato un decision brief.
+La decomposition cambia materialmente.
 
-L'analista non comincia scrivendo SQL.
+Metà del deterioramento attribuito al product mix viene riassegnato a una nuova fuel surcharge.
 
-Comincia leggendo le assunzioni.
+Il valore professionale dell'analista sta in:
 
-Nota che il modello di costo logistico usa tariffe contrattuali aggiornate al trimestre precedente. Chiede a un agente di verificare gli ultimi surcharge. Il risultato cambia: circa metà del deterioramento è dovuto a una nuova fuel surcharge introdotta cinque giorni prima.
+- semantic judgment;
+- verification routing;
+- prioritizzazione;
+- conflict resolution;
+- economics;
+- claim calibration;
+- stakeholder negotiation;
+- decision ownership support.
 
-Alle 9:15 l'analista entra nel meeting con operations e finance.
+In questo scenario la pura produzione manuale pesa relativamente poco.
 
-Non presenta cinquanta grafici.
+## Scenario B — High-regulation e human-approval heavy
 
-Presenta:
+Ora immaginiamo un settore come:
 
-- cosa sappiamo;
-- cosa non sappiamo;
-- quali leve abbiamo;
-- effetto economico atteso;
-- cosa raccomandiamo;
-- quando rivaluteremo la decisione.
+- healthcare;
+- banking;
+- insurance;
+- public sector;
+- infrastrutture critiche.
 
-Questo scenario può sembrare molto diverso dal lavoro di oggi.
+Gli agenti sono potenti ma molte decisioni richiedono:
 
-In realtà usa le stesse competenze fondamentali che abbiamo costruito nel libro.
+- autorizzazioni;
+- evidenza auditabile;
+- explainability;
+- separazione dei ruoli;
+- privacy controls;
+- human approval;
+- documentazione del modello/decision process;
+- retention degli artefatti.
 
-Sono cambiate le modalità di esecuzione.
+Qui l'automazione può essere alta, ma l'**authority** resta limitata.
 
-Non il bisogno di ragionare bene.
+Il Data Analyst può avere un ruolo centrale nel tradurre tra:
 
-## Una piramide di competenze per il 2035
+- metriche;
+- modello;
+- policy;
+- regulator/compliance requirement;
+- decision owner;
+- sistema operativo.
 
-Possiamo sintetizzare il profilo in cinque livelli.
+Le competenze più preziose diventano:
 
-### Livello 1 — Fondamenta
+- provenance;
+- causal/claim discipline;
+- documentation;
+- risk assessment;
+- model/metric governance;
+- verification;
+- escalation;
+- comunicazione con specialisti non-data.
 
-Statistica, dati, grain, qualità, probabilità, causalità.
+Un analyst che conosce soltanto il tool AI più recente ha un vantaggio limitato.
 
-### Livello 2 — Sistemi
+Un analyst che sa costruire una **catena difendibile di evidenza e responsabilità** ha un vantaggio molto maggiore.
 
-SQL, modeling, architecture, semantic layer, data products.
+## Scenario C — Low-maturity, automazione parziale e realtà disordinata
 
-### Livello 3 — Decisione
+Il terzo scenario è meno futuristico e probabilmente molto persistente.
 
-Experimentation, forecasting, economics, scenario analysis, decision intelligence.
+L'organizzazione ha:
 
-### Livello 4 — Comunicazione e dominio
+- CRM incoerente;
+- definizioni diverse tra Finance e Sales;
+- CSV manuali;
+- alcune pipeline cloud;
+- agenti AI disponibili;
+- semantic layer incompleto;
+- data quality variabile;
+- processi ancora fortemente umani.
 
-Business understanding, storytelling, stakeholder management.
+L'AI è presente, ma lavora sopra fondamenta fragili.
 
-### Livello 5 — Orchestrazione AI
+Qui il rischio non è che il Data Analyst non serva più.
 
-Delega, evaluation, agent management, governance, escalation, accountability.
+È che l'organizzazione produca **risposte molto più rapidamente di quanto riesca a stabilire che cosa significano**.
 
-L'errore sarebbe costruire soltanto il quinto livello.
+Le capacità più importanti includono:
 
-Un analista che sa orchestrare agenti ma non possiede le fondamenta non governa davvero il sistema.
+- reconciliation;
+- grain/identity reasoning;
+- metric definition;
+- data readiness;
+- pragmatic tooling;
+- stakeholder alignment;
+- manual fallback;
+- capacità di costruire progressivamente sistemi più affidabili senza over-engineering.
 
-Sta soltanto coordinando output che non è in grado di giudicare.
+In questo scenario l'analista può ancora scrivere molto SQL e gestire spreadsheet.
 
-## La tecnologia cambia. La domanda professionale rimane
+Ma l'AI riduce comunque l'attrito dell'esecuzione.
 
-Nel 2035 potremmo non usare quasi nessuno degli strumenti oggi dominanti.
+Il valore continua a derivare dal capire **quale parte del processo è davvero pronta per essere automatizzata**.
 
-Ma qualcuno continuerà a dover rispondere a domande come:
+## Che cosa sopravvive ai tre scenari?
 
-- possiamo fidarci di questo numero?
-- cosa sta causando il problema?
-- che cosa succederà probabilmente?
-- quale intervento conviene?
-- quanto siamo sicuri?
-- quali rischi stiamo accettando?
-- come sapremo se avevamo ragione?
+Mettiamo sotto stress il Capability Portfolio.
 
-Quella persona, qualunque titolo avrà, starà facendo il mestiere che questo libro chiama Data Analyst.
+| Capacità | Agent-rich | High-regulation | Low-maturity |
+|---|---:|---:|---:|
+| problem framing | molto alta | molto alta | molto alta |
+| semantic reasoning | molto alta | molto alta | molto alta |
+| data quality judgment | alta | molto alta | molto alta |
+| probability/uncertainty | alta | molto alta | alta |
+| causal reasoning | alta | molto alta | alta |
+| SQL syntax memory | bassa-media | media | media-alta |
+| verification | molto alta | molto alta | molto alta |
+| domain knowledge | molto alta | molto alta | molto alta |
+| stakeholder communication | molto alta | molto alta | molto alta |
+| AI orchestration | molto alta | alta | media-alta |
+| governance/escalation | alta | molto alta | alta |
+| adaptability | molto alta | alta | molto alta |
 
-> **Il futuro del Data Analyst non è un software. È una responsabilità: trasformare evidenza incompleta in decisioni migliori.**
+La tabella non pretende precisione quantitativa.
+
+Serve a rendere evidente una cosa:
+
+> **alcune capacità sono robuste a scenari tecnologici molto differenti.**
+
+Sono buoni candidati per investimenti di carriera profondi.
+
+## Career stress test
+
+Possiamo applicare lo stesso metodo a noi stessi.
+
+### Futuro più automatizzato del previsto
+
+Se il 70–80% della mia esecuzione abituale diventasse economico, quale parte del mio valore resterebbe?
+
+### Futuro meno automatizzato del previsto
+
+Se nel mio settore l'AI procedesse lentamente per qualità, regolazione o sistemi legacy, sarei ancora capace di eseguire e consegnare?
+
+### Futuro più regolamentato
+
+Saprei spiegare lineage, assumptions, verification ed escalation?
+
+### Futuro con tool completamente diversi
+
+Le mie competenze si trasferirebbero?
+
+### Futuro con agenti più affidabili
+
+Saprei aumentare delegation depth invece di usare sempre full manual review?
+
+### Futuro con agenti meno affidabili del previsto
+
+Possiedo abbastanza verification reserve per continuare a lavorare bene?
+
+Una strategia che fallisce completamente in quattro scenari su sei è una scommessa, non una strategia resiliente.
+
+## Il profilo robusto
+
+Non possiamo descrivere il toolset del 2035.
+
+Possiamo però descrivere una responsabilità robusta.
+
+Un Data Analyst forte dovrebbe saper:
+
+- trasformare ambiguità in una domanda decidibile;
+- rendere esplicito il significato dei dati;
+- scegliere il claim necessario;
+- decidere quale evidenza produrre e quale non serve;
+- orchestrare capacità umane e automatiche;
+- riconoscere i failure mode ad alto costo;
+- calibrare la verifica al rischio;
+- collegare l'evidenza alle alternative;
+- sapere quando coinvolgere uno specialista;
+- progettare feedback e apprendimento;
+- mantenere abbastanza fondamenta da non diventare dipendente dall'interfaccia.
+
+Queste capacità hanno senso in tutti e tre gli scenari.
+
+## Segnali, non profezie
+
+L'ILO osserva che l'esposizione alla GenAI riguarda ormai una quota significativa delle occupazioni, ma considera la trasformazione più probabile della completa sostituzione per la maggior parte dei lavori. Il World Economic Forum continua a collocare analytical thinking al centro delle core skill mentre crescono AI e big data. Microsoft, nel Work Trend Index 2026, descrive una possibile evoluzione in cui l'esecuzione viene assorbita maggiormente da agenti e acquista valore la human agency.
+
+Questi riferimenti non dimostrano quale dei nostri scenari sarà dominante.
+
+Servono proprio a evitare la falsa certezza: **la trasformazione è reale, la forma finale non è predeterminata**.
+
+Fonti pubbliche:
+
+- ILO, *Generative AI and jobs: A 2025 update*: https://www.ilo.org/publications/generative-ai-and-jobs-2025-update
+- World Economic Forum, *Future of Jobs Report 2025*: https://www.weforum.org/publications/the-future-of-jobs-report-2025/digest/
+- Microsoft, *2026 Work Trend Index*: https://www.microsoft.com/en-us/worklab/work-trend-index/agents-human-agency-and-the-opportunity-for-every-organization
+
+## La regola
+
+> **Una buona strategia di carriera deve funzionare in più futuri plausibili, non soltanto nel futuro che oggi ci entusiasma di più.**
