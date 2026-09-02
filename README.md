@@ -1,6 +1,6 @@
 # data.analyst.today
 
-Un libro open source sull'analisi dati nell'era dell'AI.
+Un libro open source sull'analisi dati nell'era dell'AI, scritto da **Alessandro Rapiti**. Il repository è pubblicato attraverso l'account GitHub **KeyserDSoze**.
 
 L'obiettivo non è insegnare una collezione di tool. Il progetto parte dal ragionamento analitico: capire il problema, definire metriche e popolazione, verificare i dati, scegliere il metodo, calibrare il claim e trasformare l'evidenza in una decisione. SQL, Excel, Python, BI, cloud e AI sono strumenti dentro questo processo.
 
@@ -33,6 +33,7 @@ data.analyst.today/
 │   └── 002_artefatti_operativi.md
 ├── scripts/
 │   ├── build.py
+│   ├── build_release.py
 │   ├── build_epub.py
 │   ├── lint_book.py
 │   └── normalize_sources.py
@@ -148,7 +149,7 @@ Il release gate locale è:
 ```bash
 python scripts/normalize_sources.py --check
 python scripts/lint_book.py --strict
-python scripts/build.py
+python scripts/build_release.py
 python scripts/build_epub.py
 ```
 
@@ -166,18 +167,18 @@ Il lint controlla, tra le altre cose:
 - casing dei deliverable canonici;
 - conteggio di parole, caratteri e URL distinti.
 
-In CI, dopo la build vengono verificati anche gli output: footnote risolte, outline PDF presente, repeating header delle tabelle DOCX, frontespizio DOCX senza footer visibile e struttura EPUB valida.
+In CI, dopo la build vengono verificati anche gli output: footnote risolte, outline PDF presente, repeating header delle tabelle DOCX, frontespizio DOCX senza footer visibile, autore **Alessandro Rapiti** nei metadata PDF/DOCX/EPUB e struttura EPUB valida.
 
 ## Costruire il libro
 
-Dalla root:
+Dalla root, per ottenere la stessa resa della release:
 
 ```bash
-python scripts/build.py
+python scripts/build_release.py
 python scripts/build_epub.py
 ```
 
-`scripts/build.py`:
+`scripts/build.py` contiene il renderer di base. `scripts/build_release.py` applica il layer tipografico della release e poi richiama il renderer:
 
 1. assembla il frontespizio da `book.yml`;
 2. inserisce i file di `front_matter/`;
@@ -187,9 +188,10 @@ python scripts/build_epub.py
 6. inserisce glossario e indice degli artefatti da `reference/`;
 7. genera l'indice dei casi reali documentati;
 8. genera l'indice consolidato delle fonti a partire dagli URL del corpo;
-9. produce Markdown, DOCX e PDF, con outline di navigazione nel PDF e repeating header nelle tabelle DOCX.
+9. produce Markdown, DOCX e PDF;
+10. rende ogni nuovo capitolo una nuova pagina in PDF/DOCX, aumenta la gerarchia dei titoli e rifinisce il frontespizio.
 
-`scripts/build_epub.py` usa il Markdown assemblato e produce un EPUB con documenti separati per gli H1 top-level e indice di navigazione.
+`scripts/build_epub.py` usa il Markdown assemblato e produce un EPUB con documenti separati per gli H1 top-level, indice di navigazione e stile tipografico coerente con PDF/DOCX.
 
 Output:
 
@@ -208,10 +210,10 @@ Esempio:
 
 ```json
 {
-  "tag": "v1.0.0-rc1",
-  "name": "Data Analyst Today v1.0.0-rc1",
+  "tag": "v1.0.0-rc2",
+  "name": "Data Analyst Today v1.0.0-rc2",
   "prerelease": true,
-  "notes_file": "release-notes/v1.0.0-rc1.md"
+  "notes_file": "release-notes/v1.0.0-rc2.md"
 }
 ```
 
@@ -239,7 +241,7 @@ Il lint del corpo principale riporta:
 - **0 file con LaTeX residuo**;
 - **0 file con grafie ASCII legacy**.
 
-L'ultima build validata dal release gate contiene inoltre:
+La build tipografica della release contiene inoltre:
 
 - **3 file front matter**;
 - **2 file reference curati**;
@@ -249,9 +251,11 @@ L'ultima build validata dal release gate contiene inoltre:
 - footnote risolte in **Note e fonti**;
 - **389 bookmark PDF**;
 - **213/213 tabelle DOCX** con repeating header;
-- frontespizio PDF senza numero pagina stampato;
-- frontespizio DOCX senza footer visibile;
-- **1.209 pagine PDF** nella build tecnica corrente;
+- autore **Alessandro Rapiti** nel frontespizio e nei metadata distributivi;
+- frontespizio PDF e DOCX centrato e privo di footer/numero pagina visibile;
+- ogni capitolo inizia su una nuova pagina/sezione nei formati distributivi;
+- titoli capitolo con gerarchia tipografica rafforzata;
+- circa **1.235 pagine PDF** nella build tecnica corrente;
 - build Markdown, DOCX, PDF ed EPUB validate in CI.
 
 Il page count è una misura tecnica della build, non un obiettivo editoriale.
