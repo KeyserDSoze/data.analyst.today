@@ -64,7 +64,7 @@ Ridurre artificialmente le chiamate non è una strategia di retention. Le chiama
 
 Scikit-learn distingue esplicitamente il problema statistico di stimare score/probabilità dal problema decisionale di trasformarli in un'azione. Il threshold predefinito di 0,5 è solo una convenzione software e non è ottimale per la maggior parte dei problemi business.
 
-Fonte: https://scikit-learn.org/1.9/modules/classification_threshold.html
+Fonte: https://scikit-learn.org/stable/modules/classification_threshold.html
 
 AtlasTel può usare la stessa distribuzione di score in modi molto diversi:
 
