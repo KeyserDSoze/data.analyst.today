@@ -6,9 +6,7 @@ Il **valore atteso** combina esiti possibili e probabilità. Risponde a una doma
 
 Per una variabile discreta:
 
-\[
-E[X]=\sum_x x\,P(X=x)
-\]
+`E[X] = Σ_x x · P(X = x)`
 
 Nel lavoro analitico il concetto compare continuamente:
 
@@ -60,9 +58,7 @@ Il punto è:
 
 La varianza misura la dispersione degli esiti attorno al valore atteso:
 
-\[
-Var(X)=E[(X-E[X])^2]
-\]
+`Var(X) = E[(X − E[X])²]`
 
 La deviazione standard riporta la misura nell'unità originale.
 
