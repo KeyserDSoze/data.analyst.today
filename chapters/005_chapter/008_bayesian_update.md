@@ -6,9 +6,7 @@ Il ragionamento bayesiano parte da un'idea semplice:
 
 La formula di Bayes è:
 
-\[
-P(A|B)=\frac{P(B|A)P(A)}{P(B)}
-\]
+`P(A|B) = P(B|A) × P(A) / P(B)`
 
 Combina:
 
