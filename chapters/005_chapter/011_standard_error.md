@@ -4,9 +4,7 @@ Lo **standard error** misura la variabilità di una statistica tra possibili cam
 
 Per la media, sotto condizioni semplici di campionamento indipendente, una stima comune è:
 
-\[
-SE(\bar{x}) \approx \frac{s}{\sqrt{n}}
-\]
+`SE(x̄) ≈ s / √n`
 
 La formula mostra una relazione fondamentale:
 
