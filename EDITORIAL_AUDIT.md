@@ -1,29 +1,29 @@
 # Editorial audit — data.analyst.today
 
-Ultimo aggiornamento: 1 settembre 2026.
+Ultimo aggiornamento: 2 settembre 2026.
 
 Questo documento è la dashboard editoriale del manoscritto.
 
 ## 1. Stato attuale
 
 - Corpo principale completo: **Capitoli 0–19**.
-- Review completata: **Capitoli 0–17**.
-- Da revisionare: **Capitoli 18–19**.
+- Review completata: **Capitoli 0–18**.
+- Da revisionare: **Capitolo 19**.
 - Markdown è la source of truth.
 - CI attiva su `main` con lint + build Markdown/DOCX/PDF.
 - Casi pubblici e casi simulati/compositi devono essere distinti esplicitamente.
 
 ### Ultima build validata
 
-Dopo la review del Capitolo 17:
+Dopo la review del Capitolo 18:
 
 - **20 capitoli**;
 - **321 file Markdown**;
-- **238.362 parole stimate**;
-- **1.758.682 caratteri**;
-- **181 URL esterni distinti**;
+- **246.711 parole stimate**;
+- **1.824.203 caratteri**;
+- **190 URL esterni distinti**;
 - **8 file con LaTeX**;
-- **1.093 pagine PDF**;
+- **1.148 pagine PDF**;
 - build Markdown, DOCX e PDF: **SUCCESS**.
 
 Il page count non è un obiettivo da massimizzare. La priorità è la densità di valore per pagina.
@@ -62,7 +62,7 @@ Può usare nomi, numeri e circostanze costruiti per la didattica, ma deve essere
 
 La review privilegia standard/governi, documentazione ufficiale, letteratura accademica riconosciuta e fonti primarie per i casi pubblici.
 
-Prima della release resta un audit globale dei **181 URL** per link, redirect, supporto del claim e uniformità delle note.
+Prima della release resta un audit globale dei **190 URL** per link, redirect, supporto del claim e uniformità delle note.
 
 ## 4. Stato capitolo per capitolo
 
@@ -86,7 +86,7 @@ Prima della release resta un audit globale dei **181 URL** per link, redirect, s
 | 15 — Insight e decisione | **Revisionato** | **Decision Record**. |
 | 16 — Storytelling/dashboard | **Revisionato** | **Decision Communication Pack**. |
 | 17 — Casi end-to-end | **Revisionato** | **Capstone Routing Canvas / Capstone Case File**. |
-| 18 — Sistema analitico che scala | **Da revisionare** | Operating model, reliability, data products, governance. |
+| 18 — Sistema analitico che scala | **Revisionato** | **Analytics Operating Contract**. |
 | 19 — Data Analyst 2026–2035 | **Da revisionare** | Skill, agent management, deskilling, carriera. |
 
 ## 5. Deliverable canonici
@@ -109,7 +109,25 @@ Analytical Brief
 → Decision Communication Pack
 ```
 
-Il Capitolo 17 non aggiunge un deliverable tecnico obbligatorio alla catena: introduce il **Capstone Routing Canvas**, che serve a selezionare quali artefatti attivare in base a decisione, failure cost, claim necessario, readiness e stop rule.
+Il Capitolo 17 introduce il **Capstone Routing Canvas**, che seleziona quali artefatti attivare in base a decisione, failure cost, claim necessario, readiness e stop rule.
+
+Il Capitolo 18 introduce l'**Analytics Operating Contract**, che entra in gioco quando una capacità analitica ricorrente merita di diventare un servizio operativo.
+
+```text
+recurring decision
+→ criticality tier
+→ product boundary
+→ ownership
+→ SLI/SLO
+→ tests/observability
+→ serving/degraded state
+→ incident/recovery
+→ change/compatibility
+→ adoption
+→ cost-to-serve
+→ AI/agent lifecycle
+→ review / retirement
+```
 
 Non ogni analisi richiede tutti gli artefatti. Sono un vocabolario operativo per rischi differenti.
 
@@ -119,7 +137,7 @@ Non ogni analisi richiede tutti gli artefatti. Sono un vocabolario operativo per
 
 - **0:** ownership e supervisione umana;
 - **14:** workflow operativo, boundary, verification, eval, privacy e auditability;
-- **19:** conseguenze su skill, ruoli e carriera.
+- **19:** conseguenze su skill, ruoli, apprendimento e carriera.
 
 ### 3 / 4 / 5 — qualità, pattern, inferenza
 
@@ -159,55 +177,29 @@ AI Analysis Control Sheet
 ### 17 / 18 — singola decisione vs sistema ricorrente
 
 - **17:** come risolvere bene una decisione complessa una volta;
-- **18:** quando e come quella capacità deve diventare un sistema ripetibile con ownership, reliability, change management e cost control.
+- **18:** quando e come quella capacità deve diventare un sistema ripetibile con ownership, reliability, change management, adoption e cost control.
+
+### 12 / 18 — architettura vs operating contract
+
+- **12:** come il dato si muove dalla sorgente al consumer e con quali failure boundary;
+- **18:** quale promessa operativa facciamo al consumer, chi ne risponde e come gestiamo failure/change/lifecycle.
 
 ### 13 / 18 — workflow locale vs operating model
 
 - **13:** scelta/migrazione del singolo workflow;
 - **18:** standard e ownership organizzativi che permettono di scalare.
 
-## 7. Note review Capitoli 15–17
+### 14 / 18 — AI workflow vs AI service
 
-### Capitolo 15 — Decision Record
+- **14:** progettare e verificare una singola analisi AI-assisted;
+- **18:** operare agenti ricorrenti con registry, eval, deploy, monitoring, incident, change, revoke e retirement.
 
-```text
-decision
-→ objective
-→ constraints
-→ alternatives + business as usual
-→ evidence
-→ uncertainty
-→ value + downside
-→ reversibility
-→ switching values
-→ analytics recommendation
-→ chosen decision
-→ guardrails
-→ review / learning
-```
+### 18 / 19 — capacità organizzativa vs carriera
 
-Punti chiave: alternative reali, ACT/PILOT/WAIT/BUY INFORMATION/ABANDON, evidence threshold distinto da switching threshold, robustness of ranking, pre-mortem, learning contract e distinzione decision/execution/outcome quality.
+- **18:** come l'organizzazione rende l'analytics affidabile e riutilizzabile;
+- **19:** come il professionista costruisce competenze resilienti dentro un sistema sempre più automatizzato.
 
-### Capitolo 16 — Decision Communication Pack
-
-```text
-Decision Record
-→ audience
-→ decision question
-→ decision requested
-→ headline / claim level
-→ evidence hierarchy
-→ Visual Encoding Contract
-→ Context Contract
-→ uncertainty / switching value
-→ alternatives
-→ Visual Integrity Gate
-→ Accessibility Gate
-→ meeting plan
-→ provenance
-```
-
-Punti chiave: evidence promotion, ruoli `orient / compare / diagnose / decide / verify`, dashboard per cadence, salience/precision budget, uncertainty rispetto allo switching value, Visual Integrity Gate, accessibility come redundant encoding e Communication Readiness Gate.
+## 7. Note review Capitoli 17–18
 
 ### Capitolo 17 — Capstone Routing Canvas
 
@@ -244,7 +236,7 @@ decision
 
 Concetti rafforzati:
 
-- il titolo del caso non suggerisce più automaticamente la tecnica;
+- il titolo del caso non suggerisce automaticamente la tecnica;
 - **method gate**: ogni tecnica deve chiudere un rischio decisionale esplicito;
 - deliverable necessari vs deliverable volutamente saltati;
 - Evidence Ledger: `observed / inferred / still unknown`;
@@ -256,20 +248,53 @@ Concetti rafforzati:
 - anomaly ≠ incident root cause e ruolo del semantic drift;
 - experiment significance ≠ experiment trustworthiness ≠ rollout policy;
 - unit economics richiede denominatore e cost boundary coerenti;
-- outcome review separata da decision quality ex ante;
-- Capstone Rubric su framing, semantica, hypothesis discipline, method selection, uncertainty, economics, stop rule, communication e outcome review.
+- outcome review separata da decision quality ex ante.
 
-Casi simulati/compositi dichiarati esplicitamente: Orion Living, NorthPeak, Vectora, Helio Market, Aster Components, PulseNote, Arcadia Parcel, VelaPay, Atlas Streaming, NovaCompute e OrbisMarket.
+### Capitolo 18 — Analytics Operating Contract
 
-Casi/fonti pubbliche documentate usate con claim limitato alla fonte:
+Il capitolo è stato separato dall'architettura del Capitolo 12 e dall'AI workflow governance del Capitolo 14.
 
-- Microsoft Customer Insights per transactional churn prediction;
-- Google Cloud Hoff e Freshworks per integrazione marketing/attribution/ROI;
-- BMW Group su AWS per shortage, semiconductor demand e supply allocation;
-- Coca-Cola Andina su AWS per inventory/distribution/delivery visibility;
-- AWS Cloud Financial Management per driver-based forecasting;
-- Microsoft Research per Sample Ratio Mismatch;
-- NXP su AWS per unit-cost analysis e FinOps.
+Percorso:
+
+```text
+recurring decision
+→ promotion gate
+→ criticality tier
+→ product boundary
+→ ownership
+→ reliability contract
+→ testing pyramid
+→ serving / degraded states
+→ incident / recovery
+→ change / semantic diff
+→ self-service
+→ adoption ladder
+→ cost-to-serve
+→ agent lifecycle
+→ review / retirement
+```
+
+Concetti rafforzati:
+
+- `T0 Exploratory / T1 Team / T2 Business-critical / T3 High-consequence`;
+- ownership separata in decision, semantic, product/technical, source e governance owner;
+- SLI/SLO analitici ed error budget legati al consumer;
+- stati `READY / READY WITH CAVEATS / STALE BUT SERVABLE / PARTIAL / BLOCKED`;
+- pipeline health distinta da data/decision readiness;
+- change classification: technical, structural, semantic, operating;
+- Compatibility Contract e semantic diff;
+- self-service come autonomia entro product boundary e standard condivisi;
+- CI/CD con shadow/parallel run e recovery/replay;
+- testing pyramid basata sui failure mode;
+- cost allocation, freshness economics e cost-to-serve;
+- adoption ladder: `availability → discoverability → usage → effective use → decision embedding → outcome`;
+- Agent Operating Profile: register, evaluate, deploy, monitor, incident, change, revoke/retire;
+- human approval distinto da approval theater;
+- retirement come parte del lifecycle.
+
+Il caso finale Helios Mobility è simulato/composito e dimostra un sistema che degrada esplicitamente durante un failure di sorgente, gestisce un semantic breaking change e riduce temporaneamente l'autorità di un agente dopo un failure di dipendenza.
+
+Fonti principali: Google SRE, Microsoft Fabric Adoption Roadmap, NIST AI RMF/Generative AI Profile, AWS data-product/data-mesh guidance e FinOps Foundation.
 
 ## 8. Arco complessivo
 
@@ -296,7 +321,7 @@ mentalità
 
 ## 9. Lavori ancora necessari prima della release
 
-- review Capitoli 18–19;
+- review Capitolo 19;
 - audit link/fonti globale;
 - formula rendering;
 - frontespizio, copyright/licenza, autore e bio;
@@ -318,26 +343,21 @@ Poi controllo manuale di indice, formule, tabelle, codice, fonti, casi reali/com
 
 ## 11. Prossimo blocco
 
-La review continua dal **Capitolo 18 — Costruire un sistema analitico che scala**.
+La review continua dal **Capitolo 19 — Il Data Analyst nel 2026–2035**.
 
 Direzione editoriale:
 
 ```text
-recurring decision
-→ criticality
-→ product boundary
-→ metric/data ownership
-→ reliability target
-→ test/observability
-→ change management
-→ incident/recovery
-→ self-service contract
-→ cost-to-serve
-→ adoption
-→ operating model
-→ review / retirement
+stable responsibility
+→ task exposure
+→ human/agent comparative advantage
+→ skill portfolio
+→ verification depth
+→ domain leverage
+→ learning system
+→ deskilling safeguards
+→ career optionality
+→ personal operating plan
 ```
 
-Deliverable previsto: **Analytics Operating Contract**.
-
-Il Capitolo 18 non deve ripetere l'architettura del Capitolo 12, la tool selection del 13 o l'AI governance del 14. Deve spiegare come una capacità analitica ricorrente diventa un prodotto operativo affidabile con ownership, SLO, change control, incident management, economics e criteri di retirement.
+Il Capitolo 19 non deve prevedere quali tool vinceranno nel 2035 e non deve ripetere il Capitolo 0. Deve aiutare il lettore a costruire un **career operating model** robusto all'incertezza tecnologica: quali attività delegare, quali competenze preservare per poter verificare, come allenare judgment e come misurare il proprio valore rispetto agli outcome invece che alla quantità di output prodotto.
