@@ -80,7 +80,7 @@ La formalizzazione dovrebbe essere proporzionata alla criticità.
 
 ### Dalla scoperta locale alla prevenzione sistemica
 
-Durante una data readiness review, chiediamoci:
+Durante una Data Readiness Review, chiediamoci:
 
 - questo problema può ripetersi?
 - la proprietà che abbiamo verificato dovrebbe essere sempre vera?
