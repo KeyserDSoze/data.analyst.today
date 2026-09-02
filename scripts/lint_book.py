@@ -17,12 +17,17 @@ WORD_RE = re.compile(r"\b[\wÀ-ÖØ-öø-ÿ’'-]+\b", re.UNICODE)
 URL_RE = re.compile(r"https?://[^\s)>]+")
 DISPLAY_MATH_RE = re.compile(r"\\\[(.*?)\\\]", re.DOTALL)
 LATEX_COMMAND_RE = re.compile(r"\\(?:frac|sqrt|sum|prod|int|alpha|beta|sigma|mu|theta|hat|bar)\b")
+FENCED_CODE_RE = re.compile(r"```.*?```|~~~.*?~~~", re.DOTALL)
 ASCII_ACCENT_RE = re.compile(
     r"(?<!\w)(?:e'|piu'|puo'|cosi'|perche'|gia'|pero'|qualita'|attivita'|realta'|probabilita'|modalita'|unita'|societa')(?!\w)",
     re.IGNORECASE,
 )
+
+# These names are sufficiently distinctive that a casing mismatch almost
+# always indicates editorial drift. "Analytical Brief" and "Decision Record"
+# are intentionally excluded because the same words can also be used as
+# ordinary descriptive phrases in prose.
 CANONICAL_TERMS = (
-    "Analytical Brief",
     "Data Readiness Review",
     "EDA Evidence Map",
     "Uncertainty Brief",
@@ -35,7 +40,6 @@ CANONICAL_TERMS = (
     "Data Flow Architecture Map",
     "Tooling Decision Record",
     "AI Analysis Control Sheet",
-    "Decision Record",
     "Decision Communication Pack",
     "Capstone Routing Canvas",
     "Analytics Operating Contract",
@@ -62,9 +66,15 @@ def numbered_sections(text: str, chapter_num: int) -> list[int]:
     return [number for value in pattern.findall(text) if (number := int(value)) > 0]
 
 
+def prose_without_fenced_code(text: str) -> str:
+    """Return prose-only text for checks that should ignore templates/code."""
+    return FENCED_CODE_RE.sub("", text)
+
+
 def check_canonical_term_case(path: Path, text: str, errors: list[str]) -> None:
+    prose = prose_without_fenced_code(text)
     for canonical in CANONICAL_TERMS:
-        for match in re.finditer(re.escape(canonical), text, flags=re.IGNORECASE):
+        for match in re.finditer(re.escape(canonical), prose, flags=re.IGNORECASE):
             observed = match.group(0)
             if observed != canonical:
                 errors.append(
