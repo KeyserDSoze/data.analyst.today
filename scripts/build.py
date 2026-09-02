@@ -35,6 +35,8 @@ CONFIG_PATH = ROOT / "book.yml"
 SECTION_HEADING_RE = re.compile(r"^\d+\.\d+(?:\s|\b)")
 URL_RE = re.compile(r"https?://[^\s)>]+")
 REAL_CASE_RE = re.compile(r"\b(?:un\s+)?caso reale documentato\b", re.IGNORECASE)
+FOOTNOTE_DEF_RE = re.compile(r"(?m)^\[\^([^\]]+)\]:\s*(.+?)\s*$")
+FOOTNOTE_REF_RE = re.compile(r"\[\^([^\]]+)\]")
 
 
 def load_config() -> dict:
@@ -75,6 +77,52 @@ def source_files() -> list[Path]:
     return files
 
 
+def resolve_chapter_footnotes(text: str, chapter_name: str) -> str:
+    """Convert Markdown footnotes to chapter endnotes for all renderers.
+
+    The source Markdown keeps its familiar ``[^id]`` syntax. The current
+    custom DOCX/PDF renderers do not implement a footnote extension, so the
+    assembled build resolves references to numeric markers and moves the
+    definitions into a chapter-level ``Note e fonti`` section. Duplicate
+    definitions use the most informative (longest) wording.
+    """
+    definitions: dict[str, str] = {}
+    for match in FOOTNOTE_DEF_RE.finditer(text):
+        key = match.group(1)
+        value = match.group(2).strip()
+        current = definitions.get(key)
+        if current is None or len(value) > len(current):
+            definitions[key] = value
+
+    body = FOOTNOTE_DEF_RE.sub("", text)
+    numbering: dict[str, int] = {}
+    missing: set[str] = set()
+
+    def replace_reference(match: re.Match[str]) -> str:
+        key = match.group(1)
+        if key not in definitions:
+            missing.add(key)
+            return match.group(0)
+        if key not in numbering:
+            numbering[key] = len(numbering) + 1
+        return f"[{numbering[key]}]"
+
+    body = FOOTNOTE_REF_RE.sub(replace_reference, body)
+    if missing:
+        labels = ", ".join(sorted(missing))
+        raise ValueError(f"{chapter_name}: note senza definizione: {labels}")
+
+    body = re.sub(r"\n{3,}", "\n\n", body).strip()
+    if not numbering:
+        return body + "\n\n"
+
+    notes = ["## Note e fonti\n"]
+    for key, number in sorted(numbering.items(), key=lambda item: item[1]):
+        notes.append(f"{number}. {definitions[key]}")
+
+    return body + "\n\n" + "\n".join(notes) + "\n\n"
+
+
 def first_h1(path: Path) -> str:
     text = path.read_text(encoding="utf-8")
     return next(
@@ -111,8 +159,10 @@ def real_case_index(files: list[Path]) -> str:
             heading = re.sub(r"^#{1,6}\s+", "", stripped).strip()
             if not REAL_CASE_RE.search(heading):
                 continue
-            label = REAL_CASE_RE.sub("", heading)
-            label = re.sub(r"\s*[—:–-]\s*", " — ", label).strip(" —:-")
+            label = REAL_CASE_RE.sub("", heading, count=1).strip()
+            # Remove only the separator immediately after the case label.
+            # Internal hyphens such as ``trade-off`` must remain untouched.
+            label = re.sub(r"^[\s—:–-]+", "", label).strip()
             if not label:
                 continue
             key = (chapter, label.casefold())
@@ -150,7 +200,7 @@ def source_label(line: str, url: str) -> str:
 def source_index(files: list[Path]) -> str:
     titles = chapter_titles(files)
     seen_urls: set[str] = set()
-    entries: list[tuple[str, str, str, str]] = []
+    entries: list[tuple[str, str, str, str, str]] = []
 
     for path in files:
         chapter = titles[path.parent]
@@ -196,8 +246,15 @@ def assemble_markdown(
     for path in front_files:
         chunks.append(path.read_text(encoding="utf-8").strip() + "\n\n")
     chunks.append(chapter_index(files))
-    for path in files:
-        chunks.append(path.read_text(encoding="utf-8").strip() + "\n\n")
+
+    chapter_dirs = list(dict.fromkeys(path.parent for path in files))
+    for chapter_dir in chapter_dirs:
+        chapter_files = [path for path in files if path.parent == chapter_dir]
+        raw_chapter = "\n\n".join(
+            path.read_text(encoding="utf-8").strip() for path in chapter_files
+        )
+        chunks.append(resolve_chapter_footnotes(raw_chapter, chapter_dir.name))
+
     for path in ref_files:
         chunks.append(path.read_text(encoding="utf-8").strip() + "\n\n")
     chunks.append(real_case_index(files))
@@ -449,6 +506,19 @@ def pdf_styles():
     return styles
 
 
+class BookPdfTemplate(SimpleDocTemplate):
+    """PDF template that turns rendered headings into navigation bookmarks."""
+
+    def afterFlowable(self, flowable) -> None:
+        key = getattr(flowable, "_bookmark_key", None)
+        if not key:
+            return
+        title = getattr(flowable, "_bookmark_title", "")
+        level = getattr(flowable, "_bookmark_level", 0)
+        self.canv.bookmarkPage(key)
+        self.canv.addOutlineEntry(title, key, level=level, closed=False)
+
+
 def build_pdf(markdown: str, output: Path, config: dict) -> None:
     tokens = markdown_parser().parse(markdown)
     styles = pdf_styles()
@@ -457,6 +527,17 @@ def build_pdf(markdown: str, output: Path, config: dict) -> None:
     first_h1 = True
     list_stack: list[dict[str, int | str]] = []
     blockquote_depth = 0
+    bookmark_counter = 0
+
+    def make_heading(content: str, plain: str, style, level: int) -> Paragraph:
+        nonlocal bookmark_counter
+        paragraph = Paragraph(content, style)
+        if level <= 2:
+            bookmark_counter += 1
+            paragraph._bookmark_key = f"bookmark-{bookmark_counter}"
+            paragraph._bookmark_title = plain
+            paragraph._bookmark_level = 0 if level == 1 else 1
+        return paragraph
 
     while i < len(tokens):
         token = tokens[i]
@@ -467,13 +548,13 @@ def build_pdf(markdown: str, output: Path, config: dict) -> None:
             content = inline_reportlab(content_token)
             level = effective_heading_level(int(token.tag[1]), plain)
             if first_h1:
-                story.append(Paragraph(content, styles["BookTitle"]))
+                story.append(make_heading(content, plain, styles["BookTitle"], 1))
                 first_h1 = False
             elif level == 1:
                 story.append(PageBreak())
-                story.append(Paragraph(content, styles["H1Book"]))
+                story.append(make_heading(content, plain, styles["H1Book"], 1))
             elif level == 2:
-                story.append(Paragraph(content, styles["H2Book"]))
+                story.append(make_heading(content, plain, styles["H2Book"], 2))
             else:
                 story.append(Paragraph(content, styles["H3Book"]))
             i += 3
@@ -544,7 +625,12 @@ def build_pdf(markdown: str, output: Path, config: dict) -> None:
         canvas.drawCentredString(A4[0] / 2, 12 * mm, str(doc.page))
         canvas.restoreState()
 
-    pdf = SimpleDocTemplate(
+    def first_page(canvas, doc):
+        # A title page is conventionally unnumbered; physical page numbering
+        # still remains available in the PDF viewer.
+        return None
+
+    pdf = BookPdfTemplate(
         str(output),
         pagesize=A4,
         rightMargin=20 * mm,
@@ -554,7 +640,7 @@ def build_pdf(markdown: str, output: Path, config: dict) -> None:
         title=config["title"],
         author=config.get("author", ""),
     )
-    pdf.build(story, onFirstPage=add_page_number, onLaterPages=add_page_number)
+    pdf.build(story, onFirstPage=first_page, onLaterPages=add_page_number)
 
 
 def main() -> None:
