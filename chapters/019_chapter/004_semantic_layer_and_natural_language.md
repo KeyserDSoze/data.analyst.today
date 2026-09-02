@@ -156,7 +156,7 @@ Il caso è istruttivo perché mostra il punto centrale: un campo può essere rea
 
 Microsoft oggi offre strumenti come AI instructions, AI data schemas e verified answers proprio per rendere più esplicito il contesto fornito ai sistemi conversazionali.
 
-Fonte pubblica: https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
+Fonte pubblica: https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai
 
 ## Il vantaggio professionale
 
