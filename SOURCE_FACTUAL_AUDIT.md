@@ -85,7 +85,7 @@ Per ogni riferimento verificare:
 | Cap. 5 — inferenza / survey error / CI / p-value / power / multiple testing | AAPOR + American Statistical Association + NIST/SEMATECH | `005/001`, `005/005`, `005/007`, `005/008`, `005/012`, `005/013`, `005/014`, `005/016`, `005/017`, `005/018`, `005/019` | `VERIFIED` | AAPOR separa margin of sampling error da nonresponse, coverage e altri errori; NIST conferma binomiale, Bayes, CLT, confidence-interval coverage e trade-off fra Type I/II error; l'ASA conferma i sei principi sui p-value, incluso che non misurano probabilità dell'ipotesi, effect size o importanza pratica e non devono essere usati come unica soglia decisionale. Il testo distingue precisione, bias, materialità e molteplicità in modo coerente. |
 | Cap. 6 — cohorts / funnels / involuntary churn | Azure Databricks + Google Analytics + Stripe Billing | `006/003`, `006/004`, `006/006` | `VERIFIED` | Databricks descrive cohort chart come raggruppamento per caratteristica condivisa e tracking di retention/comportamento nei periodi successivi; GA4 documenta funnel aperti/chiusi, sequenza diretta/indiretta e time constraint; Stripe documenta revenue recovery e Smart Retries per pagamenti ricorrenti falliti e riduzione dell'involuntary churn. I casi simulati restano esplicitamente distinti dai casi reali. |
 | Cap. 15 — option appraisal / uncertainty / sensitivity / decision quality | HM Treasury Green Book 2026 + NASA Technical Risk Management / Decision Analysis + Gary Klein, HBR premortem | `015/001`, `015/003`, `015/004`, `015/005`, `015/008`, `015/009`, `015/010`, `015/011`, `015/013` | `VERIFIED` | Green Book 2026 richiede alternative reali, porta sempre il business as usual in shortlist come benchmark, include costi/benefici monetizzabili e non, rischi e incertezze, sensitivity analysis, switching values, optimism bias e real-options analysis per flessibilità sotto forte incertezza/irreversibilità. NASA distingue RIDM da Continuous Risk Management e tratta alternative, rischio, incertezza e robustezza del ranking rispetto allo stato di conoscenza. HBR/Gary Klein supporta il premortem come tecnica che assume il fallimento e genera cause plausibili facilitando il dissenso prima dell'impegno. Nessun wording da restringere. |
-| Cap. 16 — dashboard design / visual integrity / uncertainty communication | Microsoft Learn + Government Analysis Function + ONS Service Manual + W3C | `016/001`, `016/005`, `016/006`, `016/009`, `016/014` | `VERIFIED` | Microsoft raccomanda audience-first, one-screen dashboard, enfasi sulle informazioni importanti e decluttering; Government Analysis Function 2026 richiede user needs, responsive testing e alternative accessibili; ONS conferma zero baseline per barre/aree, assi ritagliabili per line/scatter quando appropriato, scale coerenti e cautela sui dual axis. La guidance GAF 2018 su qualità/incertezza è ancora pubblicata e sostiene che limiti decision-critical vadano resi prominenti e contestualizzati, ma la pagina dichiara di essere **under review**: ricontrollare al release gate. |
+| Cap. 16 — dashboard design / visual integrity / uncertainty communication | Microsoft Learn + Government Analysis Function + ONS Service Manual + W3C | `016/001`, `016/005`, `016/006`, `016/009`, `016/014` | `VERIFIED` | Microsoft raccomanda audience-first, one-screen dashboard, enfasi sulle informazioni importanti e decluttering; Government Analysis Function 2026 richiede user needs, responsive testing e alternative accessibili; ONS conferma zero baseline per barre/aree, assi ritagliabili per line/scatter quando appropriato, scale coerenti e cautela sui dual axis. La guidance GAF 2018 su qualità/incertezza è ancora pubblicata e sostiene che limiti decision-critical vadano resi prominenti e contestualizzati. Al release gate del 2 settembre 2026 la pagina risulta ancora pubblicata e ancora marcata **under review**: il claim resta supportato e non richiede sostituzione. |
 | Cap. 17 — operational / driver-based forecasting | AWS Cloud Financial Management | `017/008` | `VERIFIED` | Il blog AWS 2022 documenta driver-based forecasting basato su lanci prodotto, promozioni, nuovi utenti, re-architecture e altri demand driver e raccomanda di documentare/rivedere le assunzioni. Il principio è ancora ripreso nella current *Guidance for Cloud Financial Management on AWS* e nel Well-Architected Framework, quindi la fonte non è diventata obsoleta. |
 | Repository — source hygiene / canonical URLs | Sweep GitHub su pattern legacy e tracking | repository-wide | `VERIFIED` | Nessun `http://`, nessun `?utm_`, nessun tracking AWS `sc_campaign`, nessun `aka.ms`, nessun vecchio dominio `docs.microsoft.com` e nessun residuo del vecchio path Vertex AI judge nel manoscritto. `utm_source=chatgpt.com` compare soltanto nel README/linter come pattern vietato, non nelle fonti dei capitoli. Lo sweep ha trovato un residuo scikit-learn `/1.9/` in `010/004`, sostituito con `/stable/`; il vecchio path Microsoft ExP compare solo nel ledger come documentazione delle correzioni già effettuate. |
 
@@ -109,7 +109,7 @@ Verificati NXP, Virgin Media O2, Hoff e Freshworks sulle percentuali riportate e
 
 ### Blocco 5 — governance, standard e fonti metodologiche evergreen
 
-Verificati GDPR/EDPB e controlli agentici Microsoft, UK Government Data Quality Framework, NIST AI RMF/GenAI Profile, le fonti di forecasting FPP3/NIST, WCAG/Power BI/UK Government per accessibilità e il caso PHE/Excel. Non sono emersi wording da restringere. La principale nota di freshness è NIST AI RMF 1.0, attualmente in revisione nel 2026: il manoscritto resta corretto e la situazione è registrata per una nuova verifica al release gate.
+Verificati GDPR/EDPB e controlli agentici Microsoft, UK Government Data Quality Framework, NIST AI RMF/GenAI Profile, le fonti di forecasting FPP3/NIST, WCAG/Power BI/UK Government per accessibilità e il caso PHE/Excel. Non sono emersi wording da restringere. La principale nota di freshness è NIST AI RMF 1.0, attualmente in revisione nel 2026: il manoscritto resta corretto e la situazione è stata ricontrollata al release gate.
 
 ### Blocco 6 — data engineering, semantic layer e tooling
 
@@ -125,15 +125,36 @@ Verificati i riferimenti esterni dei Capitoli 0–2 su governance agentica, CRIS
 
 ### Blocco 9 — decisione, comunicazione, capstone e source hygiene
 
-Verificati i riferimenti del Capitolo 15 su option appraisal, business-as-usual benchmark, real options, sensitivity/switching values, optimism bias, premortem e decision quality; quelli del Capitolo 16 su dashboard design, visual integrity e comunicazione dell'incertezza; e il riferimento AWS sul driver-based forecasting in `017/008`. I casi residui del Capitolo 17 sono simulati/compositi oppure già coperti da fonti reali registrate singolarmente. Lo sweep repository-wide non ha trovato tracking parameter o domini legacy nei capitoli; ha individuato un solo residuo versionato scikit-learn in `010/004`, già canonicalizzato. La guidance Government Analysis Function 2018 sull'incertezza è valida ma sotto revisione e va ricontrollata al release gate.
+Verificati i riferimenti del Capitolo 15 su option appraisal, business-as-usual benchmark, real options, sensitivity/switching values, optimism bias, premortem e decision quality; quelli del Capitolo 16 su dashboard design, visual integrity e comunicazione dell'incertezza; e il riferimento AWS sul driver-based forecasting in `017/008`. I casi residui del Capitolo 17 sono simulati/compositi oppure già coperti da fonti reali registrate singolarmente. Lo sweep repository-wide non ha trovato tracking parameter o domini legacy nei capitoli; ha individuato un solo residuo versionato scikit-learn in `010/004`, già canonicalizzato.
 
-## Prossimo blocco prioritario
+## Release-gate freshness recheck — completato
 
-Continuare con:
+Il 2 settembre 2026 è stato effettuato il recheck mirato delle fonti il cui valore dipende maggiormente dalla freshness o da uno stato editoriale variabile. Non è stato riaperto l'intero audit dei 190 URL.
 
-1. sweep finale delle fonti non ancora classificate esplicitamente, con attenzione a redirect e source fit;
-2. ricontrollo release-gate delle fonti dichiarate in revisione o time-sensitive;
-3. chiusura del source/factual audit globale;
-4. quindi correzione dei 7 file con LaTeX residuo, prima di front matter, proofread globale e layout QA.
+Fonti ricontrollate:
 
-L'obiettivo è arrivare a una classificazione esplicita di tutti i riferimenti prima del proofread globale e del layout QA.
+- ILO, *Generative AI and jobs: A 2025 update* — raggiungibile e ancora coerente con il framing esposizione/trasformazione;
+- World Economic Forum, *Future of Jobs Report 2025* — raggiungibile e coerente con i claim sulle skill;
+- Microsoft, *2026 Work Trend Index* — raggiungibile e coerente con il framing su agenti, execution e human agency;
+- Microsoft Research, CHI 2025, *The Impact of Generative AI on Critical Thinking...* — raggiungibile; il claim del libro resta correttamente associativo/self-report e non causale;
+- Government Analysis Function, *Communicating quality, uncertainty and change* — ancora pubblicata e ancora marcata **under review**; continua a supportare il claim e non richiede sostituzione;
+- NIST AI RMF 1.0 — resta la versione pubblicata descritta nel manoscritto; la revisione in corso non rende errato il riferimento alla versione 1.0.
+
+**Esito: `VERIFIED` — nessuna correzione al manoscritto o agli URL richiesta dal freshness recheck.**
+
+## Stato finale dell'audit
+
+Il **source/factual audit globale è CHIUSO** per la release candidate.
+
+Sono completati:
+
+1. audit tematico dei riferimenti ad alto rischio;
+2. verifica dei casi reali documentati;
+3. controllo dei claim causali, quantitativi e time-sensitive;
+4. sweep bottom-up delle sezioni `Fonte:` / `Fonti:`;
+5. source hygiene e canonicalizzazione;
+6. release-gate freshness recheck.
+
+Non è previsto un nuovo pass generalizzato sui 190 URL prima della release candidate. Una nuova verifica è necessaria soltanto se una fonte cambia, diventa irraggiungibile o se il manoscritto viene modificato in modo sostantivo.
+
+Il lavoro successivo non è più source auditing: è il congelamento della build verificata e la gestione dei metadata/tag della release.
