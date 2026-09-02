@@ -112,7 +112,7 @@ Scikit-learn separa esplicitamente:
 - **statistical problem:** stimare probabilità/score;
 - **decision problem:** scegliere quale azione prendere a partire dallo score.
 
-Fonte: https://scikit-learn.org/1.9/modules/classification_threshold.html
+Fonte: https://scikit-learn.org/stable/modules/classification_threshold.html
 
 Il cutoff `0,5` è un default dell'API, non una legge statistica o economica.
 
