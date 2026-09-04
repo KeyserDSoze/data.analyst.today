@@ -1,111 +1,93 @@
 ## 1.10 Correlazione, causalità e spiegazioni plausibili
 
-Uno dei compiti più delicati dell'analista è distinguere tra livelli diversi di affermazione.
+Uno dei compiti più delicati dell'analista è impedire che un pattern interessante diventi, attraverso il linguaggio, una spiegazione più forte di quanto i dati permettano.
 
-Possiamo osservare che due fenomeni si muovono insieme. Possiamo stimare un'associazione statistica. Possiamo, in condizioni più forti, sostenere che intervenire su uno dei due modificherebbe l'altro.
+Possiamo osservare che due fenomeni si muovono insieme. Possiamo stimare quanto sia stabile la loro associazione. In condizioni più forti possiamo provare a sostenere che intervenire su uno dei due modificherebbe l'altro.
 
-Queste affermazioni non sono equivalenti.
+Sono tre livelli diversi di affermazione. Il passaggio dall'uno all'altro richiede nuova evidenza, non soltanto una frase più sicura.
 
-### Un pattern non è ancora un intervento
+### Dall'associazione all'intervento c'è un controfattuale
 
 Supponiamo di osservare che i clienti che utilizzano frequentemente una funzione dell'app hanno retention più alta.
 
-Una conclusione superficiale sarebbe:
+È naturale trasformare il pattern in una raccomandazione: spingiamo più utenti a usare quella funzione e la retention aumenterà. Ma la conclusione contiene una domanda che il semplice confronto non ha ancora risolto: **che cosa sarebbe successo agli stessi utenti se il loro uso della funzione fosse stato diverso?**
 
-> “Se spingiamo più utenti a usare quella funzione, aumenteremo la retention.”
+Gli utenti più coinvolti potrebbero essere contemporaneamente più propensi a usare la funzione e a rimanere clienti. La funzione potrebbe essere disponibile soprattutto sui piani premium. L'anzianità potrebbe influenzare sia l'utilizzo sia la retention. Oppure la direzione potrebbe essere inversa: utenti che stanno già perdendo interesse riducono l'uso di molte funzioni prima di abbandonare.
 
-Ma il pattern è compatibile anche con altre spiegazioni:
+In tutti questi scenari l'associazione osservata può essere autentica. È l'interpretazione causale a cambiare.
 
-- gli utenti già più coinvolti usano di più la funzione e rimangono più a lungo;
-- la funzione è disponibile soprattutto a clienti premium;
-- l'anzianità del cliente influenza sia uso sia retention;
-- utenti prossimi all'abbandono riducono l'uso di molte funzioni contemporaneamente.
+Questo è il punto centrale: **un pattern può essere vero e la storia che gli costruiamo intorno può essere falsa.**
 
-La relazione osservata può essere reale mentre la spiegazione causale è sbagliata.
+### Confondimento: quando una terza variabile costruisce la relazione
 
-### Confondenti e selezione
+Immaginiamo di scoprire che i clienti contattati più spesso dal team commerciale acquistano di più. Potremmo concludere che aumentare il numero di chiamate farà crescere le vendite.
 
-Un **confondente** è una variabile che influenza sia l'esposizione che ci interessa sia l'outcome.
+Ma il team potrebbe scegliere di chiamare più spesso proprio i clienti che considera più promettenti. Il potenziale commerciale influenza allora sia l'esposizione — il numero di chiamate — sia l'outcome — gli acquisti. Se non lo consideriamo, attribuiamo alle chiamate almeno una parte dell'effetto della selezione iniziale.
 
-Scopriamo, per esempio, che i clienti chiamati più spesso dal team commerciale acquistano di più.
+Questo è il problema del **confondimento**: una variabile rende gruppi apparentemente confrontabili diversi proprio su una dimensione che influenza l'esito.
 
-Aumentare il numero di chiamate farà aumentare le vendite?
+Un modello statistico può controllare confondenti osservati e misurati bene. Non può garantire che non esistano variabili importanti che non abbiamo osservato, misurato o rappresentato correttamente. Per questo la sofisticazione del modello non sostituisce il ragionamento sul processo che ha generato i dati.
 
-Forse. Ma il team potrebbe chiamare più spesso proprio i clienti che considera più promettenti. Il potenziale del cliente influenza allora sia il trattamento sia l'esito.
+### Selezione: il dataset può aver già escluso la parte che ci serviva
 
-La selezione può comparire anche in modi meno visibili.
+Un'altra fonte di errore nasce prima dell'analisi. Se studiamo soltanto utenti ancora attivi per capire quali funzionalità “creano retention”, abbiamo rimosso proprio le persone che hanno abbandonato. Se analizziamo soltanto campagne considerate di successo, non sappiamo se le stesse caratteristiche fossero presenti anche nelle campagne fallite.
 
-Se analizziamo soltanto utenti ancora attivi per capire quali funzionalità “creano retention”, abbiamo escluso proprio chi ha abbandonato. Se studiamo soltanto campagne di successo, non sappiamo se le stesse caratteristiche fossero presenti nelle campagne fallite.
+La domanda non è soltanto se il campione sia grande. È **per quale meccanismo una persona, un evento o un esperimento è entrato nel dataset che stiamo osservando**.
 
-Il dataset osservato non coincide automaticamente con la popolazione necessaria per rispondere alla domanda.
+Se quel meccanismo dipende dall'esposizione o dall'outcome, il confronto può essere distorto anche con milioni di righe.
 
-### Temporalità e causalità inversa
+### La sequenza temporale elimina alcune storie, non tutte
 
-Una causa deve precedere il proprio effetto.
+Una causa deve precedere il proprio effetto. Sembra una regola banale, ma i dati aggregati la nascondono facilmente.
 
-Sembra banale, ma le aggregazioni possono nascondere la sequenza.
+Se i clienti che aprono molti ticket hanno churn elevato, il supporto sta causando l'abbandono oppure problemi già presenti generano sia ticket sia churn? Se le aziende con più Data Analyst prendono più decisioni data-driven, sono gli analyst a cambiare la cultura o sono le aziende già data-driven ad assumere più analyst?
 
-Se i clienti che aprono molti ticket hanno churn elevato, il supporto provoca l'abbandono? Oppure problemi già presenti generano sia ticket sia churn?
+Ricostruire la sequenza temporale può eliminare spiegazioni impossibili e rendere altre più plausibili. Ma l'ordine temporale, da solo, non basta a dimostrare causalità: due eventi possono susseguirsi perché entrambi sono prodotti da una terza causa.
 
-Analogamente, aziende con più Data Analyst possono usare più dati perché gli analisti migliorano i processi decisionali. Oppure aziende già data-driven assumono più analisti.
+La temporalità è quindi una condizione necessaria per molte storie causali, non una prova sufficiente.
 
-La direzione della relazione è parte del problema.
+### Evidenza causale più forte significa progettare confronti più credibili
 
-### Come otteniamo evidenza più forte?
+Quando possiamo randomizzare, costruiamo gruppi comparabili prima del trattamento e rendiamo molto più difficile che la selezione iniziale spieghi la differenza osservata. È uno dei motivi per cui gli esperimenti controllati sono così potenti.
 
-Quando possibile, la randomizzazione è uno strumento molto potente perché costruisce gruppi comparabili prima del trattamento.
+Ma un A/B test non è automaticamente valido. Randomizzazione, exposure, durata, interferenze, metriche e modalità di analisi possono fallire. Il **Capitolo 9** sarà dedicato proprio alla sperimentazione nel mondo reale.
 
-Ma un A/B test non è automaticamente valido: randomizzazione, exposure, campione, durata, interferenze, metriche e modalità di analisi possono fallire. Il **Capitolo 9** sarà dedicato proprio alla sperimentazione nel mondo reale.
+Quando non possiamo randomizzare, il problema non scompare: dobbiamo costruire il controfattuale usando disegni osservazionali o quasi-sperimentali e rendere esplicite le assunzioni che li sostengono. Il **Capitolo 8** entrerà in matching, regression discontinuity, variabili strumentali e altri approcci.
 
-Quando non possiamo randomizzare, possiamo usare disegni osservazionali o quasi-sperimentali. Il **Capitolo 8** entrerà in matching, regression discontinuity, variabili strumentali e altri approcci, insieme alle assunzioni che li rendono credibili o fragili.
+Per ora basta fissare una regola:
 
-Per ora basta un principio:
+> **un modello più sofisticato non trasforma automaticamente un'associazione in causalità; è il disegno del confronto a rendere credibile la promessa controfattuale.**
 
-> **un modello più sofisticato non trasforma automaticamente un'associazione in causalità.**
+### Cercare spiegazioni rivali è parte dell'analisi
 
-### La disciplina delle spiegazioni alternative
+Supponiamo che il fatturato cresca subito dopo una campagna marketing. Una narrazione coerente è disponibile in pochi secondi: la campagna ha funzionato.
 
-Davanti a un pattern interessante è utile chiedersi:
+Il lavoro analitico comincia proprio quando la storia sembra facile. Nello stesso periodo potrebbe essere iniziata una promozione, potrebbe essere cambiata la stagionalità, potrebbero essere aumentati i prezzi o essere entrati nuovi mercati. Il tracking potrebbe essere cambiato oppure il periodo usato come confronto potrebbe essere stato anomalo.
 
-> **“Quale altra storia potrebbe produrre questi stessi dati?”**
+Non serve produrre un catalogo infinito di dubbi. Serve chiedersi quale osservazione distinguerebbe davvero le storie concorrenti. Se la crescita compare soltanto tra gli esposti alla campagna ma non in gruppi comparabili, una parte delle alternative perde forza. Se precede l'avvio della campagna, la storia principale deve essere rivista.
 
-Se il fatturato cresce dopo una campagna marketing, dovremmo chiederci almeno se nello stesso periodo:
+L'obiettivo non è accumulare spiegazioni plausibili. È **ridurre progressivamente lo spazio di quelle compatibili con l'evidenza**.
 
-- è iniziata una promozione;
-- è cambiata la stagionalità;
-- sono aumentati i prezzi;
-- è cambiato il tracking;
-- sono entrati nuovi mercati;
-- il periodo di confronto era anomalo.
-
-L'obiettivo non è diventare paralizzati dal dubbio. È capire quali spiegazioni l'evidenza ha davvero eliminato.
-
-### Il linguaggio deve seguire il metodo
+### Il linguaggio deve conservare la forza del metodo
 
 Un'analisi osservazionale può sostenere:
 
 > “Gli utenti che utilizzano la funzione X mostrano retention maggiore, anche dopo aver controllato alcune caratteristiche osservabili.”
 
-È molto diverso da:
+È una frase informativa. Ma è diversa da:
 
 > “La funzione X aumenta la retention.”
 
-La seconda frase contiene una promessa controfattuale: se cambiassimo X, cambierebbe Y.
+La seconda frase promette che, se intervenissimo su X, cambierebbe Y. Per dirlo dobbiamo avere un disegno capace di sostenere quella promessa.
 
-Questa promessa richiede un disegno adeguato.
+Una breve audit trail prima di formulare una conclusione causale può quindi chiedere:
 
-### Checklist minima davanti a una relazione
+1. il pattern è abbastanza stabile da non sembrare soltanto rumore?
+2. la sequenza temporale è compatibile con la storia proposta?
+3. quali confondenti o meccanismi di selezione potrebbero produrre lo stesso pattern?
+4. esiste una direzione causale inversa plausibile?
+5. quale osservazione, esperimento o quasi-esperimento distinguerebbe meglio le spiegazioni rivali?
 
-1. Il pattern è stabile o può essere rumore?
-2. È coerente tra segmenti e periodi?
-3. Esistono confondenti plausibili?
-4. L'ordine temporale è coerente?
-5. Potrebbe esserci causalità inversa?
-6. La selezione del campione introduce bias?
-7. Quale osservazione o esperimento distinguerebbe le spiegazioni concorrenti?
+I sistemi generativi sono molto bravi a trasformare pattern in storie fluide. Proprio per questo la competenza rara non è produrre una spiegazione plausibile.
 
-I sistemi generativi sono molto bravi a proporre storie plausibili attorno a un pattern.
-
-Il compito dell'analista non è scegliere la storia più fluida.
-
-È capire quale storia merita più fiducia.
+È capire **quale spiegazione meriti più fiducia e quale linguaggio siamo autorizzati a usare per descriverla**.
