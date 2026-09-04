@@ -1,73 +1,59 @@
 ## 1.14 Gli errori tipici dell'analista
 
-Molti errori analitici non nascono da una formula sbagliata.
+Molti errori analitici non nascono da una formula sbagliata. Nascono prima, quando il problema viene rappresentato male, oppure dopo, quando l'evidenza viene trasformata in una conclusione più forte di quanto meriti.
 
-Nascono prima: nella definizione del problema, nella scelta della rappresentazione o nel salto tra evidenza e conclusione.
+Per questo è più utile raggruppare gli errori non per strumento, ma per il punto della catena analitica in cui si rompe il significato.
 
-### 1.14.1 Partire dallo strumento
+### Errore 1 — Partire da ciò che possiamo fare invece che da ciò che dobbiamo capire
 
-Aprire Power BI, Excel, SQL o un notebook prima di chiarire la domanda porta facilmente a produrre output senza un problema ben definito.
+Aprire Power BI, Excel, SQL o un notebook prima di chiarire la domanda crea un bias molto semplice: iniziamo a vedere il problema attraverso le funzioni dello strumento che abbiamo davanti.
 
-**Correzione:** formulare prima decisione e domanda.
+Lo stesso accade con i dati. Se una colonna esiste, diventa facile usarla come rappresentazione del fenomeno anche quando è soltanto un proxy debole. Al contrario, possiamo ignorare variabili importanti perché non sono immediatamente disponibili.
 
-### 1.14.2 Confondere disponibilità e rilevanza
+I due errori hanno la stessa radice: **confondere disponibilità con rilevanza**.
 
-Il fatto che una colonna esista non significa che rappresenti il fenomeno che ci interessa. Al contrario, informazioni importanti possono non essere raccolte affatto.
+La correzione è partire dal concetto e dalla decisione. Prima chiediamo che cosa dobbiamo capire e quale evidenza cambierebbe la scelta; soltanto dopo cerchiamo dati e strumenti adeguati. Se il fenomeno non è osservabile direttamente, dichiariamo il proxy e i suoi limiti invece di lasciare che il nome di una colonna risolva implicitamente la definizione.
 
-**Correzione:** partire dal concetto e poi cercare dati o proxy adatti.
+### Errore 2 — Trattare definizioni e popolazioni come se fossero naturali
 
-### 1.14.3 Trattare le metriche come fatti naturali
+“Cliente attivo”, “revenue”, “retention” e “conversione” sembrano concetti stabili finché due team non li calcolano in modo diverso.
 
-“Cliente attivo”, “revenue”, “retention” e “conversione” incorporano definizioni.
+Il problema diventa ancora più insidioso nelle metriche di rapporto. Una percentuale può cambiare perché è cambiato il comportamento del numeratore, ma anche perché è cambiata la popolazione nel denominatore. Confrontare periodi o segmenti senza controllare l'eleggibilità può quindi creare un movimento che non corrisponde a nessun cambiamento individuale.
 
-**Correzione:** rendere espliciti popolazione, numeratore, denominatore, tempo e inclusioni.
+La stessa fragilità compare quando ignoriamo lineage e trasformazioni. Una tabella “pronta” può aver applicato filtri, deduplicazioni, join, mapping e regole di business che hanno già definito la popolazione prima che iniziassimo l'analisi.
 
-### 1.14.4 Cercare subito la causa
+La correzione è rendere espliciti almeno popolazione, numeratore, denominatore, data di riferimento, grain e trasformazioni critiche. Per una metrica importante dobbiamo essere in grado di ricostruire non soltanto la formula, ma il contratto semantico che la rende interpretabile.
 
-Dopo aver trovato un pattern è naturale costruire una storia. È anche il momento in cui confondenti, selezione e causalità inversa possono ingannarci.
+### Errore 3 — Costruire una storia prima di avere localizzato il fenomeno
 
-**Correzione:** separare osservazione, ipotesi e affermazione causale.
+Davanti a un calo o a un aumento sorprendente, il cervello cerca subito una causa. È il momento in cui confondenti, selezione e causalità inversa diventano più pericolosi, perché una spiegazione plausibile può iniziare a guidare quali dati guardiamo dopo.
 
-### 1.14.5 Guardare soltanto la media
+Prima della storia viene la decomposizione.
 
-Una media stabile può nascondere segmenti che si muovono in direzioni opposte, code che peggiorano o cambiamenti nel mix.
+Una media stabile può nascondere segmenti che si muovono in direzioni opposte. Un valore aggregato può cambiare soltanto perché è cambiato il mix della popolazione. Un problema attribuito all'intero prodotto può essere concentrato in un dispositivo, una coorte o una fase del funnel.
 
-**Correzione:** osservare distribuzioni e segmentazione prima di concludere.
+Il caso della sezione precedente mostrava proprio questo passaggio: “vendite in calo” è diventato “conversione dei nuovi visitatori mobile in calo” prima di diventare una discussione sulle possibili cause.
 
-### 1.14.6 Cambiare denominatore senza accorgersene
+La correzione è separare tre momenti: **osservazione, localizzazione, spiegazione**. Solo dopo chiediamo quale meccanismo potrebbe produrre il pattern e quale evidenza distinguerebbe le ipotesi concorrenti.
 
-Molti KPI sono rapporti. Se cambia la popolazione di riferimento, il valore può cambiare anche quando il comportamento dei singoli non è cambiato.
+### Errore 4 — Fermarsi quando il grafico racconta una storia convincente
 
-**Correzione:** controllare la comparabilità delle popolazioni tra periodi e segmenti.
+Un pattern interessante non è automaticamente un insight e un insight non è automaticamente una raccomandazione.
 
-### 1.14.7 Ignorare lineage e trasformazioni
+Possiamo fermarci troppo presto in due modi opposti. Nel primo consegniamo un grafico senza chiedere quale incertezza riduca o quale decisione possa influenzare. Nel secondo facciamo il salto inverso: trasformiamo rapidamente il pattern in una raccomandazione, nascondendo l'incertezza per rendere il messaggio più netto.
 
-Una tabella “pronta” può contenere filtri, deduplicazioni, join e regole che modificano il significato del dato.
+Entrambi gli errori spezzano la catena tra evidenza e uso.
 
-**Correzione:** sapere da dove arriva almeno ogni metrica critica e quali trasformazioni la rendono possibile.
+La correzione consiste nel rendere esplicita la distanza fra ciò che osserviamo e ciò che inferiamo. Dobbiamo sapere quale ipotesi il risultato rafforza o indebolisce, quali alternative rimangono credibili, quale livello di fiducia è giustificato e quale decisione è davvero sensibile a quell'informazione.
 
-### 1.14.8 Fermarsi al grafico
+Questo vale anche per l'AI. Un output generato può essere chiaro, coerente e tecnicamente elegante, ma la qualità della forma non certifica intento, semantica o metodo. Il Capitolo 0 ha definito l'ownership necessaria e il Capitolo 14 entrerà nei controlli tecnici; qui ci basta una disciplina: usare l'AI per ampliare esplorazione ed execution, non come autorità che chiude il ragionamento.
 
-Un pattern interessante non è automaticamente un insight.
+### Il pattern comune dietro molti errori
 
-**Correzione:** chiedere quale ipotesi modifica, quale incertezza riduce e quale decisione potrebbe influenzare.
+Gli errori descritti sembrano diversi — tool-first, metrica sbagliata, media ingannevole, causalità prematura, lineage ignorata, incertezza nascosta — ma condividono una struttura.
 
-### 1.14.9 Nascondere l'incertezza
+In tutti i casi una scelta importante viene lasciata implicita. Il tool decide la forma della domanda. La colonna decide la definizione. L'aggregato decide la popolazione. La correlazione decide la storia. Il tono della presentazione decide quanta certezza attribuiamo alla conclusione.
 
-Una conclusione più netta può sembrare più autorevole ma essere meno utile.
-
-**Correzione:** comunicare la forza dell'evidenza, i limiti e le condizioni che cambierebbero la conclusione.
-
-### 1.14.10 Usare l'AI come autorità
-
-Un output generato bene può essere semanticamente o metodologicamente sbagliato.
-
-Il Capitolo 0 ha definito la regola di responsabilità; il Capitolo 14 entrerà nei controlli tecnici.
-
-Qui basta il promemoria:
-
-**Correzione:** usare l'AI per ampliare esplorazione ed execution, non per sostituire ownership e verifica.
-
-### Regola operativa
+Il lavoro dell'analista consiste in gran parte nel rendere visibili queste scelte prima che diventino errori difficili da riconoscere.
 
 > **L'errore più pericoloso non è quello evidentemente assurdo. È quello plausibile, ben presentato e perfettamente coerente con una domanda formulata male.**
