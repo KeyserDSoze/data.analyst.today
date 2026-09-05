@@ -1,22 +1,16 @@
-## 10.11 Cross-validation: misurare stabilità, non produrre una media rassicurante
+## 10.11 Cross-validation: misurare quanto la performance dipende dal futuro simulato
 
-Un singolo split può essere corretto e comunque fortunato o sfortunato.
+Un singolo split può essere corretto e comunque fortunato o sfortunato. La cross-validation aiuta a capire quanto la performance dipenda dalla particolare divisione dei dati e permette di fare model selection senza consumare subito il test finale.
 
-La cross-validation aiuta a capire quanto la performance dipende dalla particolare divisione dei dati e supporta model selection e tuning senza consumare subito il test finale.
-
-Ma la domanda più importante resta la stessa della sezione 10.5:
+Ma il numero di fold viene dopo la domanda centrale:
 
 > **quale futuro stiamo cercando di simulare?**
 
-Il numero di fold viene dopo.
+Se i fold non rappresentano il modo in cui il modello dovrà generalizzare, una media molto precisa può essere precisamente irrilevante.
 
 ### Caso simulato/composito — MedSupply
 
-MedSupply prevede ritardi superiori a 48 ore per ordini ospedalieri.
-
-Un singolo split produce AUC 0,82.
-
-Cinque fold mostrano:
+MedSupply prevede ritardi superiori a 48 ore per ordini ospedalieri. Un singolo split produce AUC 0,82. Cinque fold mostrano:
 
 | Fold | AUC |
 |---|---:|
@@ -26,45 +20,17 @@ Cinque fold mostrano:
 | 4 | 0,79 |
 | 5 | 0,72 |
 
-Media circa 0,78.
+La media è circa 0,78. Ma la parte interessante non è il nuovo decimale: i fold peggiori contengono molte più spedizioni internazionali.
 
-Il valore della cross-validation non è soltanto aver abbassato il numero da 0,82 a 0,78.
+La dispersione apre quindi una domanda diagnostica: domestic e international sono due processi predittivi differenti? Mancano feature? Il volume internazionale è insufficiente? Nascondere tutto dietro `mean AUC = 0,78` eliminerebbe proprio l'informazione che serve per migliorare il sistema.
 
-I fold peggiori contengono molte più spedizioni internazionali.
+### Random K-fold non è un default universale
 
-Ora abbiamo una nuova domanda:
+K-fold casuale è sensato quando le osservazioni sono abbastanza exchangeable rispetto al deployment. È fragile con tempo, gruppi, entità ripetute, geografie o dipendenze tra righe.
 
-> il modello generalizza male perché il campione è piccolo, o perché domestic e international sono processi predittivi differenti?
+In questi casi possiamo usare group split, stratificazione quando serve a preservare il base rate, forward validation temporale oppure holdout geografici. Il nome dell'oggetto software conta meno della domanda che il fold rappresenta.
 
-La varianza tra fold è quindi informazione diagnostica, non rumore da nascondere dietro la media.
-
-### Random K-fold non è il default universale
-
-Il classico K-fold casuale è ragionevole quando le osservazioni possono essere considerate exchangeable rispetto al deployment che vogliamo simulare.
-
-È fragile quando esistono:
-
-- tempo;
-- gruppi;
-- entità ripetute;
-- geografie;
-- dipendenze tra righe;
-- distribuzioni future differenti.
-
-Possiamo avere:
-
-- `GroupKFold` o strategie analoghe per tenere unità correlate nello stesso lato;
-- split stratificati per mantenere class balance quando appropriato;
-- validazione temporale/forward chaining;
-- holdout geografici o di dominio.
-
-Lo strumento deve seguire la prediction task.
-
-### Tempo: non duplicare il Capitolo 7
-
-Per target futuri la validation deve rispettare l'ordine temporale.
-
-Esempio:
+Per target futuri, il training non dovrebbe includere informazione cronologicamente successiva alla previsione che il fold sta simulando. Una sequenza possibile è:
 
 ```text
 train fino a giugno  → validate luglio
@@ -72,70 +38,26 @@ train fino a luglio  → validate agosto
 train fino ad agosto → validate settembre
 ```
 
-Il Capitolo 7 ha trattato in dettaglio backtesting e `as-of` validation per serie temporali. Qui il principio è più generale: **nessun fold deve usare per il training informazione cronologicamente successiva alla prediction che sta simulando**, quando il deployment non potrebbe farlo.
+Il Capitolo 7 ha già approfondito il backtesting temporale; qui usiamo lo stesso principio per qualunque prediction system.
 
 ### Caso simulato/composito — Finora
 
-Finora costruisce un modello di default.
+Finora costruisce un modello di default. La random CV produce AUC media **0,86**. La forward validation restituisce **0,81**, **0,78**, **0,75** nei trimestri successivi. Acquisition mix e underwriting sono cambiati nel tempo.
 
-Random CV:
+La random CV non è “sbagliata” in astratto: risponde a una domanda più facile. Il forward design assomiglia maggiormente alla produzione che il business vuole affrontare.
 
-- AUC media: 0,86.
+### Tuning e validation fanno parte dello stesso processo di ricerca
 
-Forward validation:
+Se usiamo la cross-validation per scegliere feature, regularization, hyperparameter, modello, calibration method o threshold, tutte queste decisioni stanno imparando da quei fold. Per progetti con tuning intenso può quindi servire un final holdout, nested CV oppure un successivo periodo out-of-time davvero untouched.
 
-- Q1: 0,81;
-- Q2: 0,78;
-- Q3: 0,75.
+Non serve applicare la procedura più complessa a ogni progetto. Serve sapere quando la ricerca stessa rischia di overfittare la valutazione.
 
-Acquisition mix e underwriting sono cambiati nel tempo.
+### La dispersione tra fold è un risultato
 
-La random CV mescola regimi e risponde a una domanda troppo facile. La sequenza temporale mostra invece un deterioramento che assomiglia al deployment.
+Un report migliore di `mean = 0,81` mostra media, range tra fold, composizione dei fold, worst business slice e confronto con la stessa baseline in ciascun fold. Un modello che supera la baseline in tutti i periodi con margine modesto può essere preferibile a uno con media maggiore ma failure severi in periodi cruciali.
 
-### Tuning dentro la validation
+Nella Predictive Decision Card useremo quindi una frase come:
 
-Se cross-validation viene usata per scegliere:
+> **“La validation lascia fuori interi account e rispetta l'ordine temporale perché il modello deve generalizzare sia a clienti nuovi sia a mesi futuri.”**
 
-- feature;
-- regolarizzazione;
-- hyperparameter;
-- modello;
-- calibration method;
-- threshold;
-
-quelle scelte appartengono al processo di sviluppo.
-
-La stima riportata come test finale non dovrebbe essere la stessa osservazione usata per ottimizzare continuamente queste decisioni.
-
-Nei progetti con tuning intenso può essere necessario:
-
-- nested CV;
-- validation + test holdout;
-- oppure un successivo periodo out-of-time realmente untouched.
-
-Non serve applicare nested CV a ogni dashboard predittiva. Serve capire il rischio di selection overfitting del processo di model search.
-
-### Media, dispersione e worst slice
-
-Un report di CV migliore di `mean score = 0,81` può mostrare:
-
-- media;
-- deviazione/range tra fold;
-- performance per fold;
-- composizione dei fold;
-- worst-case business slice;
-- confronto con baseline nello stesso fold.
-
-Un modello che batte la baseline in 5/5 periodi con margine modesto può essere più affidabile di uno con media maggiore ma che crolla in due periodi critici.
-
-### Validation design statement
-
-Nella Predictive Decision Card scriveremo una frase come:
-
-> **"La validation lascia fuori interi account e rispetta l'ordine temporale perché il modello deve generalizzare sia a clienti nuovi sia a mesi futuri."**
-
-Quella frase comunica più informazione di:
-
-> "abbiamo usato 5-fold CV".
-
-> **La cross-validation non rende automaticamente robusta una valutazione. La rende utile solo quando i fold rappresentano i modi in cui il modello dovrà generalizzare davvero.**
+> **La cross-validation non rende robusta una valutazione per il solo fatto di ripeterla. La rende informativa quando ogni fold rappresenta un modo plausibile in cui il deployment potrà metterci alla prova.**
