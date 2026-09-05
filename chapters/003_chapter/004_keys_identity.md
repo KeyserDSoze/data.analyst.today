@@ -1,92 +1,47 @@
 ## 3.3 Chiavi e identità: unico nel database non significa unico nel mondo reale
 
-Una chiave serve a distinguere record o entità. Ma una colonna chiamata `id` non garantisce automaticamente che l'identità rappresentata sia quella di cui abbiamo bisogno.
+Una chiave distingue record o entità all'interno di un sistema. Ma il fatto che una colonna si chiami `id`, o che sia formalmente unica, non garantisce che rappresenti l'identità di business necessaria alla nostra domanda.
 
-Possiamo incontrare:
+Possiamo avere chiavi tecniche generate dal sistema, chiavi di business, chiavi composte, identificatori validi soltanto dentro una sorgente, ID che cambiano nel tempo oppure più ID per la stessa entità. Il problema non è la varietà delle implementazioni. È l'errore che nasce quando trattiamo una convenzione tecnica come se definisse automaticamente “cliente”, “ordine” o “persona”.
 
-- una chiave tecnica generata dal sistema;
-- una chiave di business, come un numero ordine;
-- una chiave composta da più colonne;
-- un identificatore valido solo dentro una sorgente;
-- un identificatore che cambia nel tempo;
-- più identificatori per la stessa entità;
-- lo stesso identificatore riutilizzato impropriamente per entità diverse.
+Supponiamo che una tabella sia dichiarata a livello cliente. Se `customer_id` non è unico, la reazione corretta non è cancellare tutte le righe ripetute. Dobbiamo capire quale assunzione è falsa: forse esistono versioni della stessa anagrafica, forse l'ID identifica un account e non una persona, oppure la stessa entità è stata ricreata dopo una migrazione.
 
-### Unicità attesa e unicità osservata
+Il Government Data Quality Framework definisce la **uniqueness** come l'assenza di duplicazioni rispetto alle entità che dovrebbero essere rappresentate una sola volta. La definizione è utile proprio perché sposta il problema dal confronto byte-per-byte al significato dell'entità.[^gov-dq-uniqueness]
 
-Se una tabella dichiara una riga per cliente, `customer_id` dovrebbe normalmente essere unico a quel grain.
+## L'identità dipende dal fenomeno che vogliamo misurare
 
-La prima verifica è semplice: il numero di record e il numero di identificatori distinti coincidono?
+Un `customer_id` può identificare una persona, un account, un contratto, un'azienda, un profilo CRM o persino un dispositivo. Queste interpretazioni possono essere tutte corrette nel sistema che le ha generate e produrre metriche molto diverse.
 
-Se non coincidono, non dobbiamo dedurre immediatamente che "ci sono duplicati da cancellare". Dobbiamo capire quale assunzione è falsa.
+Se una persona possiede due account, una metrica “per customer_id” può contarla due volte. Se più persone condividono un account familiare, un singolo ID può rappresentare più individui. Se una migrazione assegna un nuovo identificatore alla stessa persona, un cliente esistente può sembrare improvvisamente acquisito da zero.
 
-Il Government Data Quality Framework britannico definisce la **uniqueness** come il grado con cui il dataset contiene una sola rappresentazione per ciascuna entità che dovrebbe essere unica. Sottolinea inoltre che due record possono rappresentare un duplicato anche se alcuni campi differiscono.[^gov-dq-uniqueness]
+Prima di calcolare clienti unici, retention o lifetime value dobbiamo quindi completare una frase più impegnativa di “la chiave è customer_id”:
 
-### Identità tecnica e identità di business
+> **Nel contesto di questa analisi, consideriamo la stessa entità quando...**
 
-Un `customer_id` potrebbe identificare:
+È qui che la definizione tecnica incontra quella di business.
 
-- una persona;
-- un account;
-- un contratto;
-- un'azienda;
-- una relazione persona-azienda;
-- un profilo CRM;
-- un dispositivo;
-- un indirizzo email.
+## False split e false merge
 
-Queste non sono distinzioni accademiche.
+L'identity resolution può sbagliare in due direzioni opposte. Un **false split** tratta la stessa entità come due soggetti diversi: per esempio, un acquisto guest e un acquisto successivo dopo registrazione non vengono collegati. In quel caso il secondo ordine può sembrare un nuovo cliente.
 
-Se un cliente possiede due account, una metrica "per customer_id" può contarlo due volte. Se due persone condividono un account familiare, un singolo ID può rappresentare più persone. Se l'identificatore cambia dopo una migrazione, la stessa persona può sembrare un nuovo cliente.
+Un **false merge** fa l'opposto: fonde entità diverse. Due dipendenti che utilizzano lo stesso indirizzo amministrativo di un'azienda potrebbero diventare artificialmente un unico cliente se deduplichiamo soltanto per email.
 
-Per questo, prima di calcolare retention, frequenza o lifetime value, dobbiamo completare una seconda frase:
+Ridurre il numero di record non è quindi l'obiettivo. L'obiettivo è rappresentare correttamente l'identità rilevante per la domanda. Una regola troppo aggressiva abbassa artificialmente il numero di entità; una troppo prudente lo gonfia. Entrambe distorcono metriche di frequenza, retention e valore.
 
-> **Nel nostro sistema, un cliente è identificato come...**
+## Anche i collegamenti raccontano il processo
 
-### Due errori opposti: split e merge
+L'identità emerge anche nelle relazioni tra dataset. Se `orders.customer_id` non trova corrispondenza nell'anagrafica, possiamo avere guest checkout legittimi, latenze tra sistemi, dati storici incompleti, anonimizzazioni, chiavi provenienti da sorgenti differenti oppure veri errori di pipeline.
 
-Nell'identity resolution esistono almeno due errori concettuali opposti.
+Un record orfano non è quindi automaticamente “sporco”. È un'informazione sul modo in cui il processo collega — o non collega — le entità.
 
-**False split:** la stessa entità viene trattata come due entità diverse.
+Nei warehouse incontreremo inoltre chiavi surrogate che separano l'identità tecnica del modello analitico da quella operativa e possono supportare la storia delle dimensioni. La progettazione verrà approfondita nel Capitolo 11; qui basta conservare il principio fondamentale:
 
-Esempio: un cliente acquista una volta come guest e una volta dopo essersi registrato. Se i due record non vengono collegati, il secondo acquisto può sembrare un nuovo cliente.
+> **Una chiave identifica una rappresentazione. Prima di usarla in una metrica dobbiamo sapere che cosa rappresenta, dove è unica, quanto è stabile e quali regole collegano identità provenienti da sistemi diversi.**
 
-**False merge:** due entità diverse vengono fuse in una sola.
+Questa conoscenza è ciò che impedisce a un conteggio perfettamente eseguito di diventare una stima sbagliata del mondo reale.
 
-Esempio: due dipendenti utilizzano lo stesso indirizzo email amministrativo di un'azienda. Deduplicare soltanto per email potrebbe trasformarli artificialmente in un unico cliente.
+---
 
-Il punto non è ottenere il minor numero possibile di record. È rappresentare correttamente l'identità rilevante per la domanda.
-
-### Referential integrity: i collegamenti che ci aspettiamo esistono davvero?
-
-Se una tabella ordini contiene `customer_id`, possiamo aspettarci che l'identificatore sia presente nell'anagrafica clienti, salvo eccezioni deliberate.
-
-Quando non accade, le possibili cause includono:
-
-- guest checkout legittimo;
-- latenze tra sistemi;
-- dati storici incompleti;
-- cancellazioni o anonimizzazioni;
-- chiavi provenienti da sorgenti differenti;
-- errori di pipeline.
-
-Un record orfano non è automaticamente un errore. È una domanda sul processo.
-
-### Chiavi surrogate: ciò che l'analista deve sapere
-
-Nei warehouse è comune incontrare chiavi surrogate create dal modello analitico. Sono utili, tra le altre cose, per separare l'identità tecnica del warehouse dalle chiavi operative e per gestire la storia delle dimensioni.
-
-La progettazione approfondita arriverà nel Capitolo 11. Qui basta fissare una regola:
-
-> **Una chiave identifica una rappresentazione. Non assumere che quella rappresentazione coincida automaticamente con la persona, l'ordine o il fenomeno che hai in mente.**
-
-Prima di usare un identificatore in una metrica, verifica quindi:
-
-- che cosa identifica;
-- dove è unico;
-- se è stabile nel tempo;
-- se può essere condiviso;
-- se può cambiare;
-- quali regole collegano identità provenienti da sistemi diversi.
+### Fonte
 
 [^gov-dq-uniqueness]: UK Government Data Quality Hub, *The Government Data Quality Framework*. https://www.gov.uk/government/publications/the-government-data-quality-framework/the-government-data-quality-framework
