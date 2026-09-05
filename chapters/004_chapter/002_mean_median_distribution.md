@@ -1,125 +1,27 @@
-## 4.1 Media e mediana: due idee diverse di "valore tipico"
+## 4.1 Media e mediana: due idee diverse di “valore tipico”
 
-Quando dobbiamo riassumere una variabile numerica, la prima tentazione è cercare un singolo numero che la rappresenti.
+Quando comprimiamo una distribuzione in un solo numero stiamo già scegliendo quale proprietà conservare. È per questo che chiedere semplicemente “qual è il valore medio?” può essere meno innocente di quanto sembri: prima dobbiamo capire **che cosa vogliamo che quel numero rappresenti**.
 
-Il problema è che non esiste un unico concetto di "centro".
+La **media aritmetica** divide il totale per il numero di osservazioni. È sensibile a ogni valore e conserva quindi il legame con il totale economico sottostante. La **mediana**, invece, è il punto che lascia metà delle osservazioni sotto e metà sopra; descrive la posizione centrale senza farsi trascinare allo stesso modo dalle code. Nessuna delle due domina l'altra in assoluto. Rispondono a domande diverse.
 
-La **media aritmetica** divide il totale per il numero di osservazioni. È il punto di equilibrio della distribuzione ed è fondamentale quando ci interessa il totale economico sottostante.
+Consideriamo una startup tecnologica con 41 dipendenti. Lo stipendio medio annuo è **62.400 euro**, mentre la mediana è **46.800 euro**. La differenza nasce da una distribuzione molto asimmetrica: 18 persone guadagnano tra 32.000 e 40.000 euro, 13 tra 40.000 e 55.000, 6 tra 55.000 e 75.000, tre dirigenti superano 140.000 euro e il CEO arriva a 260.000.
 
-La **mediana** è invece il valore centrale una volta ordinate le osservazioni: metà dei casi si trova sotto e metà sopra. È molto meno sensibile ai valori estremi.
+Se dobbiamo stimare il costo salariale per dipendente, la media è precisamente ciò che ci serve: i salari elevati pesano davvero sul totale. Se invece vogliamo descrivere l'esperienza retributiva del dipendente centrale, la mediana è più vicina alla domanda. Il problema nasce quando entrambe vengono chiamate genericamente “stipendio tipico”, come se stessero cercando di rappresentare la stessa cosa.
 
-Nessuna delle due è universalmente migliore.
+La stessa tensione appare negli ordini. Con cinque importi da `€20, €25, €30, €35, €390`, la media è `€100` e la mediana `€30`. Dire che la media “è falsata dall'outlier” sarebbe troppo sbrigativo. L'ordine da 390 euro è reale e contribuisce al fatturato; la media registra correttamente quel peso. Semplicemente non descrive bene il singolo ordine più comune.
 
-Rispondono a domande differenti.
+## Il centro dipende anche dall'unità su cui lo calcoliamo
 
-### Caso simulato/composito — Lo stipendio medio dell'azienda
+Prima ancora di scegliere tra media e mediana dobbiamo ricordare il Capitolo 3: il grain determina ciò che stiamo mediando. “Ricavo medio” può significare ricavo per ordine, per cliente, per giorno, per prodotto o per sessione. Sono statistiche diverse anche se provengono dallo stesso warehouse.
 
-Una startup tecnologica con 41 dipendenti comunica che lo stipendio medio annuo è **62.400 euro**.
+Per questo una frase come “AOV medio = 100 euro” è già migliore di “ricavo medio = 100 euro”, ma non è ancora completa se non sappiamo quali ordini entrano nella popolazione, in quale periodo e con quali esclusioni. La statistica descrittiva non elimina la semantica costruita nei capitoli precedenti; la utilizza.
 
-La cifra è corretta.
+## Quando media e mediana divergono, la divergenza merita attenzione
 
-La distribuzione, però, è fortemente asimmetrica:
+Una distanza ampia tra le due misure è spesso il primo indizio che il centro non basta. Può indicare una coda lunga, forte asimmetria, concentrazione economica, più popolazioni mescolate o poche osservazioni molto influenti. Non dobbiamo decidere immediatamente quale numero “vince”. Dobbiamo guardare la distribuzione che li ha prodotti.
 
-- 18 persone tra 32.000 e 40.000 euro;
-- 13 tra 40.000 e 55.000;
-- 6 tra 55.000 e 75.000;
-- 3 dirigenti oltre 140.000;
-- CEO a 260.000 euro.
+Supponiamo che un servizio di assistenza riporti un tempo medio di risposta di **3,2 ore**. Da solo, il numero lascia aperte molte interpretazioni. Se aggiungiamo mediana **1,1 ore** e `P90 = 8,7 ore`, scopriamo che la maggioranza riceve risposta rapidamente mentre una coda relativamente piccola ma molto lenta spinge il valore medio verso l'alto. Il secondo riepilogo non è migliore perché contiene più numeri; è migliore perché conserva più della struttura che conta per l'esperienza.
 
-La mediana è **46.800 euro**.
+Questo porta direttamente alla prossima sezione. Una misura centrale ci dice dove si colloca la distribuzione. Non ci dice **quanto le osservazioni sono concentrate attorno a quel centro**.
 
-Se la domanda è:
-
-> Quanto spende mediamente l'azienda per dipendente?
-
-la media è molto utile.
-
-Se la domanda è:
-
-> Quale retribuzione descrive meglio l'esperienza del dipendente centrale?
-
-la mediana è più informativa.
-
-Il conflitto nasce quando chiamiamo entrambe semplicemente "stipendio tipico".
-
-### La media è sensibile alla coda per una ragione
-
-Supponiamo che cinque ordini valgano:
-
-```text
-€20, €25, €30, €35, €390
-```
-
-Media:
-
-```text
-€100
-```
-
-Mediana:
-
-```text
-€30
-```
-
-La media sembra poco rappresentativa del singolo ordine, ma incorpora correttamente il fatto che un ordine da 390 euro pesa molto sul fatturato totale.
-
-Quindi la sua sensibilità agli estremi non è sempre un difetto. Dipende da ciò che vogliamo misurare.
-
-### Una domanda importante: qual è l'unità su cui stiamo facendo la media?
-
-"Ricavo medio" può significare:
-
-- ricavo medio per ordine;
-- ricavo medio per cliente;
-- ricavo medio per giorno;
-- ricavo medio per prodotto;
-- ricavo medio per sessione.
-
-Sono statistiche diverse anche quando provengono dallo stesso dataset.
-
-Prima di interpretare una media dobbiamo quindi dichiarare:
-
-> **media di che cosa, calcolata su quale unità di analisi?**
-
-Il grain è già stato verificato nel Capitolo 3; qui ne vediamo la conseguenza statistica.
-
-### Quando media e mediana divergono, la divergenza è informazione
-
-Se media e mediana sono molto distanti, può esserci:
-
-- forte asimmetria;
-- una coda lunga;
-- concentrazione economica;
-- più popolazioni mescolate;
-- valori estremi influenti.
-
-Non dobbiamo scegliere subito quale delle due "sia quella giusta".
-
-Dobbiamo guardare la distribuzione.
-
-### Oltre al centro
-
-Per descrivere seriamente una variabile numerica, il centro dovrebbe essere accompagnato da almeno una misura di dispersione e, quando rilevante, da quantili o una visualizzazione della forma.
-
-Un report del tipo:
-
-> tempo medio di risposta: 3,2 ore
-
-è molto più povero di:
-
-> mediana 1,1 ore; media 3,2; P90 8,7; distribuzione fortemente asimmetrica a destra.
-
-Il secondo non contiene soltanto più numeri. Contiene una rappresentazione più fedele dell'esperienza.
-
-### Regola operativa
-
-Prima di usare una misura centrale chiediti:
-
-1. Qual è l'unità di analisi?
-2. Mi interessa il totale/equilibrio oppure il caso centrale?
-3. La distribuzione è asimmetrica?
-4. Pochi valori influenzano fortemente la media?
-5. Media e mediana portano alla stessa decisione?
-
-> **Una media non è "il dato". È una particolare compressione della distribuzione.**
+> **Una media non è “il dato”. È una particolare compressione della distribuzione, utile soltanto quando sappiamo quale proprietà vogliamo preservare.**
