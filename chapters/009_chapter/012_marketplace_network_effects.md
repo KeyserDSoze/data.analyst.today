@@ -1,80 +1,28 @@
-## 9.11 Marketplace e network experiments: scegliere il design che misura la policy reale
+## 9.11 Marketplace e network experiments: misurare il mondo che esisterà dopo lo ship
 
-Nel 9.4 abbiamo visto **perché** interference e contamination rompono un A/B individuale semplice.
+Nei marketplace, nei social product, nelle reti logistiche e nei sistemi di allocazione il trattamento non modifica soltanto l'utente che lo riceve. Cambia spesso l'ambiente condiviso: domanda, offerta, disponibilità, prezzi, congestione e comportamento degli altri attori.
 
-Qui facciamo il passo successivo:
+In questi sistemi il design sperimentale deve partire da una domanda più forte di “come randomizziamo gli utenti?”:
 
-> **quale design possiamo usare quando il prodotto è un sistema condiviso?**
-
-Nei marketplace, social product, logistics network e sistemi di allocazione, il risultato dipende spesso dall'equilibrio tra più attori.
+> **quale effetto della policy vogliamo conoscere e quale esperimento rappresenta meglio il mondo in cui quella policy sarà usata?**
 
 ### Caso simulato/composito — Ranking di un marketplace locale
 
-Un marketplace di servizi testa un ranking che privilegia fornitori con probabilità di accettazione più alta.
+Un marketplace di servizi privilegia provider con probabilità di accettazione più alta. Nel buyer-randomized test osserviamo conversion B +0,7 pp, GMV/buyer +5,9% e time-to-confirm -11%.
 
-Nel buyer-randomized test:
+Ma alcuni provider ricevono molta più domanda dal treatment e saturano. La saturazione modifica disponibilità e prezzo anche per i buyer di controllo. L'effetto misurato al 50% di traffico misto non è automaticamente ciò che succederebbe al 100%.
 
-- conversion B: +0,7 pp;
-- GMV/buyer: +5,9%;
-- time-to-confirm: -11%.
+Possiamo infatti voler stimare tre cose diverse. Il **direct user effect** chiede che cosa accade al buyer assegnato a B nel mercato misto corrente. Il **total marketplace effect** chiede come cambiano GMV, fill rate e welfare complessivo. L'**equilibrium/full-rollout effect** include anche l'adattamento successivo di seller, supply, prezzi e comportamento. Un buyer-level A/B può essere ottimo per il primo e insufficiente per il terzo.
 
-Ma alcuni provider ricevono molta più domanda dal treatment e saturano.
+### Cluster: separare i mercati quando possiamo
 
-La saturazione modifica disponibilità e prezzo anche per il controllo.
+Se città, zone, tenant o community interagiscono molto al loro interno e poco tra loro, possiamo randomizzare cluster. Il trattamento si avvicina così all'equilibrio locale e riduce spillover tra arm.
 
-La domanda non è più soltanto:
+Il prezzo è statistico: pochi cluster, forte eterogeneità e minore power. Venti città con milioni di transazioni restano venti unità randomizzate, non milioni di esperimenti indipendenti.
 
-> “Quale esperienza vede il buyer?”
+### Switchback: usare il tempo quando lo spazio non basta
 
-ma:
-
-> **“Come cambia il marketplace quando questa policy governa una quota crescente della domanda?”**
-
-### Tre estimand possibili
-
-**Direct user effect**
-
-Che cosa succede al buyer assegnato a B rispetto ad A nel mercato misto corrente?
-
-**Total marketplace effect**
-
-Che cosa succede a GMV, fill rate e welfare complessivo se la policy viene applicata al mercato?
-
-**Equilibrium / full-rollout effect**
-
-Che cosa succede dopo che seller, supply, prezzi e comportamento si sono adattati al nuovo sistema?
-
-Un buyer-level A/B può essere utile per il primo e insufficiente per il terzo.
-
-### Cluster randomization
-
-Possiamo randomizzare mercati relativamente indipendenti:
-
-- città;
-- zone;
-- store catchment;
-- community;
-- tenant.
-
-Vantaggi:
-
-- riduce spillover tra arm;
-- l'unità di trattamento è più vicina all'equilibrio locale.
-
-Costi:
-
-- pochi cluster;
-- grande variabilità tra cluster;
-- minore power;
-- rischio che geografie differiscano strutturalmente.
-
-Non possiamo recuperare il numero effettivo di unità contando milioni di transazioni dentro 20 città.
-
-### Switchback experiments
-
-Se non abbiamo abbastanza mercati indipendenti, possiamo alternare il trattamento **nel tempo** sullo stesso mercato.
-
-Esempio:
+Se non esistono abbastanza mercati indipendenti, possiamo alternare A e B sullo stesso sistema:
 
 ```text
 Roma
@@ -84,100 +32,21 @@ Roma
 14–16 B
 ```
 
-oppure randomizzare blocchi di 30/60 minuti con schema bilanciato.
+Questo design è utile per ride-hailing, delivery, dispatch, dynamic pricing o ranking condiviso, ma rende il tempo parte dell'inferenza. Time-of-day, day-of-week, autocorrelazione e carryover devono essere gestiti esplicitamente.
 
-Questo può essere utile per:
+Se B incentiva driver a entrare online, per esempio, quei driver possono restare disponibili quando il sistema torna ad A. La finestra successiva non è più un controllo puro. Washout period, blocchi più lunghi o un estimand dinamico diventano scelte di design, non dettagli tecnici.
 
-- ride-hailing;
-- delivery;
-- dispatch;
-- pricing dinamico;
-- ranking condiviso.
+### Saturation: l'effetto può dipendere dalla percentuale trattata
 
-Ma il design deve controllare:
+Un modo per studiare l'equilibrio è variare la quota di trattamento tra cluster o periodi, per esempio 0%, 25%, 50%, 75% e 100%. Se l'effetto satura, cannibalizza o mostra threshold, la curva di saturation è molto più informativa di un singolo contrasto misurato al 10%.
 
-- time-of-day seasonality;
-- day-of-week;
-- carryover;
-- inventory che persiste;
-- driver/seller che reagiscono lentamente;
-- autocorrelazione.
+### Una policy two-sided richiede metriche two-sided
 
-Il Capitolo 7 diventa parte del design sperimentale.
+Nei marketplace una decisione non può spesso essere giudicata soltanto dal lato buyer. Conversion, wait time, price e cancellation devono convivere con seller utilization, earnings, acceptance, concentration, churn e con metriche di piattaforma come GMV, contribution margin, fill rate e reliability.
 
-### Carryover
+Una policy che migliora la conversione dei buyer distruggendo la salute della supply può vincere nel test breve e peggiorare lo steady state. È ancora una volta un problema di Metric Contract, ma applicato a un sistema interdipendente.
 
-Supponiamo che B incentivi driver a entrare online.
-
-Quando il sistema torna ad A, quei driver possono rimanere disponibili per un'ora.
-
-La finestra A successiva è contaminata dall'effetto precedente.
-
-Possibili strategie:
-
-- washout period;
-- blocchi temporali più lunghi;
-- modellazione del carryover;
-- estimand esplicitamente dinamico.
-
-### Saturation experiment
-
-Un'altra domanda utile è come l'effetto cambia con la percentuale di trattamento.
-
-Possiamo testare cluster con, per esempio:
-
-- 0%;
-- 25%;
-- 50%;
-- 75%;
-- 100% exposure.
-
-L'obiettivo è studiare se il trattamento:
-
-- scala linearmente;
-- satura;
-- cannibalizza;
-- produce threshold effects;
-- modifica l'equilibrio.
-
-Questo è molto più informativo di assumere che un effetto misurato al 10% resti identico al 100%.
-
-### Two-sided marketplace metrics
-
-Una decisione marketplace dovrebbe spesso includere metriche su entrambi i lati.
-
-Buyer:
-
-- conversion;
-- wait time;
-- price;
-- cancellations.
-
-Seller/supply:
-
-- utilization;
-- earnings;
-- acceptance;
-- concentration;
-- churn;
-- fairness/distribution quando rilevante.
-
-Platform:
-
-- GMV;
-- contribution margin;
-- fill rate;
-- reliability.
-
-Una policy che migliora buyer conversion distruggendo supply health può avere effetto positivo nel test breve e negativo nel steady state.
-
-### Tenant randomization come caso affine
-
-Microsoft Research documenta difficoltà analoghe negli esperimenti enterprise: quando l'esperienza deve essere coerente all'interno di un'organizzazione, la randomization unit può diventare il **tenant**. Questo preserva coerenza e riduce interference interna, ma rende la statistica più difficile per la forte eterogeneità dei tenant e il numero minore di unità.[^ms-tenant]
-
-Il caso non è un marketplace, ma la logica è la stessa:
-
-> randomizzare al livello in cui l'interazione rende impossibile trattare gli individui come mondi indipendenti.
+Microsoft Research documenta difficoltà analoghe nei tenant-randomized experiments enterprise: quando l'esperienza deve essere coerente dentro l'organizzazione, randomizzare il tenant riduce interference interna ma abbassa il numero effettivo di unità e rende più importante la forte eterogeneità tra cluster.[^ms-tenant]
 
 ### Network experiment card
 
@@ -197,6 +66,6 @@ Two-sided guardrails:
 Effect expected to change at 100% rollout?
 ```
 
-> **Quando il trattamento modifica il mercato, la domanda non è soltanto come randomizzare meglio gli utenti. È quale esperimento rappresenta meglio il mondo che esisterà dopo lo ship.**
+> **Quando il trattamento modifica il mercato, l'esperimento deve rappresentare la policy che vogliamo mettere a regime, non soltanto la variante che riusciamo più facilmente a bucketizzare.**
 
 [^ms-tenant]: Microsoft Research, *Why Tenant-Randomized A/B Test is Challenging and Tenant-Pairing May Not Work*: https://www.microsoft.com/en-us/research/articles/why-tenant-randomized-a-b-test-is-challenging-and-tenant-pairing-may-not-work/
