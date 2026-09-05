@@ -1,147 +1,76 @@
 ## 16.11 Comunicare in meeting: guidare il ragionamento, non recitare le slide
 
-Una buona Decision Communication Pack può essere interpretata male se la comunicazione orale segue una struttura debole.
+Una Decision Communication Pack ben costruita può ancora fallire nel meeting. Il tempo è limitato, l'attenzione è intermittente e gli stakeholder ascoltano con incentivi differenti. La comunicazione orale deve quindi preservare la stessa gerarchia della Pack: **claim, evidence, caveat, ask**.
 
-Nel meeting il tempo è limitato, l'attenzione è intermittente e ogni stakeholder ascolta con incentivi diversi.
+Una presentazione analyst-first inizia spesso dal lavoro svolto: “abbiamo estratto sei mesi di dati, poi segmentato quattordici gruppi...”. Una presentazione decision-first può invece aprire così:
 
-Per questo l'analista deve saper rispondere prima a quattro domande:
+> **Raccomandiamo un pilot del nuovo pricing su Enterprise EU, non un rollout globale. Il valore centrale è positivo; la renewal rate è il guardrail che può cambiare la scelta.**
 
-1. **Claim** — che cosa stiamo sostenendo?
-2. **Evidence** — perché lo sosteniamo?
-3. **Caveat** — che cosa potrebbe cambiare la conclusione?
-4. **Ask** — che cosa deve essere deciso oggi?
+Il metodo non scompare. Diventa disponibile quando serve a valutare il claim.
 
-## Answer first
+### Caso simulato/composito — Il meeting deragliato sul numero marginale
 
-Una presentazione analyst-first può iniziare con:
+Un analyst presenta una decisione di pricing con quattordici segmenti e una tabella di elasticità. Dopo due minuti la discussione si blocca su una domanda: “Perché SMB Nord ha **1.482 clienti e non 1.500**?”
 
-> “Abbiamo estratto sei mesi di dati, poi segmentato 14 gruppi...”
+La domanda può essere legittima. Il problema è capire immediatamente se minaccia la decisione. Una risposta professionale non difende il numero per principio:
 
-Una presentazione decision-first può iniziare con:
+> “Verifico il conteggio. Quel segmento pesa il **2,1% della popolazione** e non entra nel test proposto, quindi il punto non cambia per ora la recommendation. Se il controllo mostra un problema di classificazione più ampio, fermiamo la decisione.”
 
-> **“Raccomandiamo un pilot del nuovo pricing sul segmento Enterprise EU, non un rollout globale. Il valore centrale è positivo; il guardrail decision-critical è la renewal rate.”**
+La risposta accetta il controllo e, nello stesso momento, ne valuta la materialità rispetto al Decision Record.
 
-Il metodo non scompare. Viene spostato al livello in cui serve per valutare il claim.
+## Classificare le challenge in tempo reale
 
-## Caso simulato/composito — Il meeting deragliato sul numero marginale
+Le domande del meeting possono essere trattate come quattro percorsi operativi:
 
-Un analyst presenta una decisione di pricing con 14 segmenti e una tabella di elasticità.
+| Classe | Significato | Azione |
+|---|---|---|
+| **Answer now** | risposta disponibile e materialmente utile | rispondere e tornare alla decisione |
+| **Evidence / appendix** | dettaglio utile ma non decisivo | aprire il layer di prova |
+| **Claim-threatening** | mette in dubbio definizione, assunzione o dato centrale | downgrade / pausa finché verificato |
+| **Follow-up non blocking** | interessante ma fuori dalla critical path | registrare owner e follow-up |
 
-Dopo due minuti il meeting si blocca su:
+Questa classificazione evita due errori opposti: difendere ogni slide come se fosse parte del claim principale oppure lasciare che qualsiasi dettaglio faccia perdere la decisione aperta.
 
-> “Perché SMB Nord ha 1.482 clienti e non 1.500?”
+## Non difendere la presentazione
 
-La domanda può essere legittima.
+Se emerge un errore, il compito è capire quale dei tre casi stiamo vivendo:
 
-Ma la presentazione non aveva chiarito se quella differenza fosse **decision-relevant**.
+```text
+local error → claim unchanged
+material uncertainty → claim downgraded / provisional
+core assumption broken → decision paused
+```
 
-Una risposta matura non difende il numero per principio:
+L'obiettivo non è salvare la slide. È salvare la qualità della decisione.
 
-> “Verifico il conteggio. Quel segmento pesa il 2,1% della popolazione e non entra nel test proposto, quindi non cambia per ora la recommendation. Se il controllo mostra un problema di classificazione più ampio, fermiamo la decisione.”
+Lo stesso vale per “non lo so”. Una risposta operativa non finge sicurezza:
 
-La risposta fa due cose:
+> “Non ho quella risposta verificata. Può cambiare il costo dell'opzione B, quindi la verifico sulla fonte Finance prima dell'approvazione.”
 
-- accetta il controllo;
-- valuta immediatamente il suo impatto sul Decision Record.
+Ora l'unknown ha impatto, fonte, owner e conseguenza sulla scelta.
 
-## Classificare le domande in tempo reale
+## Preparare il challenge map
 
-Durante il meeting una domanda può appartenere a quattro categorie.
+Prima del meeting conviene sapere quale numero sarà contestato, quale assunzione è più fragile, chi sostiene il downside della recommendation, quale alternativa ha un champion forte e quale caveat può bloccare la scelta. Anche l'appendix va progettata in questa prospettiva: non come deposito di tutte le slide eliminate, ma come evidence layer per le challenge prevedibili.
 
-### A — Answer now
+La formula dei primi trenta secondi può restare semplice:
 
-La risposta è disponibile e materialmente utile.
+> **Dobbiamo decidere X. Raccomandiamo Y perché A e B. Il rischio che può cambiare la scelta è C. Oggi chiediamo D.**
 
-### B — Evidence / appendix
+Non è uno script obbligatorio; è un test. Se non sappiamo completarlo, probabilmente l'ask è ancora nascosto dietro l'analisi.
 
-Richiede dettaglio, ma non cambia il claim principale.
+## Il meeting deve tornare nel Decision Record
 
-> “Ho il breakdown in backup; lo apro.”
+Dopo la discussione, decisione effettiva, ragioni di eventuale divergenza dalla recommendation, nuove assunzioni, owner, guardrail, follow-up e review date devono tornare nel sistema di memoria del Capitolo 15.
 
-### C — Claim-threatening
+Questo chiude il loop:
 
-Mette in discussione una definizione, un'assunzione o un dato centrale.
+```text
+Decision Record
+→ Communication Pack
+→ meeting challenge
+→ decision / update
+→ Decision Record
+```
 
-> “Questo punto può cambiare la recommendation. La considero provisional finché non verifichiamo.”
-
-### D — Follow-up, non decision-blocking
-
-È interessante ma non necessaria per la scelta corrente.
-
-> “La prendiamo come follow-up; non è nella critical path della decisione di oggi.”
-
-Questa classificazione evita sia la difensività sia la dispersione.
-
-## Non difendere la slide: difendere la qualità della decisione
-
-Se emerge un errore, abbiamo tre possibili esiti:
-
-1. **local error, claim unchanged**;
-2. **material uncertainty, claim downgraded**;
-3. **core assumption broken, decision paused**.
-
-L'obiettivo professionale è identificare rapidamente quale dei tre casi stiamo vivendo.
-
-Non serve salvare la presentazione.
-
-Serve salvare la qualità del processo decisionale.
-
-## Rispondere “non lo so” in modo operativo
-
-Debole:
-
-> “Non lo so, devo controllare.”
-
-Meglio:
-
-> “Non ho quella risposta verificata. È importante perché potrebbe cambiare il costo stimato dell'opzione B. Posso verificare il dato finance e aggiornare il Decision Record prima dell'approvazione.”
-
-L'incertezza viene trasformata in:
-
-- impatto;
-- fonte da verificare;
-- owner;
-- conseguenza sulla decisione.
-
-## Anticipare le challenge
-
-Prima del meeting prepariamo un **challenge map**:
-
-- quale numero sarà contestato?
-- qual è l'assunzione più fragile?
-- chi sostiene il costo della recommendation?
-- quale alternativa ha un champion forte?
-- quale caveat potrebbe bloccare la scelta?
-- quale dettaglio deve stare in appendix?
-- cosa faremo se emerge un dato nuovo durante il meeting?
-
-## I primi trenta secondi
-
-Il pubblico dovrebbe capire:
-
-- qual è la decisione;
-- qual è la recommendation;
-- qual è la ragione principale;
-- qual è il caveat più importante.
-
-Formula pratica:
-
-> **“Dobbiamo decidere X. Raccomandiamo Y perché A e B. Il rischio che può cambiare la scelta è C. Oggi chiediamo D.”**
-
-Non ogni meeting deve essere così rigido, ma questa struttura impedisce di nascondere l'ask dietro l'analisi.
-
-## Meeting notes e Decision Record
-
-Dopo la discussione aggiorniamo:
-
-- scelta effettiva;
-- alternative scartate;
-- nuove assunzioni emerse;
-- owner;
-- guardrail;
-- follow-up;
-- data di review.
-
-La comunicazione non termina quando finisce la slide. Deve tornare nel sistema di memoria decisionale del Capitolo 15.
-
-> **Una buona comunicazione orale non elimina le domande difficili. Fa sì che le domande difficili migliorino la decisione invece di far deragliare la conversazione.**
+> **Una buona comunicazione orale non elimina le domande difficili. Fa sì che le domande difficili aggiornino il claim o la decisione invece di trasformare il meeting in una difesa della presentazione.**
