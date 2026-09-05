@@ -1,126 +1,64 @@
 ## 16.1 Dalla visualizzazione esplorativa all'evidenza decisionale
 
-Non tutti i grafici che ci aiutano a capire devono arrivare davanti a chi decide.
-
-Durante l'EDA produciamo **discovery artifacts**: servono a cercare pattern, smentire ipotesi, cambiare grain, verificare segmenti, confrontare definizioni e capire dove investigare.
-
-Durante la comunicazione costruiamo invece **decision artifacts**: servono a sostenere un passaggio preciso del Decision Record.
+Non tutti i grafici che aiutano l'analista a capire meritano di arrivare davanti a chi decide. Durante l'EDA produciamo **discovery artifacts**: servono a cercare pattern, cambiare grain, confrontare definizioni, smentire ipotesi e capire dove investigare. Nella comunicazione costruiamo invece **decision artifacts**: servono a sostenere un passaggio preciso del Decision Record.
 
 La differenza non è estetica. È epistemica.
 
-## Discovery artifacts: spazio di ricerca
+Un discovery artifact può essere utile anche quando porta a una strada morta. Un decision artifact deve invece aver guadagnato il diritto di rappresentare un claim. Prima della promozione chiediamo quindi se la metrica è definita, il grain è coerente, il denominatore è stabile, il pattern resiste ai controlli rilevanti, l'incertezza ne modifica l'interpretazione e il linguaggio resta dentro il livello di evidenza disponibile.
 
-Nell'esplorazione è normale produrre:
+Possiamo pensare alla promozione così:
 
-- distribuzioni;
-- segmentazioni;
-- scatter plot;
-- decine di breakdown;
-- versioni alternative di un KPI;
-- grafici che alla fine si rivelano inutili;
-- controlli che servono soprattutto a escludere spiegazioni.
+```text
+pattern trovato
+→ semantic/readiness check
+→ alternative explanation check
+→ materiality
+→ claim level
+→ decision relevance
+→ decision artifact
+```
 
-Questa abbondanza è spesso necessaria.
+Il punto finale è decisivo: un pattern può essere vero, robusto e comunque non meritare la pagina executive se non cambia nessuna alternativa, soglia o azione.
 
-Il problema nasce quando confondiamo **quanto lavoro abbiamo fatto** con **quanto materiale il pubblico deve vedere**.
+### Caso simulato/composito — 27 grafici, tre prove
 
-## Decision artifacts: spazio di prova
+Un e-commerce vede la conversion scendere dal **3,8% al 3,4%**. Durante l'indagine il team produce 27 grafici su device, browser, paese, canale, landing, ora, new/returning, payment method, app version, basket size e categoria. Quella ricchezza è utile nella ricerca, ma il lavoro converge su quattro fatti robusti: circa il **78% del delta** è su iOS; il peggioramento è quasi interamente nella versione **6.12**; il drop si concentra tra `payment_started` e `payment_authorized`; Android e le versioni iOS precedenti restano sostanzialmente stabili.
 
-Un elemento entra nella Decision Communication Pack solo se svolge almeno una funzione esplicita:
+La Decision Communication Pack non deve mostrare i 27 grafici in ordine cronologico. Deve selezionare le prove che ricostruiscono la logica della decisione: una decomposition per piattaforma localizza il delta; il confronto tra versioni mostra la concentrazione; il funnel identifica il boundary in cui il comportamento cambia. I controlli sugli altri segmenti restano disponibili nell'evidence/provenance layer per dimostrare che le spiegazioni alternative principali sono state esaminate.
 
-| Ruolo | Domanda |
-|---|---|
-| Orient | Che cosa sta succedendo? |
-| Compare | Quale alternativa/segmento differisce? |
-| Diagnose | Dove si concentra il fenomeno? |
-| Decide | Quale trade-off o soglia cambia la scelta? |
-| Verify | Quale dettaglio consente di controllare il claim? |
+Questo non elimina il lavoro esplorativo. Lo trasforma in **provenance della selezione**.
 
-Un grafico che non riesce a completare una di queste frasi è probabilmente ancora un discovery artifact.
+## Dalla cronologia alla logica
 
-## Evidence promotion: non tutto ciò che troviamo merita la slide
+Una presentazione analyst-first racconta spesso il percorso seguito: “prima abbiamo guardato il traffico, poi i paesi, poi i device...”. È una struttura utile in una peer review o in un post-mortem, ma raramente è quella che riduce meglio il costo cognitivo di chi deve scegliere.
 
-Tra discovery e decision serve un passaggio di **promozione dell'evidenza**.
+La comunicazione decisionale usa un ordine diverso:
 
-Prima di portare un pattern nella comunicazione chiediamo:
+```text
+decision question
+→ headline
+→ evidence che discrimina le alternative
+→ caveat / uncertainty
+→ alternative
+→ ask
+```
 
-1. la metrica è certificata o almeno definita?
-2. il grain è coerente con il claim?
-3. il pattern resiste a segmentazioni e controlli ragionevoli?
-4. esiste un problema di composizione o denominatore?
-5. l'incertezza può cambiarne il significato?
-6. il linguaggio proposto supera la forza del metodo?
-7. questa evidenza cambia davvero una decisione?
+L'analisi rimane auditabile, ma il pubblico non deve ricostruire da solo quale dei ventisette passaggi sia diventato materialmente importante.
 
-Solo dopo il pattern entra nel pack.
+## Ogni visual deve sostenere una frase verificabile
 
-## Caso simulato/composito — 27 grafici, tre prove
-
-Un e-commerce vede la conversione scendere dal 3,8% al 3,4%.
-
-Durante l'indagine il team produce 27 grafici: device, browser, paese, canale, landing, ora, new/returning, payment method, app version, basket size, categoria e altri breakdown.
-
-Alla fine emergono quattro fatti robusti:
-
-- circa il 78% del delta è su iOS;
-- il peggioramento è quasi interamente nella versione 6.12;
-- il drop si concentra tra `payment_started` e `payment_authorized`;
-- Android e le versioni iOS precedenti sono sostanzialmente stabili.
-
-La Decision Communication Pack non contiene i 27 grafici.
-
-Contiene:
-
-1. **decomposition del delta per piattaforma** — localizza il problema;
-2. **conversion per app version** — identifica la concentrazione del segnale;
-3. **funnel del payment step** — mostra dove si rompe il percorso;
-4. in appendix, i controlli che dimostrano che i principali segmenti alternativi non spiegano il fenomeno.
-
-Il lavoro esplorativo non è stato buttato via. È diventato **provenance della selezione**.
-
-## Non presentare la cronologia dell'indagine
-
-Una presentazione analyst-first spesso dice:
-
-> “Prima abbiamo guardato il traffico, poi i paesi, poi i device, poi abbiamo provato...”
-
-Il decision maker raramente ha bisogno della cronologia.
-
-Ha bisogno della logica:
-
-**decision question → headline → evidence → caveat → alternative → ask**.
-
-La cronologia investigativa può essere utile in un post-mortem o in una peer review, non necessariamente nella pagina executive.
-
-## Ogni visual deve avere una frase verificabile
-
-Per ogni elemento importante completiamo:
+Per ogni elemento chiediamo:
 
 > **“Questo visual serve a mostrare che...”**
 
-Debole:
+“Conversion per paese” descrive soltanto il contenuto. “La Germania spiega circa due terzi del gap europeo, mentre gli altri mercati restano vicini alla baseline” dichiara invece il claim che il visual deve poter sostenere o smentire.
 
-> “Questo mostra la conversion per paese.”
+Questa frase ci costringe anche a controllare se la forma scelta rappresenta davvero la relazione richiesta. Se il claim riguarda la contribution al delta, un semplice ranking del livello corrente può essere il grafico sbagliato pur contenendo numeri corretti.
 
-Forte:
+## I cinque ruoli dell'evidenza
 
-> “Questo mostra che la Germania spiega circa due terzi del gap europeo, mentre gli altri mercati restano vicini alla baseline.”
+Nella Pack un elemento dovrebbe avere un compito riconoscibile. Può **orientare** mostrando che cosa sta accadendo, **confrontare** alternative o segmenti, **diagnosticare** dove si concentra il fenomeno, **rendere visibile una decision boundary** oppure **permettere verifica** di un claim. Queste categorie non sono una checklist da riempire: servono a evitare visual senza funzione.
 
-La seconda frase definisce un claim che il visual può sostenere o smentire.
+Togliere un grafico dalla pagina principale non deve però rendere opaco il ragionamento. Ogni decision artifact importante deve poter rimandare a definizione metrica, periodo, fonte, dataset/query, controlli principali e appendix pertinente.
 
-## La regola della provenance
-
-Togliere grafici dalla pagina principale non deve rendere il ragionamento opaco.
-
-Per questo ogni decision artifact dovrebbe poter rimandare a:
-
-- definizione metrica;
-- query/dataset;
-- periodo;
-- controlli principali;
-- eventuale appendix;
-- owner o documento analitico sorgente.
-
-La sintesi è affidabile quando possiamo risalire dalla headline alla prova.
-
-> **La visualizzazione esplicativa non è il riassunto del percorso fatto dall'analista. È la selezione minima di evidenze necessarie per valutare una decisione.**
+> **La visualizzazione esplicativa non è il riassunto del lavoro fatto dall'analista. È la selezione minima di evidenze necessarie per valutare la decisione senza perdere la possibilità di risalire alla prova.**
