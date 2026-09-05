@@ -1,103 +1,31 @@
-## 4.10 Moving average e smoothing: cambiare lente senza cambiare i dati
+## 4.10 Moving average e smoothing: scegliere la scala temporale senza cancellare l'evento
 
-Le serie operative sono rumorose.
+Le serie operative contengono oscillazioni che possono rendere difficile vedere un movimento di fondo. Una media mobile riduce parte di quel rumore, ma introduce immediatamente una scelta analitica: **quanta storia vogliamo incorporare in ogni punto e quale tipo di cambiamento rischiamo di rendere meno visibile?**
 
-Una media mobile può aiutare a rendere visibile il movimento di fondo, ma introduce una scelta: **quale parte del passato vogliamo comprimere in ogni punto?**
+Lo smoothing non produce nuova evidenza. Cambia la lente con cui osserviamo quella già disponibile.
 
-Lo smoothing non crea nuova evidenza. Cambia il modo in cui osserviamo quella già disponibile.
+Consideriamo un marketplace B2B che registra normalmente circa **8.200 ordini al giorno**. Martedì 14 maggio il volume scende a 5.900, circa **-28%**, e l'escalation è immediata. L'analista affianca alla serie grezza una media mobile a sette giorni, osserva i pagamenti completati nei giorni successivi e controlla il calendario degli incidenti operativi. Scopre che lunedì sera un provider bancario ha avuto un'interruzione e molte transazioni sono state completate mercoledì. La media mobile settimanale resta quasi invariata.
 
-### Caso simulato/composito — Il crollo del martedì
+Le due osservazioni non si contraddicono. Martedì è esistito un problema reale di esperienza e conversione temporanea; allo stesso tempo non emerge un deterioramento persistente del volume settimanale. La media mobile non “corregge” il crollo: lo colloca in una scala temporale diversa.
 
-Un marketplace B2B registra normalmente circa 8.200 ordini al giorno.
+## La finestra è una domanda implicita
 
-Martedì 14 maggio scende a 5.900: **-28%**.
+Una finestra di 7 giorni e una di 90 non sono versioni più o meno precise della stessa statistica. Una finestra breve reagisce rapidamente e conserva molta variabilità; una lunga stabilizza maggiormente il segnale ma risponde con ritardo ai cambiamenti recenti. La scelta riflette quindi un trade-off inevitabile tra **ridurre rumore e reagire velocemente**.
 
-L'escalation è immediata.
+La finestra dovrebbe seguire il ritmo del processo e della decisione. Una media a sette giorni può neutralizzare parte dell'effetto giorno-della-settimana in un e-commerce; una finestra di novanta giorni può essere utile per osservare un movimento di fondo ma quasi inutile per decidere se un problema operativo iniziato ieri richieda intervento.
 
-L'analista guarda però:
+Anche la direzione della finestra conta. Una **trailing moving average** usa soltanto il presente e il passato ed è quindi compatibile con un monitoraggio operativo. Una **centered moving average** usa osservazioni prima e dopo il punto rappresentato: può essere molto utile per descrivere storicamente la struttura, ma incorpora informazione che in quel momento non sarebbe stata ancora disponibile. Presentarla come indicatore “in tempo reale” introdurrebbe implicitamente informazione futura, un problema che tornerà nel Capitolo 7 quando parleremo di forecasting e leakage temporale.
 
-- serie giornaliera grezza;
-- media mobile a 7 giorni;
-- pagamenti completati nei giorni successivi;
-- calendario degli incidenti operativi.
+## Il rischio non è soltanto statistico, ma narrativo
 
-Scopre che lunedì sera un importante provider bancario ha avuto un'interruzione e molte transazioni sono state completate mercoledì.
+Più una serie viene smussata, più diventa visivamente ordinata. Questa proprietà può trasformarsi in un rischio comunicativo. Un outage di due ore può scomparire nella media giornaliera, un picco di difettosità nella media settimanale, una brusca inversione recente in una finestra di novanta giorni.
 
-La media mobile a 7 giorni resta quasi invariata.
+Per questo nell'EDA è spesso utile mostrare insieme serie originale, versione smussata, finestra utilizzata ed eventi di business rilevanti. Il lettore può così vedere sia la variabilità che abbiamo compresso sia il movimento che volevamo rendere visibile.
 
-La conclusione corretta è doppia:
+NIST descrive le moving average come una tecnica semplice di smoothing per mettere in evidenza la componente sottostante di una serie, ma la scelta dello smoothing dipende dal comportamento del processo.[^nist-smoothing] Una linea smussata che sale non dimostra quindi l'esistenza di un trend stabile né dice quanto durerà. In questo capitolo rimane una lente esplorativa; l'analisi formale della struttura temporale appartiene al Capitolo 7.
 
-- martedì è esistito un problema reale di esperienza e conversione temporanea;
-- non emerge un deterioramento persistente del volume settimanale.
+Questa stessa idea di sensitivity analysis rispetto alla lente usata si applica anche alle osservazioni estreme. La prossima sezione non chiederà se un outlier sia “vero” — problema già affrontato nel Capitolo 3 — ma quanto il pattern dipenda da pochi casi reali.
 
-Lo smoothing non cancella l'incidente. Lo colloca nella scala temporale corretta.
-
-### La finestra determina la domanda
-
-Una finestra di 7 giorni e una di 90 giorni non sono due versioni più o meno "precise" della stessa statistica.
-
-Rispondono a domande differenti.
-
-**Finestra breve**
-
-- reagisce velocemente;
-- conserva più rumore;
-- utile per cambiamenti recenti.
-
-**Finestra lunga**
-
-- stabilizza maggiormente;
-- reagisce lentamente;
-- utile per il movimento di fondo;
-- può mascherare cambiamenti recenti importanti.
-
-La finestra dovrebbe riflettere frequenza naturale del fenomeno e orizzonte decisionale.
-
-### Trailing vs centered moving average
-
-Per il monitoraggio operativo è comune usare una **trailing moving average**: il valore di oggi usa soltanto oggi e i giorni precedenti.
-
-Una **centered moving average** usa invece osservazioni prima e dopo il punto centrale. È utile per descrivere storicamente la struttura, ma usa informazione futura rispetto al giorno rappresentato.
-
-Quindi non dovrebbe essere presentata come se fosse una misura disponibile in tempo reale.
-
-Questa distinzione diventerà ancora più importante quando parleremo di forecasting e leakage temporale.
-
-### Lo smoothing introduce ritardo
-
-Se una metrica cambia davvero di livello oggi, una media mobile incorpora ancora molti valori del vecchio regime.
-
-Più lunga è la finestra, più lentamente il valore smussato si adegua.
-
-Questo produce una tensione inevitabile:
-
-**ridurre rumore ↔ reagire rapidamente**.
-
-Non esiste una finestra universalmente ottimale.
-
-### Il rischio cosmetico
-
-Lo smoothing diventa pericoloso quando viene usato per rendere il grafico più gradevole o rassicurante.
-
-Un outage di due ore può scomparire in una media giornaliera. Un picco di difettosità può essere quasi invisibile nella media settimanale. Una brusca inversione recente può apparire modesta in una finestra di 90 giorni.
-
-Per questo nell'EDA conviene spesso mostrare:
-
-- serie originale;
-- versione smussata;
-- finestra usata;
-- eventi importanti annotati.
-
-NIST descrive le moving average come un metodo semplice di smoothing per rendere più visibile la componente sottostante di una serie, ma la scelta della tecnica dipende dal comportamento del processo.[^nist-smoothing]
-
-### Non usare la media mobile come prova di trend
-
-Una linea smussata che sale non dimostra che esista un trend stabile nel senso statistico, né dice quanto durerà.
-
-In questo capitolo la usiamo come strumento esplorativo.
-
-L'analisi formale di trend, stagionalità, autocorrelazione e forecast appartiene al Capitolo 7.
-
-> **Lo smoothing è una lente. Una lente può chiarire una struttura oppure nascondere un dettaglio decisivo: dobbiamo sapere quale dei due effetti stiamo producendo.**
+> **Lo smoothing è una lente: può chiarire il movimento di fondo oppure nascondere l'evento che conta. La scelta della finestra decide quale dei due effetti privilegiamo.**
 
 [^nist-smoothing]: NIST/SEMATECH, *What are Moving Average or Smoothing Techniques?*. https://www.itl.nist.gov/div898/handbook/pmc/section4/pmc42.htm
