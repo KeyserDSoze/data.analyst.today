@@ -1,10 +1,8 @@
 ## 3.16 Data Readiness Review: pronto, pronto con caveat o non pronto?
 
-Una checklist è utile solo se conduce a una decisione.
+Il capitolo ha costruito un modo di leggere il dato; adesso serve un artefatto che trasformi quella lettura in una decisione operativa. La **Data Readiness Review** non certifica che il dataset sia perfetto. Stabilisce se le proprietà che contano per l'Analytical Brief sono comprese abbastanza bene da iniziare l'analisi senza nascondere rischi materiali.
 
-Prima di iniziare l'analisi vera e propria, raccogliamo quindi le verifiche del capitolo in una **Data Readiness Review**.
-
-L'obiettivo non è certificare che il dataset sia perfetto. È stabilire se le proprietà che contano per l'Analytical Brief sono comprese e sufficientemente affidabili.
+Qui la struttura a checklist è intenzionale: il lettore deve poterla riutilizzare prima di un progetto reale. Le domande non sono però indipendenti. Insieme devono portare a un verdetto esplicito e motivato.
 
 ### 1. Rappresentazione
 
@@ -65,9 +63,7 @@ L'obiettivo non è certificare che il dataset sia perfetto. È stabilire se le p
 
 ### 8. Impatto sulla decisione
 
-Questa è la parte che distingue il controllo del dato dalla semplice pulizia.
-
-Per ogni issue importante chiedi:
+Questa è la parte che impedisce alla checklist di diventare semplice housekeeping. Per ogni issue importante chiedi:
 
 > **Se questo problema fosse peggiore di quanto pensiamo, quale conclusione potrebbe cambiare?**
 
@@ -75,9 +71,9 @@ E poi:
 
 > **Quanto deve essere affidabile questa proprietà per il rischio della decisione che stiamo supportando?**
 
-Una mancanza del 5% può essere irrilevante per una metrica aggregata e inaccettabile se riguarda proprio il segmento su cui dobbiamo intervenire.
+Un missing del 5% può essere irrilevante per una metrica aggregata e inaccettabile se riguarda proprio il segmento su cui dobbiamo intervenire. La readiness dipende quindi dall'uso, non da una soglia universale di “pulizia”.
 
-### Il verdetto
+## Il verdetto
 
 Alla fine della review assegna uno stato esplicito.
 
@@ -87,37 +83,22 @@ Le proprietà critiche sono comprese, i controlli sono coerenti e le limitazioni
 
 **PRONTO CON CAVEAT**
 
-Il dato può essere usato, ma soltanto entro limiti documentati.
-
-Esempi:
-
-- escludere le ultime 24 ore per latenza;
-- non confrontare periodi precedenti a una migrazione;
-- evitare una segmentazione con missing non casuali;
-- riportare una sensibilità rispetto a una regola di deduplica.
+Il dato può essere usato, ma soltanto entro limiti documentati. Per esempio: escludere le ultime 24 ore per latenza, non confrontare periodi precedenti a una migrazione, evitare una segmentazione con missing non casuali oppure riportare una sensitivity analysis rispetto a una regola di deduplica.
 
 **NON PRONTO**
 
-Esiste un'incertezza sul dato abbastanza grande da rendere non difendibile la conclusione.
+Esiste un'incertezza sul dato abbastanza grande da rendere non difendibile la conclusione. In questo caso il deliverable dell'analista può essere proprio la diagnosi del problema e il piano per rendere la fonte utilizzabile.
 
-In questo caso il deliverable dell'analista può essere proprio la diagnosi del problema e il piano necessario per rendere il dato utilizzabile.
+### Caso simulato — Il Black Friday confrontato con il giorno sbagliato
 
-### Caso simulato — il Black Friday confrontato con il giorno sbagliato
+Un analyst prepara un report sul Black Friday. Query, importi e conteggi sono corretti. Durante la review emerge però che il confronto anno su anno usa gli stessi numeri di giorno del mese invece di allineare l'effettivo evento promozionale, che cadeva in date differenti.
 
-Un analyst prepara un report sul Black Friday. Query, importi e conteggi sono corretti.
+Il dataset è tecnicamente sano. Il confronto non è fit for purpose.
 
-Durante la review emerge però che il confronto anno su anno usa gli stessi numeri di giorno del mese invece di allineare l'effettivo evento promozionale, che cadeva in date differenti.
-
-Il dataset è tecnicamente sano.
-
-Il confronto non è fit for purpose.
-
-Questo ricorda un punto decisivo:
-
-> **Data readiness non significa soltanto "il dato non è corrotto". Significa "il dato, così definito e confrontato, è adatto alla domanda".**
-
-La review chiude il ponte tra Capitolo 2 e Capitolo 3:
+Questo è il punto che chiude il ponte con il Capitolo 2: la readiness non riguarda soltanto la corruzione del dato, ma la coerenza tra **domanda, rappresentazione e confronto**.
 
 **Analytical Brief → Data Readiness Review → Analisi**
 
-Quando questi primi due artefatti sono solidi, tutto ciò che viene dopo diventa più veloce e soprattutto più difendibile.
+Quando i primi due artefatti sono solidi, l'esecuzione successiva diventa non soltanto più veloce, ma più difendibile. Se il brief cambia durante l'indagine, anche il verdetto di readiness deve essere riconsiderato: un dataset pronto per una domanda non è automaticamente pronto per la successiva.
+
+> **Data readiness non significa “il dato non è corrotto”. Significa “questo dato, con questi limiti, è adatto a questa domanda”.**
