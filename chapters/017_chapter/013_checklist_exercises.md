@@ -1,383 +1,272 @@
-## 17.12 Capstone gate, rubric ed esercizi
+## 17.12 Capstone Gate, rubric ed esercizi
 
-Questo capitolo non va memorizzato come una collezione di ricette.
+Questo capitolo non va memorizzato come una tabella `problema → tecnica`. Se dopo i casi pensassimo “churn = modello”, “tempo = forecasting”, “release = A/B test”, avremmo costruito una nuova scorciatoia proprio dove volevamo imparare a ragionare.
 
-Se dopo averlo letto pensassimo:
+Il capstone deve invece rispondere a una domanda:
 
-> “quando vedo churn uso il modello; quando vedo tempo uso forecasting; quando vedo una release uso A/B testing”
+> **Quale sequenza minima di evidenze ha il diritto di cambiare questa decisione, e quando altra analisi smette di valere il suo costo?**
 
-avremmo mancato il punto.
+Per renderla operativa conserviamo tre artefatti strutturati: il **Capstone Gate**, un **Method Budget** e la **Capstone Rubric**.
 
-Il lavoro reale richiede prima di capire **quale decisione è aperta e quale tipo di evidenza ha il diritto di cambiarla**.
+## Capstone Gate
 
-## Il Capstone Gate
-
-Prima di consegnare un'analisi end-to-end, il team deve poter rispondere a nove domande.
+Prima di consegnare un'analisi end-to-end, il team deve poter rispondere a questi nove blocchi.
 
 ### 1. Decisione
 
 - Quale scelta concreta è aperta?
-- Chi può prenderla?
-- Entro quando?
-- Qual è l'alternativa `do nothing`?
+- Chi può prenderla ed entro quando?
+- Qual è `business as usual / do nothing`?
 
 ### 2. Failure cost
 
-- Qual è il costo di un falso allarme?
-- Qual è il costo di non intervenire?
-- Qual è il costo dell'attesa?
-- Il downside è reversibile?
+- Quanto costa agire erroneamente?
+- Quanto costa non agire?
+- Quanto costa aspettare?
+- Quale downside è irreversibile o ha grande blast radius?
 
-### 3. Claim
+### 3. Claim necessario
 
-Stiamo cercando di sostenere un claim:
-
-- descrittivo;
-- diagnostico;
-- predittivo;
-- causale;
-- di treatment effect;
-- economico/decisionale?
-
-Il metodo scelto ha davvero il diritto di sostenere quel claim?
+- Serve descrivere, diagnosticare, prevedere, identificare un effetto causale/treatment effect o confrontare economics?
+- La decisione richiede davvero quel livello di claim?
 
 ### 4. Readiness
 
-- Grain corretto?
-- Definizione stabile?
-- Denominatore corretto?
-- Freschezza sufficiente?
-- Comparabilità temporale?
-- Measurement change?
-- Selection/leakage?
-- Reconciliation con una fonte indipendente?
+- Grain, identità e denominatore sono corretti?
+- Definizione e time semantics sono stabili?
+- Freshness/maturity sono sufficienti?
+- Esistono measurement change, selection, leakage, exposure o comparability failure?
+- Il dato riconcilia con una fonte indipendente quando il rischio lo richiede?
 
-### 5. Alternative
+### 5. Ipotesi e alternative
 
-- Abbiamo considerato almeno una spiegazione concorrente seria?
+- Esiste almeno una spiegazione concorrente seria?
 - Abbiamo cercato evidence against?
-- Esiste una soluzione più semplice?
-- Abbiamo incluso `do nothing`, pilot o wait-for-information quando sensati?
+- Esiste un'azione più piccola, reversibile o economica?
+- `Do nothing`, `pilot` e `wait for information` sono stati considerati quando sensati?
 
-### 6. Method gate
+### 6. Method Gate
 
-Per ogni tecnica usata dobbiamo completare:
+Per ogni tecnica proposta completiamo:
 
 > **“Se non facessimo questa analisi, quale rischio decisionale rimarrebbe aperto?”**
 
-Se non sappiamo rispondere, quella tecnica è candidata a essere eliminata.
+Se non sappiamo rispondere, la tecnica è candidata a essere eliminata.
 
 ### 7. Stop rule e switching condition
 
-- Quando l'evidenza è sufficiente per decidere?
-- Quale nuova informazione cambierebbe scelta?
-- Quale soglia produce `PILOT`, `WAIT`, `NO ACTION` o `BLOCKED`?
+- Quando l'evidenza è sufficiente per la decisione corrente?
+- Quale informazione potrebbe cambiare il ranking?
+- Qual è la soglia operativa che cambia stato?
+
+Gli stati ammessi sono deliberatamente più ricchi di `GO / NO-GO`:
+
+```text
+DECIDE
+PILOT / STAGE
+WAIT FOR X
+BUY INFORMATION
+NO ACTION / ABANDON
+BLOCKED
+NOT IDENTIFIED
+```
+
+`NOT IDENTIFIED` significa che il claim richiesto non è sostenibile con il disegno disponibile. Non è un invito a inventare una stima più sofisticata.
 
 ### 8. Decision quality
 
-- Valore e downside sono espliciti?
-- Reversibilità e option value sono considerate?
-- La raccomandazione è robusta a scenari plausibili?
-- Esiste un owner dell'azione?
+- Value e downside sono incrementali rispetto alla baseline?
+- Reversibilità e option value sono esplicite?
+- La recommendation è robusta a scenari plausibili?
+- Quale owner accetta il trade-off?
 
 ### 9. Communication integrity
 
-- Fatti, inferenze e unknown sono separati?
-- Il claim nella headline ha la stessa forza del claim nell'analisi?
-- L'incertezza decision-critical è visibile?
-- La visualizzazione può indurre un'interpretazione più forte dell'evidenza?
-- La decisione richiesta è esplicita?
+- Observed, inferred e unknown restano distinti?
+- La headline ha la stessa forza del claim analitico?
+- L'incertezza che attraversa la decision boundary è visibile?
+- La visualizzazione può far sembrare più forte l'evidenza?
+- La decisione richiesta oggi è esplicita?
 
-## La Capstone Rubric
+## Method Budget
 
-Un caso non viene valutato dal numero di pagine o tecniche usate.
+Un capstone può fallire anche per eccesso di rigore apparente. Prima della prima decisione assegniamo quindi un **method budget**:
 
-Possiamo usare una rubrica da 0 a 3 per dimensione.
+```text
+Decision deadline:
+Maximum methods/deliverables before first decision:
+Current evidence already sufficient for:
+Unclosed decision risks:
+Next method candidate:
+Risk closed by that method:
+Cost/time to obtain it:
+Stop state if not obtained:
+```
+
+Il budget non vieta di approfondire. Costringe a dimostrare il valore marginale del prossimo metodo.
+
+## Capstone Rubric
+
+Un caso non viene valutato dal numero di pagine o tecniche. Una rubrica da 0 a 3 rende esplicito che anche la **complessità minima sufficiente** è una competenza.
 
 | Dimensione | 0 | 1 | 2 | 3 |
 |---|---|---|---|---|
-| Decision framing | nessuna decisione | decisione vaga | decisione esplicita | decisione + alternative + timing |
+| Decision framing | nessuna decisione | vaga | esplicita | decisione + alternative + timing |
 | Data semantics | assunte | controlli minimi | metriche/grain verificati | reconciliation + failure mode espliciti |
 | Hypothesis discipline | una storia | alternative deboli | ipotesi concorrenti | evidence for/against + falsification |
-| Method selection | tool-first | tecnica plausibile | tecnica coerente col claim | tecnica minima sufficiente + method gate |
+| Method selection | tool-first | plausibile | coerente col claim | **minimo sufficiente + method gate** |
 | Uncertainty | ignorata | caveat generici | quantificata/descritta | collegata a switching threshold |
 | Decision economics | assente | beneficio isolato | costi/benefici | downside + reversibilità + option value |
-| Stop rule | assente | implicita | esplicita | stop/degrade/escalate condizionali |
-| Communication | cronologia analisi | summary | decision-first | claim calibrato + evidence hierarchy + provenance |
-| Outcome review | assente | KPI generico | metriche coerenti | review di decision quality separata dalla fortuna |
+| Stop rule | assente | implicita | esplicita | stato + trigger + next evidence |
+| Communication | cronologia | summary | decision-first | claim calibrato + evidence hierarchy + provenance |
+| Outcome review | assente | KPI generico | metriche coerenti | decision/execution/outcome separati |
 
-Un punteggio alto non richiede di usare tutti i deliverable.
+Una soluzione sovra-ingegnerizzata può quindi perdere punti in method selection anche se usa correttamente molte tecniche.
 
-Anzi, una soluzione sovra-ingegnerizzata può perdere punti in method selection.
+---
 
 ## Esercizio 1 — “La crescita non si vede nella cassa”
 
-Un'azienda B2B SaaS riporta:
+Un B2B SaaS riporta ARR **+18%**, new logo **+27%**, cash collection **-9%**, DSO **47 → 66 giorni**, churn stabile. Il CFO chiede perché la crescita non si veda nella cassa.
 
-- ARR `+18%`;
-- new logo `+27%`;
-- cash collection `-9%`;
-- DSO `47 → 66 giorni`;
-- churn stabile.
+Costruisci Capstone Routing Canvas ed Evidence Ledger. Definisci decisione, failure cost, almeno tre spiegazioni concorrenti, il primo reconciliation check, i deliverable realmente necessari e quelli che non useresti ancora. La stop rule deve specificare quale evidenza è sufficiente per una prima azione su billing/collection o per concludere che serve altra informazione.
 
-Il CFO chiede:
+Possibili aree da investigare sono billing terms, annual vs monthly, invoice timing, collection, customer mix, discount e differenza tra revenue recognition e cash. L'ordine, però, deve derivare dalla decisione.
 
-> “Perché la crescita non si vede nella cassa?”
-
-### Compito
-
-Non partire da una tecnica.
-
-Compila:
-
-1. decisione aperta;
-2. failure cost;
-3. tre spiegazioni concorrenti;
-4. primo reconciliation check;
-5. deliverable necessari;
-6. deliverable che **non** useresti ancora;
-7. stop rule;
-8. headline che potresti sostenere solo dopo l'analisi.
-
-Possibili aree da investigare includono billing terms, annual vs monthly, invoice timing, collection, customer mix, discount e differenza tra revenue recognition e cash.
-
-Ma l'ordine dell'indagine deve derivare dalla decisione.
+---
 
 ## Esercizio 2 — “Dopo la release la conversione è scesa”
 
 Dopo una release mobile:
 
-- checkout conversion `-4,2%`;
-- crash rate `+0,3 pp`;
-- traffic mix apparentemente stabile;
-- Android stabile;
-- iOS `-7,1%`;
-- payment failures `+5%`.
+```text
+checkout conversion -4,2%
+crash rate +0,3 pp
+Android stabile
+iOS -7,1%
+payment failures +5%
+traffic mix apparentemente stabile
+```
 
-Il VP Product chiede:
-
-> “Rollback?”
-
-### Compito
-
-Definisci:
-
-- cosa deve essere vero per autorizzare un rollback immediato;
-- quali controlli faresti nei primi 30 minuti;
-- quali evidenze distinguono release, payment provider e tracking;
-- quale azione è reversibile;
-- quando diresti `ROLLBACK`, `HOLD`, `CONTINUE` o `NOT IDENTIFIED`.
+Il VP Product chiede “Rollback?”. Definisci i controlli dei primi 30 minuti e ciò che deve essere vero per autorizzare rollback immediato. Distingui release, payment provider, tracking e mix; indica quando lo stato deve essere `ROLLBACK`, `HOLD`, `CONTINUE` o `NOT IDENTIFIED`.
 
 Non è obbligatorio arrivare a una causa unica.
 
+---
+
 ## Esercizio 3 — “Questa campagna è eccezionale?”
 
-Una campagna mostra ROAS `6,4x`.
+Una campagna mostra ROAS **6,4x**, ma il 72% dei convertiti era già cliente, branded search cresce nello stesso periodo, non esiste holdout e gli utenti più attivi ricevono più exposure.
 
-Ma:
+Costruisci il Routing Canvas. Quale claim sostiene il ROAS osservato? Quale claim serve per triplicare il budget? Quale evidenza manca? Quando un esperimento ha abbastanza Value of Information da giustificare l'attesa? Che cosa comunicheresti oggi, prima del test?
 
-- 72% dei convertiti era già cliente;
-- branded search cresce nello stesso periodo;
-- non esiste holdout;
-- la campagna viene mostrata più spesso agli utenti più attivi.
-
-Il CMO propone di triplicare il budget.
-
-### Compito
-
-Costruisci un Capstone Routing Canvas.
-
-In particolare:
-
-- qual è il claim che il ROAS può sostenere?
-- quale claim serve per triplicare il budget?
-- quale evidenza manca?
-- quando un esperimento avrebbe valore informativo sufficiente da giustificare l'attesa?
-- cosa comunicheresti oggi, prima del test?
+---
 
 ## Esercizio 4 — “Quale forecast è migliore?”
 
 Due forecast di domanda:
 
-- A: MAE 920 unità;
-- B: MAE 1.040 unità.
+```text
+A: MAE 920 unità, sottostima i picchi
+B: MAE 1.040 unità, sovrastima leggermente i picchi
+stock-out cost = 4 × overstock cost per unità
+```
 
-A sottostima i picchi; B li sovrastima leggermente.
+Definisci decisione operativa, orizzonte, loss function di business, informazioni mancanti, ruolo di intervalli/quantili e switching condition tra le policy. Il deliverable non è obbligato a scegliere il modello con MAE minore.
 
-Il costo di stock-out è quattro volte il costo di overstock per unità.
-
-### Compito
-
-Non scegliere subito A o B.
-
-Definisci:
-
-1. decisione operativa;
-2. orizzonte;
-3. loss function di business;
-4. informazioni mancanti;
-5. eventuale ruolo di intervalli/quantili;
-6. switching condition tra le due policy.
+---
 
 ## Esercizio 5 — “Abbiamo 20.000 clienti a rischio”
 
-Un modello identifica 20.000 clienti ad alto rischio.
+Un modello identifica 20.000 clienti high-risk; Retention può contattarne soltanto 4.000.
 
-Il team retention può contattarne soltanto 4.000.
+Progetta una policy migliore del ranking per churn probability considerando valore cliente, costo intervento, capacity, treatment opportunity, non-persuadable cases e constraint/fairness rilevanti. Specifica quale parte richiede prediction e quale richiede causal evidence. Indica anche quale esperimento **non** faresti se la capacità fosse già allocabile in modo robusto senza conoscere un treatment effect più preciso.
 
-### Compito
-
-Progetta una policy migliore del ranking per churn probability.
-
-Considera:
-
-- valore cliente;
-- costo intervento;
-- capacità;
-- probabilità di risposta;
-- effetto incrementale;
-- casi non persuadibili;
-- fairness/constraint operative rilevanti.
-
-Poi specifica quale parte è predizione e quale richiede evidenza causale.
+---
 
 ## Esercizio 6 — “Più inventory, più stock-out”
 
-Un'azienda vede:
+Un'azienda osserva inventory value **+16%**, fill rate **-3 pp**, expedite cost **+28%**; nove componenti spiegano il **61% del production downtime**. Il COO propone +10% su tutti i target di stock.
 
-- inventory value `+16%`;
-- fill rate `-3 pp`;
-- expedite cost `+28%`;
-- 9 componenti spiegano il 61% del production downtime.
+Costruisci una risposta che distingua aggregato/distribuzione, variabilità, criticità, lead time, downtime cost e working capital. Dichiara esplicitamente quale analisi **non aspetteresti** prima di intervenire sui nove componenti critici e perché l'attesa avrebbe scarso valore marginale.
 
-Il COO propone di aumentare del 10% tutti i target di stock.
-
-### Compito
-
-Costruisci una risposta che distingua:
-
-- aggregato e distribuzione;
-- variabilità;
-- criticità;
-- lead time;
-- costo del fermo;
-- working capital;
-- scenario decisionale.
-
-Dichiara anche quale analisi **non** aspetteresti prima di intervenire sui nove componenti più critici.
+---
 
 ## Esercizio 7 — “Il test è significativo”
 
-Un esperimento mostra:
+Un esperimento mostra uplift **+1,1 pp**, `p = 0,012`, SRM significativo, guardrail revenue positivo e latency **+9%**.
 
-- uplift `+1,1 pp`;
-- p-value `0,012`;
-- SRM significativo;
-- guardrail revenue positivo;
-- latency peggiorata del 9%.
+Assegna uno stato tra `APPROVED`, `APPROVED WITH CAVEATS`, `PROVISIONAL` e `BLOCKED`. Poi indica quale evidence gate deve cambiare stato. La risposta deve distinguere la qualità del primary effect dalla validità del comparison.
 
-Il team vuole fare rollout.
+---
 
-### Compito
-
-Assegna uno stato:
-
-- `APPROVED`;
-- `APPROVED WITH CAVEATS`;
-- `PROVISIONAL`;
-- `BLOCKED`.
-
-Spiega quali gate devono essere superati per cambiare stato.
-
-## Esercizio finale — Il caso senza etichetta
+## Esercizio 8 — Il caso senza etichetta
 
 Un marketplace osserva contemporaneamente:
 
-- ordini `+9%`;
-- margin/order `-14%`;
-- NPS `-6 punti`;
-- nuovi seller `+35%`;
-- refund rate `+2,1 pp`;
-- delivery time `+0,6 giorni`;
-- marketing spend `+22%`;
-- customer support cost `+19%`.
+```text
+ordini +9%
+margin/order -14%
+NPS -6 punti
+nuovi seller +35%
+refund rate +2,1 pp
+delivery time +0,6 giorni
+marketing spend +22%
+customer support cost +19%
+```
 
-Il CEO chiede:
+Il CEO chiede: **“La crescita è sana?”**
 
-> **“La crescita è sana?”**
+Prepara un **Capstone Case File** contenente decisione/owner, `do nothing`, failure cost, claim necessario, metric/data contract minimo, ipotesi concorrenti, Evidence Ledger, method gate, stop rule, alternative, switching condition, Decision Record sintetico, Decision Communication Pack da una pagina e outcome review.
 
-Non viene fornito alcun metodo suggerito.
+### Vincolo — Method Budget
 
-### Deliverable richiesto
+Prima della **prima decisione** non puoi usare più di **sei deliverable canonici**. Per ciascuno devi scrivere quale rischio chiude. I deliverable esclusi devono essere motivati con la stessa attenzione di quelli inclusi.
 
-Prepara un **Capstone Case File** con:
+Dopo la prima decisione puoi attivare altri metodi soltanto se emerge una nuova decisione o un nuovo failure risk.
 
-1. decisione e owner;
-2. `do nothing`;
-3. failure cost;
-4. claim necessario;
-5. metric/data contract minimo;
-6. ipotesi concorrenti ordinate;
-7. evidence ledger `observed / inferred / unknown`;
-8. deliverable che attiveresti;
-9. deliverable che non attiveresti e perché;
-10. method gate per ogni tecnica scelta;
-11. stop rule;
-12. alternative;
-13. switching condition;
-14. Decision Record sintetico;
-15. Decision Communication Pack da una pagina;
-16. outcome review.
+---
 
-### Vincolo
+## Esercizio 9 — Dal capstone al sistema operativo
 
-Non puoi usare più di **sei deliverable canonici** prima della prima decisione.
+Riprendi uno degli esercizi precedenti e immagina che la stessa decisione debba essere presa **ogni lunedì alle 08:30**.
 
-Il vincolo è intenzionale.
+Non ridisegnare ancora l'architettura. Elenca invece ciò che non può più restare nella memoria dell'analista:
 
-Costringe a prioritizzare il rischio invece di trasformare il capstone in una dimostrazione enciclopedica.
+- metric/source-of-truth contract;
+- owner;
+- freshness/correctness expectation;
+- readiness gate;
+- fallback/degraded mode;
+- alert/escalation;
+- change policy;
+- cost-to-serve;
+- review/retirement condition.
+
+Questo è il ponte al Capitolo 18: la stessa capacità che nel capstone era un progetto diventa un **servizio analitico ricorrente**.
 
 ## Chiusura del capitolo
 
-I casi del capitolo attraversano domini diversi, ma la struttura profonda converge:
+I casi hanno attraversato vendite, churn, pricing, marketing, supply chain, product analytics, forecasting, experimentation, anomaly investigation e unit economics. Non convergono su una tecnica. Convergono su una responsabilità:
 
 ```text
 messy question
-→ decision
-→ failure cost
+→ decision + failure cost
 → claim needed
 → readiness
-→ competing explanations
-→ method gate
-→ evidence
+→ cheapest discriminating evidence
+→ method escalation only if needed
 → alternatives
-→ uncertainty
+→ stop state
 → decision
 → communication
 → outcome review
 ```
 
-Non esiste una tecnica obbligatoria in ogni passaggio.
+Un analista maturo sa riconoscere quale evidenza manca, quanto costa ottenerla, se può davvero cambiare la scelta e quando il prossimo metodo sarebbe soltanto ritardo o complessità.
 
-Esiste invece una responsabilità costante: evitare che il livello di certezza cresca più velocemente dell'evidenza.
+La domanda finale non è più “quale tecnica hai usato?”. È:
 
-Un analista maturo non riconosce soltanto pattern nei dati.
+> **Perché questa sequenza di evidenze era sufficiente per questa decisione, che cosa avrebbe cambiato la scelta e che cosa dovremmo rendere operativo se dovessimo rifarla ogni settimana?**
 
-Riconosce:
-
-- quale tipo di evidenza manca;
-- quanto costa ottenerla;
-- se quella informazione può davvero cambiare la decisione;
-- quando una risposta è sufficientemente affidabile per agire;
-- quando è professionale dire `non ancora`;
-- quando altra analisi sarebbe soltanto ritardo o complessità.
-
-La domanda finale del capstone non è:
-
-> “Quale tecnica hai usato?”
-
-È:
-
-> **“Perché questa sequenza di evidenze era sufficiente per questa decisione, e cosa ti avrebbe fatto scegliere diversamente?”**
-
-Se sappiamo rispondere, il libro ha raggiunto uno dei suoi obiettivi principali.
+È esattamente la domanda da cui parte il Capitolo 18.
