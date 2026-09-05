@@ -1,70 +1,16 @@
 ## 13.5 Locale, shared compute e cloud: scegliere dove deve vivere l'esecuzione
 
-Il Capitolo 12 ha già spiegato l'architettura dati.
+Il Capitolo 12 ha già discusso architettura e piattaforme. Qui non dobbiamo decidere se un'azienda “deve andare in cloud”. La domanda per l'analista è molto più concreta: **questo calcolo può vivere responsabilmente sul mio computer oppure ha acquisito obblighi che richiedono un ambiente condiviso e gestito?**
 
-Qui non dobbiamo decidere se l'azienda “deve andare in cloud”.
+La risposta non dipende solo dai gigabyte. Scala significa anche frequenza, numero di utenti, concorrenza, sorgenti, sensibilità del dato, durata, dipendenze downstream e bisogno di recovery. Un dataset da 5 GB può essere perfettamente gestibile localmente per una EDA una tantum e inadatto allo stesso laptop se deve essere elaborato ogni notte, con credenziali centralizzate, output per 200 utenti e un orario di disponibilità promesso.
 
-Dobbiamo rispondere a una domanda più vicina al lavoro dell'analista:
+Un retailer costruisce un'analisi settimanale su **40 milioni di righe**. Sul laptop dell'analista senior gira in 55 minuti. Poi il volume arriva a **250 milioni di righe**, tre persone devono eseguirla, Finance usa automaticamente l'output, il job diventa notturno e Security vieta copie locali dei dati cliente. Il problema non è diventato improvvisamente “big data”: è diventato un problema di **shared execution, sicurezza, scheduling, ownership e affidabilità**.
 
-> **Questo calcolo può vivere responsabilmente sul mio computer oppure ha bisogno di un ambiente condiviso e gestito?**
+A quel punto spostare il workload su infrastruttura gestita può ridurre il rischio complessivo anche se una macchina personale più potente sarebbe ancora tecnicamente capace di eseguire il calcolo.
 
-La differenza non dipende soltanto dai gigabyte.
+### Non confondere cloud con complessità distribuita
 
-### La scala ha più dimensioni
-
-Quando diciamo “scala” possiamo intendere:
-
-- volume di dati;
-- frequenza di esecuzione;
-- numero di utenti;
-- concorrenza;
-- numero di sorgenti;
-- sensibilità del dato;
-- durata del processo;
-- dipendenze downstream;
-- necessità di compute elastico.
-
-Un dataset da 5 GB può essere perfettamente gestibile localmente per una EDA una tantum.
-
-Lo stesso dataset può richiedere un ambiente condiviso se deve essere elaborato ogni notte, con credenziali centralizzate, output per 200 utenti e SLA mattutino.
-
-### Caso simulato/composito — il processo che funziona finché lo esegue una persona
-
-Un retailer costruisce un'analisi settimanale su 40 milioni di righe.
-
-Sul laptop dell'analista senior gira in 55 minuti.
-
-Dopo alcuni mesi:
-
-- tre persone devono eseguirla;
-- il volume cresce a 250 milioni di righe;
-- il job diventa notturno;
-- Finance usa automaticamente l'output;
-- Security vieta copie locali dei dati cliente.
-
-Il problema non è diventato improvvisamente “big data”.
-
-È diventato un problema di:
-
-- **shared execution**;
-- sicurezza;
-- scheduling;
-- ownership;
-- affidabilità.
-
-Qui spostare il workload su infrastruttura gestita può ridurre il rischio complessivo anche se un laptop più potente sarebbe ancora tecnicamente capace di eseguire il calcolo.
-
-### Non usare “cloud” come sinonimo di distribuito
-
-Molte analisi possono girare in cloud su una singola istanza o direttamente nel warehouse senza usare framework distribuiti.
-
-La sequenza di maturità non è necessariamente:
-
-```text
-laptop → cluster distribuito
-```
-
-Può essere:
+La migrazione non deve saltare dal laptop a un cluster distribuito. Una progressione plausibile può essere:
 
 ```text
 laptop
@@ -74,79 +20,16 @@ laptop
 → distributed processing solo se necessario
 ```
 
-Ogni gradino dovrebbe essere giustificato da un vincolo reale.
+Ogni gradino deve rispondere a un vincolo reale.
 
-### Caso simulato/composito — dashboard da €27.000 al mese
+Lo stesso criterio vale sui costi. Una dashboard che interroga una fact da miliardi di righe, ha 34 visualizzazioni e genera scansioni a ogni interazione può arrivare a circa **€27.000 al mese** nel nostro caso simulato. La prima risposta non dovrebbe essere “cambiamo cloud provider”, ma chiedere perché la superficie di consumo continua a ricostruire la stessa informazione dal livello più costoso. Pre-aggregazioni, pruning, caching o serving model dedicati possono cambiare il problema molto più del logo del provider.
 
-Una dashboard interroga direttamente una fact event da miliardi di righe.
+### Local-first finché resta responsabile
 
-Ha 34 visualizzazioni e ogni interazione genera nuove scansioni.
+Lavorare localmente è sensato se il dataset è gestibile, il lavoro è esplorativo, non esistono vincoli che vietano copie locali, l'esecuzione non è un servizio e il costo di setup centrale non crea valore. La semplicità locale è un vantaggio reale.
 
-Il costo mensile cresce fino a circa €27.000.
+I segnali che spingono verso shared/managed execution sono invece di natura organizzativa oltre che tecnica: scheduling, più utenti, segreti gestiti centralmente, dati sensibili, consumer downstream, workload concorrenti, recovery, grandi scansioni ripetute e bisogno di compute elastico.
 
-La risposta sbagliata è:
+Il Tooling Decision Record dovrebbe quindi descrivere dove gira oggi il workload, quali vincoli di residency e sicurezza esistono, frequenza, utenti, dipendenze downstream, costo di esecuzione e **perché centralizzare riduce rischio o perché restare locale è ancora sufficiente**.
 
-> cambiamo cloud provider.
-
-La prima domanda dovrebbe essere:
-
-> perché una superficie di consumo sta chiedendo ripetutamente al motore di ricostruire la stessa informazione da miliardi di eventi?
-
-Possibili interventi:
-
-- pre-aggregazione;
-- partition pruning;
-- caching;
-- modelli serving dedicati;
-- refresh proporzionato;
-- riduzione delle visualizzazioni/query duplicate.
-
-Questo collega il tool selection all'architettura: **il posto dell'esecuzione e il design del dato contano insieme**.
-
-### Local-first quando è sufficiente
-
-Lavorare localmente resta ragionevole quando:
-
-- il dataset è gestibile;
-- il lavoro è esplorativo;
-- non ci sono dati che non devono essere copiati;
-- l'esecuzione non è un servizio;
-- una singola persona possiede il processo;
-- il costo di setup centrale non crea valore.
-
-La semplicità locale può essere un vantaggio reale.
-
-### Shared/managed execution quando il lavoro diventa sistema
-
-Segnali di migrazione:
-
-- scheduling;
-- più utenti;
-- credenziali condivise in modo sicuro;
-- dati sensibili;
-- output downstream;
-- workload concorrenti;
-- necessità di recovery;
-- grandi scansioni ripetute;
-- compute che deve crescere/ridursi dinamicamente.
-
-### Campo del Tooling Decision Record
-
-```text
-current execution location:
-data residency constraints:
-input/output size:
-frequency:
-concurrent users/jobs:
-sensitive data:
-downstream dependency:
-local runtime:
-managed/shared alternative:
-estimated run cost:
-reason to centralize or remain local:
-exit condition:
-```
-
-### Regola operativa
-
-> **Non spostare un workload nel cloud perché “scala”. Spostalo quando un ambiente condiviso o elastico riduce concretamente rischio, tempo, costo o dipendenza da una macchina/persona.**
+> **Non spostare un workload nel cloud perché “scala”. Spostalo quando un ambiente condiviso o elastico riduce concretamente rischio, tempo, costo o dipendenza da una macchina o da una persona.**
