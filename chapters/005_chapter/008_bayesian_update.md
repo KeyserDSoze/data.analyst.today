@@ -1,33 +1,18 @@
-## 5.7 Intuizione bayesiana: aggiornare ciò che riteniamo plausibile
+## 5.7 Intuizione bayesiana: l'evidenza deve poterci far cambiare idea
 
-Il ragionamento bayesiano parte da un'idea semplice:
-
-> **prima di osservare una nuova evidenza abbiamo una certa valutazione; dopo averla osservata dovremmo aggiornarla in modo proporzionato alla forza dell'evidenza.**
+Il ragionamento bayesiano formalizza qualcosa che un buon analista dovrebbe fare anche prima di conoscere la formula: **partire da ciò che è plausibile, osservare nuova evidenza e aggiornare la propria valutazione in proporzione a quanto quell'evidenza discrimina tra le ipotesi**.
 
 La formula di Bayes è:
 
-`P(A|B) = P(B|A) × P(A) / P(B)`
+`P(A|B) = P(B|A) × P(A) / P(B)`.
 
-Combina:
+Nel linguaggio bayesiano, ciò che consideriamo plausibile prima dell'evidenza viene espresso attraverso un **prior**; la compatibilità dei dati con l'ipotesi passa attraverso la **likelihood**; dopo l'osservazione otteniamo una valutazione aggiornata, il **posterior**. NIST descrive proprio Bayes come il meccanismo che combina conoscenza precedente e dati correnti per produrre una distribuzione posterior.[^nist-bayes]
 
-- una probabilità iniziale, o **prior**;
-- quanto l'evidenza osservata è compatibile con l'ipotesi, la **likelihood**;
-- la probabilità aggiornata, o **posterior**.
+La sezione sulla probabilità condizionata ci ha già mostrato perché il base rate conta. Qui facciamo un passo in più: invece di trattare ogni nuovo dato come se arrivasse in un vuoto informativo, chiediamo **quanto deve modificare ciò che ritenevamo plausibile prima**.
 
-NIST presenta la formula di Bayes come relazione tra una probabilità condizionata, la probabilità inversa e la probabilità di base.[^nist-bayes]
+## Un crollo di conversione e quattro spiegazioni concorrenti
 
-La sezione 5.2 ci ha già mostrato perché la base rate conta. Qui facciamo il passo successivo: usiamo nuove evidenze per **rivedere una valutazione precedente**, invece di ripartire ogni volta da zero.
-
-### Caso simulato/composito — Un crollo della conversione e quattro ipotesi
-
-Una piattaforma e-commerce vede il checkout conversion rate scendere dal 4,1% al 3,2% in meno di un'ora.
-
-Il team formula quattro ipotesi:
-
-1. problema di tracking;
-2. cambiamento nel mix di traffico;
-3. bug della nuova release;
-4. problema del payment provider.
+Una piattaforma e-commerce vede il checkout conversion rate scendere dal 4,1% al 3,2% in meno di un'ora. Il team considera quattro ipotesi: problema di tracking, cambiamento nel mix di traffico, bug della nuova release oppure problema del payment provider.
 
 Negli ultimi 40 incidenti con un pattern iniziale simile, le cause erano state approssimativamente:
 
@@ -38,107 +23,44 @@ Negli ultimi 40 incidenti con un pattern iniziale simile, le cause erano state a
 | Product bug | 20% |
 | Payment provider | 15% |
 
-Queste frequenze non sono verità universali. Sono un possibile **prior operativo**: prima di ulteriori evidenze, tracking è semplicemente una causa storicamente più frequente.
+Queste frequenze non sono una legge del mondo. Possono però funzionare come **prior operativo**: prima di ulteriori evidenze, un problema di telemetry merita più attenzione di una causa storicamente molto più rara.
 
-### Prima evidenza: gli ordini reali sono scesi
+Poi arriva la prima informazione nuova. Finance e il database transazionale confermano che sono scesi anche gli ordini reali. L'ipotesi “solo tracking” perde molto peso.
 
-Finance e il database transazionale confermano che non è soltanto un problema di tracking.
+La seconda evidenza mostra che web e Android sono stabili mentre il problema è quasi esclusivamente su iOS. Un semplice cambiamento generale di traffic mix diventa meno plausibile e l'ipotesi di product bug guadagna terreno.
 
-L'ipotesi 1 perde molto peso.
+Infine il calo viene localizzato sulla versione 8.42: iOS 8.41 mantiene una conversione normale, mentre la 8.42 perde utenti nel passaggio payment → confirmation. I log mostrano un errore nella gestione delle carte salvate introdotto proprio da quella release.
 
-Non è necessario dire che la sua probabilità diventa zero. Ma la nuova evidenza è poco compatibile con “solo telemetry”.
+La storia importante non è che l'ipotesi corretta “ha vinto”. È che il team ha permesso a ipotesi inizialmente plausibili di **perdere peso** man mano che l'evidenza diventava meno compatibile con esse.
 
-### Seconda evidenza: il problema è quasi esclusivamente su iOS
+## Bayesian thinking anche senza un modello bayesiano completo
 
-Web e Android sono stabili. Su iOS il calo è forte.
+Nel caso non abbiamo calcolato numericamente ogni posterior. Eppure la sequenza è già bayesiana:
 
-L'ipotesi di traffic mix generale diventa meno plausibile. Product bug sale di priorità.
+**prior → evidenza → aggiornamento relativo delle ipotesi → nuova evidenza → nuovo aggiornamento**.
 
-### Terza evidenza: il calo inizia con la versione 8.42
+È l'opposto del confirmation bias. Una prima intuizione non diventa il tema da difendere; diventa una posizione provvisoria che deve essere aggiornata anche quando i dati la indeboliscono.
 
-La segmentazione per app version mostra:
+Il prior, a sua volta, non è una preferenza personale resa matematica. Può derivare dallo storico dello stesso processo, da popolazioni comparabili, da studi precedenti, da conoscenza di dominio formalizzata o, quando sappiamo poco, da una distribuzione volutamente ampia. Deve essere **difendibile e aggiornabile**. Se viene scelto soltanto perché spinge il risultato verso la conclusione desiderata, non sta aiutando l'apprendimento.
 
-- iOS 8.41: conversione normale;
-- iOS 8.42: forte perdita nel passaggio payment → confirmation.
+## La stessa percentuale può contenere quantità di informazione molto diverse
 
-Ora l'evidenza è molto più compatibile con una regressione specifica della release che con un problema generale del payment provider.
+Supponiamo che un nuovo piano abbia conversione storica attesa attorno al 12%. Nei primi 20 visitatori osserviamo 8 acquisti: 40%. È un segnale interessante, ma venti osservazioni contengono poca informazione e possono provenire da early adopter molto selezionati.
 
-Il team controlla i log e trova un errore nella gestione delle carte salvate introdotto proprio nella 8.42.
+Se osservassimo invece 8.000 acquisti su 20.000 visitatori comparabili, lo stesso 40% dovrebbe produrre un aggiornamento enormemente più forte. La percentuale è identica; cambia **quanto il nuovo dato è capace di spostare razionalmente ciò che credevamo prima**.
 
-### Questo è Bayesian thinking anche senza calcolare il posterior
+Questa idea collega Bayes al resto del capitolo. Standard error, confidence interval e power parleranno con un linguaggio diverso della stessa questione: quanta informazione contiene realmente ciò che abbiamo osservato?
 
-Nel caso non abbiamo costruito un modello bayesiano completo con distribuzioni formali.
+## AI: generare ipotesi non significa pesarle
 
-Abbiamo però seguito la logica:
+Un sistema AI può proporre in pochi secondi venti spiegazioni per un'anomalia. Questo amplia lo spazio di ricerca, ma non assegna alle ipotesi la stessa plausibilità. Frequenza storica, coerenza con il dominio, capacità di spiegare i dettagli osservati, costo della verifica e nuova evidenza devono ancora stabilire quali ipotesi meritino priorità e quali debbano essere abbandonate.
 
-**prior → nuova evidenza → rivalutazione relativa delle ipotesi → nuova evidenza → ulteriore aggiornamento**.
+È un'altra applicazione del principio di **Al timone**: l'AI può moltiplicare le alternative; la responsabilità di aggiornare le convinzioni in funzione dell'evidenza resta parte del lavoro analitico.
 
-È una disciplina molto diversa da:
+> **La domanda bayesiana non è “avevo ragione?”. È “dato ciò che sapevo prima e ciò che ho osservato adesso, quanto deve cambiare ciò che considero plausibile?”.**
 
-> “Ho avuto una prima intuizione e ora cerco dati che la confermino.”
+---
 
-Un buon aggiornamento deve consentire a un'ipotesi favorita inizialmente di perdere peso quando i dati la contraddicono.
+### Fonte
 
-### Il prior non è un'opinione resa matematica
-
-Un prior può derivare da:
-
-- storico dello stesso processo;
-- dati di segmenti comparabili;
-- risultati di studi precedenti;
-- conoscenza di dominio formalizzata;
-- una distribuzione volutamente ampia quando sappiamo poco.
-
-Il prior deve essere **difendibile e aggiornabile**.
-
-Se scegliamo un prior soltanto perché rende il risultato finale più vicino a ciò che desideriamo, non stiamo usando Bayes per imparare: lo stiamo usando per decorare una conclusione già scelta.
-
-### Evidenza nuova: valore osservato e quantità di informazione
-
-Supponiamo che un nuovo piano abbia conversion rate storico atteso vicino al 12%.
-
-Nei primi 20 visitatori osserviamo 8 acquisti: 40%.
-
-È un segnale interessante, ma venti osservazioni contengono poca informazione. Inoltre potrebbero provenire da early adopter molto selezionati.
-
-Se osserviamo invece 8.000 acquisti su 20.000 visitatori comparabili, la stessa percentuale del 40% ha un peso completamente diverso.
-
-Quindi una buona domanda non è soltanto:
-
-> “Qual è il dato nuovo?”
-
-ma:
-
-> **“Quanta informazione nuova contiene rispetto a ciò che sapevamo già?”**
-
-### Bayesian thinking e AI
-
-Un sistema AI può generare rapidamente venti possibili spiegazioni di un'anomalia.
-
-La generazione di ipotesi, però, non assegna loro la stessa plausibilità.
-
-L'analista deve usare:
-
-- frequenza storica;
-- compatibilità con il dominio;
-- evidenza disponibile;
-- capacità esplicativa;
-- costo e velocità della verifica;
-
-per decidere quali ipotesi testare prima e come aggiornarle.
-
-Questo collega il Capitolo 5 al principio di **Al timone**: l'AI può ampliare lo spazio delle ipotesi; la responsabilità di pesare evidenza e revisione delle convinzioni rimane umana.
-
-### La domanda finale
-
-Il ragionamento bayesiano non chiede:
-
-> “Avevo ragione o torto fin dall'inizio?”
-
-Chiede:
-
-> **“Data ciò che sapevo prima e ciò che ho osservato adesso, quanto deve cambiare ciò che considero plausibile?”**
-
-È una delle competenze più profonde dell'analisi: essere abbastanza strutturati da avere un'ipotesi e abbastanza disciplinati da cambiarla.
-
-[^nist-bayes]: NIST/SEMATECH, *Assessing Product Reliability — Bayes Formula*: https://www.itl.nist.gov/div898/handbook/apr/section1/apr1a.htm
+[^nist-bayes]: NIST/SEMATECH, *How can Bayesian methodology be used for reliability evaluation?*. https://www.itl.nist.gov/div898/handbook/apr/section2/apr1a.htm
