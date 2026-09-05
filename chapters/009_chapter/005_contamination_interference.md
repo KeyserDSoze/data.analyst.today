@@ -1,129 +1,24 @@
-## 9.4 Contaminazione e interferenza: quando il controllo non resta davvero controllo
+## 9.4 Contaminazione e interferenza: quando A modifica il mondo di B
 
-Il Capitolo 8 ha introdotto l'**interference** come problema causale: il trattamento assegnato a un'unità può cambiare l'outcome di un'altra.
+La randomizzazione individuale funziona bene quando possiamo trattare le unità come mondi sufficientemente separati. In molti prodotti questa assunzione è fragile. Un Sales Rep di controllo può copiare il nuovo playbook da un collega trattato; un ranking assegnato ai buyer può cambiare domanda, stock e prezzi dei seller condivisi; una promozione può sottrarre capacità alle unità di controllo.
 
-In un esperimento operativo questo diventa una domanda di design:
-
-> **possiamo creare due mondi abbastanza separati da misurare l'effetto che ci interessa?**
-
-### Contamination e interference non sono identiche
-
-**Contamination**
-
-Un'unità di controllo riceve, direttamente o indirettamente, parte del trattamento.
-
-Esempio: un Sales Rep di controllo copia il nuovo playbook da un collega trattato.
-
-**Interference / spillover**
-
-Il trattamento di una unità modifica l'ambiente o l'outcome di altre unità, anche se queste non ricevono la feature.
-
-Esempio: trattare buyer cambia domanda, prezzo e inventario dei seller condivisi.
-
-Entrambi riducono la separazione tra A e B, ma possono richiedere strategie differenti.
+Qui conviene distinguere due fenomeni. Con **contamination**, una unità di controllo riceve direttamente o indirettamente parte del trattamento. Con **interference/spillover**, il trattamento di una unità cambia l'ambiente o l'outcome di altre unità anche se non ricevono la feature. Entrambi riducono la separazione tra A e B, ma soprattutto possono cambiare **l'estimand** che il test sta misurando.
 
 ### Caso simulato/composito — Ranking marketplace randomizzato per buyer
 
-Un marketplace testa una logica che dà più visibilità ai seller con consegne rapide.
+Un marketplace testa una logica che privilegia seller con consegne rapide. Dopo due settimane il buyer-level A/B mostra conversione B +1,7%, GMV +2,4% e delivery time -4,1%.
 
-Randomizzazione iniziale: buyer-level.
+Nel frattempo i seller reagiscono alla nuova domanda: aumentano stock, cambiano prezzo, spostano promozioni e danno priorità agli SKU più visibili. Queste azioni modificano anche ciò che vedono i buyer di controllo. Il control arm non rappresenta più il marketplace che sarebbe esistito **senza** il trattamento.
 
-Dopo due settimane:
+Se B produce spillover positivo su A, il contrasto può essere attenuato. Un effetto diretto di +5% accompagnato da +2% di spillover sul controllo può apparire come circa +3%. L'opposto accade se il trattamento sottrae risorse al controllo. In sistemi a capacità limitata, inoltre, una crescita dei trattati può essere soprattutto cannibalizzazione: il seller trattato guadagna GMV che un altro seller perde.
 
-- conversion B: +1,7%;
-- GMV B: +2,4%;
-- delivery time: -4,1%.
+La domanda deve quindi precedere il design: vogliamo stimare l'effetto diretto sul buyer trattato, l'effetto totale sulla piattaforma o l'effetto di equilibrio a rollout completo? Un A/B individuale può essere eccellente per il primo e inadeguato per il terzo.
 
-Sembra una vittoria.
+### Quando la randomization unit deve seguire l'interazione
 
-Ma i seller reagiscono alla nuova domanda:
+Se colleghi dello stesso team condividono informazioni, randomizzare il singolo Sales Rep può contaminare il controllo. Se tenant, store, città o community sono internamente molto connessi e relativamente separati tra loro, una **cluster randomization** può creare mondi più coerenti.
 
-- aumentano stock;
-- cambiano prezzo;
-- spostano promozioni;
-- danno priorità agli SKU più visibili.
-
-Queste azioni cambiano anche ciò che vedono i buyer di controllo.
-
-Il control arm non rappresenta più il marketplace che sarebbe esistito **senza** il trattamento.
-
-### Dilution: un effetto reale può sembrare piccolo
-
-Se il trattamento produce spillover positivi sul controllo, il contrasto A/B può essere attenuato.
-
-Esempio:
-
-```text
-effetto diretto su B: +5%
-spillover su A: +2%
-differenza osservata: circa +3%
-```
-
-L'esperimento individuale può quindi sottostimare l'effetto di un rollout globale.
-
-L'opposto è possibile se il trattamento sottrae risorse al controllo.
-
-### Cannibalization e sistemi a capacità limitata
-
-Supponiamo di testare una promo che aumenta la visibilità di alcuni ristoranti.
-
-Il GMV dei trattati cresce.
-
-Ma se la domanda totale è quasi fissa, parte della crescita può provenire da ristoranti di controllo.
-
-A livello unitario la variante sembra creare valore; a livello marketplace può stare soprattutto **redistribuendo** valore.
-
-Per questo dobbiamo decidere qual è l'estimand:
-
-- effetto sul singolo seller trattato?
-- effetto totale sulla piattaforma?
-- effetto di equilibrio al 100% rollout?
-
-### Caso simulato/composito — Lead scoring condiviso
-
-Metà dei Sales Representative riceve un nuovo lead score.
-
-Dopo pochi giorni:
-
-- i commerciali parlano tra loro;
-- condividono priorità nel CRM;
-- i manager ridistribuiscono lead sulla base delle nuove informazioni.
-
-Il gruppo di controllo inizia a usare indirettamente il trattamento.
-
-Il problema non è solo statistico. È organizzativo.
-
-### Strategie di design
-
-A seconda del sistema possiamo considerare:
-
-**Cluster randomization**
-
-Randomizzare team, store, tenant o community abbastanza isolate.
-
-**Geo experiments**
-
-Usare aree con interazioni limitate, quando geografia e media mix lo permettono.
-
-**Switchback experiments**
-
-Alternare trattamento e controllo nel tempo su sistemi condivisi, per esempio marketplace o logistics, quando una randomizzazione simultanea individuale produce interference forte.
-
-**Holdout strutturali**
-
-Mantenere una popolazione non esposta abbastanza separata per misurare effetti di lungo periodo.
-
-**Modelli espliciti di spillover**
-
-Quando la rete è parte del fenomeno, stimare effetti diretti e indiretti invece di fingere indipendenza.
-
-### Switchback: il tempo diventa unità sperimentale
-
-Supponiamo che una piattaforma ride-hailing modifichi un algoritmo di matching che influenza driver e rider nello stesso mercato.
-
-Randomizzare rider individuali crea equilibrio misto.
-
-Una strategia può essere alternare il mercato tra A e B per finestre temporali:
+Quando invece il sistema è condiviso e non abbiamo abbastanza cluster indipendenti, possiamo alternare trattamento e controllo nel tempo con uno **switchback experiment**. In un mercato ride-hailing, per esempio:
 
 ```text
 08:00–09:00 A
@@ -132,24 +27,15 @@ Una strategia può essere alternare il mercato tra A e B per finestre temporali:
 ...
 ```
 
-Ma introduce nuovi problemi:
+Il vantaggio è che tutto il mercato vive la stessa policy nella finestra. Il costo è che il tempo diventa parte del design: carryover, stagionalità oraria, autocorrelazione e numero effettivo di periodi indipendenti devono essere modellati. Il Capitolo 7 torna quindi dentro l'esperimento.
 
-- carryover tra finestre;
-- stagionalità oraria;
-- autocorrelazione;
-- numero effettivo di periodi indipendenti.
+Geo experiments, holdout strutturali e saturation experiments rispondono allo stesso principio: scegliere un disegno che rappresenti meglio il mondo della policy, non quello più facile da implementare.
 
-Il Capitolo 7 ci ricorda che il tempo non può essere trattato come un normale shuffle casuale.
+### Concurrent experiments: non ogni interazione è una crisi
 
-### Concurrent experiments
+Nelle piattaforme mature gli stessi utenti partecipano a molti esperimenti. Microsoft ExP documenta che le interazioni tra test non sono automaticamente frequenti o catastrofiche; il punto è identificare **interazioni materialmente plausibili**, soprattutto quando due trattamenti toccano lo stesso meccanismo o la stessa risorsa condivisa.[^ms-interactions]
 
-Nelle piattaforme mature gli stessi utenti possono essere contemporaneamente in più test.
-
-Microsoft ExP documenta che centinaia di esperimenti possono girare nello stesso ecosistema; le interazioni non sono automaticamente catastrofiche, ma gli experiment owner devono conoscere test incompatibili o meccanismi che possono interagire.[^ms-interactions]
-
-Quindi non serve isolare ogni esperimento dal mondo intero.
-
-Serve capire **quali interazioni sono materialmente plausibili**.
+Questo evita due estremi: ignorare qualunque interference oppure pretendere di isolare ogni test dal resto del prodotto.
 
 ### Interference card
 
@@ -166,6 +52,6 @@ Design alternativo: cluster / geo / switchback / holdout?
 Carryover plausibile?
 ```
 
-> **Quando A può modificare il mondo in cui vive B, il problema non è “più rumore”. È che il confronto può non rappresentare più la policy che vogliamo valutare.**
+> **Quando A può modificare il mondo in cui vive B, il problema non è soltanto più rumore. È che il confronto può non rappresentare più la policy che vogliamo valutare.**
 
-[^ms-interactions]: Microsoft Research, *A/B Interactions: A Call to Relax*: https://www.microsoft.com/en-us/research/articles/a-b-interactions-a-call-to-relax/
+[^ms-interactions]: Microsoft Research, *A/B Interactions: A Call to Relax*: https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/a-b-interactions-a-call-to-relax/
