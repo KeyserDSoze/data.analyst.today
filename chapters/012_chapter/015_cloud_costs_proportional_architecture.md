@@ -1,39 +1,21 @@
 ## 12.14 Architettura proporzionata: comprare affidabilità dove cambia la decisione
 
-Ogni garanzia architetturale ha un costo.
+Ogni garanzia architetturale ha un costo. Ridurre latenza, aumentare retention, duplicare regioni, mantenere replay più lungo, aggiungere observability o servire workload sempre disponibili può essere perfettamente giustificato. Ma non è gratis.
 
-Ridurre la latenza, aumentare retention, duplicare regioni, mantenere più copie, aggiungere observability o servire workload sempre disponibili può essere perfettamente giustificato.
+La domanda finale del capitolo è quindi:
 
-Ma non gratis.
-
-La domanda quindi non è:
-
-> qual è l'architettura più robusta che possiamo costruire?
-
-È:
-
-> **quale livello di affidabilità, latenza e recovery è economicamente proporzionato alla decisione che il sistema supporta?**
+> **Quale livello di affidabilità, latenza e recovery è economicamente proporzionato alla decisione che il sistema supporta?**
 
 ### Caso simulato/composito — BrightMart e il real time indiscriminato
 
-BrightMart vuole modernizzare il reporting di:
-
-- vendite;
-- margine;
-- stock;
-- resi;
-- promozioni.
-
-La prima proposta usa un percorso streaming a bassissima latenza per tutto.
-
-Il discovery mostra però:
+BrightMart vuole modernizzare vendite, margine, stock, resi e promozioni. La prima proposta prevede streaming a bassissima latenza per tutto. Il discovery mostra invece:
 
 | Use case | Quando serve agire |
 |---|---|
 | stock-out prodotti critici | entro 10 minuti |
 | vendite negozio | ogni 30–60 minuti |
 | replenishment standard | una volta al giorno |
-| finance | giornaliero / close |
+| Finance | giornaliero / close |
 | board | settimanale |
 
 La soluzione diventa differenziata:
@@ -45,78 +27,28 @@ finance               → reconciled daily batch
 board                  → certified weekly serving
 ```
 
-Non stiamo “risparmiando” degradando il servizio.
+Non stiamo degradando il servizio per risparmiare. Stiamo evitando di comprare millisecondi dove nessun consumer può trasformarli in un'azione migliore.
 
-Stiamo evitando di comprare millisecondi dove nessuno può usarli.
+### Il valore marginale della freshness
 
-### Freshness curve: il valore marginale non è lineare
+Passare da T+24h a T+1h può cambiare radicalmente un processo Operations. Passare da un minuto a un secondo può non cambiare nulla. Lo stesso vale per l'affidabilità: un SLO del 99% e uno del 99,999% possono richiedere architetture molto diverse.
 
-Passare da:
+Google SRE ricorda che il 100% è spesso indesiderabile perché può imporre soluzioni eccessivamente conservative e costose.
 
-```text
-T+24h → T+1h
-```
+Fonte: https://sre.google/sre-book/service-level-objectives/
 
-può cambiare radicalmente un processo operations.
+### Il costo è più largo del compute
 
-Passare da:
+Nel caso VMO2, Google Cloud riporta per il percorso mobile migrato a BigQuery/Dataflow **+400% di capacità** e **-30% di TCO**. La lezione non è che il cloud sia sempre più economico; è che il TCO comprende infrastruttura duplicata, licenze, skill specialistiche, manutenzione, delivery time e gestione operativa.
 
-```text
-1 min → 1 sec
-```
-
-può non cambiare nulla.
-
-Per ogni use case possiamo immaginare una curva:
-
-```text
-business value gained by lower latency
-vs
-engineering + infrastructure cost
-```
-
-Il punto ottimale non coincide necessariamente con la minima latenza tecnicamente raggiungibile.
-
-### Affidabilità ha una curva simile
-
-Un SLO del 99% e uno del 99,999% possono richiedere architetture molto diverse.
-
-Google SRE sottolinea che obiettivi del 100% sono spesso indesiderabili perché possono imporre soluzioni eccessivamente conservative e costose.
-
-Fonte:
-https://sre.google/sre-book/service-level-objectives/
-
-Questa idea vale anche per i data products.
-
-Un report di planning mensile non richiede lo stesso recovery design di un sistema che blocca frodi in tempo reale.
-
-### Caso reale documentato — VMO2 e TCO
-
-Nel caso Virgin Media O2 discusso in 12.8, Google Cloud riporta una riduzione del TCO di circa il 30% rispetto a piattaforme on-premises equivalenti nel percorso di consolidamento e modernizzazione.
-
-Fonte:
-https://cloud.google.com/customers/virgin-media-o2-data-platform-migration
-
-La lezione non è che cloud o serverless siano sempre più economici.
-
-È che il TCO comprende anche:
-
-- infrastruttura duplicata;
-- capacity limits;
-- licenze;
-- manutenzione;
-- skill specialistiche;
-- tempo di delivery;
-- gestione operativa.
-
-### TCO: il prezzo del compute è soltanto una riga
+Fonte: https://cloud.google.com/customers/virgin-media-o2-data-platform-migration
 
 Un modello utile è:
 
 ```text
 TCO =
 infrastructure
-+ managed service / licenses
++ managed services / licenses
 + storage and network
 + engineering time
 + on-call / incident response
@@ -126,78 +58,17 @@ infrastructure
 + failure cost
 ```
 
-Non serve stimare ogni voce al centesimo per migliorare una decisione architetturale.
+Non dobbiamo stimare ogni voce al centesimo. Dobbiamo evitare confronti che guardano soltanto la tariffa per CPU e ignorano costo della complessità e costo del failure.
 
-Serve evitare di confrontare due soluzioni soltanto sulla tariffa per CPU.
+### Semplice non significa sottodimensionato
 
-### Cost of failure
+Una soluzione manuale può essere adeguata finché utenti, frequenza, rischio e audit restano limitati. Quando questi requisiti cambiano, il costo nascosto della soluzione “semplice” può superare quello di una piattaforma più strutturata.
 
-La complessità aggiuntiva può essere giustificata da ciò che evita.
+Allo stesso tempo, una pipeline da 20.000 righe al giorno non diventa più matura perché usa un cluster distribuito multi-region. Ogni nuovo componente introduce configurazione, access control, monitoring, upgrade, failure mode e skill da mantenere.
 
-Esempio:
+Quando l'incertezza è alta preferiamo inoltre scelte reversibili. Un batch orario può essere sufficiente oggi se preserviamo il raw event stream e lasciamo aperta la possibilità di aggiungere domani un consumer near-real-time senza ridisegnare la sorgente.
 
-```text
-pipeline A
-costa meno ma fallisce 3 volte/mese durante una decisione critica
-
-pipeline B
-costa di più ma riduce fortemente quel rischio
-```
-
-Il confronto deve includere:
-
-- decisioni ritardate;
-- ore di analisti bloccati;
-- incident response;
-- eventuali decisioni prese su dati incompleti.
-
-### Cost of complexity
-
-Ogni nuovo componente introduce anche:
-
-- configurazione;
-- access control;
-- monitoring;
-- upgrade;
-- failure mode;
-- competenza necessaria.
-
-Una pipeline con 20.000 righe al giorno e un report mattutino non diventa più matura perché usa una piattaforma distribuita multi-cluster.
-
-### Underengineering esiste
-
-La regola “parti semplice” non significa “resta manuale per sempre”.
-
-Un foglio condiviso può essere adeguato finché:
-
-- utenti sono pochi;
-- dato non è sensibile;
-- refresh può essere manuale;
-- audit non è critico.
-
-Quando cambiano scala e rischio, il costo nascosto della soluzione semplice può superare quello di una piattaforma più strutturata.
-
-### Reversibilità architetturale
-
-Quando l'incertezza è alta, preferiamo spesso scelte che permettano di evolvere.
-
-Esempio:
-
-```text
-batch hourly oggi
-```
-
-può essere una buona scelta se:
-
-- soddisfa il requisito;
-- il raw event stream è conservato;
-- domani possiamo aggiungere un consumer near-real-time senza rifare la sorgente.
-
-Semplice non deve significare irreversibile.
-
-### Campo della Data Flow Architecture Map
-
-Per ogni componente rilevante annotiamo:
+Nella Data Flow Architecture Map annotiamo:
 
 ```text
 business requirement it satisfies:
@@ -211,15 +82,4 @@ can simplify? sì/no
 can evolve? sì/no
 ```
 
-### Architecture review in otto domande
-
-1. quale decisione giustifica questo componente?
-2. quale SLO deve sostenere?
-3. cosa succede se lo eliminiamo?
-4. quanta capacità viene realmente usata?
-5. qual è il costo di gestione, non solo di compute?
-6. quale failure mode nuovo introduce?
-7. possiamo soddisfare il requisito con meno accoppiamento?
-8. quale segnale ci dirà che la soluzione è diventata troppo piccola?
-
-> **La maturità architetturale non consiste nel comprare la massima scalabilità. Consiste nel pagare per la complessità che riduce davvero rischio o time-to-decision, mantenendo il resto il più semplice possibile.**
+> **La maturità architetturale consiste nel pagare per la complessità che riduce davvero rischio o time-to-decision, mantenendo il resto il più semplice e reversibile possibile.**
