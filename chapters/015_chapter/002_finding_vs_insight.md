@@ -1,61 +1,23 @@
-## 15.1 Finding, insight, explanation e implication: quattro livelli da non confondere
+## 15.1 Dal finding all'insight: quando l'evidenza cambia davvero lo spazio delle scelte
 
-Uno degli errori più comuni nel lavoro analitico è chiamare *insight* qualsiasi numero non ovvio.
+Uno degli errori più comuni nel lavoro analitico è chiamare *insight* qualsiasi numero non ovvio. Ma sorpresa, spiegazione e utilità decisionale sono proprietà diverse.
 
-Ma sorpresa, spiegazione e utilità decisionale sono proprietà diverse.
+Se osserviamo che la conversion desktop è stabile mentre quella mobile scende del 9%, abbiamo un **finding**: descriviamo il fenomeno. Se scopriamo che il calo mobile è concentrato sulle sessioni che attraversano il nuovo checkout e spiega circa il 78% della perdita di ordini, abbiamo localizzato la struttura del problema. Se ipotizziamo che il nuovo checkout abbia introdotto frizione, abbiamo formulato una spiegazione compatibile con l'evidenza. Soltanto quando traduciamo questa conoscenza in un cambiamento nello spazio delle opzioni — per esempio congelare il rollout e usare il vecchio checkout come controllo — arriviamo alla **decision implication**.
 
-### Livello 1 — Finding
-
-> “La conversion desktop è stabile; quella mobile è scesa del 9%.”
-
-Descrive il fenomeno.
-
-### Livello 2 — Structure / localization
-
-> “Il calo mobile è concentrato sulle sessioni che attraversano il nuovo checkout e spiega circa il 78% della perdita di ordini.”
-
-Localizza dove vive il fenomeno.
-
-### Livello 3 — Explanation hypothesis
-
-> “Il nuovo checkout potrebbe aver introdotto frizione.”
-
-Propone un meccanismo compatibile con l'evidenza.
-
-### Livello 4 — Decision implication
-
-> “Poiché il problema è concentrato in un flusso reversibile e ad alta esposizione, conviene congelare il rollout e testare il vecchio checkout come controllo.”
-
-Collega l'evidenza a una scelta.
-
-Questa sequenza evita due salti pericolosi:
+La distinzione serve a evitare due scorciatoie:
 
 ```text
 pattern → causa
 pattern → azione
 ```
 
-senza aver esplicitato né il livello di evidenza né le alternative.
+Nel primo caso saltiamo il livello di evidenza; nel secondo saltiamo il confronto tra alternative.
 
-### Insight come compressione decisionale
+In questo libro useremo *insight* in senso operativo: **una sintesi dell'evidenza che modifica materialmente la rappresentazione del problema e, di conseguenza, le decisioni plausibili**. Non deve essere necessariamente causale. Deve però cambiare almeno una cosa importante: dove vediamo il rischio o il valore, quale popolazione consideriamo, quale assunzione precedente smette di reggere, quale alternativa diventa più o meno attraente o quale nuova informazione merita di essere raccolta.
 
-In questo libro useremo *insight* in senso operativo:
+### Quando un segmento cambia il significato dell'aggregato
 
-> **un insight è una sintesi dell'evidenza che modifica in modo materiale la rappresentazione del problema e quindi lo spazio delle decisioni plausibili.**
-
-Non deve essere sempre causale.
-
-Deve però rispondere almeno a una di queste domande:
-
-- dove è concentrato il valore o il rischio?
-- quale popolazione è diversa da quella che credevamo?
-- quale assunzione precedente non regge?
-- quale alternativa diventa più o meno attraente?
-- quale ulteriore informazione vale la pena raccogliere?
-
-### Caso simulato/composito — Paid Social sembrava il canale peggiore
-
-Un e-commerce confronta repeat purchase a 90 giorni:
+Consideriamo un e-commerce che confronta la repeat purchase a 90 giorni:
 
 | Canale | Repeat rate |
 |---|---:|
@@ -64,29 +26,11 @@ Un e-commerce confronta repeat purchase a 90 giorni:
 | Paid Search | 27% |
 | Paid Social | 19% |
 
-Il finding è chiaro:
+Il finding è inequivocabile: Paid Social ha la repeat rate più bassa. Se trasformiamo immediatamente questo risultato in una decisione, il budget del canale diventa il bersaglio naturale.
 
-> Paid Social ha la repeat rate più bassa.
+Il team segmenta però per tipo di cliente e scopre che Paid Social porta una quota molto più alta di **first-time category buyers**, che hanno retention inferiore in tutti i canali. Dopo standardizzazione per mix, il gap si riduce fortemente.
 
-Una possibile decisione immediata sarebbe tagliare il budget.
-
-Il team segmenta però per tipo di cliente e scopre che Paid Social porta una quota molto più alta di **first-time category buyers**, che hanno retention inferiore in tutti i canali.
-
-Dopo standardizzazione per mix, il gap si riduce fortemente.
-
-Il finding non sparisce.
-
-Cambia il suo significato.
-
-Prima:
-
-> “Paid Social acquisisce clienti peggiori.”
-
-Dopo:
-
-> “Una parte importante del gap di retention dipende dal mix di clienti acquisiti. La decisione sul budget deve separare channel execution, audience composition e activation post-acquisto.”
-
-Il secondo insight apre tre alternative differenti:
+Il dato originale non sparisce; cambia ciò che ci autorizza a concludere. La lettura “Paid Social acquisisce clienti peggiori” lascia spazio a una formulazione più utile: una parte importante del gap dipende dalla composizione della popolazione, quindi la decisione deve distinguere almeno **channel execution, audience composition e activation post-acquisto**. Le opzioni diventano tre, non una:
 
 ```text
 A — ridurre Paid Social
@@ -94,66 +38,29 @@ B — cambiare targeting
 C — cambiare activation per quel mix di clienti
 ```
 
-Il valore non è aver trovato una frase più sofisticata.
+Questo è il valore dell'insight: non una frase più sofisticata, ma uno spazio decisionale meno distorto.
 
-È aver evitato una falsa scelta binaria.
+### Un finding può essere vero e non meritare attenzione
 
-### Materialità: un pattern può essere vero e irrilevante
+La decision relevance richiede anche materialità. Un delta di conversion da 3,842% a 3,807% può essere stimato con grande precisione e restare economicamente irrilevante se vale €4.000 l'anno in un business da miliardi e richiede tre mesi di engineering.
 
-Supponiamo di trovare:
+Perciò, prima di promuovere un finding a insight, chiediamo quale quota del KPI cambia, quanta popolazione coinvolge, se il fenomeno persiste, quanto vale in termini economici o di rischio e se esiste una leva plausibile. La materialità non coincide con gli euro: compliance, sicurezza, customer harm, reputazione, fairness e resilienza possono dominare una scelta anche quando non hanno una monetizzazione pulita.
 
-```text
-conversion:
-3,842% → 3,807%
-```
-
-Statisticamente il delta può anche essere preciso.
-
-Ma se produce €4.000 di impatto annuo in un business da miliardi e richiede tre mesi di engineering, non è un insight prioritario.
-
-Ogni finding dovrebbe quindi passare un **materiality check**:
-
-```text
-quanto cambia il KPI?
-quanta popolazione coinvolge?
-quale valore/rischio economico rappresenta?
-quanto è persistente?
-quanto è azionabile?
-```
-
-Materialità non significa soltanto euro.
-
-Può includere:
-
-- compliance;
-- sicurezza;
-- customer harm;
-- reputazione;
-- rischio operativo;
-- fairness;
-- strategia.
-
-### Il decision-relevance test
-
-Per ogni candidate insight chiediamo:
+Un test semplice è:
 
 > **Se questa informazione fosse falsa, quale decisione cambierebbe?**
 
-Se nessuna scelta cambia, potrebbe essere un finding interessante ma non decision-relevant.
-
-Poi chiediamo:
+Se la risposta è “nessuna”, potremmo avere un pattern interessante ma non decision-relevant. La domanda successiva è ancora più utile:
 
 > **Quale alternativa guadagna o perde credibilità grazie a questa evidenza?**
 
-Se non sappiamo rispondere, siamo probabilmente ancora nella fase esplorativa.
+Se non sappiamo rispondere, probabilmente siamo ancora nella fase esplorativa.
 
-### Un insight deve trasportare il proprio claim level
+### L'insight deve trasportare il proprio livello di claim
 
-Il Capitolo 14 ha introdotto la disciplina del claim.
+Il Capitolo 14 ha reso esplicito che la comunicazione non può promuovere automaticamente un claim. La stessa disciplina vale nel Decision Record.
 
-La stessa vale qui.
-
-Esempio:
+Per esempio:
 
 ```text
 finding:
@@ -172,33 +79,11 @@ decision implication:
 sospendere temporaneamente autopublish per quei seller e testare QC
 ```
 
-Non serve trasformare l'ipotesi in causa per proporre una mitigazione reversibile.
+La decision implication può essere ragionevole perché l'intervento è circoscritto e reversibile; non serve fingere che la causa sia già identificata. Serve invece mantenere visibile la differenza tra ciò che sappiamo, la working hypothesis e il rischio che siamo disposti ad assumere.
 
-Serve però essere chiari su ciò che sappiamo e ciò che stiamo usando come working hypothesis.
+Strumenti moderni possono automatizzare la scoperta di trend e anomalie; Power BI, per esempio, documenta funzionalità di Insights che cercano pattern nelle visualizzazioni.[^powerbi-insights] Questo aumenta la velocità di discovery, non risolve automaticamente materialità, stabilità, composizione, causalità, economics o actionability.
 
-### Insight automatici: discovery, non decision authority
-
-Strumenti moderni possono trovare automaticamente trend, anomalie e pattern.
-
-La documentazione Power BI, per esempio, descrive funzionalità di Insights che cercano pattern nelle visualizzazioni.
-
-Fonte: https://learn.microsoft.com/en-us/power-bi/explore-reports/end-user-insight-types
-
-Queste funzioni aumentano la velocità di discovery.
-
-Non risolvono automaticamente:
-
-- materialità;
-- stabilità;
-- composizione;
-- causalità;
-- actionability;
-- economics;
-- alternative.
-
-### Campo del Decision Record
-
-Ogni insight che entra nella decisione dovrebbe essere sintetizzato così:
+Nel Decision Record, un insight che conta può quindi essere sintetizzato così:
 
 ```text
 finding:
@@ -210,4 +95,6 @@ key alternative explanation:
 decision implication:
 ```
 
-> **L'automazione può aumentare il numero di finding. Il lavoro dell'analista è trasformare pochi finding in informazione che cambia davvero lo spazio delle scelte.**
+> **L'automazione può aumentare il numero di finding. Il lavoro dell'analista è selezionare e qualificare quelli che cambiano davvero il confronto tra alternative.**
+
+[^powerbi-insights]: Microsoft Learn, *Insight types in Power BI*, https://learn.microsoft.com/en-us/power-bi/explore-reports/end-user-insight-types
