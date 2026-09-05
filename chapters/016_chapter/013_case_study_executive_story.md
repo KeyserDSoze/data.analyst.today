@@ -1,261 +1,89 @@
-## 16.12 Caso studio — Dalla dashboard di picco alla decisione sulla capacità
+## 16.12 Caso studio — NorthRiver Logistics: dalla dashboard di picco alla decisione sulla capacità
 
-**Caso simulato/composito.** Numeri, azienda e circostanze sono costruiti per la didattica.
+> **Nota editoriale:** NorthRiver Logistics è un caso simulato/composito. Numeri, organizzazione e sequenza sono costruiti per la didattica.
 
-## Il contesto
+A sei settimane dal picco natalizio, NorthRiver Logistics deve decidere se acquistare capacità temporanea aggiuntiva da un carrier esterno. Il contratto richiede un commitment minimo di **€780.000**. La domanda, quindi, non è “come sta andando la logistica?”, ma:
 
-NorthRiver Logistics gestisce fulfilment e consegna per diversi retailer europei.
+> **Dobbiamo comprare ora capacità aggiuntiva, e quanta?**
 
-A sei settimane dal picco natalizio, il team operations deve decidere se acquistare **capacità temporanea aggiuntiva da un carrier esterno**.
+Il Decision Record ha già trasformato il problema in tre alternative. Con **A — nessuna capacità extra** il costo incrementale è zero, ma il rischio di backlog, penali e ritardi cresce se la domanda supera lo scenario centrale. **B — +18.000 pacchi/giorno** costa €780k e porta la capacità totale a circa **166.000 pacchi/giorno**, sufficiente fino a uno scenario vicino a P80. **C — +30.000 pacchi/giorno** richiede **€1,24M** e riduce ulteriormente il rischio di under-capacity, ma aumenta molto il rischio di overcapacity.
 
-Il contratto richiede un commitment minimo di €780.000.
+Analytics preferisce **B**, con una condizione di espansione contrattuale se gli indicatori anticipatori superano soglia.
 
-La domanda non è:
+### La dashboard originale contiene più informazione della decisione
 
-> “Come sta andando la logistica?”
+La pagina preparata per il COO include volumi giornalieri, forecast per deposito, forecast accuracy, backlog, cost per parcel, carrier utilization, SLA, overtime, staffing, weather, tredici filtri, due mappe e una tabella da 47 righe. Tutto può essere utile a qualcuno; quasi nulla, però, rende immediatamente chiaro se firmare il contratto da €780k.
 
-È:
+La revisione parte quindi non dal layout, ma dal Decision Record.
 
-> **“Dobbiamo comprare ora capacità aggiuntiva, e quanta?”**
+### Forecast senza capacità: un numero senza decision boundary
 
-## Il Decision Record disponibile
+Il primo grafico mostra un forecast di picco a **162.000 pacchi/giorno**. Preso da solo non dice se il sistema è in pericolo. La capacità interna affidabile è **148.000**; con l'opzione B sale a **166.000**; il P80 del forecast è **171.000**.
 
-L'analisi produce tre alternative:
+La visualizzazione viene quindi ricostruita sulla stessa grammatica: forecast centrale e range P20–P80, capacità interna, capacità con B e deadline contrattuale. La headline diventa:
 
-### A — Nessuna capacità extra
+> **La capacità interna copre solo marginalmente lo scenario centrale; l'opzione B copre gran parte del rischio fino a circa P80.**
 
-- costo incrementale: €0;
-- rischio elevato di backlog se il forecast supera P50;
-- alta esposizione a penali e ritardi.
+Il visual non ordina di comprare B. Rende percepibile il trade-off che rende B una candidata credibile.
 
-### B — Capacità extra per 18.000 pacchi/giorno
+### La seconda informazione non è un altro KPI: è l'asimmetria del downside
 
-- commitment: €780k;
-- copertura sufficiente fino a uno scenario vicino a P80;
-- parte della capacità può restare inutilizzata nello scenario basso.
+La dashboard originale mostra `cost per parcel`, ma non rende visibile la differenza tra sbagliare per difetto e sbagliare per eccesso.
 
-### C — Capacità extra per 30.000 pacchi/giorno
+Nello scenario centrale-alto, l'under-capacity può produrre penali SLA, expedited shipping, overtime, cancellazioni, customer support e danno reputazionale. Il costo incrementale stimato è **€1,4M–€2,2M**. Il downside dell'over-capacity è invece più circoscritto: parte del commitment da €780k potrebbe restare inutilizzata.
 
-- commitment: €1,24M;
-- copertura molto ampia;
-- rischio alto di overcapacity.
+La pagina executive non aggiunge altri KPI operativi. Mostra questa asimmetria, perché è ciò che discrimina B da A.
 
-Recommendation analytics: **B**, con opzione di espansione contrattuale se due indicatori anticipatori superano soglia.
+### Prediction interval senza switching value non basta
 
-## La dashboard originale
+Sapere che P80 è 171k non dice ancora quando dovremmo cambiare scelta. Il Decision Record individua una switching condition: se il forecast aggiornato del picco scende sotto circa **151.000 pacchi/giorno** e il costo atteso dell'under-capacity resta sotto la stima base, il commitment B non è più giustificato.
 
-La pagina preparata per il COO contiene:
+Questa soglia entra nella Pack accanto al forecast. L'incertezza diventa così una regola di decisione, non un intervallo da commentare.
 
-- volumi giornalieri;
-- forecast per deposito;
-- forecast accuracy;
-- backlog;
-- cost per parcel;
-- carrier utilization;
-- SLA;
-- overtime;
-- staffing;
-- weather;
-- 13 filtri;
-- due mappe;
-- una tabella con 47 righe.
+### Data maturity: il caveat che può comprare tempo
 
-Tutto è utile a qualcuno.
+Il forecast usa anche i preorder di tre retailer. Uno dei feed è completo soltanto all'**82%** e verrà riconciliato entro 36 ore. Se questo fatto rimane nascosto, il COO vede un numero centrale come se fosse finalizzato. La nuova pagina dichiara:
 
-Il COO però non riesce a capire in pochi minuti se deve firmare il contratto da €780k.
+> **Forecast PROVISIONAL — preorder retailer C completo all'82%; reconciliation attesa domani alle 18:00.**
 
-## Errore 1 — Mostrare il forecast senza la capacità
-
-Il primo grafico mostra una previsione di picco a 162.000 pacchi/giorno.
-
-Senza la linea di capacità interna, il numero non ha significato decisionale.
-
-La prima visualizzazione viene quindi ridisegnata:
-
-- forecast centrale;
-- prediction interval P20–P80;
-- capacità interna affidabile: 148.000 pacchi/giorno;
-- capacità con opzione B: 166.000;
-- data limite per attivare il contratto.
-
-Titolo:
-
-> **La capacità interna copre lo scenario centrale solo marginalmente; l'opzione B copre il picco fino a circa P80.**
-
-Il visual non dice “comprate B”. Mostra il trade-off che rende B plausibile.
-
-## Errore 2 — Nascondere l'asimmetria dei costi
-
-La dashboard originale mostra `cost per parcel`, ma non mostra quanto costano gli errori opposti.
-
-L'analisi stima:
-
-### Under-capacity
-
-Possibili effetti:
-
-- penali SLA;
-- expedited shipping;
-- overtime;
-- cancellazioni;
-- customer support;
-- rischio reputazionale.
-
-Nello scenario centrale alto, il costo incrementale stimato è €1,4M–€2,2M.
-
-### Over-capacity
-
-Se la domanda resta bassa, parte del commitment da €780k non verrà utilizzata.
-
-Il downside è più visibile e contrattualmente limitato.
-
-La seconda pagina executive mostra quindi **downside asimmetrico**, non altri KPI operativi.
-
-## Errore 3 — Forecast interval senza switching value
-
-Dire:
-
-> “Il P80 è 171.000 pacchi/giorno”
-
-non basta.
-
-Il Decision Record identifica il punto in cui B perde convenienza:
-
-> se il picco aggiornato atteso scende sotto circa 151.000 pacchi/giorno e i costi di under-capacity restano sotto la stima base, il commitment non è più giustificato.
-
-Questo valore entra nella Decision Communication Pack come **switching condition**.
-
-## Errore 4 — Nessuna data maturity
-
-Il forecast dipende anche dai preorder di tre retailer.
-
-Uno dei feed è incompleto e verrà riconciliato entro 36 ore.
-
-La prima dashboard non lo mostra.
-
-La nuova pagina dice:
-
-> **Forecast provisional: preorder retailer C completo all'82%; refresh finale atteso domani alle 18:00.**
-
-Il COO può quindi decidere se:
-
-- firmare subito;
-- negoziare un'opzione di 48 ore;
-- aspettare il feed finale.
-
-L'incertezza viene collegata alla reversibilità.
+Ora l'incertezza produce alternative operative reali: firmare subito, negoziare un'opzione di 24–48 ore oppure aspettare il dato maturo. La data quality non è più una footnote tecnica; diventa parte della reversibilità della decisione.
 
 ## La Decision Communication Pack
 
-### Audience
+Per COO, CFO e Head of Logistics la Pack principale contiene una sola decision question: acquistare capacità temporanea e scegliere quale opzione. L'ask è autorizzare B **subordinatamente alla conferma del feed preorder**.
 
-COO, CFO, Head of Logistics.
+La headline può essere:
 
-### Decision question
+> **La capacità interna è fragile nello scenario centrale-alto; +18k pacchi/giorno coprono gran parte del rischio fino a P80 con un downside finanziario limitato rispetto al costo potenziale di under-capacity.**
 
-Acquistare capacità temporanea per il picco e quale opzione scegliere.
+Il decision layer rende visibili soltanto i dati che cambiano la scelta:
 
-### Decision requested
+| Elemento | Valore |
+|---|---:|
+| Capacità interna affidabile | 148k/giorno |
+| Forecast centrale | 162k/giorno |
+| P80 | 171k/giorno |
+| Capacità con B | 166k/giorno |
+| Commitment B | €780k |
+| Downside under-capacity scenario alto | €1,4M–€2,2M |
+| Feed retailer C | 82% — PROVISIONAL |
 
-Autorizzare l'opzione B, subordinata alla conferma del feed preorder entro 36 ore.
+L'evidence layer contiene forecast distribution vs capacità, confronto del downside A/B/C e switching condition. Il provenance layer conserva forecast version, timestamp, capacità per sito, contract terms, assunzioni sui costi SLA e storico degli errori di forecast.
 
-### Headline
+### Il meeting usa la Pack per confrontare alternative
 
-> **La capacità interna è fragile nello scenario di domanda centrale-alto; 18.000 pacchi/giorno aggiuntivi coprono il rischio fino a circa P80 con downside finanziario limitato rispetto al costo potenziale di under-capacity.**
+Il CFO chiede perché non aspettare 36 ore. La risposta non è “perché il forecast è alto”, ma: **possiamo aspettare se il carrier mantiene l'opzione senza repricing; se la finestra commerciale chiude oggi, il costo potenziale di perdere capacità può superare il valore informativo del feed mancante**. Procurement deve quindi chiarire proprio quel vincolo.
 
-### Primary evidence
+Il COO chiede perché non comprare 30k e stare tranquilli. La risposta torna al ranking: C aggiunge **€460k** di commitment rispetto a B e migliora poco il downside nei futuri plausibili attuali; diventa interessante solo con un picco molto più alto del P80 corrente.
 
-1. forecast distribution vs capacità;
-2. costo under-capacity vs commitment;
-3. scenario table A/B/C;
-4. switching condition e data maturity.
+La discussione rimane così sulle alternative e sulle soglie invece di tornare al catalogo dei KPI.
 
-### Caveat decision-critical
+### La decisione
 
-Feed preorder retailer C incompleto.
+Procurement ottiene un'opzione di **24 ore senza repricing**. Il management sceglie di attendere la reconciliation mantenendo riservata B, firmare se il forecast maturo resta sopra la switching condition e rivalutare C soltanto se il nuovo P80 supera la capacità di B oltre la safety margin concordata.
 
-### Guardrail
+Il giorno successivo il forecast viene aggiornato e la scelta effettiva torna nel Decision Record.
 
-Rivalutare se il forecast reconciliato scende sotto la switching condition.
-
-### Provenance
-
-- forecast version;
-- timestamp;
-- capacità affidabile per sito;
-- contract terms;
-- assunzioni sui costi SLA;
-- appendix con forecast error storico.
-
-## La prima slide
-
-Non dice:
-
-> “Peak readiness dashboard.”
-
-Dice:
-
-> **Decisione oggi: riservare 18k pacchi/giorno di capacità temporanea, con conferma finale dopo la reconciliation preorder.**
-
-Sotto compaiono soltanto:
-
-- capacità interna: 148k/giorno;
-- forecast centrale: 162k;
-- P80: 171k;
-- capacità con B: 166k;
-- commitment: €780k;
-- under-capacity downside stimato nello scenario alto: €1,4–2,2M;
-- caveat: feed retailer C all'82%.
-
-## Il meeting
-
-Il CFO chiede:
-
-> “Perché non aspettare 36 ore?”
-
-La risposta non è “perché il forecast è alto”.
-
-È:
-
-> “Possiamo aspettare se il carrier mantiene l'opzione senza repricing. Se la finestra commerciale chiude oggi, il costo di perdere la capacità è superiore al valore informativo atteso dal feed mancante. Sto verificando questo vincolo con procurement.”
-
-Il COO chiede:
-
-> “Perché non comprare 30k e stare tranquilli?”
-
-La risposta:
-
-> “L'opzione C migliora poco il downside nei nostri scenari plausibili ma aggiunge €460k di commitment. B resta la soluzione dominante fino a un picco molto più alto del P80 attuale.”
-
-La comunicazione porta quindi il meeting sulle **alternative e sui threshold**, non sul catalogo dei KPI.
-
-## La decisione
-
-Procurement ottiene un'opzione di 24 ore senza repricing.
-
-Il management sceglie:
-
-1. attendere la reconciliation;
-2. mantenere riservata B;
-3. firmare se il forecast reconciliato resta sopra la switching condition;
-4. rivalutare C soltanto se il nuovo P80 supera la capacità di B di oltre la safety margin concordata.
-
-Il giorno successivo il forecast viene aggiornato e la decisione viene registrata nel Decision Record.
-
-## La lezione
-
-La dashboard originale conteneva più dati.
-
-La Decision Communication Pack conteneva **più decisione**.
-
-Il valore è nato da:
-
-- partire dal Decision Record;
-- mostrare forecast e capacità nella stessa grammatica;
-- rendere visibile l'asimmetria dei costi;
-- comunicare la maturity del dato;
-- mostrare lo switching value;
-- mantenere l'alternativa C visibile senza darle salienza indebita;
-- collegare il caveat a una scelta reversibile.
+La dashboard originale conteneva più dati. La nuova Pack contiene **più decisione** perché mette nella stessa superficie forecast, capacità, downside, maturity e switching value.
 
 > **Data storytelling non significa trasformare i dati in una storia convincente. Significa costruire un percorso di evidenze che consenta al destinatario di scegliere senza perdere il significato, l'incertezza e le alternative contenute nell'analisi originale.**
