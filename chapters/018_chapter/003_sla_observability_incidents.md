@@ -1,403 +1,98 @@
-## 18.2 Reliability: SLI, SLO, osservabilità, degraded mode e incident management
+## 18.2 Reliability: il servizio deve sapere quando non è fit for decision
 
-Un prodotto analitico può essere tecnicamente disponibile e decisionally unusable.
+Una pipeline può essere verde e il prodotto analitico rosso. Se il report arriva alle 10:15 ma il capacity meeting è alle 09:00, il servizio ha fallito. Se arriva puntuale con il 92% delle transazioni e nessuno sa quale sorgente manchi, ha fallito in un altro modo. Se è fresco e completo ma una definizione è cambiata senza preavviso, il rischio può essere persino maggiore.
 
-Se il report arriva alle 10:15 ma il capacity meeting è alle 09:00, il servizio ha fallito anche se la pipeline è `SUCCESS`.
+Per questo la reliability dell'analytics deve partire dal **consumer della decisione**, non dal job scheduler. Infrastructure health e pipeline health restano importanti, ma non bastano. La domanda più alta è: il dato è disponibile entro la deadline, con copertura, significato e reconciliation sufficienti per sostenere la decisione che promette di supportare?
 
-Se arriva puntuale con il 92% delle transazioni, ma nessuno sa quali sorgenti mancano, il servizio ha fallito in un altro modo.
+## SLI, SLO e SLA: trasformare “affidabile” in una promessa misurabile
 
-Se è fresco e completo ma una definizione è cambiata senza preavviso, il rischio può essere ancora maggiore.
-
-Per questo il reliability model dell'analytics deve partire dall'esperienza del **consumer della decisione**, non dalla salute del job.
-
-## Dal “job verde” al “dato fit for decision”
-
-Possiamo distinguere almeno tre livelli.
-
-### Infrastructure health
-
-- processo in esecuzione;
-- CPU/memoria;
-- scheduler;
-- storage disponibile;
-- query terminata.
-
-### Pipeline health
-
-- task completati;
-- dependency rispettate;
-- runtime;
-- retry;
-- schema leggibile.
-
-### Decision-data health
-
-- sorgenti attese presenti;
-- completezza sufficiente;
-- metrica riconciliata;
-- definizione comparabile;
-- dato disponibile entro la decision deadline;
-- eventuali caveat visibili.
-
-Un sistema può essere verde nei primi due livelli e rosso nel terzo.
-
-## Il linguaggio SRE: SLI, SLO, SLA
-
-Google SRE distingue:
-
-- **SLI — Service Level Indicator:** misura osservata del comportamento che conta;
-- **SLO — Service Level Objective:** target dell'indicatore;
-- **SLA — Service Level Agreement:** accordo che associa conseguenze esplicite al mancato rispetto di un livello di servizio.
+Google SRE distingue **SLI**, la misura osservata di un comportamento rilevante; **SLO**, il target desiderato; e **SLA**, l'accordo che associa conseguenze esplicite al mancato rispetto di un livello di servizio. Il valore della distinzione, per l'analytics, è costringerci a specificare ciò che conta per l'utente invece di dichiarare genericamente che una dashboard “deve essere affidabile”.
 
 Fonte: https://sre.google/sre-book/service-level-objectives/
 
-Per l'analytics questa distinzione è utile perché ci obbliga a passare da:
+Per un executive revenue pack possiamo avere un SLI di freshness — percentuale di business day in cui `executive_revenue` è certificato entro le 07:00 CET — con SLO `≥99%`. Possiamo avere un SLI di completeness — quota di ordini del giorno precedente presenti rispetto alla fonte operativa riconciliata — con SLO `≥99,8%` prima della pubblicazione. E possiamo avere gate di semantic correctness per i quali il target è semplicemente `100%` perché fallire quel controllo significa non pubblicare.
 
-> “Il dashboard deve essere affidabile.”
+Gli indicatori utili dipendono dal prodotto. In analytics contano spesso freshness, completeness, correctness, semantic stability, availability, event-to-data latency, recoverability e traceability. Non dobbiamo copiare gli SLO software alla lettera: dobbiamo scegliere le proprietà che, se degradano, cambiano il diritto del consumer a usare il numero.
 
-a qualcosa di verificabile.
+Anche il target deve seguire il criticality tier. Un notebook T0 è best effort. Una dashboard T1 può promettere refresh entro le 09:00 nel 95% dei business day. Un executive pack T2 può richiedere certification entro le 07:00 nel 99% dei giorni più blocking reconciliation. Un feed T3 può richiedere recovery e auditability concordati con il processo finanziario o regolatorio che alimenta.
 
-Esempio:
+Google SRE sottolinea inoltre che 100% di reliability è spesso indesiderabile: può imporre costi e conservatorismo sproporzionati. Il punto è scegliere un SLO coerente con ciò che gli utenti realmente richiedono, non con il desiderio astratto di perfezione.
 
-### SLI freshness
+## Error budget: quando la reliability deve battere le feature
 
-Percentuale di business day in cui il dataset `executive_revenue` è certificato entro le 07:00 CET.
+Uno SLO sotto il 100% implica un margine di fallimento accettato, l'**error budget**. Nell'analytics non serve trasformarlo in rituale matematico. Serve a rendere esplicita una decisione di priorità.
 
-### SLO freshness
-
-`≥ 99%` nel trimestre.
-
-### SLI completeness
-
-Percentuale di ordini del giorno precedente presenti rispetto alla fonte operativa riconciliata.
-
-### SLO completeness
-
-`≥ 99,8%` prima della pubblicazione del daily pack.
-
-### SLI semantic correctness
-
-Percentuale dei controlli di riconciliazione e business invariant critici che passano.
-
-### SLO semantic correctness
-
-`100%` per i gate classificati `blocking`.
-
-Il target non deve essere identico per ogni prodotto.
-
-## Non copiare gli SLO software alla lettera
-
-Una API può misurare availability e latency richiesta per richiesta.
-
-Un prodotto analitico spesso ha eventi meno frequenti e dimensioni differenti.
-
-SLI utili possono includere:
-
-- **freshness** — dato disponibile entro la deadline;
-- **completeness** — quota attesa di sorgenti/record coperta;
-- **correctness** — reconciliation e invariant;
-- **semantic stability** — nessuna breaking change non comunicata;
-- **availability** — superficie interrogabile quando serve;
-- **latency** — tempo evento → dato consumabile;
-- **recoverability** — capacità di ricostruire il dato entro una finestra;
-- **traceability** — possibilità di risalire a versione, sorgente e trasformazione.
-
-Google SRE osserva che i big-data system tendono a interessarsi a throughput ed end-to-end latency, ma sottolinea anche che **correctness** è una proprietà essenziale della salute del sistema.
-
-Fonte: https://sre.google/sre-book/service-level-objectives/
-
-## Criticality tier → SLO diverso
-
-Non dobbiamo promettere 99,99% a tutto.
-
-Esempio:
-
-| Prodotto | Tier | SLO principale |
-|---|---|---|
-| notebook personale | T0 | best effort |
-| team dashboard | T1 | refresh entro 09:00 nel 95% dei business day |
-| executive revenue pack | T2 | certified entro 07:00 nel 99% dei business day + blocking reconciliation |
-| payout/regulatory feed | T3 | controllo rigoroso, auditability e recovery concordati con il processo critico |
-
-Google SRE evidenzia che pretendere 100% di reliability può essere indesiderabile: aumenta costo e conservatorismo, mentre un SLO ben scelto deve riflettere ciò che gli utenti realmente richiedono.
-
-Fonte: https://sre.google/sre-book/service-level-objectives/
-
-## Error budget: affidabilità come trade-off esplicito
-
-Se lo SLO è 99%, stiamo implicitamente accettando che una quota limitata del servizio possa non rispettare il target.
-
-Quella quota è l'**error budget**.
-
-In analytics, l'idea non deve diventare un gioco matematico.
-
-Serve a decidere **quando il debito di reliability deve prendere priorità rispetto a nuove feature**.
-
-Esempio:
-
-Un executive pack ha SLO di readiness 99% su 100 business day.
-
-Se accumula più failure di quanto il budget consenta, la policy può imporre:
-
-- freeze di nuove feature;
-- priorità a root-cause e test;
-- riduzione di dipendenze fragili;
-- revisione dello SLO se era irrealistico.
-
-Google SRE usa proprio l'error budget come meccanismo di bilanciamento tra reliability e velocità del cambiamento.
+Se un prodotto T2 con readiness SLO del 99% consuma troppo rapidamente il proprio budget, può diventare ragionevole congelare nuove feature, ridurre dipendenze fragili o investire in root-cause e recovery. La policy di error budget di Google SRE usa esattamente questo principio: affidabilità e velocità del cambiamento competono per capacità, e il budget fornisce un meccanismo per decidere quando spostare attenzione verso la stabilità.
 
 Fonte: https://sre.google/workbook/error-budget-policy/
 
-## Caso simulato/composito: dashboard verde, decisione rossa
+## La dashboard verde con 63 store mancanti
 
-Una catena retail utilizza una dashboard giornaliera per allocare stock.
+Una catena retail usa ogni mattina una dashboard per allocare stock. Alle 08:00 la pipeline è `SUCCESS`, il report è disponibile e i KPI sembrano normali. Alle 10:30 Operations scopre che **63 store** non hanno inviato dati POS.
 
-Alle 08:00:
+Il sistema monitorava job success, runtime e presenza della tabella. Non monitorava il numero di store attesi, coverage per sorgente, scostamento del volume dalla baseline o reconciliation con POS. La pipeline aveva processato correttamente ciò che aveva ricevuto; il prodotto aveva violato la propria promessa.
 
-- pipeline: `SUCCESS`;
-- report: disponibile;
-- KPI: apparentemente normali.
+Questo caso definisce meglio l'osservabilità di qualsiasi catalogo di metriche. Non dobbiamo monitorare tutto: dobbiamo osservare i segnali che permettono di scoprire un fallimento **prima che produca una decisione sbagliata**. In questo esempio il source coverage è un segnale decision-critical; CPU e runtime non lo sono, almeno non da soli.
 
-Alle 10:30 Operations scopre che **63 store** non hanno inviato i dati POS.
-
-Il sistema monitorava:
-
-- job success;
-- runtime;
-- presenza della tabella.
-
-Non monitorava:
-
-- numero di store attesi;
-- store mancanti;
-- volume per fonte;
-- scostamento dalla baseline;
-- reconciliation con il sistema POS.
-
-La pipeline aveva processato correttamente ciò che aveva ricevuto.
-
-Il prodotto analitico aveva fallito la sua promessa.
-
-## Observability: non monitorare tutto, monitorare ciò che cambia azione
-
-Google SRE distingue il monitoring utile per trend, dashboard, debugging e alerting, e sottolinea che un alert dovrebbe richiedere un'azione umana significativa invece di produrre rumore continuo.
+Google SRE distingue monitoring utile per trend, debugging, dashboard e alerting e ricorda che un alert dovrebbe richiedere un'azione umana significativa, non generare rumore permanente.
 
 Fonte: https://sre.google/sre-book/monitoring-distributed-systems/
 
-Per un data product possiamo osservare:
+Per un data product questo porta a quattro famiglie di segnali: source signals come arrival, partition coverage e schema version; transformation signals come join match rate, duplicate e row expansion; semantic signals come invariant, reconciliation e denominator shift; consumer signals come data age, query failure, consumer impact e missed decision deadline. La gerarchia conta più del numero di monitor.
 
-### Source signals
+## Page, ticket o monitor soltanto
 
-- arrival;
-- record count;
-- partition coverage;
-- schema version;
-- source-specific heartbeat.
+Non ogni deviazione deve svegliare qualcuno. Un problema T2/T3 fuori SLO, vicino alla decision deadline e con un'azione immediata possibile può meritare una page. Un degrado di qualità senza impatto immediato può diventare ticket. Un segnale utile soltanto a trend e capacity planning può restare monitoring. Se tutto pagina, nessun alert resta credibile.
 
-### Transformation signals
+Questa distinzione prepara il concetto più importante della sezione: un prodotto analitico non vive soltanto negli stati `verde` e `rotto`.
 
-- runtime;
-- failure/retry;
-- row expansion/contraction;
-- duplicate rate;
-- null rate;
-- join match rate.
+## Serving states: degradare senza fingere
 
-### Semantic signals
+Lo stato del servizio deve essere leggibile dal consumer e progettato prima dell'incidente.
 
-- business invariant;
-- accounting reconciliation;
-- metric continuity;
-- denominator shift;
-- unexpected definition/version.
+| Stato | Significato operativo |
+|---|---|
+| `READY` | tutti i blocking gate passano |
+| `READY WITH CAVEATS` | il dato è utilizzabile per la decisione dichiarata, con caveat visibile |
+| `STALE BUT SERVABLE` | il nuovo refresh non è pronto, ma l'ultima snapshot certificata è ancora valida entro limiti espliciti |
+| `PARTIAL / DEGRADED` | parte della copertura manca e l'ambito escluso è dichiarato |
+| `BLOCKED` | il rischio di correttezza o significato rende il prodotto non fit for decision |
 
-### Consumer signals
+Supponiamo che manchi un mercato che vale il 2% delle vendite. Pubblicare come se nulla fosse è scorretto; bloccare l'intero prodotto può essere inutile. `PARTIAL` con coverage label può essere la risposta giusta se il decision owner accetta quel rischio residuo. Se invece manca una reconciliation finanziaria materiale, lo stesso prodotto può dover passare a `BLOCKED`.
 
-- data age visibile;
-- query failures;
-- dashboard availability;
-- number of users affected;
-- missed decision deadline.
+Un fallback segue la stessa logica: last-known-good, stima `PROVISIONAL`, dataset parziale, manual reconciliation o superficie disabilitata non sono strategie per massimizzare availability. Sono modi per **preservare il significato mentre la promessa piena non è disponibile**.
 
-La domanda non è:
+## Incident severity e runbook
 
-> “Quante metriche possiamo monitorare?”
+La severity dovrebbe combinare decisione impattata, valore economico, deadline, consumer, rischio regolatorio/privacy, reversibilità e durata. Una possibile tassonomia è: `SEV-1` per un dato T3 errato già usato o imminente in una high-consequence decision; `SEV-2` per un prodotto T2 bloccato o materialmente sbagliato prima della deadline; `SEV-3` per un problema circoscritto con workaround; `SEV-4` per difetti non decision-critical.
 
-È:
-
-> **“Quale segnale ci permette di scoprire un fallimento prima che produca una decisione sbagliata?”**
-
-## Alerting: page, ticket o dashboard?
-
-Non ogni deviazione deve svegliare qualcuno.
-
-Possiamo distinguere:
-
-### Page / immediate escalation
-
-Quando:
-
-- il prodotto T2/T3 è fuori SLO;
-- la decision deadline è imminente;
-- il dato potrebbe causare impatto materiale;
-- esiste un'azione immediata possibile.
-
-### Ticket / business-hours action
-
-Quando:
-
-- il problema degrada qualità ma non blocca la decisione corrente;
-- il budget di reliability si sta consumando;
-- serve manutenzione ma non incidente.
-
-### Monitoring only
-
-Quando:
-
-- il segnale serve a trend e capacity planning;
-- non richiede un intervento puntuale.
-
-Troppi alert producono **alert fatigue** e trasformano l'osservabilità in rumore.
-
-## Degraded mode: non esistono solo “verde” e “rotto”
-
-Uno dei concetti più utili per l'analytics è il **degraded mode**.
-
-Supponiamo che manchi il feed di un piccolo mercato che rappresenta il 2% delle vendite.
-
-Le opzioni non sono soltanto:
-
-- pubblicare come se nulla fosse;
-- bloccare tutto.
-
-Possiamo avere stati operativi:
-
-### READY
-
-Tutti i blocking gate passano.
-
-### READY WITH CAVEATS
-
-Il dato è utilizzabile per alcune decisioni, con caveat visibile.
-
-### STALE BUT SERVABLE
-
-Nuovo refresh non disponibile; ultima versione certificata ancora utile entro un limite definito.
-
-### PARTIAL / DEGRADED
-
-Una parte della copertura manca; il prodotto espone chiaramente cosa è escluso.
-
-### BLOCKED
-
-Il rischio semantico o di correttezza rende il prodotto non fit for decision.
-
-Il degraded mode deve essere progettato **prima** dell'incidente.
-
-## Fallback: che cosa mostriamo quando il nuovo dato non è affidabile?
-
-Un Operating Contract può specificare:
-
-- ultima snapshot certificata;
-- stima preliminare marcata `PROVISIONAL`;
-- dataset parziale con coverage label;
-- manual reconciliation;
-- dashboard disabilitata con status page;
-- processo alternativo per decisioni critiche.
-
-Un fallback non deve massimizzare availability a costo di nascondere l'incertezza.
-
-## Incident severity
-
-Una severity taxonomy può combinare:
-
-- decisione impattata;
-- impatto economico;
-- numero di consumer;
-- deadline;
-- rischio regolatorio/privacy;
-- possibilità di rollback;
-- durata;
-- esposizione esterna.
-
-Esempio:
-
-### SEV-1
-
-Dato T3 errato già usato per payout/regulatory decision o rischio imminente equivalente.
-
-### SEV-2
-
-Prodotto T2 critico bloccato o materialmente sbagliato prima di una decision deadline.
-
-### SEV-3
-
-Problema circoscritto con workaround.
-
-### SEV-4
-
-Difetto minore / cosmetic / non decision-critical.
-
-I nomi possono cambiare. Conta avere escalation proporzionata.
-
-## Runbook: il contrario della memoria eroica
-
-Un runbook utile include:
+Il runbook deve ridurre il tempo necessario per capire cosa fare, non documentare tutto ciò che sappiamo:
 
 ```text
 symptom
 → affected product / tier
 → decision deadline
-→ current data status
+→ serving state
 → likely failure domains
 → checks
 → fallback
 → communication path
-→ recovery/backfill
+→ recovery / backfill
 → verification before re-certification
 ```
 
-Il runbook non deve contenere cento pagine.
+Questo è il contrario della memoria eroica. Un incidente non dovrebbe richiedere la persona che “sa dove guardare” perché l'ha risolto tre volte l'anno scorso.
 
-Deve ridurre il tempo necessario per capire **che cosa fare nei primi minuti**.
+## Postmortem e reliability review
 
-## Postmortem: imparare senza cercare un colpevole
-
-Google SRE promuove una cultura di postmortem blameless: l'obiettivo è capire le condizioni del sistema che hanno reso possibile il fallimento e trasformare l'incidente in miglioramento organizzativo.
+Google SRE promuove postmortem blameless: lo scopo è capire quali condizioni del sistema hanno permesso il failure e trasformare l'incidente in miglioramento, non trovare il colpevole.
 
 Fonte: https://sre.google/workbook/postmortem-culture/
 
-Un postmortem analytics dovrebbe chiedere:
+Per un prodotto analitico chiediamo quando sia iniziato il problema, quando sia stato rilevato, se l'ha scoperto il sistema o l'utente, perché i gate non lo abbiano fermato, quale decisione fosse a rischio, se il degraded mode abbia funzionato, quanto sia durata la recovery e quale test, monitor o runbook debba cambiare.
 
-- quando è iniziato il problema?
-- quando lo abbiamo rilevato?
-- chi lo ha rilevato: sistema o utente?
-- perché i controlli esistenti non lo hanno fermato?
-- quale decisione poteva essere compromessa?
-- il degraded mode ha funzionato?
-- quanto tempo è servito per recovery?
-- quale test/monitor/runbook deve cambiare?
+A cadenza mensile o trimestrale, SLO attainment, error budget, incident severity, time-to-detect, time-to-recover, repeat incident e quota di problemi scoperti dagli utenti chiudono il ciclo **promessa → misura → deviazione → risposta → apprendimento**.
 
-Non:
+> **Un prodotto analitico affidabile non è quello che non fallisce mai. È quello che sa quale fallimento può tollerare, lo rende visibile prima che diventi una decisione sbagliata e degrada senza fingere che il dato sia più affidabile di quanto sia.**
 
-> “Chi ha scritto la query sbagliata?”
-
-## Reliability review
-
-A cadenza mensile o trimestrale, i prodotti critici possono essere valutati su:
-
-- SLO attainment;
-- error budget consumption;
-- incident count e severity;
-- time to detect;
-- time to recover;
-- percentuale incidenti trovati dagli utenti;
-- repeat incidents;
-- stale/degraded usage;
-- reliability cost.
-
-Questo chiude il ciclo:
-
-**promessa → misura → deviazione → risposta → apprendimento**.
-
-> **Un prodotto analitico affidabile non è quello che non fallisce mai. È quello che rende esplicito quale livello di fallimento è accettabile, scopre rapidamente quando lo supera e degrada senza fingere che il dato sia più affidabile di quanto sia.**
+Una volta che il prodotto sa dichiarare la propria affidabilità, possiamo affrontare il problema successivo: come permettere a più persone di usarlo senza costringerle a ricostruire da sole semantica, qualità e ownership.
