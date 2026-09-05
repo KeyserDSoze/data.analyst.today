@@ -1,44 +1,16 @@
 ## 9.16 Rollout e rollback: il test riduce l'incertezza, non elimina il rischio
 
-Un risultato sperimentale positivo non chiude il problema. Cambia il tipo di problema.
+Un esperimento positivo non chiude il problema. Cambia la domanda.
 
-Durante l'esperimento chiedevamo:
+Durante il test chiedevamo se il trattamento produce un effetto utile rispetto al controllo. Durante il rollout chiediamo se quell'effetto e i guardrail restano accettabili quando aumentano **copertura, volume, eterogeneità e dipendenze operative**.
 
-> **il trattamento produce un effetto utile rispetto al controllo?**
+Il 20% non è sempre un piccolo 100%. A scala possono emergere limiti di database, code, API o payment provider; mercati e device rari possono finalmente avere abbastanza volume da mostrare failure; supply, inventory e network effects possono cambiare equilibrio; supporto, fraud review o warehouse possono assorbire un pilot e non il traffico completo.
 
-Durante il rollout chiediamo invece:
-
-> **l'effetto e i guardrail restano accettabili quando aumentano copertura, volume, eterogeneità e dipendenze operative?**
-
-Sono domande diverse.
-
-Un test può essere perfettamente valido e un rollout può comunque fallire.
-
-### Perché il 20% non è sempre un piccolo 100%
-
-Aumentare l'esposizione può cambiare il sistema stesso.
-
-Possiamo incontrare almeno quattro rischi.
-
-**Scale risk**  
-Database, API, code, modelli e sistemi di pagamento possono comportarsi diversamente sotto carico elevato.
-
-**Coverage risk**  
-Nel test alcuni paesi, device, payment provider o customer segment possono avere troppo poco volume per mostrare problemi rari.
-
-**Equilibrium/interference risk**  
-In marketplace, sistemi di ranking o reti collaborative, l'effetto può cambiare quando quasi tutti ricevono il trattamento perché cambiano congestione, offerta e comportamento degli altri attori.
-
-**Operational risk**  
-Processi di supporto, fraud review, warehouse o Customer Success possono assorbire un pilot ma non il traffico completo.
-
-Il rollout progressivo serve a osservare questi rischi prima che diventino irreversibili o costosi.
+Per questo un test valido produce una **ship candidate**, non una garanzia.
 
 ### Caso simulato/composito — PayWave
 
-PayWave testa un nuovo flusso di autenticazione per pagamenti online.
-
-Nel test sul 20% del traffico:
+PayWave testa un nuovo flusso di autenticazione per pagamenti online. Sul 20% del traffico ottiene:
 
 - payment completion: +1,8%;
 - fraud loss: stabile;
@@ -46,11 +18,7 @@ Nel test sul 20% del traffico:
 - chargeback: nessun movimento materialmente rilevante;
 - Experiment Health Gate: **VALIDO**.
 
-Il risultato supera anche la soglia economica definita nell'Experiment Contract.
-
-La decisione è quindi **SHIP CANDIDATE**, non "100% immediato".
-
-Il rollout previsto è:
+Il risultato supera anche la soglia economica del contract. Il rollout pianificato è:
 
 | Fase | Exposure | Obiettivo principale |
 |---|---:|---|
@@ -59,95 +27,49 @@ Il rollout previsto è:
 | 3 | 60% → 85% | verificare scale risk e code operative |
 | 4 | 85% → 100% | confermare guardrail a regime |
 
-Al 60% il failure rate cresce di 0,6 punti percentuali su un circuito di pagamento minoritario usato soprattutto in due mercati dell'Europa centrale.
+Al 60% il failure rate cresce di 0,6 punti percentuali su un circuito minoritario usato soprattutto in due mercati dell'Europa centrale. Il test iniziale non era necessariamente invalido: quel sottogruppo aveva poco volume e il problema raro non era emerso con chiarezza.
 
-Il test iniziale non era necessariamente sbagliato: quel sottogruppo aveva volume insufficiente perché un problema raro emergesse con chiarezza.
+Il team fa rollback parziale al 35%, corregge l'integrazione e riprende il ramp solo dopo una nuova verifica. Il rollback non è il fallimento del metodo; è la **funzione di sicurezza prevista dal metodo**.
 
-Il team esegue un rollback parziale al 35%, corregge l'integrazione e riprende il ramp-up solo dopo un nuovo controllo.
+### Le soglie devono esistere prima dell'incidente
 
-### Rollback non significa fallimento analitico
+Un rollout governato collega ogni segnale a un'azione. Le metriche possono includere crash/error rate, payment failure, latency P95/P99, fraud/chargeback loss, support load, cancellation/refund, inventory o delivery failure.
 
-Se il piano prevedeva criteri di rollback e il sistema li applica correttamente, il processo ha funzionato.
+Esempi:
 
-Un buon sistema di experimentation non promette che ogni ship candidate sarà perfetto a scala. Promette che:
-
-- il rischio residuo è esplicito;
-- viene aumentata l'esposizione in modo controllato;
-- i segnali critici vengono osservati;
-- esiste una strada rapida per tornare indietro.
-
-Questo è molto diverso dal rollout "speriamo vada bene".
-
-### Rollback criteria: devono essere scritti prima
-
-Le soglie dipendono dal prodotto, ma possono riguardare:
-
-- crash/error rate;
-- payment failure;
-- latency P95/P99;
-- fraud o chargeback loss;
-- customer support load;
-- cancellation/refund;
-- inventory o delivery failures;
-- guardrail economiche;
-- incident severity.
-
-Esempio:
-
-- payment failure: rollback se delta > +0,30 pp per almeno due finestre di monitoraggio;
+- payment failure: rollback se delta > +0,30 pp per almeno due finestre;
 - latency P99: rollback se delta > +150 ms;
 - fraud loss: stop immediato sopra una soglia monetaria prestabilita;
 - checkout error rate: rollback immediato se supera +5% relativo.
 
-Il dettaglio importante non è la soglia specifica. È che la soglia sia **predefinita, osservabile e associata a un'azione**.
+Il dettaglio non è il valore numerico universale — non esiste — ma il fatto che la soglia sia **predefinita, osservabile, con un owner e un'azione associata**.
 
-### Global rollback e partial rollback
+### Non esiste soltanto rollback globale
 
-Non tutti gli incidenti richiedono lo stesso intervento.
+L'architettura può permettere global rollback, partial rollback per mercato/provider/device, freeze dell'espansione o kill switch immediato. Queste opzioni dovrebbero essere progettate quando si costruisce la feature flag, non inventate durante l'incidente.
 
-Possiamo distinguere:
+Se un trattamento rischioso non può essere disabilitato in tempi compatibili con il danno potenziale, questa limitazione appartiene già all'Experiment Contract.
 
-- **global rollback**: il trattamento viene disabilitato ovunque;
-- **partial rollback**: si torna indietro solo su un mercato, provider, device o segmento;
-- **freeze**: si blocca l'espansione mantenendo l'attuale percentuale;
-- **kill switch**: disabilitazione immediata per incidenti critici.
+### L'effetto può cambiare a regime
 
-Queste opzioni dovrebbero essere compatibili con l'architettura del prodotto. Se tecnicamente non possiamo fare rollback in tempi compatibili con il rischio, quella limitazione fa parte del design sperimentale.
+Durante il ramp conviene ricontrollare anche primary e guardrail business, pur sapendo che il rollout progressivo non è sempre un nuovo esperimento randomizzato puro. Un effetto può attenuarsi, amplificarsi, saturare o generare nuovi effetti indiretti quando quasi tutti sono trattati.
 
-### Effetto a test e effetto a regime
+Nei marketplace e nei sistemi condivisi questo è particolarmente importante: il rollout è il momento in cui ci avviciniamo all'equilibrio che il buyer-level test non poteva rappresentare completamente.
 
-Un'altra domanda importante è se l'effetto stimato nel test sia trasferibile al rollout completo.
+Microsoft ExP ha documentato l'uso di experimentation e feature flag anche su cambi infrastrutturali, con regressioni che hanno portato a stop, investigazione, correzione e nuovo test prima del rollout completo.[^ms-infra]
 
-Un trattamento può avere:
+### Stati decisionali più utili di win/loss
 
-- effetto stabile;
-- effetto attenuato a scala;
-- effetto amplificato;
-- nuovi effetti indiretti;
-- saturazione.
-
-Per questo durante il ramp-up non basta monitorare solo error rate e latency. Conviene ricontrollare anche primary metric e guardrail business, sapendo però che il rollout non è più necessariamente un esperimento randomizzato puro.
-
-### Caso reale documentato — Microsoft ExP
-
-Microsoft ha documentato l'uso dell'experimentation anche per modifiche infrastrutturali e backend. In casi reali, regressioni osservate durante i test hanno portato a stop, investigazione, correzione e nuova sperimentazione prima di procedere. La lezione è utile anche fuori dall'infrastruttura: **la decisione di ship deve essere reversibile quando resta rischio operativo materiale**.
-
-### Il passaggio di stato
-
-Una terminologia semplice aiuta a evitare il falso binario "win/loss".
-
-Un esperimento può chiudersi come:
+Un run può chiudersi come:
 
 - **NO-SHIP**;
 - **INCONCLUSIVE — serve altra evidenza**;
 - **REDESIGN AND RETEST**;
 - **SHIP CANDIDATE — rollout progressivo**;
-- **SHIP WITH CONSTRAINTS — solo per popolazioni/mercati supportati dall'evidenza**.
+- **SHIP WITH CONSTRAINTS — solo nello scope supportato dall'evidenza**.
 
-Solo dopo il ramp-up e il periodo di osservazione previsto possiamo parlare di **SHIP COMPLETED**.
+Solo dopo ramp-up e osservazione prevista possiamo parlare di **SHIP COMPLETED**.
 
-> **Il test decide se vale la pena aumentare l'esposizione. Il rollout verifica se il sistema continua a meritare quella decisione quando l'esposizione aumenta.**
+> **Il test decide se vale la pena aumentare l'esposizione. Il rollout verifica se il sistema continua a meritare quella decisione mentre l'esposizione aumenta.**
 
-### Fonte pubblica
-
-- Microsoft Experimentation Platform, *A/B Testing Infrastructure Changes at Microsoft ExP*: https://www.microsoft.com/en-us/research/articles/a-b-testing-infrastructure-changes-at-microsoft-exp/
+[^ms-infra]: Microsoft Research, *A/B Testing Infrastructure Changes at Microsoft ExP*: https://www.microsoft.com/en-us/research/articles/a-b-testing-infrastructure-changes-at-microsoft-exp/
