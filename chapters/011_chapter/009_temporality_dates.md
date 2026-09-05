@@ -1,116 +1,31 @@
 ## 11.8 Date e temporalità: il tempo non è una colonna qualsiasi
 
-Una delle fonti più comuni di errore analitico è usare una data corretta per rispondere alla domanda sbagliata.
+Una delle fonti più comuni di errore analitico è usare una data corretta per rispondere alla domanda sbagliata. Un ordine può avere `created_at`, `paid_at`, `shipped_at`, `delivered_at`, `returned_at` e `recognized_revenue_date`: tutte date valide, ma ognuna racconta un evento diverso.
 
-Un ordine può avere:
+Per questo la time semantics dell’Analytical Data Contract deve separare almeno **event time**, quando il fatto accade; **system time**, quando il sistema lo registra; **warehouse availability time**, quando diventa interrogabile; **reporting/competence time**, a quale periodo viene attribuito; **validity time**, quando un attributo è considerato valido. Late-arriving data, backfill e analisi point-in-time diventano gestibili soltanto quando questi tempi non vengono compressi in una singola colonna “date”.
 
-- `created_at`;
-- `paid_at`;
-- `shipped_at`;
-- `delivered_at`;
-- `returned_at`;
-- `recognized_revenue_date`.
+### ForgeMarket: tre crescite corrette con tre significati diversi
 
-Tutte possono essere valide. Ma ciascuna definisce una storia diversa.
+ForgeMarket presenta tre numeri di crescita Q4. Commerciale raggruppa per `created_at` e ottiene **+14% bookings**; Finance usa la data di fatturazione e ottiene **+6% billed revenue**; Operations usa `delivered_at` e ottiene **+2% delivered value**.
 
-### Time semantics nell’Analytical Data Contract
+Nessun numero è necessariamente sbagliato. Diventano incompatibili quando vengono chiamati tutti `revenue_growth`. La responsabilità del modello semantico è associare nome e definizione all’evento temporale che rappresentano.
 
-Per ogni dataset importante dovremmo distinguere almeno:
+Anche la timezone appartiene alla domanda. Se una campagna italiana parte alle 00:00 locali ma gli eventi sono in UTC, `DATE(event_timestamp_utc)` può spostare le prime ore nel giorno precedente. La giornata business può essere definita dalla timezone del mercato, del merchant, dell’utente, da UTC per processi infrastrutturali o da una timezone contabile centrale. Non esiste un default universale: esiste una policy.
 
-- **event time** — quando il fatto è accaduto nel mondo reale;
-- **system time** — quando il sistema lo ha registrato o aggiornato;
-- **warehouse availability time** — quando l’informazione è diventata interrogabile;
-- **reporting/competence time** — a quale periodo il business attribuisce il fatto;
-- **validity time** — da quando a quando un attributo o stato è valido.
-
-Questa separazione diventa essenziale con late-arriving data, rettifiche, backfill e modelli point-in-time.
-
-### Caso simulato/composito — ForgeMarket e il trimestre che cresceva del 14%, 6% o 2%
-
-ForgeMarket, piattaforma B2B, presenta tre numeri di crescita Q4.
-
-Commerciale usa:
-
-```sql
-DATE_TRUNC('quarter', created_at)
-```
-
-e ottiene **+14% bookings**.
-
-Finance usa la data di fatturazione e ottiene **+6% billed revenue**.
-
-Operations usa `delivered_at` e ottiene **+2% delivered value**.
-
-Nessuno dei tre numeri è necessariamente sbagliato.
-
-Il problema nasce se tutti vengono chiamati semplicemente `revenue_growth`.
-
-La prima responsabilità del modello semantico è quindi associare il nome della metrica all’evento temporale che rappresenta.
-
-### Timezone: il giorno del business non coincide sempre con UTC
-
-Un marketplace globale registra gli eventi in UTC.
-
-Una campagna italiana parte alle 00:00 ora locale. Se raggruppiamo direttamente con:
-
-```sql
-DATE(event_timestamp_utc)
-```
-
-una parte delle prime ore può finire nel giorno UTC precedente.
-
-La domanda corretta è:
-
-> quale timezone definisce la giornata per questa decisione?
-
-La regola può essere:
-
-- timezone del mercato;
-- timezone del merchant;
-- timezone dell’utente;
-- UTC per processi infrastrutturali;
-- timezone contabile centrale.
-
-Non esiste una scelta universale. Deve essere dichiarata.
-
-### Intervalli temporali: evitare doppi conteggi ai confini
-
-Per periodi consecutivi è spesso robusto usare convenzioni semiaperte:
+I confini temporali devono essere altrettanto espliciti. Per periodi consecutivi una convenzione semiaperta riduce ambiguità:
 
 ```sql
 WHERE event_at >= TIMESTAMP '2026-08-01 00:00:00'
   AND event_at <  TIMESTAMP '2026-09-01 00:00:00'
 ```
 
-Questo riduce ambiguità rispetto a condizioni come `<= 23:59:59`, che possono fallire quando aumenta la precisione dei timestamp.
+È più robusta di un `<= 23:59:59` che dipende dalla precisione del timestamp.
 
-La regola editoriale è più importante della sintassi specifica:
+### Late data: il passato può restare aperto
 
-> **i confini temporali devono essere coerenti, non approssimati.**
+Una vendita può avvenire il 31 agosto alle 23:50 e arrivare nel warehouse il 1° settembre alle 02:15. Per “quanto abbiamo venduto ad agosto?” useremo event/competence time; per “quanti record ha processato la pipeline il 1° settembre?” ingestion time. Se il modello conserva soltanto una delle due date, alcune domande diventano impossibili o vengono ricostruite per approssimazione.
 
-### Event time vs ingestion time
-
-Immaginiamo una vendita avvenuta il 31 agosto alle 23:50, caricata nel warehouse il 1° settembre alle 02:15.
-
-Per la domanda “quanto abbiamo venduto ad agosto?” useremo probabilmente event/competence time.
-
-Per la domanda “quanti record ha processato la pipeline il 1° settembre?” useremo ingestion time.
-
-Se il dataset conserva soltanto una delle due date, alcune analisi diventano impossibili o vengono ricostruite in modo ambiguo.
-
-### Late-arriving data e backfill
-
-Un KPI giornaliero può cambiare dopo la pubblicazione perché arrivano eventi tardivi.
-
-Il contratto dovrebbe quindi specificare:
-
-- lateness attesa;
-- finestra di backfill;
-- quando una giornata viene considerata “stabile”;
-- se i report storici vengono restated;
-- come comunicare revisioni importanti.
-
-Esempio:
+Un KPI pubblicato oggi può inoltre cambiare domani quando arrivano eventi tardivi. Il contract dovrebbe quindi dichiarare lateness attesa, finestra di backfill, momento di stabilizzazione e policy di restatement. Un service level come:
 
 ```text
 freshness SLA: 95% degli eventi entro 30 minuti
@@ -118,40 +33,13 @@ stabilizzazione D+1: 99,8%
 backfill consentito: 7 giorni
 ```
 
-Questo è molto più utile di un generico “dashboard aggiornato ogni giorno”.
+racconta molto più di “dashboard aggiornata ogni giorno”.
 
-### Point-in-time correctness
+### Point-in-time correctness: quale attributo conoscevamo allora?
 
-Un altro errore frequente è analizzare eventi storici usando attributi noti soltanto oggi.
+Un cliente era `SMB` nel 2024 e diventa `Enterprise` nel 2026. Collegare le vendite 2024 alla dimensione corrente significa riscrivere il passato. Possiamo volerlo fare intenzionalmente, ma dobbiamo distinguere la **current-state view** dalla **historical as-of view**.
 
-Un cliente era `SMB` nel 2024 e diventa `Enterprise` nel 2026.
-
-Se colleghiamo le vendite 2024 alla dimensione corrente, stiamo riscrivendo il passato.
-
-Lo stesso problema appare con:
-
-- pricing tier;
-- territorio commerciale;
-- account manager;
-- rischio cliente;
-- categoria prodotto;
-- stato contrattuale.
-
-La domanda da fare è:
-
-> voglio il valore **corrente** dell’attributo oppure il valore **as-of event time**?
-
-Le Slowly Changing Dimensions formalizzano una delle strategie per conservare questa distinzione.
-
-### As-of time e modelli predittivi
-
-Il Capitolo 10 ha introdotto la frontiera informativa della previsione.
-
-Nel data modeling quella frontiera deve diventare eseguibile.
-
-Se produciamo uno score il 1° agosto alle 08:00, ogni feature dovrebbe poter essere ricostruita usando soltanto dati disponibili entro quel momento.
-
-Quindi il modello analitico dovrebbe distinguere, quando necessario:
+Questo è lo stesso confine informativo del Capitolo 10. Se produciamo uno score il 1° agosto alle 08:00, una feature è valida soltanto se possiamo ricostruirla usando informazioni conoscibili entro quel momento. Per questo, quando serve, il modello analitico dovrebbe distinguere:
 
 ```text
 event_at
@@ -159,11 +47,9 @@ recorded_at
 available_at
 ```
 
-Un warehouse che conserva solo lo stato finale può rendere impossibile una vera validazione `as-of`.
+Un warehouse che conserva soltanto lo stato finale può rendere impossibile una vera validazione `as-of`.
 
 ### Temporal contract
-
-Per ogni metrica o dataset temporale importante documentiamo:
 
 | Campo | Domanda |
 |---|---|
@@ -176,4 +62,4 @@ Per ogni metrica o dataset temporale importante documentiamo:
 | lateness policy | quanto ritardo accettiamo? |
 | restatement | il passato può cambiare? |
 
-> **La data corretta non è la colonna più comoda. È quella che rappresenta il tempo della domanda analitica.**
+> **La data corretta non è la colonna più comoda. È quella che rappresenta il tempo della domanda e il livello di conoscenza disponibile in quel momento.**
