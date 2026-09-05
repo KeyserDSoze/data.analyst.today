@@ -1,57 +1,20 @@
-## 15.9 Pre-mortem e post-mortem: cercare il fallimento prima, capire l'apprendimento dopo
+## 15.9 Pre-mortem e post-mortem: proteggere la scelta prima e l'apprendimento dopo
 
-Le decisioni soffrono di due bias opposti.
+Le decisioni soffrono di due bias opposti. Prima della scelta tendiamo a difendere il piano preferito e a sottopesare ciò che potrebbe farlo fallire. Dopo l'esito tendiamo a riscrivere la storia come se ciò che è successo fosse stato più prevedibile di quanto fosse davvero.
 
-**Prima della scelta**
+Pre-mortem e post-mortem proteggono due momenti diversi dello stesso Decision Record.
 
-Tendiamo a difendere il piano preferito e a sottopesare ciò che potrebbe farlo fallire.
+### Prima dell'azione: rendere legittimo il dissenso
 
-**Dopo l'esito**
+Nel pre-mortem il team assume che la decisione sia già fallita e chiede:
 
-Tendiamo a riscrivere la storia come se ciò che è successo fosse stato più prevedibile di quanto fosse davvero.
+> **È passato un anno. Questa scelta è stata un fallimento evidente. Che cosa è successo?**
 
-Pre-mortem e post-mortem servono a proteggere due momenti diversi del Decision Record.
+Gary Klein ha descritto il *project premortem* proprio come un modo per rendere più facile esprimere riserve e debolezze che durante la pianificazione possono restare silenziose.[^klein-premortem] Il suo valore non è il pessimismo. È ridurre il costo sociale del dire “questa parte del piano non mi convince” prima che il commitment renda più difficile cambiare rotta.
 
-### Il pre-mortem: assumere che abbiamo già fallito
+Consideriamo un SaaS che vuole aumentare il prezzo del piano Pro del 15%. Il business case centrale è positivo. Nel pre-mortem emergono però failure mode diversi: churn enterprise molto più alto del previsto, Sales che compensa con discounting, ticket Support in crescita, competitor che sfrutta il price change, minore new-logo conversion, NRR peggiore anche con ARPA iniziale più alto ed eterogeneità forte per tenure e mercato.
 
-La tecnica è semplice.
-
-Prima di impegnarsi, il team assume:
-
-> “È passato un anno. Questa decisione è stata un fallimento evidente. Che cosa è successo?”
-
-Poi ogni partecipante genera spiegazioni plausibili.
-
-Gary Klein ha descritto il **project premortem** come tecnica per rendere più facile esprimere dubbi e debolezze che durante la pianificazione possono restare silenziosi.
-
-Fonte: Harvard Business Review, *Performing a Project Premortem*: https://hbr.org/2007/09/performing-a-project-premortem
-
-Il valore non è il pessimismo.
-
-È creare una struttura in cui il dissenso diventa un input legittimo prima che il piano accumuli commitment.
-
-### Caso simulato/composito — aumento prezzo SaaS
-
-Una SaaS vuole aumentare il prezzo del piano Pro del 15%.
-
-Il business case centrale è positivo.
-
-Prima del rollout il team fa un pre-mortem.
-
-> “Tra sei mesi diciamo che il pricing change è stato un errore. Perché?”
-
-Emergono:
-
-- churn enterprise molto più alto del previsto;
-- Sales compensa con discounting e il list-price increase non diventa realized price;
-- ticket Support crescono e aumentano cost-to-serve;
-- competitor usa il nuovo prezzo per displacement campaigns;
-- nuovi clienti convertono meno;
-- vecchi clienti percepiscono un cambio di valore non accompagnato dal prodotto;
-- NRR peggiora anche se ARPA iniziale sale;
-- metriche aggregate nascondono forte eterogeneità per tenure e mercato.
-
-Ora ogni failure mode viene trasformato in una parte del Decision Record.
+Queste non restano paure generiche. Diventano osservabilità:
 
 | Failure mode | Leading indicator | Guardrail / mitigation |
 |---|---|---|
@@ -61,79 +24,27 @@ Ora ogni failure mode viene trasformato in una parte del Decision Record.
 | new-logo conversion | funnel by segment | separate new/existing policy |
 | competitive reaction | win/loss reasons | weekly sales feedback |
 
-Il pre-mortem ha creato **osservabilità della decisione**.
+Il pre-mortem ha quindi modificato il learning contract **prima** del rollout.
 
-### Pre-mortem ≠ lista infinita di paure
+Non tutti i failure mode meritano lo stesso spazio. Dopo la generazione li ordiniamo per plausibilità, impatto, velocità di rilevazione, detectability e mitigability. Ci interessano soprattutto quelli che possono cambiare la scelta, richiedere un guardrail, giustificare uno staged rollout o suggerire un dato che oggi non stiamo raccogliendo.
 
-Non tutti i failure mode meritano lo stesso spazio.
+### Attaccare anche il measurement plan
 
-Dopo la generazione, classifichiamo:
+Un progetto può fallire perché non sappiamo misurarlo, non soltanto perché l'esecuzione è sbagliata. Il pre-mortem dovrebbe chiedere se il KPI principale può migliorare mentre un outcome importante peggiora, se distinguiamo adoption da impact, se abbiamo exposure logging, se la baseline è credibile e se i dati maturano abbastanza presto.
 
-```text
-plausibility
-impact
-speed of detection
-detectability
-mitigability
-```
+Per decisioni ad alto commitment può essere utile anche un red team con un compito esplicito: costruire il caso migliore contro l'opzione preferita, cercando evidenza contraria, alternative sottovalutate, costi esclusi, lock-in, effetti di secondo ordine e downside correlato. Il suo obiettivo non è vincere il dibattito, ma verificare se la recommendation sopravvive a un attacco serio.
 
-Poi selezioniamo quelli che:
+### Dopo l'azione: separare decision process, execution e outcome
 
-- possono cambiare la scelta;
-- richiedono guardrail;
-- devono essere monitorati;
-- suggeriscono un pilot o rollout più reversibile.
+Nel post-mortem la prima domanda non dovrebbe essere “la decisione era giusta o sbagliata?”. È più utile separare:
 
-### Il pre-mortem deve attaccare anche la measurement plan
-
-Un progetto può “fallire” perché non sappiamo misurarlo.
-
-Domande:
-
-- il KPI principale può migliorare mentre un outcome importante peggiora?
-- distinguiamo adoption da impact?
-- abbiamo exposure logging?
-- il dato matura abbastanza presto?
-- possiamo separare policy effect da trend esterno?
-- esiste una baseline credibile?
-
-Un pre-mortem utile può quindi scoprire che **la decisione non è ancora valutabile**, non soltanto che l'esecuzione è rischiosa.
-
-### Red team: chi deve cercare di farci cambiare idea?
-
-Per decisioni ad alto commitment può essere utile assegnare esplicitamente un ruolo:
-
-> “Costruisci il caso migliore contro la preferred option.”
-
-Il red team dovrebbe cercare:
-
-- evidenza contraria;
-- alternative sottovalutate;
-- assunzioni troppo ottimistiche;
-- costi esclusi;
-- effetti di secondo ordine;
-- lock-in;
-- correlated downside.
-
-L'obiettivo non è vincere il dibattito.
-
-È ridurre la probabilità che una scelta sopravviva soltanto perché nessuno l'ha attaccata seriamente.
-
-### Il post-mortem: non partire dall'esito
-
-Dopo l'azione, il team non dovrebbe chiedere subito:
-
-> “La decisione era giusta o sbagliata?”
-
-Meglio separare tre domande:
-
-1. **Decision process** — con l'informazione disponibile allora, il processo era buono?
+1. **Decision process** — con l'informazione disponibile allora, il ragionamento era buono?
 2. **Execution** — abbiamo implementato ciò che avevamo deciso?
 3. **Outcome** — che cosa è successo nel mondo?
 
-Questa separazione evita di confondere fortuna, esecuzione e qualità del ragionamento.
+Questa separazione impedisce di attribuire automaticamente un risultato negativo a una scelta ex ante debole oppure un risultato positivo a un processo eccellente.
 
-### Un template di decision review
+Una decision review può usare:
 
 ```text
 What we expected:
@@ -164,47 +75,15 @@ data collection:
 future decision rule:
 ```
 
-### Non usare il post-mortem per produrre una causa comoda
-
-Un outcome negativo può avere più cause.
-
-Esempio:
-
-```text
-new market underperforms
-```
-
-Possibili componenti:
-
-- scelta strategica sbagliata;
-- execution Sales lenta;
-- hiring ritardato;
-- competitor shock;
-- recessione locale;
-- metriche iniziali troppo ottimistiche.
-
-Il post-mortem deve distinguere ciò che il team **avrebbe potuto ragionevolmente conoscere e controllare** da ciò che è emerso dopo.
+Il post-mortem non deve produrre una nuova causa comoda. Se un nuovo mercato underperformer, le componenti possono includere scelta strategica, execution Sales lenta, hiring ritardato, competitor shock, recessione locale o ipotesi iniziali troppo ottimistiche. Dobbiamo distinguere ciò che era ragionevolmente conoscibile e controllabile da ciò che è emerso soltanto dopo.
 
 ### Blameless non significa accountability-free
 
-Evitare il blame game non significa evitare responsabilità.
+Possiamo dire contemporaneamente che un owner era responsabile di un gate, che quel gate non è stato applicato, che il sistema rendeva facile bypassarlo e che il processo deve essere modificato. La domanda utile è:
 
-Possiamo dire contemporaneamente:
+> **Quale combinazione di decisione, processo ed execution ha reso possibile l'outcome, e quale controllo avrebbe avuto il miglior rapporto tra prevenzione e costo?**
 
-- l'owner era responsabile del gate;
-- il gate non è stato applicato;
-- il sistema rendeva facile bypassarlo;
-- il processo va corretto.
-
-La domanda utile è:
-
-> **“Quale combinazione di decisione, processo ed execution ha reso questo outcome possibile, e quale controllo avrebbe avuto il miglior rapporto tra prevenzione e costo?”**
-
-### Feed learning nel prossimo Decision Record
-
-L'apprendimento deve cambiare qualcosa di riusabile.
-
-Esempi:
+L'apprendimento deve poi cambiare qualcosa di riusabile:
 
 ```text
 historical project overruns
@@ -222,9 +101,7 @@ supplier switching lento
 
 Se il post-mortem produce soltanto una presentazione, l'organizzazione non ha realmente imparato.
 
-### Campo del Decision Record
-
-Prima della scelta:
+Nel Decision Record aggiungiamo quindi, prima della scelta:
 
 ```text
 premortem top failures:
@@ -234,7 +111,7 @@ guardrails added:
 red-team challenge:
 ```
 
-Dopo:
+E dopo:
 
 ```text
 review date:
@@ -247,3 +124,5 @@ reusable learning:
 ```
 
 > **Il pre-mortem protegge la decisione dall'eccesso di fiducia prima dell'azione. Il post-mortem protegge l'apprendimento dalla storia che costruiamo dopo aver visto l'esito.**
+
+[^klein-premortem]: Gary Klein, *Performing a Project Premortem*, Harvard Business Review, September 2007, https://hbr.org/2007/09/performing-a-project-premortem
