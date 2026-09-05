@@ -1,150 +1,22 @@
-## 18.1 Ownership: chi decide il significato, chi mantiene il servizio, chi usa il numero
+## 18.1 Ownership: il numero deve avere più di un proprietario
 
-Quando un'organizzazione cresce, il problema raramente è la mancanza di metriche.
+Quando un'organizzazione cresce, il problema raramente è la mancanza di metriche. È la presenza di numeri molto usati senza una catena di responsabilità abbastanza precisa da sopravvivere a conflitti, cambiamenti e incidenti.
 
-È la presenza di numeri senza una catena di responsabilità chiara.
+Dire che una metrica è “owned by Finance” o “del data team” è troppo vago. Finance può possedere il significato economico senza mantenere la pipeline; Analytics Engineering può garantire test e SLO senza avere l'autorità di decidere quando una fattura entra nella recognized revenue; il CFO può consumare il numero senza gestire le eccezioni quotidiane. **Significato, decisione ed esercizio sono responsabilità diverse.** Se le comprimiamo nella parola `owner`, scopriamo l'ambiguità proprio quando il sistema smette di riconciliare.
 
-Una metrica può essere:
+Per un prodotto critico conviene distinguere almeno quattro ruoli. Il **decision owner** risponde della decisione ricorrente e chiarisce quali errori siano materialmente pericolosi. Il **semantic o metric owner** possiede definizione, popolazione, esclusioni, timing ed eventuali breaking change di significato. Il **product/technical owner** mantiene implementazione, test, SLO, monitoring, release, runbook e cost-to-serve. Lo **steward/governance owner** protegge accesso, privacy, classificazione, lineage e standard trasversali. I nomi possono cambiare; non deve cambiare la separazione delle responsabilità.
 
-- calcolata correttamente;
-- documentata;
-- disponibile in una semantic layer;
-- usata da centinaia di persone;
+Questa distinzione è coerente con la Fabric Adoption Roadmap di Microsoft, che tratta content ownership, stewardship, supporto e trasferimento della proprietà come temi separati e collega il livello di controllo allo scope e alla criticità del contenuto.
 
-ma diventare comunque fragile se nessuno sa chi abbia l'autorità di:
+Fonte: https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-content-ownership-and-management
 
-- cambiarne la definizione;
-- approvare una breaking change;
-- dichiararla non affidabile;
-- decidere cosa fare quando due sistemi non riconciliano.
+## Tre NRR corretti e una sola metrica da board
 
-Per questo il primo blocco dell'Analytics Operating Contract non è il tool.
+Una società SaaS prepara il board meeting. Nella stessa presentazione compaiono tre valori di NRR: `108%` in Finance, `104%` in Customer Success, `111%` in Product. Nessuna query è necessariamente sbagliata. Finance esclude contratti non ancora riconosciuti; Customer Success considera soltanto gli account assegnati alle regioni gestite; Product include expansion maturata entro trenta giorni dal rinnovo.
 
-È l'**ownership model**.
+Il failure mode non è quindi “tre formule diverse”. Sono **tre oggetti diversi con lo stesso namespace**. Vietare le varianti e imporre un'unica dashboard risolverebbe il sintomo ma potrebbe distruggere use case legittimi. La soluzione più robusta è separare purpose e autorità: `Board NRR` come metrica executive certificata, `CS-managed NRR` per la gestione del portafoglio assegnato, `Product cohort NRR` per lifecycle analysis.
 
-## “Owner” è una parola troppo generica
-
-Dire:
-
-> “Finance è owner della revenue.”
-
-non basta.
-
-Finance potrebbe possedere la definizione economica, ma non la pipeline.
-
-Analytics Engineering potrebbe mantenere il modello, ma non avere autorità per decidere quando una fattura debba entrare nella recognized revenue.
-
-Il CFO potrebbe consumare il numero, ma non essere la persona che gestisce le eccezioni quotidiane.
-
-È utile distinguere almeno quattro responsabilità.
-
-### 1. Decision owner
-
-È responsabile della decisione ricorrente supportata dal prodotto.
-
-Esempio:
-
-- CFO per il weekly revenue review;
-- VP Operations per il capacity plan;
-- Chief Risk Officer per una policy di credito.
-
-Il decision owner risponde a:
-
-> **“A quale decisione serve questa capacità e quali errori sono materialmente pericolosi?”**
-
-### 2. Semantic / metric owner
-
-È responsabile del significato business.
-
-Decide o approva:
-
-- definizione;
-- popolazione;
-- esclusioni;
-- timing;
-- trattamento delle eccezioni;
-- breaking semantic change.
-
-Il data team può proporre una formula più coerente.
-
-Non dovrebbe però inventare unilateralmente che cosa significhi `recognized_revenue` o `active_customer`.
-
-### 3. Product / technical owner
-
-È responsabile del prodotto analitico in esercizio:
-
-- implementazione;
-- test;
-- SLO;
-- monitoring;
-- incident response;
-- release;
-- documentation;
-- cost-to-serve.
-
-Può essere un analytics engineer, data engineer, BI team o team di dominio.
-
-### 4. Steward / governance owner
-
-Protegge aspetti trasversali:
-
-- accesso;
-- privacy;
-- classificazione;
-- retention;
-- lineage;
-- standard organizzativi;
-- certification/deprecation.
-
-Non tutte le organizzazioni useranno questi nomi.
-
-La distinzione importante è evitare che **significato, esercizio e decisione** vengano trattati come un'unica responsabilità vaga.
-
-## Caso simulato/composito: tre NRR nello stesso board pack
-
-Una società SaaS prepara il board meeting.
-
-Nella stessa presentazione compaiono:
-
-- `NRR = 108%` nella slide Finance;
-- `NRR = 104%` nella slide Customer Success;
-- `NRR = 111%` nella slide Product.
-
-Tutti i numeri sono matematicamente corretti.
-
-Finance esclude contratti non ancora riconosciuti.
-
-Customer Success usa soltanto account assegnati alle regioni gestite.
-
-Product include expansion maturata entro 30 giorni dal rinnovo.
-
-Il problema non è una query sbagliata.
-
-Sono tre oggetti diversi chiamati con lo stesso nome.
-
-### Prima reazione sbagliata
-
-> “Costruiamo un unico dashboard certificato e vietiamo gli altri.”
-
-La standardizzazione può essere necessaria per il board KPI, ma non implica che tutte le varianti siano inutili.
-
-Customer Success può avere bisogno di una metrica operativa propria.
-
-Product può aver bisogno di una cohort metric.
-
-Il problema è **namespace + purpose + ownership**.
-
-Il redesign definisce:
-
-- **Board NRR** — authoritative per performance aziendale;
-- **CS-managed NRR** — per gestione del portafoglio assegnato;
-- **Product cohort NRR** — per analisi lifecycle.
-
-Ogni metrica ha owner, scope e consumer differenti.
-
-## La Metric Operating Card
-
-Per una metrica critica, l'Analytics Operating Contract può includere una scheda minima:
+La metrica executive può essere descritta da una **Metric Operating Card**, un artefatto che merita di restare strutturato perché deve essere scansionabile durante change e incident response.
 
 | Campo | Esempio |
 |---|---|
@@ -158,138 +30,48 @@ Per una metrica critica, l'Analytics Operating Contract può includere una sched
 | Formula | opening ARR + expansion − contraction − churn, diviso opening ARR |
 | Source of truth | billing_curated + approved account mapping |
 | Cut-off | 06:30 CET business day +1 |
-| Freshness SLO | ready by 07:00 in 99% dei business day |
-| Reconciliation | Finance ledger within agreed tolerance |
+| Freshness SLO | certified entro 07:00 nel 99% dei business day |
+| Reconciliation | Finance ledger entro tolerance concordata |
 | Version | v3 |
 | Status | certified |
 | Review | quarterly + on material business change |
 
-La formula è soltanto una riga.
+La formula occupa una riga. Il resto spiega **perché quel numero ha il diritto organizzativo di essere usato**.
 
-Il resto descrive il diritto organizzativo del numero a essere usato.
+## Le promesse sono concatenate
 
-## Ownership del dato sorgente e ownership della metrica non sono la stessa cosa
+Ownership della sorgente e ownership della metrica non coincidono. Il CRM owner può promettere stabilità di `account_id` e `contract_status`, ma non decide come calcolare NRR. Finance può possedere la definizione di NRR senza controllare ritardi del CRM, duplicate contract o mapping account. Un prodotto analitico è quindi un sistema di promesse concatenate: source contract → metric contract → serving contract → decision deadline.
 
-Il CRM owner può garantire che `account_id` e `contract_status` rispettino un contratto sorgente.
+Questo è il motivo per cui un problema di ownership non si risolve nominando genericamente “il data team”. Dobbiamo sapere chi può dichiarare una sorgente non fit, chi approva un backfill, chi decide una nuova definizione e chi informa i consumer se il prodotto deve passare da `READY` a `BLOCKED`.
 
-Non per questo decide come calcolare NRR.
+## Ownership drift: la criticità cresce più velocemente del contratto
 
-Viceversa, Finance può definire la metrica ma non controllare direttamente:
+Un asset può cambiare ruolo senza cambiare una riga di SQL. Un analyst crea una tabella per una domanda ad hoc; il team la usa ogni settimana; una dashboard la incorpora; Finance comincia a citarla; un agente AI la include nel briefing executive. Tecnicamente è la stessa tabella. Operativamente è diventata infrastruttura.
 
-- ritardi del CRM;
-- schema change;
-- duplicate contract;
-- mapping account.
+Chiamiamo **ownership drift** questo scarto tra uso reale e responsabilità formale. I segnali sono consumer downstream in crescita, query e ticket che aumentano, uso in processi più critici, citazioni executive, dipendenze non dichiarate. Quando cambia il tier, devono cambiare anche owner, test, SLO, change policy e supporto.
 
-L'Operating Contract deve rendere visibili queste dipendenze.
+La Fabric Adoption Roadmap esplicita un'idea simile: contenuti personali, di team, dipartimentali ed enterprise richiedono strategie di ownership e governance differenti; a livelli più maturi l'organizzazione identifica chiaramente ownership e conseguenze downstream dei cambiamenti.
 
-Un prodotto analitico è spesso un **sistema di promesse concatenate**.
+Fonti:
+- https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-content-ownership-and-management
+- https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-content-delivery-scope
 
-## Caso reale documentato: Microsoft e content ownership
+## Transfer test: il prodotto sopravvive al suo autore?
 
-La Microsoft Fabric Adoption Roadmap distingue tre strategie di ownership e gestione dei contenuti analitici:
+Una prova semplice di maturità è immaginare che l'owner tecnico cambi team domani. Se il successore deve ricostruire il prodotto interrogando colleghi e leggendo query a caso, il sistema è ancora dipendente dalla memoria personale.
 
-- business-led self-service;
-- managed self-service;
-- enterprise.
+Un handover serio dovrebbe consentire di ricostruire purpose, consumer, dependency map, SLO, test, runbook, known failure mode, accesso, costo, release process, debito aperto e retirement condition. Microsoft include esplicitamente il trasferimento di ownership tra le considerazioni di gestione dei contenuti: la proprietà non è un'etichetta statica, ma parte del lifecycle.
 
-La documentazione sottolinea che il livello di governance e supervisione deve dipendere da scope, sensibilità e importanza del contenuto per decisioni critiche, e che ownership e stewardship devono essere chiare.
+## Governance senza approval theater
 
-Fonte: https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-content-ownership-and-management
-
-Questo è utile oltre Fabric.
-
-Una dashboard personale e un board pack certificato non devono essere operati allo stesso modo.
-
-Il problema nasce quando un asset nato come personale diventa de facto enterprise senza che l'ownership cambi con il suo impatto.
-
-## Ownership drift
-
-Un prodotto può cambiare criticità senza che nessuno se ne accorga.
-
-Esempio:
-
-1. un analyst crea una tabella per una domanda ad hoc;
-2. il team la riusa ogni settimana;
-3. una dashboard la incorpora;
-4. Finance la usa per una decisione;
-5. un agente AI la include in un executive brief.
-
-Tecnicamente la tabella è la stessa.
-
-Operativamente non lo è più.
-
-Chiamiamo questo fenomeno **ownership drift**: l'uso del prodotto cresce più velocemente della sua responsabilità formale.
-
-Un buon operating model cerca segnali di questo tipo:
-
-- molti consumer downstream;
-- uso in processi critici;
-- aumento delle query;
-- dipendenze non dichiarate;
-- richieste di supporto;
-- citazioni in report executive.
-
-Quando il tier cambia, deve cambiare anche il contratto operativo.
-
-## Ownership transfer: la prova che il sistema non dipende da una persona
-
-Una delle migliori verifiche di maturità è chiedere:
-
-> “Se l'owner tecnico cambia team domani, possiamo trasferire il prodotto senza ricostruirlo?”
-
-Un handover dovrebbe includere:
-
-- purpose;
-- consumer;
-- dependency map;
-- SLO;
-- test;
-- runbook;
-- known failure modes;
-- cost;
-- release process;
-- access;
-- open incident/debt;
-- roadmap;
-- retirement conditions.
-
-Microsoft include esplicitamente gli **ownership transfer** tra i temi della gestione dei contenuti. Il punto è fondamentale: ownership non è un'etichetta statica; ha un lifecycle.
-
-## La governance non deve trasformarsi in veto theater
-
-Un errore opposto è costruire una matrice di approvazione enorme per qualsiasi modifica.
-
-Microsoft raccomanda un modello di governance il più leggero possibile compatibilmente con gli obiettivi, bilanciando controllo ed empowerment e integrando le regole nel normale workflow degli utenti.
+Separare responsabilità non significa creare nove approvazioni per qualsiasi modifica. La stessa documentazione Microsoft raccomanda il modello di governance più leggero capace di raggiungere gli obiettivi, integrato nel normale workflow e bilanciato con empowerment e produttività.
 
 Fonte: https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-governance
 
-Questa idea può essere tradotta così:
+La conseguenza operativa è risk-tiered: T0/T1 possono vivere con autonomia locale e standard minimi; T2 richiede ownership, supporto e change control espliciti; T3 può richiedere reconciliation indipendente, audit e approvazioni più forti. Governance uniforme su tutti gli asset è quasi sempre una cattiva allocazione di capacità.
 
-- T0/T1: autonomia locale + standard minimi;
-- T2: ownership e change control espliciti;
-- T3: approvazioni, reconciliation e audit più rigorosi.
+Alla fine, il test dell'ownership è molto concreto. Per ogni metrica o prodotto business-critical dobbiamo sapere chi decide che cosa significa, chi può modificarlo, chi mantiene il servizio, chi riceve l'alert, chi può dichiararlo `not fit for decision`, chi approva un backfill, chi informa i consumer, chi paga il costo operativo e chi ne decide il retirement. Se la risposta ricorrente è soltanto “il data team”, non abbiamo ancora un ownership model: abbiamo un'etichetta.
 
-La governance è **risk-tiered**, non uniforme.
+> **Una metrica diventa infrastruttura quando la sua responsabilità resta comprensibile anche dopo che le persone che l'hanno costruita sono cambiate.**
 
-## Un test operativo dell'ownership
-
-Per ogni metrica o data product business-critical chiediamo:
-
-1. Chi decide che cosa significa?
-2. Chi può modificarla?
-3. Chi mantiene il sistema?
-4. Chi riceve l'alert?
-5. Chi può dichiarare il dato `not fit for decision`?
-6. Chi approva un backfill?
-7. Chi informa i consumer?
-8. Chi paga il costo operativo?
-9. Chi decide quando ritirarlo?
-
-Se la risposta ricorrente è:
-
-> “il data team”
-
-probabilmente il modello è ancora troppo ambiguo.
-
-> **Una metrica diventa infrastruttura quando non dipende più dalla memoria di chi l'ha scritta, ma da responsabilità che restano comprensibili anche quando le persone cambiano.**
+Questa chiarezza ci permette di definire il passo successivo: quale livello di affidabilità promette davvero il servizio e come dichiara che quella promessa, oggi, non è rispettata.
