@@ -1,187 +1,61 @@
 ## 16.13 Accessibilità: progettare ridondanza, non aggiungere una nota alla fine
 
-Una visualizzazione è incompleta se il significato essenziale esiste soltanto per chi:
+Una visualizzazione è incompleta se il significato essenziale esiste soltanto per chi distingue perfettamente i colori, usa un mouse, vede il tooltip, legge testo piccolo e dispone dello stesso schermo del designer. L'accessibilità non è quindi un controllo cosmetico dopo la pubblicazione: è un requisito della **trasmissione dell'evidenza**.
 
-- distingue perfettamente i colori;
-- usa un mouse;
-- vede il tooltip;
-- legge testo piccolo;
-- usa lo stesso monitor del designer;
-- può interpretare una forma grafica senza alternativa testuale.
+Il principio più utile per l'analytics è la **ridondanza**. WCAG 2.2 stabilisce che il colore non debba essere l'unico mezzo per comunicare informazione o distinguere elementi.[^wcag-color] Possiamo generalizzare: ogni informazione decision-critical dovrebbe avere almeno una seconda via di percezione quando la prima è fragile.
 
-L'accessibilità non è un controllo cosmetico dopo la pubblicazione.
+Questo significa, per esempio, usare colore + label, linea + marker + direct label, un alert rosso accompagnato da icona e testo `OUT OF SLA`, un grafico con alt text e una visualizzazione interattiva con tabella di supporto. La ridondanza aiuta anche chi non usa tecnologie assistive: proiettori, screenshot, stampa in scala di grigi, display piccoli e PDF eliminano spesso parte dell'encoding originale.
 
-È un requisito della **trasmissione dell'evidenza**.
+### Colore e contrasto
 
-## Il principio più importante: redundant encoding
+Un semplice verde/rosso senza label chiede al colore di trasportare l'intero significato. Una forma più robusta può mostrare `▲ +3,2 pp — sopra target` oppure `▼ -4,1 pp — sotto target`, lasciando al colore un ruolo di rinforzo.
 
-W3C WCAG 2.2 stabilisce che il colore non deve essere l'unico mezzo per comunicare informazione, distinguere elementi o indicare un'azione.
+WCAG distingue inoltre il contrasto del testo e quello degli oggetti grafici necessari alla comprensione.[^wcag-contrast] Linee sottili, marker, focus indicator e bordi di controlli non possono essere l'unico portatore di informazione se rischiano di scomparire in condizioni di visualizzazione differenti.
 
-Per l'analytics questo suggerisce una regola più generale:
+### Alt text: trasferire il takeaway
 
-> **Ogni informazione decision-critical dovrebbe avere almeno una seconda via di percezione quando la prima può essere fragile.**
+Un alt text come “grafico a linee blu e verde” descrive l'oggetto ma non trasferisce la sua evidenza. Se il visual sostiene una decisione, una descrizione più utile è:
 
-Esempi:
+> **On-time delivery scende dal 96,1% al 91,2% tra aprile e giugno, sotto il target del 95%; il deterioramento è concentrato nel Nord-Ovest.**
 
-- colore + label;
-- linea + stile/marker + direct label;
-- alert rosso + icona + testo `OUT OF SLA`;
-- grafico + alt text;
-- visual interattivo + tabella di supporto;
-- tooltip + valore essenziale già visibile.
+L'obiettivo non è disegnare il grafico con le parole. È rendere disponibile il takeaway e, quando necessario, offrire una descrizione estesa o una tabella sottostante.
 
-Questa ridondanza aiuta anche chi non usa tecnologie assistive: screenshot, proiettori, stampa in scala di grigi e display piccoli eliminano spesso parte dell'encoding originale.
+### Navigazione e ordine di lettura
 
-## Non affidarsi al solo colore
+Una pagina che appare ordinata visivamente può risultare caotica quando il focus attraversa gli oggetti in sequenza arbitraria. Microsoft documenta per Power BI l'importanza di titoli significativi, alt text, ordine di tab logico e controlli navigabili da tastiera.[^ms-access]
 
-Debole:
+Per questo un test utile prova a completare i task principali senza mouse: trovare il dato centrale, attraversare filtri, aprire il dettaglio, tornare indietro e accedere all'alternativa tabellare. Se una decisione dipende da un'interazione impossibile da tastiera, abbiamo creato una barriera funzionale.
 
-- verde = sopra target;
-- rosso = sotto target;
-- nessuna label.
+### Hover non è una superficie affidabile per la verità
 
-Più robusto:
+Denominatore, caveat principale, valore oltre soglia, stato `PROVISIONAL` o definizione del KPI non devono vivere soltanto in tooltip. L'hover può sparire su touch, screenshot, export, PDF o percorsi assistivi. Se l'informazione può cambiare la decisione, deve essere percepibile anche senza interazione opzionale.
 
-- `▲ +3,2 pp — sopra target`;
-- `▼ -4,1 pp — sotto target`;
-- colore come rinforzo, non come unica informazione.
+### Caso simulato/composito — La dashboard che funzionava solo sul monitor del designer
 
-Il contrasto da solo non risolve il problema se il lettore deve riconoscere *quale* colore rappresenta uno stato.
+Un team costruisce una dashboard con testo da **9 px**, grigio chiaro su bianco, otto tonalità vicine, insight principali nei tooltip, alert solo rosso/verde e tab order non configurato. Sul monitor dell'analyst appare elegante. Nel board meeting il proiettore appiattisce i colori, le label diventano illeggibili, lo screenshot perde i tooltip e i partecipanti chiedono continuamente quale linea rappresenti quale serie.
 
-## Contrasto: testo e oggetti informativi devono restare percepibili
+Il redesign introduce direct label, contrasto maggiore, testo e simboli per gli stati, takeaway visibili senza hover, tabella di supporto, alt text e ordine di navigazione testato. L'accessibilità migliora e, nello stesso momento, diminuisce il cognitive load per tutti.
 
-WCAG distingue contrasto del testo e contrasto degli oggetti grafici necessari alla comprensione.
-
-Questo conta per:
-
-- linee sottili;
-- marker;
-- bordi di input e filtri;
-- focus indicator;
-- elementi di chart indispensabili.
-
-Se un oggetto può praticamente scomparire su uno schermo o in high-contrast mode, non può essere l'unico portatore dell'informazione.
-
-## Alt text: descrivere il takeaway, non disegnare con le parole
-
-Alt text debole:
-
-> “Grafico a linee blu e verde con asse X mesi e asse Y percentuale.”
-
-Alt text utile:
-
-> “On-time delivery scende dal 96,1% al 91,2% tra aprile e giugno, sotto il target del 95%; il deterioramento è concentrato nelle regioni Nord-Ovest.”
-
-L'obiettivo è trasferire **l'informazione necessaria alla decisione**, non riprodurre verbalmente ogni pixel.
-
-Per un visual complesso possiamo offrire:
-
-- alt text breve;
-- descrizione estesa;
-- tabella sottostante;
-- link ai dati.
-
-## Screen reader e ordine di lettura
-
-Microsoft documenta che gli oggetti Power BI navigabili da tastiera sono generalmente compatibili con screen reader e che il lettore può annunciare titolo, tipo di visual e alt text impostato.
-
-Questo rende importanti:
-
-- titoli significativi;
-- alt text aggiornato;
-- ordine di tab/focus logico;
-- nomi chiari per bottoni e slicer;
-- evitare oggetti decorativi che inquinano la navigazione.
-
-Una pagina che visivamente sembra ordinata può risultare caotica se il focus percorre gli elementi in una sequenza arbitraria.
-
-## Keyboard-first test
-
-Per dashboard interattive proviamo a completare i task principali senza mouse:
-
-- navigare tra visual e controlli;
-- cambiare un filtro;
-- aprire dettaglio;
-- tornare indietro;
-- trovare il dato principale;
-- accedere all'alternativa tabellare.
-
-Se una decisione dipende da un'interazione impossibile da tastiera, abbiamo creato una barriera funzionale.
-
-## Hover non è una superficie affidabile per la verità
-
-Non lasciamo esclusivamente nel tooltip:
-
-- denominatore;
-- caveat principale;
-- valore che supera la soglia;
-- definizione del KPI;
-- stato provisional/final.
-
-L'hover può non esistere su touch, screenshot, esportazioni, screen reader o PDF.
-
-## Caso simulato/composito — Il dashboard che funzionava solo sul monitor del designer
-
-Un team prepara una dashboard con:
-
-- testo da 9 px;
-- grigio chiaro su fondo bianco;
-- otto tonalità vicine;
-- insight principali soltanto nei tooltip;
-- alert rappresentati da rosso/verde;
-- ordine di tab non configurato.
-
-Sul monitor dell'analyst appare elegante.
-
-Nel board meeting:
-
-- il proiettore appiattisce i colori;
-- le label non si leggono;
-- lo screenshot non contiene i tooltip;
-- un partecipante chiede continuamente quale serie corrisponda a quale linea.
-
-Il redesign introduce:
-
-- direct labels;
-- contrasto maggiore;
-- testo e simboli per gli stati;
-- takeaway visibili senza hover;
-- tabella di supporto;
-- alt text;
-- ordine di navigazione testato.
-
-L'accessibilità migliora e, contemporaneamente, diminuisce il cognitive load per tutti.
-
-## Un dashboard non sarà perfettamente accessibile in ogni forma
-
-La Government Analysis Function britannica sottolinea che i dashboard interattivi possono essere difficili da usare con alcune tecnologie assistive e raccomanda di offrire alternative appropriate: testo, alt text, tabelle, download e canali di supporto.
-
-Questa è una lezione importante:
-
-> **non dobbiamo fingere che una singola visualizzazione interattiva sia un formato universale.**
-
-La Decision Communication Pack può prevedere più rappresentazioni della stessa evidenza.
+La Government Analysis Function 2026 sottolinea infatti che i dashboard interattivi possono essere difficili da usare con alcune tecnologie assistive e raccomanda alternative come testo, alt text, tabelle e download dei dati.[^gaf-access]
 
 ## Accessibility Gate
 
-Prima della pubblicazione verifichiamo:
+Questo controllo merita di restare operativo:
 
-- [ ] nessuna informazione essenziale dipende solo dal colore;
+- [ ] nessuna informazione essenziale dipende soltanto dal colore;
 - [ ] testo e oggetti informativi hanno contrasto sufficiente;
 - [ ] titoli, unità e label sono leggibili;
 - [ ] takeaway e caveat essenziali esistono senza hover;
-- [ ] visual importanti hanno alt text utile;
+- [ ] i visual importanti hanno alt text utile;
 - [ ] esiste una forma tabellare/testuale per contenuti complessi;
 - [ ] ordine di lettura/focus è sensato;
-- [ ] task principali sono utilizzabili da tastiera, quando applicabile;
+- [ ] i task principali sono utilizzabili da tastiera, quando applicabile;
 - [ ] la pagina funziona a dimensione ridotta e su dispositivi diversi;
 - [ ] screenshot/PDF non perdono il significato centrale.
 
-> **L'accessibilità non consiste nel fare una versione speciale per alcuni utenti. Consiste nel progettare il significato in modo che non dipenda da un solo canale fragile.**
+> **L'accessibilità non consiste nel creare una versione speciale per alcuni utenti. Consiste nel progettare il significato in modo che non dipenda da un solo canale fragile.**
 
-### Fonti
-
-- W3C, *WCAG 2.2 — Use of Color*: https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html
-- W3C, *WCAG 2.2 — Non-text Contrast*: https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html
-- Microsoft Learn, *Design Power BI reports for accessibility*: https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-accessibility-creating-reports
-- Government Analysis Function, *Data visualisation: testing dashboards for design and accessibility*: https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-testing-dashboards-for-design-and-accessibility/
+[^wcag-color]: W3C, *WCAG 2.2 — Use of Color*, https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html
+[^wcag-contrast]: W3C, *WCAG 2.2 — Non-text Contrast*, https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html
+[^ms-access]: Microsoft Learn, *Design Power BI reports for accessibility*, https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-accessibility-creating-reports
+[^gaf-access]: Government Analysis Function, *Data visualisation: testing dashboards for design and accessibility*, https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-testing-dashboards-for-design-and-accessibility/
