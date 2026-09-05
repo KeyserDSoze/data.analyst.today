@@ -1,157 +1,46 @@
 ## 13.2 SQL: scegliere il luogo del calcolo, non soltanto il linguaggio
 
-Il Capitolo 11 ha già trattato grain, join, trasformazioni e semantica SQL.
+Il Capitolo 11 ha già trattato grain, join, trasformazioni e semantica SQL. Qui la domanda è diversa: **quando conviene che il lavoro analitico avvenga vicino al dato, dentro il motore che lo gestisce già?**
 
-Qui la domanda è diversa:
+SQL è spesso la scelta naturale non perché sia “più professionale” di uno spreadsheet o di Python, ma perché filtri, join, aggregazioni e window calculation possono essere eseguiti senza trasferire inutilmente grandi quantità di dati. Se **800 milioni di righe** sono già nel warehouse e il risultato finale è una tabella di 20.000 righe, portare tutto sul laptop per poi ridurlo localmente è spesso una complicazione, non un vantaggio.
 
-> **Quando conviene che il lavoro analitico avvenga vicino al dato, dentro un motore relazionale o analitico?**
+Consideriamo un analyst che deve calcolare clienti attivi, ordini per cliente, net revenue e repeat rate su **180 milioni di righe** già disponibili nel warehouse. Possiamo esportare gli eventi e aggregarli in pandas, oppure costruire nel motore dati il dataset alla granularità necessaria e portare fuori soltanto il risultato. Se il lavoro è prevalentemente relazionale, la seconda strada riduce trasferimento, memoria locale, copie sensibili e dipendenza dalla macchina personale.
 
-SQL è spesso la scelta naturale non perché sia “più professionale” di uno spreadsheet o di Python, ma perché evita di spostare grandi quantità di dati fuori dal sistema che li gestisce già bene.
+> **Compute near data è spesso una scelta di semplicità.**
 
-### Quando il calcolo appartiene naturalmente al motore dati
-
-SQL è particolarmente adatto quando il problema è dominato da:
-
-- selezione;
-- filtri;
-- join;
-- aggregazioni;
-- window calculations;
-- trasformazioni tabellari;
-- costruzione di popolazioni o feature;
-- riuso condiviso della stessa logica.
-
-Se 800 milioni di righe sono già nel warehouse e il risultato finale è una tabella di 20.000 righe, scaricare il dato grezzo su un laptop è spesso un design inefficiente.
-
-### Caso simulato/composito — 180 milioni di righe per quattro KPI
-
-Un analyst deve calcolare:
-
-- clienti attivi;
-- ordini per cliente;
-- net revenue;
-- repeat rate.
-
-Gli eventi sono già nel warehouse.
-
-Due opzioni:
+Il principio opposto è altrettanto importante: non tutto ciò che *può* essere espresso in SQL dovrebbe esserlo. Simulazioni iterative, ottimizzazione numerica, statistica specializzata, processing di testo o immagini e diagnostica scientifica possono diventare molto più leggibili e verificabili in un ambiente con librerie dedicate. In questi casi una divisione del lavoro è spesso più naturale:
 
 ```text
-A. esportare 180 milioni di righe → pandas → aggregare
-B. aggregare nel warehouse → esportare solo il risultato necessario
+SQL
+→ costruisce la popolazione e il dataset analitico
+→ Python/R esegue il metodo specialistico
+→ il risultato riusabile torna in una tabella o serving layer
 ```
 
-Se la logica è principalmente relazionale, B riduce:
+Non esiste alcun premio per trasformare un'analisi in una query di 1.500 righe se così diventa più difficile da verificare.
 
-- trasferimento dati;
-- memoria locale;
-- copie sensibili;
-- tempo di elaborazione;
-- dipendenza dal computer dell'analista.
+### Pushdown e pull-out sono una decisione sul confine
 
-> **Compute near data** è spesso una scelta di semplicità, non di sofisticazione.
+La domanda operativa è: **quale parte del lavoro beneficia dal restare vicino al dato e quale beneficia da un ambiente analitico più flessibile?** Filtri, join, deduplicazione, aggregazioni e feature tabellari sono spesso buoni candidati al pushdown. Un dataset già ridotto può invece essere portato fuori per simulazione, librerie scientifiche, visual diagnostics o algoritmi non disponibili nel motore.
 
-### Quando SQL non dovrebbe diventare il martello universale
+Questo confine non sostituisce la correttezza semantica. Un team può riscrivere in SQL un processo che passa da **18 minuti a 40 secondi** e scoprire poi che un `INNER JOIN` con la loyalty table ha escluso tutti i clienti non iscritti. La tecnologia ha migliorato il runtime e peggiorato la risposta. Il Capitolo 13 ci chiede se SQL fosse il posto giusto per quel workload; il Capitolo 11 ci obbliga ancora a dimostrare che la trasformazione preserva popolazione, grain e metriche.
 
-Alcuni problemi sono esprimibili in SQL ma diventano più difficili da leggere, testare o mantenere quando richiedono:
+### Quando una trasformazione smette di essere personale
 
-- simulazioni iterative;
-- ottimizzazione numerica;
-- statistica specializzata;
-- algoritmi scientifici;
-- testo, immagini o oggetti non tabellari;
-- visual diagnostics complessi;
-- workflow modellistici con librerie dedicate.
-
-In questi casi la divisione del lavoro può essere:
+Il confine cambia anche con il riuso. Se cinque analyst ricostruiscono ogni settimana la stessa logica `net_orders`, non abbiamo più soltanto un problema di preferenza individuale. Può essere più economico creare una trasformazione condivisa e testata:
 
 ```text
-SQL → costruisce il dataset analitico
-Python/R → esegue il metodo specialistico
-SQL/table → riceve il risultato riusabile
-```
-
-Non c'è alcun premio per comprimere tutta l'analisi in una query di 1.500 righe.
-
-### Pushdown vs pull-out
-
-Possiamo usare una domanda molto pratica:
-
-> Quale parte del lavoro dovrebbe essere **spinta verso il dato** e quale parte dovrebbe essere **portata nell'ambiente analitico**?
-
-**Pushdown** è spesso sensato per:
-
-- filtri;
-- join;
-- aggregazioni;
-- feature semplici;
-- dedup;
-- partizionamento della popolazione.
-
-**Pull-out** è spesso sensato quando serve:
-
-- interazione rapida su un dataset già ridotto;
-- algoritmo non disponibile nel motore;
-- libreria scientifica;
-- visualizzazione diagnostica;
-- simulazione.
-
-### Caso simulato/composito — la query 27 volte più veloce e sbagliata
-
-Un team riscrive in SQL un processo locale e passa da 18 minuti a 40 secondi.
-
-Poi scopre che la nuova query usa un `INNER JOIN` con la loyalty table e rimuove tutti i clienti non iscritti.
-
-Il sistema è molto più veloce e risponde alla popolazione sbagliata.
-
-Questo è il confine con il Capitolo 11:
-
-- **13:** SQL era il posto giusto per eseguire quel workload?
-- **11:** la trasformazione SQL conserva davvero il significato?
-
-Servono entrambe le risposte.
-
-### SQL come asset condiviso
-
-Un altro motivo per spostare una trasformazione da notebook o workbook verso SQL centrale è il riuso.
-
-Se cinque analyst ricostruiscono ogni settimana `net_orders`, la domanda non è più soltanto “chi scrive la query meglio?”.
-
-Potrebbe servire:
-
-```text
-raw / source
+source
    ↓
-shared transformation
+shared SQL transformation
    ↓
 certified analytical model
    ↓
 consumer diversi
 ```
 
-Qui lo strumento diventa anche una decisione di ownership.
+La scelta di SQL diventa allora anche una scelta di ownership e di interfaccia condivisa.
 
-### Campo del Tooling Decision Record
-
-Per una scelta SQL annotiamo:
-
-```text
-data location:
-input scale:
-expected output scale:
-relational workload share:
-shared or local logic:
-execution frequency:
-compute / scan cost:
-consumer of output:
-reason not to use local processing:
-exit condition:
-```
-
-Una possibile exit condition:
-
-> Passare parte della logica a Python/R quando la metodologia richiede simulazione o diagnostica statistica che rende la query difficile da verificare.
-
-### Regola operativa
+Nel Tooling Decision Record conviene rendere espliciti il luogo del dato, la scala in ingresso e in uscita, la quota di lavoro relazionale, la frequenza, il costo di scansione e soprattutto il motivo per cui quella logica deve essere locale o condivisa. Anche qui serve un'uscita: se la metodologia cresce fino a richiedere simulazioni o diagnostiche che rendono la query opaca, una parte del lavoro può meritare un ambiente Python/R.
 
 > **Usa SQL quando il problema beneficia dal calcolo vicino al dato e da trasformazioni tabellari condivise. Non usarlo per dimostrare che tutto può essere scritto in SQL.**
