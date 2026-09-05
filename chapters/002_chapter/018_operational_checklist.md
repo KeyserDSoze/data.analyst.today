@@ -1,6 +1,8 @@
 ## 2.17 Pre-flight: il brief è pronto per l'esecuzione?
 
-Il Capitolo 1 contiene già una checklist generale per qualsiasi analisi. Qui serve un controllo più specifico: **prima di iniziare l'esecuzione, il nostro Analytical Brief contiene abbastanza informazioni da evitare interpretazioni incompatibili?**
+Dopo avere costruito il brief in prosa e discusso le dipendenze fra decisione, metriche, ipotesi, scope e dati, qui la forma cambia intenzionalmente. Questa sezione **deve** essere scansionabile: è un controllo operativo da usare prima di aprire il tool, non un altro pezzo di teoria.
+
+La domanda del pre-flight è semplice: il brief contiene abbastanza informazioni da permettere a stakeholder, analyst e data owner di iniziare il lavoro senza interpretazioni materialmente incompatibili?
 
 ### Decisione
 
@@ -20,7 +22,7 @@ Il Capitolo 1 contiene già una checklist generale per qualsiasi analisi. Qui se
 
 ### Metriche
 
-- Outcome primaria definita?
+- L'outcome primaria è definita?
 - Popolazione, numeratore e denominatore sono espliciti quando servono?
 - Driver e guardrail hanno un ruolo chiaro?
 - Target o soglie decisionali sono documentati se esistono?
@@ -69,12 +71,10 @@ Il Capitolo 1 contiene già una checklist generale per qualsiasi analisi. Qui se
 - Il criterio di successo descrive utilità decisionale e non solo consegna tecnica?
 - Se il brief cambia durante il lavoro, sappiamo chi deve essere riallineato?
 
-### L'AI non richiede una checklist separata
+### E se useremo l'AI?
 
-Le regole di supervisione e verifica sono già nel Capitolo 0 e i workflow tecnici arriveranno nel Capitolo 14.
+Non serve una checklist parallela. Le regole di supervisione sono già state fissate nel Capitolo 0 e i workflow tecnici arriveranno nel Capitolo 14. Nel brief l'AI deve operare **dentro lo stesso contratto**: stessa metrica, stesso scope, stesse fonti, stessa pretesa massima e stessi limiti.
 
-Per questo nel brief l'AI non è una fase speciale. Se viene usata, deve rispettare le stesse definizioni, lo stesso scope, le stesse evidenze e gli stessi limiti del resto dell'analisi.
+Una query generata automaticamente non può estendere da sola la popolazione. Un agente non può sostituire la metrica primaria con una definizione più comoda. Se l'esplorazione produce una ragione valida per cambiare il piano, non cambia soltanto il prompt: **cambia il brief**, e le persone rilevanti vengono riallineate.
 
-Una query generata automaticamente non può estendere da sola la popolazione. Un agente non può cambiare la metrica primaria perché ne trova una più comoda. Se il piano cambia, cambia il brief.
-
-> **Il pre-flight non verifica che conosciamo già la risposta. Verifica che sappiamo che cosa significherà cercarla bene.**
+Il pre-flight non certifica che conosciamo già la risposta. Certifica qualcosa di più utile prima dell'esecuzione: sappiamo che cosa significherà cercarla bene e quali condizioni dovranno essere rispettate prima di credere al risultato.
