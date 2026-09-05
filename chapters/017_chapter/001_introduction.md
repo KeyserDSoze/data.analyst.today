@@ -2,222 +2,102 @@
 
 ## 17.0 Il problema reale non arriva con il nome della tecnica
 
-Finora abbiamo costruito un vocabolario operativo molto ampio:
+Finora abbiamo costruito molti strumenti: Analytical Brief, Data Readiness Review, Evidence Map, Uncertainty Brief, Lifecycle Diagnostic Map, Temporal Decision Brief, Causal Identification Brief, Experiment Contract, Predictive Decision Card, Analytical Data Contract, Data Flow Architecture Map, Tooling Decision Record, AI Analysis Control Sheet, Decision Record e Decision Communication Pack.
 
-- Analytical Brief;
-- Data Readiness Review;
-- EDA Evidence Map;
-- Uncertainty Brief;
-- Lifecycle Diagnostic Map;
-- Temporal Decision Brief;
-- Causal Identification Brief;
-- Experiment Contract;
-- Predictive Decision Card;
-- Analytical Data Contract;
-- Data Flow Architecture Map;
-- Tooling Decision Record;
-- AI Analysis Control Sheet;
-- Decision Record;
-- Decision Communication Pack.
+Il rischio, arrivati qui, è trasformare quel patrimonio in una nuova checklist universale. Nel lavoro reale succede il contrario. Nessuno chiede «applica una Difference-in-Differences» o «costruisci un Predictive Decision Card». Arrivano richieste come «perché le vendite scendono?», «possiamo aumentare i prezzi?», «quali clienti dobbiamo contattare?» o «la campagna sta davvero creando valore?».
 
-Nel lavoro reale nessuno ci consegna però una richiesta come:
+La parte più difficile non è ricordare quale tecnica conosciamo. È decidere **quale evidenza merita di essere prodotta e quale no**.
 
-> “Per favore applica una Difference-in-Differences e poi costruisci un Decision Record.”
+> **La domanda guida del capstone è: qual è il minimo insieme di evidenze sufficientemente affidabili per cambiare questa decisione?**
 
-Arriva qualcosa di molto più ambiguo:
+Questa formulazione cambia il modo in cui leggeremo i casi. Una reconciliation può essere la soluzione completa se il failure mode principale è semantico. Una decomposition può bastare per rifiutare un'azione generalizzata senza identificare causalmente ogni driver. Un esperimento può invece essere indispensabile quando la decisione richiede sapere se un intervento cambia davvero l'outcome. E qualche volta il risultato professionale sarà `WAIT FOR X`, `NO ACTION` o **non identificabile con i dati disponibili**.
 
-> “Perché le vendite stanno scendendo?”
-
-> “Dobbiamo cambiare prezzo?”
-
-> “Quali clienti dobbiamo contattare?”
-
-> “Possiamo fidarci di questo forecast?”
-
-> “La campagna sta davvero creando valore?”
-
-La parte più difficile del mestiere è quindi **selezionare il percorso analitico prima ancora di eseguirlo**.
-
-## Questo capitolo è il capstone del libro
-
-I casi che seguono non devono essere letti come:
-
-> “esempio di forecasting”, “esempio di causalità”, “esempio di churn”.
-
-Devono essere letti come decisioni con dati incompleti, pressioni reali e più percorsi possibili.
-
-La domanda guida sarà:
-
-> **Qual è il minimo insieme di evidenze sufficientemente affidabili per cambiare questa decisione?**
-
-Questo significa che in alcuni casi serviranno molti deliverable.
-
-In altri sarà professionale fermarsi prima.
-
-Un'analisi semplice con una buona reconciliation può essere migliore di un modello sofisticato costruito per una domanda che non lo richiede.
+Il capitolo non misura quindi la maturità dal numero di tecniche usate. La misura dalla qualità del **routing** e dalla disciplina dello **stopping**.
 
 ## Il Capstone Routing Canvas
 
-Prima di entrare nei dati, per ogni caso compiliamo mentalmente sei campi.
-
-### 1. Decisione
-
-Quale scelta concreta è aperta?
-
-Se non sappiamo quale comportamento potrebbe cambiare, rischiamo di produrre un report invece di un'analisi decisionale.
-
-### 2. Failure cost
-
-Che cosa costa di più?
-
-- agire quando non dovremmo;
-- non agire quando dovremmo;
-- aspettare troppo;
-- usare un dato sbagliato;
-- sostenere una causalità che non possiamo identificare.
-
-### 3. Claim necessario
-
-Per decidere ci basta sapere:
-
-- **cosa è successo**?
-- **dove si concentra**?
-- **cosa succederà probabilmente**?
-- **cosa ha causato il fenomeno**?
-- **quale intervento funzionerebbe**?
-
-Non chiediamo causalità se una decomposition descrittiva è già sufficiente. Non usiamo una correlazione se la decisione richiede davvero causalità.
-
-### 4. Readiness
-
-Quale parte della catena può essere rotta?
-
-- definizione;
-- identità;
-- grain;
-- freshness;
-- comparabilità temporale;
-- measurement change;
-- selection;
-- leakage;
-- incomplete exposure.
-
-### 5. Deliverable necessari
-
-Scegliamo soltanto quelli che riducono un rischio reale.
-
-Esempio:
+Prima di entrare nei dati useremo un artefatto compatto. Il Canvas non prescrive il metodo; esplicita ciò che deve governarne la scelta.
 
 ```text
-Analytical Brief
-→ Data Readiness Review
-→ EDA Evidence Map
-→ Decision Record
-→ Decision Communication Pack
+CAPSTONE ROUTING CANVAS
+
+Decision:
+Decision owner / deadline:
+
+Failure cost:
+- cost of acting wrongly
+- cost of not acting
+- cost of waiting
+
+Claim needed:
+- descriptive / diagnostic / predictive / causal / treatment / economic
+
+Readiness risks:
+- semantics / grain / identity / time / freshness / selection / leakage / exposure
+
+Minimum evidence path:
+- deliverables that close a real decision risk
+
+Stop rule:
+- DECIDE / PILOT / WAIT FOR X / BUY INFORMATION / NO ACTION / NOT IDENTIFIED
 ```
 
-può essere sufficiente.
+I campi sono volutamente pochi. Il **failure cost** ci impedisce di trattare ogni decisione con lo stesso grado di formalità. Il **claim needed** impedisce sia l'over-analysis — cercare causalità quando basta localizzare un problema — sia l'under-analysis — usare una correlazione quando stiamo per impegnare milioni su un trattamento. I **readiness risks** ricordano che un metodo sofisticato non può salvare una popolazione sbagliata o una metrica diventata semanticamente obsoleta. La **stop rule** ci obbliga a dichiarare in anticipo quando altra analisi smette di avere valore.
 
-In un altro problema servirà:
+## L'Evidence Ledger
 
-```text
-Analytical Brief
-→ Data Readiness Review
-→ Causal Identification Brief
-→ Experiment Contract
-→ Decision Record
-```
+I casi verranno raccontati come storie, ma una storia end-to-end può creare un pericolo: dopo aver visto il finale, ogni indizio precedente sembra inevitabilmente parte della spiegazione. Per impedirlo manteniamo idealmente tre colonne.
 
-Il valore non è completare tutta la catena. È **selezionare quella corretta**.
+| Stato | Significato |
+|---|---|
+| **Observed** | fatti direttamente sostenuti da dati e controlli disponibili |
+| **Inferred** | interpretazioni che richiedono assunzioni esplicite |
+| **Still unknown** | informazione che potrebbe ancora cambiare claim o scelta |
 
-### 6. Stop rule
+L'Evidence Ledger non deve comparire materialmente in ogni pagina. È la disciplina che impedisce al racconto di trasformare un'associazione osservata ieri in una causa “che sapevamo da sempre” oggi.
 
-Quando avremo abbastanza evidenza?
+## Il Method Gate
 
-Un capstone maturo deve poter terminare con:
+Ogni tecnica che entra in un caso deve guadagnarsi il diritto di restare. La domanda è:
 
-- `DECIDE`;
-- `PILOT`;
-- `WAIT FOR X`;
-- `BUY INFORMATION`;
-- `NO ACTION`;
-- oppure **“non identificabile con i dati disponibili”**.
+> **Se non facessimo questa analisi, quale rischio decisionale rimarrebbe aperto?**
 
-Produrre sempre una recommendation netta sarebbe un fallimento del capitolo.
+Se non sappiamo rispondere, probabilmente stiamo aggiungendo complessità per dimostrare competenza, non per migliorare la scelta.
 
-## La struttura dei casi
+Questo significa anche che i deliverable precedenti sono **modulari**. Orion Living potrà fermarsi con Analytical Brief, readiness, decomposition e Decision Record; NorthPeak avrà bisogno anche di prediction ed experimentation; Atlas Streaming risolverà un incidente senza addestrare un nuovo anomaly model; OrbisMarket userà una catena più lunga perché la decisione finale contiene davvero più failure mode indipendenti.
 
-Ogni caso verrà rivisto secondo una sequenza comune:
+## Il costo dell'altra analisi
 
-**messy question → decision → risk → data contract/readiness → investigation → competing explanations → method gate → evidence → alternatives → decision → communication → measurement**
+«Facciamo un'altra analisi» non è gratis. Costa tempo, capacità, ritardo decisionale e spesso introduce nuovi gradi di libertà. Per questo, prima di salire di livello metodologico, chiediamo quale informazione potrebbe cambiare scelta, quanto costa ottenerla e se arriverà prima che la decisione perda valore.
 
-Ma non tutti useranno ogni passaggio con la stessa profondità.
+È la continuità diretta con il Value of Information e il Decision Record dei capitoli precedenti. Il capstone aggiunge un principio pratico: **il valore del metodo è marginale rispetto all'evidenza che possediamo già**.
 
-## Evidence ledger
+## Casi documentati e casi compositi
 
-Durante ogni caso terremo idealmente tre colonne.
+Quando una fonte pubblica affidabile documenta una pratica o un risultato reale, la useremo come **caso reale documentato** senza estendere il claim oltre ciò che la fonte sostiene. Quando serve seguire un'indagine completa con numeri, alternative e decisioni costruite appositamente, useremo un **caso simulato/composito** dichiarandolo esplicitamente.
 
-### Observed
+Questa distinzione è particolarmente importante nel capstone: una customer story può dimostrare che un'organizzazione ha integrato dati, cambiato un processo o riportato un certo risultato; non dimostra automaticamente il meccanismo causale che vorremmo usare nella nostra decisione.
 
-Fatti direttamente supportati dai dati.
+## AI nel capstone
 
-### Inferred
+L'AI può scrivere query, ampliare lo spazio delle ipotesi, cercare inconsistenze, preparare una decomposition o comprimere la comunicazione. Ma ogni delega deve mantenere il controllo corrispondente. Se genera SQL, servono invarianti e reconciliation; se propone una causa, serve il claim gate; se prepara una recommendation, deve ricevere alternative, economics e permission boundary.
 
-Interpretazioni che richiedono assunzioni.
+Non esiste una corsia AI separata. Esiste lo stesso sistema analitico con un esecutore in più.
 
-### Still unknown
+## Come leggere i casi
 
-Informazioni che possono ancora cambiare la scelta.
+Non cerchiamo una sequenza fissa di dieci passaggi. Cerchiamo il momento in cui il routing cambia. In un caso la scoperta decisiva sarà che «vendite» significa net sales e non ordini. In un altro sarà che un churn score non misura persuadibilità. In un altro ancora un SRM bloccherà completamente un risultato apparentemente significativo.
 
-Questa separazione impedisce alla narrazione end-to-end di trasformare retroattivamente ogni indizio in una certezza.
+Per ogni caso chiediamoci quindi:
 
-## Casi reali e casi compositi
+1. quale decisione era realmente aperta;
+2. quale failure cost dominava;
+3. quale livello di claim serviva;
+4. quale evidenza ha eliminato una spiegazione o un'opzione;
+5. perché il team ha scelto di salire — oppure di non salire — a un metodo più forte;
+6. quale stop rule ha chiuso la prima decisione;
+7. quale informazione avrebbe cambiato il percorso.
 
-Il capitolo usa entrambi.
+Il Capitolo 18 partirà dal risultato di questo ragionamento. Una volta risolta una decisione, dovremo chiederci che cosa cambia quando la stessa capacità analitica deve funzionare ogni lunedì senza essere ricostruita da zero.
 
-### Caso reale documentato
-
-Serve quando una fonte pubblica affidabile permette di osservare una pratica, un problema o un risultato realmente documentato.
-
-Non estenderemo i claim oltre ciò che la fonte sostiene.
-
-### Caso simulato/composito
-
-Serve quando vogliamo seguire un'indagine completa con dati, alternative e decisioni costruiti appositamente per la didattica.
-
-Verrà sempre dichiarato esplicitamente.
-
-## Il ruolo dell'AI nel capstone
-
-L'AI può comparire come:
-
-- generatore di query;
-- hypothesis partner;
-- debugger;
-- reviewer;
-- agente di ricerca;
-- generatore di comunicazione.
-
-Ma il lettore dovrà sempre chiedere:
-
-> **Quale parte della catena sto delegando e quale controllo impedisce a un errore di propagarsi fino alla decisione?**
-
-Questa è la continuità con **Al timone**.
-
-## La misura del successo
-
-Alla fine di un caso non chiederemo:
-
-> “Abbiamo usato abbastanza tecniche?”
-
-Chiederemo:
-
-- la decisione è diventata più chiara?
-- abbiamo eliminato i failure mode più pericolosi?
-- il claim è proporzionato all'evidenza?
-- sappiamo che cosa non sappiamo?
-- il costo di altra analisi è giustificato dal suo possibile valore informativo?
-- la comunicazione preserva il significato?
-- esiste un piano per misurare ciò che accade dopo?
-
-> **La maturità analitica appare quando sappiamo non soltanto usare una tecnica, ma scegliere quale evidenza produrre, quale evitare e quando è il momento di decidere.**
+> **La maturità analitica appare quando sappiamo non soltanto produrre evidenza, ma scegliere il percorso minimo che merita fiducia, fermarci quando è sufficiente e riconoscere quando un'altra tecnica sarebbe soltanto ritardo mascherato da rigore.**
