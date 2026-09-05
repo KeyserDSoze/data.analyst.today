@@ -1,24 +1,10 @@
 ## 12.10 Orchestrazione: dipendere dalla readiness, non soltanto dall'orologio
 
-Una pipeline può contenere trasformazioni corrette e pubblicare comunque un risultato sbagliato se un task parte prima che i suoi input siano realmente pronti.
-
-L'**orchestrazione** coordina:
-
-- dipendenze;
-- readiness;
-- esecuzione;
-- retry;
-- failure;
-- backfill;
-- pubblicazione downstream.
-
-La distinzione centrale è:
-
-> **scheduling dice quando provare a partire; orchestration dice quando è sicuro procedere.**
+Una pipeline può contenere trasformazioni corrette e pubblicare comunque dati sbagliati se un task parte prima che i suoi input siano realmente pronti. Per questo **scheduling** e **orchestration** rispondono a domande diverse: il primo decide quando provare a partire; la seconda decide quando il downstream è autorizzato a procedere.
 
 ### Caso simulato/composito — Meridian Foods e il job puntuale che legge dati vecchi
 
-Meridian Foods ha questo calendario:
+Meridian Foods usa questo calendario:
 
 ```text
 ERP export      04:00
@@ -29,159 +15,47 @@ margin model    05:10
 BI refresh      06:00
 ```
 
-Per mesi funziona.
+Per mesi funziona. Poi una mattina l'ERP termina alle 05:05. `orders load` parte comunque alle 04:30 e trova ancora l'estrazione precedente. Tutti i task finiscono `SUCCESS`; il dashboard è puntuale e vecchio.
 
-Una mattina l'ERP termina alle 05:05.
+Il sistema ha scambiato **clock readiness** per **data readiness**.
 
-`orders load` parte comunque alle 04:30 e trova ancora l'estrazione precedente.
+### Una dipendenza è una condizione di validità
 
-Tutti i job finiscono `SUCCESS`.
+Un DAG può rendere esplicito che `net_revenue_model` dipende da orders, returns e customers. Ma la freccia non dovrebbe significare soltanto “il job upstream è terminato”. Un task può chiudersi tecnicamente pur avendo ricevuto 24 file su 28, quarantinato il 18% delle righe o prodotto zero record per una regione.
 
-Il dashboard è puntuale e vecchio.
-
-Il problema è che il sistema usa:
+La readiness può quindi richiedere:
 
 ```text
-clock readiness
+job complete
+AND freshness OK
+AND completeness OK
+AND schema OK
+AND critical invariants OK
 ```
 
-al posto di:
+L'orchestrazione diventa così il punto in cui le garanzie del dato autorizzano il passaggio allo stato successivo.
 
-```text
-data readiness
-```
+### Retry e publish boundary
 
-### DAG: rendere esplicita la causalità operativa della pipeline
+Un timeout di rete può meritare retry automatico; una schema incompatibility no. E un task che ha scritto metà output può diventare pericoloso se viene rilanciato senza idempotenza.
 
-Un Directed Acyclic Graph può rappresentare:
-
-```text
-orders --------\
-returns --------> net_revenue_model → semantic_model → dashboard
-customers -----/
-```
-
-Il punto non è il disegno.
-
-È la regola:
-
-> `net_revenue_model` può partire soltanto quando gli input richiesti hanno raggiunto uno stato valido per quella partizione o finestra.
-
-### Completion non significa quality-ready
-
-Un task upstream può tecnicamente terminare anche se:
-
-- ha ricevuto solo 24 file su 28;
-- ha quarantinato il 18% delle righe;
-- è quattro ore in ritardo;
-- ha prodotto zero record per una regione.
-
-Quindi la dependency condition può includere non soltanto:
-
-```text
-job_status = SUCCESS
-```
-
-ma anche:
-
-```text
-freshness OK
-completeness OK
-schema OK
-critical invariants OK
-```
-
-Questo collega orchestrazione e SLO del dato.
-
-### Retry: automatico non significa innocuo
-
-Un timeout di rete può meritare un retry.
-
-Una schema incompatibility probabilmente richiede intervento.
-
-Un task che ha scritto metà output e poi fallisce può essere pericoloso da ritentare se non è idempotente.
-
-Per ogni task dobbiamo sapere:
-
-```text
-can retry safely? sì/no
-writes atomically? sì/no
-checkpoint available? sì/no
-replay duplicates? possible/impossible
-```
-
-### Idempotenza e publish boundary
-
-Un pattern utile è separare:
+Per questo è utile separare:
 
 ```text
 compute candidate output
 → validate
-→ publish/replace atomically
+→ publish atomically
 ```
 
-In questo modo un failure intermedio non rende visibile metà dataset come se fosse la nuova versione ufficiale.
+Finché la nuova versione non supera il gate, il consumer vede l'ultima versione valida oppure uno stato esplicitamente stale. Quando l'atomicità completa non è possibile, checkpoint e stati di pubblicazione devono rendere visibile ciò che è completo e ciò che non lo è.
 
-Quando l'atomicità completa non è disponibile, servono checkpoint e stati espliciti.
+### Backfill: orchestrare anche il passato
 
-### Backfill: l'orchestrazione nel passato
+Se una business rule era sbagliata dal 1 maggio al 14 giugno, il sistema deve poter riprocessare quella finestra senza duplicare righe, sovrascrivere partizioni non coinvolte o pubblicare risultati parziali prima della validazione.
 
-Se scopriamo che una business rule era sbagliata dal 1 maggio al 14 giugno, il sistema deve poter eseguire:
+Lo stesso vale per readiness per partizione. Se Italia e Francia sono pronte ma Germania manca, il comportamento del consumer — bloccare, degradare o pubblicare subset espliciti — è una decisione di prodotto, non un dettaglio dell'orchestratore.
 
-```text
-recompute 2026-05-01 ... 2026-06-14
-```
-
-senza:
-
-- duplicare dati;
-- sovrascrivere partizioni non coinvolte;
-- utilizzare sorgenti incoerenti con il periodo;
-- aggiornare i consumer prima che l'intero backfill sia validato.
-
-Il backfill non è una funzione di emergenza opzionale. È parte della capacità di correggere l'evidenza storica.
-
-### Partition readiness
-
-In pipeline grandi può essere utile ragionare per partizione o finestra.
-
-Esempio:
-
-```text
-country=IT/date=2026-08-31 READY
-country=FR/date=2026-08-31 READY
-country=DE/date=2026-08-31 MISSING
-```
-
-A questo punto il consumer deve sapere se può:
-
-- pubblicare IT/FR separatamente;
-- attendere DE;
-- pubblicare globale con warning;
-- bloccare tutto.
-
-Questa è una decisione di prodotto, non solo di orchestratore.
-
-### Failure propagation
-
-Ogni nodo della Data Flow Architecture Map dovrebbe avere una policy:
-
-```text
-upstream fails
-→ downstream BLOCK / DEGRADE / USE LAST KNOWN GOOD
-```
-
-Per un dashboard executive potrebbe essere meglio mostrare:
-
-```text
-Dati aggiornati al 31 agosto 07:00 — refresh odierno non completo
-```
-
-piuttosto che pubblicare silenziosamente dati parziali.
-
-### Campo della Data Flow Architecture Map
-
-Per ogni task critico annotiamo:
+Nella Data Flow Architecture Map documentiamo:
 
 ```text
 upstream dependencies:
@@ -195,14 +69,4 @@ backfill support:
 owner:
 ```
 
-### Regola operativa
-
-Quando un numero è in ritardo o anomalo, non chiediamo soltanto:
-
-> la query finale è corretta?
-
-Chiediamo anche:
-
-> **Quali precondizioni dovevano essere vere prima che questa query fosse autorizzata a pubblicare il risultato?**
-
-> **Una pipeline affidabile non è una sequenza di job che partono all'ora giusta. È una sequenza di stati validi che autorizzano il downstream a procedere.**
+> **Una pipeline affidabile non è una sequenza di job che partono all'ora giusta. È una sequenza di stati sufficientemente validi che autorizzano il downstream a procedere.**
