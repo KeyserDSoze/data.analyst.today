@@ -1,112 +1,60 @@
-## 5.14 Test di ipotesi: quanto sono compatibili i dati con uno scenario di riferimento?
+## 5.14 Test di ipotesi: confrontare i dati con uno scenario di riferimento
 
-Un test di ipotesi non è una macchina che decide se un'affermazione è vera o falsa.
+Un test di ipotesi non decide se una frase sul mondo è vera o falsa. Costruisce una domanda più stretta:
 
-È un modo formale per porre una domanda più circoscritta:
+> **Se uno specifico scenario di riferimento e le assunzioni del modello fossero adeguati, quanto sono compatibili con essi i dati che abbiamo osservato?**
 
-> **Se uno specifico scenario di riferimento e le assunzioni del modello fossero adeguati, quanto sarebbe sorprendente osservare dati come quelli che abbiamo raccolto?**
+L'**ipotesi nulla**, `H0`, definisce lo scenario rispetto al quale costruiamo il test. L'**ipotesi alternativa**, `H1`, descrive ciò che il procedimento considera in opposizione a quello scenario. Spesso `H0` assume “nessuna differenza”, ma questa scelta non deve diventare rituale: il riferimento utile dipende dalla domanda.
 
-L'**ipotesi nulla**, `H0`, rappresenta lo scenario rispetto al quale costruiamo il test. Spesso è “nessuna differenza” o “parametro uguale alla baseline”, ma non deve essere scelta meccanicamente.
+NIST descrive i test come procedure che usano dati campionari per valutare un'affermazione su un parametro e ricorda un punto importante: **non rifiutare** un'ipotesi non equivale a dimostrarla vera.[^nist-tests]
 
-L'**ipotesi alternativa**, `H1`, rappresenta l'insieme degli scenari alternativi considerati dal test.
+## Un livello di servizio sotto target
 
-Il punto importante è che il test valuta i dati **dentro un modello statistico**. Non certifica da solo:
-
-- che il disegno dell'analisi sia corretto;
-- che il campione sia rappresentativo;
-- che una differenza sia causale;
-- che l'effetto sia abbastanza grande da contare.
-
-### Caso simulato/composito — Il livello di servizio è davvero sotto target?
-
-Un'azienda B2B ha un impegno operativo: almeno il **90% dei ticket Priority 1** deve ricevere una prima risposta entro 30 minuti.
-
-In un campione probabilistico di 1.200 ticket comparabili, 1.062 rispettano lo SLA.
-
-La proporzione osservata è:
+Un'azienda B2B promette che almeno il **90% dei ticket Priority 1** riceva una prima risposta entro 30 minuti. In un campione probabilistico di 1.200 ticket comparabili, 1.062 rispettano lo SLA:
 
 `1.062 / 1.200 = 88,5%`.
 
-Il numero è sotto il target. La domanda inferenziale è:
+La stima puntuale è sotto il target. La domanda inferenziale è se uno scarto di questa dimensione sia plausibile come sola variabilità campionaria per un processo realmente compatibile con il 90%.
 
-> **La differenza osservata è abbastanza grande, rispetto alla variabilità campionaria, da essere difficilmente compatibile con un processo che soddisfa davvero il 90%?**
+Possiamo quindi formulare un test con uno scenario nullo coerente con il riferimento del 90% e un'alternativa che rappresenti una performance inferiore. Il risultato del test non ci dirà **perché** lo SLA sia peggiorato e non stabilirà che il processo “è definitivamente 88,5%”. Quantificherà soltanto quanto il campione sia compatibile con il riferimento sotto le assunzioni dichiarate.
 
-Una possibile formulazione è:
+Questa differenza è fondamentale perché impedisce al test di assumersi responsabilità che appartengono al disegno e al contesto.
 
-- `H0`: la proporzione di ticket entro SLA è almeno compatibile con il riferimento del 90%;
-- `H1`: la proporzione è inferiore al riferimento.
-
-Il test non dimostra che “il processo è definitivamente 88,5%”. E non spiega perché il livello di servizio sia peggiorato.
-
-Quantifica soltanto un pezzo dell'evidenza rispetto allo scenario specificato.
-
-### Prima del test vengono effetto, popolazione e disegno
+## Il test arriva dopo la domanda, non prima
 
 Una sequenza debole è:
 
-**dati → scegli test → guarda p-value → inventa interpretazione**.
+**dati → scegli un test → guarda il p-value → costruisci la storia**.
 
-Una sequenza più professionale è:
+Una sequenza più difendibile è:
 
-**domanda → popolazione → parametro/effetto → disegno → assunzioni → stima + intervallo → test → interpretazione**.
+**domanda → popolazione → parametro/effetto → disegno → assunzioni → stima e intervallo → test → interpretazione**.
 
-Prima del test dobbiamo sapere almeno:
+Prima di calcolare la statistica dobbiamo sapere a quale popolazione vogliamo generalizzare, quale effetto ci interessa, come sono state generate le osservazioni e quale differenza sarebbe abbastanza grande da contare. Altrimenti il software può produrre una risposta molto precisa a una domanda che il business non aveva mai posto.
 
-- qual è il parametro o confronto di interesse;
-- qual è la popolazione alla quale vogliamo generalizzare;
-- quale differenza avrebbe valore pratico;
-- come sono state generate le osservazioni;
-- quali assunzioni statistiche sono richieste.
+## Lo zero statistico non è sempre la soglia decisionale
 
-Altrimenti rischiamo di ottenere una risposta molto precisa a una domanda che non avevamo intenzione di porre.
+Immaginiamo che un nuovo processo riduca il tempo medio di gestione di **12 secondi** su ticket che durano circa 18 minuti. Con un dataset enorme potremmo distinguere 12 secondi da un effetto esattamente nullo.
 
-### `H0 = nessun effetto` non è sempre la domanda utile
+Se il business implementerebbe il processo soltanto per un miglioramento di almeno 90 secondi, però, il confronto con zero non è il problema principale. La domanda utile è più vicina a:
 
-Immaginiamo che un nuovo processo riduca il tempo di gestione medio di **12 secondi** su ticket che durano mediamente 18 minuti.
+> **I dati sono compatibili con un miglioramento abbastanza grande da cambiare la decisione?**
 
-Con abbastanza dati possiamo forse distinguere 12 secondi da zero.
+Questa prospettiva sposta naturalmente l'attenzione verso effect size, intervalli e soglie business. Il test resta utile, ma smette di essere il centro esclusivo dell'analisi.
 
-Ma se il business considera interessante soltanto una riduzione di almeno 90 secondi, la vera domanda non è:
+## “Non significativo” non significa “nessun effetto”
 
-> “l'effetto è esattamente zero?”
+Se un test non produce evidenza sufficiente contro `H0`, possono esistere spiegazioni molto diverse. L'effetto reale può essere vicino a zero; può essere piccolo; può essere materialmente interessante ma stimato con poca precisione; il disegno può essere inefficiente. Per questo “non rifiutiamo `H0`” non va tradotto in “abbiamo dimostrato che non esiste effetto”.
 
-È più vicina a:
+La sezione sul power renderà questa distinzione operativa: un test poco informativo non deve diventare una sentenza negativa sul fenomeno.
 
-> **“i dati sono compatibili con un miglioramento abbastanza grande da avere valore operativo?”**
+## Il test non ripara gruppi non comparabili
 
-Questa prospettiva ci porta a guardare effect size e intervalli, non soltanto un null puntuale.
+Un p-value minuscolo ottenuto confrontando due gruppi osservazionali con migliaia di casi può descrivere con grande precisione **una differenza tra gruppi sistematicamente diversi**. Se cambiano paese, canale, tenure o rischio iniziale, il test non trasforma automaticamente quella differenza in effetto causale.
 
-### Un risultato non significativo non accetta automaticamente `H0`
+Questo mantiene chiari i confini del libro: il Capitolo 5 tratta l'inferenza statistica dentro una struttura di confronto dichiarata; il Capitolo 8 affronterà l'identificazione causale; il Capitolo 9 randomizzazione ed experimentation.
 
-Nel linguaggio classico del testing diciamo spesso:
-
-> “non rifiutiamo `H0`”.
-
-Non è equivalente a:
-
-> “abbiamo dimostrato che `H0` è vera”.
-
-I dati possono essere poco informativi. Il campione può essere piccolo. L'effetto reale può essere presente ma difficile da rilevare.
-
-La sezione sul power renderà questo punto operativo.
-
-### Il test non ripara il disegno
-
-Supponiamo di confrontare due gruppi osservazionali con migliaia di casi e ottenere un p-value minuscolo.
-
-Se i gruppi differiscono sistematicamente per paese, canale, tenure o rischio iniziale, il test può quantificare con grande precisione **una differenza osservata tra gruppi non comparabili**.
-
-Non trasforma automaticamente quella differenza in effetto causale.
-
-Per questo:
-
-- Capitolo 8: identificazione causale;
-- Capitolo 9: randomizzazione ed experimentation;
-- Capitolo 5: inferenza statistica data una struttura di confronto dichiarata.
-
-### L'output corretto non è “PASS/FAIL”
-
-Dopo un test dovremmo conservare almeno:
+Per questo l'output di un test non dovrebbe essere una cella `PASS / FAIL`, ma un piccolo fascicolo di evidenza:
 
 ```text
 Parametro / effetto stimato:
@@ -119,6 +67,12 @@ Effetto minimo business-rilevante:
 Fonti di bias non incluse nel test:
 ```
 
-Il test diventa così **un componente dell'evidenza**, non il timbro finale della decisione.
+Il test diventa così ciò che dovrebbe essere: **un componente dell'evidenza, non il timbro finale della decisione**.
 
-> **Il test chiede quanto i dati siano compatibili con un modello di riferimento. Non chiede al software di decidere che cosa dobbiamo credere o fare.**
+> **Un test chiede quanto i dati siano compatibili con uno scenario di riferimento. Non delega al software ciò che dobbiamo credere o fare.**
+
+---
+
+### Fonte
+
+[^nist-tests]: NIST/SEMATECH, *Quantitative Techniques — Hypothesis Tests*. https://itl.nist.gov/div898/handbook/eda/section3/eda35.htm
