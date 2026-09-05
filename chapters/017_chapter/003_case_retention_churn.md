@@ -1,243 +1,77 @@
-## 17.2 “Quali clienti dobbiamo salvare?”: rischio, causa e persuadibilità
+## 17.2 NorthPeak — “Quali clienti dobbiamo salvare?”
 
-### Caso simulato/composito: NorthPeak
+> **Caso simulato/composito.** Organizzazione, numeri e sequenza sono costruiti per la didattica.
 
-Una piattaforma SaaS B2B, **NorthPeak**, vede il logo churn salire dal 2,8% al 4,1% trimestrale.
+NorthPeak, piattaforma SaaS B2B, vede il logo churn trimestrale salire dal **2,8% al 4,1%**. Il Chief Customer Officer chiede quali clienti salvare subito e la richiesta sembra indicare una soluzione ovvia: costruire un churn model e ordinare gli account per score.
 
-Il Chief Customer Officer chiede:
+Il routing corretto mostra invece che una sola frase contiene tre problemi. Dobbiamo capire **dove nasce il deterioramento**, chi ha alta probabilità di non rinnovare e, soprattutto, chi può essere persuaso da un intervento che abbia valore economico positivo. Il team può gestire soltanto **500 interventi ad alta intensità per trimestre**; sprecare quella capacità su account già persi è il failure cost dominante.
 
-> “Quali clienti dobbiamo salvare subito?”
+La stop rule iniziale è quindi più importante dell'algoritmo: **nessuna campagna automatica sui top-risk finché rischio e treatment opportunity non vengono separati**.
 
-La frase sembra chiedere un churn model.
+### Il problema nasce prima del renewal
 
-In realtà contiene almeno quattro decisioni:
+L'Analytical Brief definisce l'unità come account, il churn come mancato rinnovo alla renewal date, una prediction window di 90 giorni e l'esclusione di trial, account con meno di 60 giorni di vita e contratti già in dismissione. L'outcome economico è NRR/contribution margin, non il solo logo retention.
 
-1. dove nasce il deterioramento?
-2. quali account hanno probabilità elevata di non rinnovare?
-3. quali account possono essere influenzati da un intervento?
-4. quali interventi hanno valore economico positivo dato il costo e la capacità del team?
+Prima di addestrare alcun modello, le coorti cambiano il problema. Il peggioramento è concentrato nei clienti acquisiti negli ultimi dodici mesi tramite un nuovo **partner channel**; il direct-sales è quasi stabile. Il Lifecycle Diagnostic Map mostra inoltre activation entro 14 giorni **71% → 54%**, uso della feature core nel primo mese **-19%**, ticket di onboarding **+32%** e time-to-first-value **+4,6 giorni**.
 
-Quattro domande diverse richiedono quattro tipi di evidenza diversi.
+Il finding più importante non è ancora “questi account hanno churn risk alto”. È che **il deterioramento comincia durante l'attivazione, molto prima del rinnovo, e ha una forte concentrazione per acquisition source**. Aspettare gli ultimi 30 giorni per intervenire diventa così una policy poco coerente con l'evidenza.
 
-## Routing iniziale
+### Prediction risponde soltanto a una parte della domanda
 
-| Elemento | Scelta |
-|---|---|
-| Decisione | allocare capacità Customer Success e correggere il meccanismo che genera churn |
-| Failure cost | spendere retention budget su clienti irrecuperabili o intervenire troppo tardi |
-| Claim necessario | predittivo per priorità; causale per scegliere l'intervento |
-| Capacità | 500 interventi ad alta intensità per trimestre |
-| Reversibilità | alta per targeting; media per redesign onboarding |
-| Stop rule | nessuna campagna sui top-risk finché rischio e persuadibilità non sono separati |
+Il team costruisce poi un modello perché esiste un problema operativo reale di priorità. Il candidato validato temporalmente ottiene **AUC 0,84**, viene controllato per calibration sui decili e per leakage rispetto a informazioni disponibili soltanto dopo il momento decisionale. Tra le feature più informative compaiono diminuzione di utilizzo, mancata attivazione della feature core, ticket, distanza dal renewal, NPS e seat utilization.
 
-## 1. Definire churn e popolazione
+La Predictive Decision Card, però, registra il limite che impedisce al modello di diventare una policy da solo: **feature importance non equivale a causalità**. Molti ticket possono predire churn perché sono conseguenza di un problema sottostante; eliminare o ridurre il ticket count non implica ridurre churn.
 
-Il team chiarisce:
+Microsoft Customer Insights offre un buon esempio documentato del ruolo corretto della prediction: la documentazione corrente richiede una definizione esplicita di churn e finestra predittiva, costruisce score di rischio e permette di creare segmenti di clienti ad alto rischio. Questo supporta la fase “chi ha maggior probabilità di churn”, non la domanda “quale trattamento cambierà il suo outcome?”.[^ms-churn]
 
-- unità: account, non utenti;
-- churn: contratto non rinnovato alla data di renewal;
-- finestra di previsione: 90 giorni;
-- esclusioni: trial, account con meno di 60 giorni di vita, contratti già in dismissione;
-- outcome economico: NRR e contribution margin, non soltanto logo retention.
+### I clienti più a rischio non sono necessariamente i migliori da trattare
 
-Questa specifica diventa parte dell'**Analytical Brief**.
+Tra i 500 score più alti NorthPeak trova account con azienda chiusa, merger, budget eliminato, migrazione strategica già deliberata o incompatibilità strutturale con il prodotto. Sono clienti che possono avere churn probability elevatissima e treatment effect vicino a zero per l'intervento disponibile.
 
-Senza di essa, un modello potrebbe essere statisticamente buono e semanticamente inutile.
+La priorità operativa deve quindi combinare almeno quattro oggetti diversi:
 
-## 2. Prima localizzare il deterioramento
+```text
+risk of churn
+× economic value
+× incremental treatment opportunity
+− intervention cost
+```
 
-Prima del machine learning, le coorti mostrano che il peggioramento è concentrato nei clienti acquisiti negli ultimi dodici mesi tramite un nuovo partner channel.
+La capacità limitata del Customer Success team rende questa distinzione materiale. Un account a rischio medio ma ad alto valore e persuadibilità può essere un uso migliore di una delle 500 slot rispetto a un account quasi certamente perso.
 
-Il churn dei clienti direct-sales è quasi stabile.
+Anche lo storico delle chiamate CSM dimostra perché prediction e causalità non possono essere confuse. I CSM chiamavano soprattutto account già fragili e, nei dati osservazionali, chi riceveva una chiamata churnava di più. Concludere che la chiamata “causa churn” invertirebbe il meccanismo di assegnazione: il rischio ha causato il trattamento.
 
-Il **Lifecycle Diagnostic Map** mostra inoltre:
+Questa è la ragione concreta per cui entra il **Causal Identification Brief**. Non per completare il catalogo del libro, ma perché senza di esso la policy rischia di ottimizzare un'associazione selezionata.
 
-- activation entro 14 giorni: `71% → 54%`;
-- uso della feature core nel primo mese: `-19%`;
-- ticket di onboarding: `+32%`;
-- time-to-first-value: `+4,6 giorni`.
+### Qui l'esperimento guadagna davvero il diritto di esistere
 
-Il finding più importante non è ancora “questi account sono ad alto rischio”.
+Il team decide di testare un programma di onboarding intensivo sui nuovi account partner-channel. L'unità di randomizzazione è l'account; il primary outcome è activation entro 30 giorni, con renewal e NRR come outcome downstream; i guardrail includono costo CSM, ticket e time-to-resolution. L'eterogeneità da esplorare viene pre-specificata prima di guardare i risultati.
 
-È:
+L'esperimento non deve “validare il churn model”. Deve stimare se **un intervento specifico cambia un outcome specifico** nella popolazione in cui il deterioramento è iniziato.
 
-> **“Il deterioramento comincia molto prima del rinnovo ed è concentrato in una specifica origine commerciale.”**
+A questo punto le alternative sono diventate più mature. Ordinare semplicemente i 500 score più alti è facile ma confonde rischio e persuadibilità. Correggere soltanto onboarding partner-channel affronta il driver principale ma lascia scoperti gli account legacy già in deterioramento. La policy preferita combina invece correzione dell'onboarding, intervento anticipato, risk score per prioritizzazione, esclusione dei casi non persuadibili/economicamente non convenienti e sperimentazione per stimare l'incremental effect delle azioni.
 
-Questo cambia la politica possibile: non possiamo aspettare gli ultimi 30 giorni prima del renewal.
+La policy non è permanente. Cambia se l'uplift dell'onboarding intensivo è vicino a zero, il costo per renewal salvato supera il contribution margin atteso, il partner channel migliora spontaneamente dopo correzioni di processo, il modello perde calibration o la capacità Customer Success cambia materialmente.
 
-## 3. Predictive Decision Card: chi rischia davvero?
+### Evidence Ledger al decision point
 
-Il team costruisce un modello con:
-
-- AUC 0,84;
-- calibration verificata per decili di rischio;
-- validazione temporale;
-- controlli di leakage rispetto a informazioni disponibili soltanto dopo la decisione di rinnovo.
-
-Le feature più informative includono:
-
-- diminuzione di utilizzo;
-- mancata attivazione della feature core;
-- numero e severità dei ticket;
-- distanza dal renewal;
-- NPS;
-- seat utilization.
-
-Ma la **Predictive Decision Card** registra esplicitamente un limite:
-
-> feature importance non equivale a causalità.
-
-Il fatto che molti ticket predicano churn non significa che ridurre il numero di ticket nel database riduca churn. Potrebbe significare che i ticket sono una conseguenza di problemi più profondi.
-
-## Caso reale documentato: Microsoft Customer Insights
-
-Microsoft documenta un workflow end-to-end di transactional churn prediction che comprende ingestione dei dati, unificazione dei profili, costruzione della transaction history, configurazione del modello, review delle spiegazioni e creazione di segmenti ad alto rischio.
-
-Fonte: https://learn.microsoft.com/en-us/dynamics365/customer-insights/data/sample-guide-predict-transactional-churn
-
-Il caso è utile per mostrare cosa fa bene un sistema predittivo: **identificare una popolazione con rischio elevato**.
-
-Non risolve però automaticamente la domanda successiva:
-
-> “Quale intervento cambierà il comportamento di questi clienti?”
-
-Quello è un problema causale e decisionale diverso.
-
-## 4. Risk score non è treatment opportunity
-
-I 500 account con score più alto vengono analizzati economicamente.
-
-Alcuni sono quasi certamente persi per ragioni che un intervento Customer Success non può cambiare:
-
-- azienda chiusa;
-- merger;
-- budget azzerato;
-- migrazione strategica già deliberata;
-- prodotto non più compatibile con il processo del cliente.
-
-Questi account possono avere altissimo churn risk e bassissima persuadibilità.
-
-Il team costruisce quindi una matrice:
-
-| | Alta persuadibilità | Bassa persuadibilità |
+| Observed | Inferred | Still unknown |
 |---|---|---|
-| Alto rischio | priorità di intervento | evitare spreco |
-| Basso rischio | test selettivo | nessuna azione |
+| churn 2,8%→4,1% | problema principale nasce nel nuovo onboarding partner | treatment effect dell'onboarding intensivo |
+| activation 71%→54% | alcuni top-risk sono poco persuadibili | costo per renewal realmente salvato |
+| feature-core use -19%, ticket +32%, TTFV +4,6 giorni | risk score utile per capacity allocation | eterogeneità stabile del treatment effect |
+| model AUC 0,84, temporal validation/calibration | | |
 
-A questa matrice aggiunge il valore economico del cliente e il costo dell'intervento.
+La headline executive può quindi dire:
 
-La priorità operativa diventa quindi funzione di:
+> **Il deterioramento di churn è concentrato nelle nuove coorti partner-channel e comincia durante l'attivazione. Il risk model aiuta a prioritizzare, ma non identifica chi possiamo salvare. Proponiamo di correggere onboarding e allocare la capacità retention usando rischio, valore e incremental treatment effect.**
 
-**rischio × valore × effetto incrementale atteso − costo dell'intervento**.
+L'outcome review segue activation a 30 giorni, time-to-first-value, feature adoption, renewal, incremental retention uplift, costo per renewal salvato, NRR per coorte e calibration drift.
 
-Non basta ordinare per churn probability.
+**Percorso minimo effettivo:** Analytical Brief → Lifecycle Diagnostic Map → Predictive Decision Card → Causal Identification Brief → Experiment Contract → Decision Record → Decision Communication Pack.
 
-## 5. Il dato osservazionale può invertire la storia
+Qui la catena è più lunga di Orion Living per una ragione precisa: la decisione non chiede soltanto **chi rischia**, ma anche **su chi l'azione produce valore**.
 
-Storicamente i Customer Success Manager chiamavano soprattutto gli account più fragili.
+> **Predire chi perderemo non equivale a sapere chi possiamo salvare. Sapere chi possiamo salvare non equivale ancora a sapere se conviene usare su di lui una delle 500 opportunità di intervento.**
 
-Nei dati osservazionali, chi riceveva una chiamata churnava di più.
-
-Una lettura ingenua avrebbe concluso:
-
-> “Le chiamate fanno aumentare il churn.”
-
-È selection bias: il trattamento veniva assegnato proprio ai clienti peggiori.
-
-Il **Causal Identification Brief** registra quindi che il confronto trattati/non trattati storico non identifica l'effetto della chiamata.
-
-## 6. Experiment Contract: quale intervento cambia davvero l'esito?
-
-Il team decide di randomizzare un nuovo programma di onboarding intensivo su una parte dei nuovi account partner-channel.
-
-L'esperimento viene progettato prima del rollout con:
-
-- unità di randomizzazione: account;
-- primary outcome: activation entro 30 giorni;
-- outcome downstream: renewal e NRR;
-- guardrail: costo CSM, ticket, time-to-resolution;
-- segmento: nuovi account partner-channel;
-- durata sufficiente a osservare almeno i proxy precoci e successivamente i rinnovi;
-- policy di analisi dell'eterogeneità definita prima di guardare i risultati.
-
-La decisione non è “il modello ha trovato gli utenti giusti”.
-
-È costruire una catena in cui prediction e causalità svolgono ruoli differenti.
-
-## 7. Decision Record
-
-Le alternative diventano:
-
-### A — Contattare i 500 score più alti
-
-Semplice, ma tratta rischio e persuadibilità come se fossero la stessa cosa.
-
-### B — Correggere soltanto onboarding partner-channel
-
-Affronta il meccanismo principale, ma ignora account legacy già in deterioramento.
-
-### C — Policy combinata
-
-- correggere onboarding partner-channel;
-- intervenire prima, entro i primi 30 giorni;
-- usare il risk model per priorità operativa;
-- escludere account non persuadibili o economicamente non convenienti;
-- usare esperimenti per stimare l'effetto incrementale degli interventi;
-- mantenere una coda di monitoraggio sui clienti ad alto valore.
-
-La scelta è C.
-
-## 8. Switching condition
-
-La policy cambierà se:
-
-- l'uplift dell'onboarding intensivo è vicino a zero;
-- il costo per renewal salvato supera il contribution margin atteso;
-- il partner channel migliora spontaneamente dopo correzioni di processo;
-- la calibration del modello degrada;
-- la capacità Customer Success cambia in modo sostanziale.
-
-Queste condizioni entrano nel Decision Record prima del rollout.
-
-## 9. Decision Communication Pack
-
-La headline non è:
-
-> “Abbiamo un churn model con AUC 0,84.”
-
-È:
-
-> **“Il deterioramento di churn è concentrato nelle nuove coorti partner-channel e nasce durante l'attivazione. Il risk model ci aiuta a prioritizzare, ma non identifica chi può essere salvato. Proponiamo di correggere onboarding e allocare la capacità retention usando rischio, valore e uplift incrementale.”**
-
-Le evidenze principali sono:
-
-1. cohort comparison;
-2. activation path;
-3. calibration/risk distribution;
-4. economia della capacità;
-5. risultato dell'esperimento quando disponibile.
-
-## 10. Outcome review
-
-Metriche:
-
-- 30-day activation;
-- time-to-first-value;
-- feature adoption;
-- renewal rate;
-- incremental retention uplift;
-- costo per renewal salvato;
-- NRR per coorte;
-- calibration drift del risk model.
-
-## Cosa abbiamo scelto di non fare
-
-Non serve un modello causale complesso su tutto il customer lifecycle prima di agire.
-
-Non serve nemmeno aspettare il renewal outcome finale per correggere un onboarding chiaramente deteriorato se l'intervento è reversibile e i proxy precoci sono affidabili.
-
-La catena effettiva è:
-
-**Analytical Brief → Lifecycle Diagnostic Map → Predictive Decision Card → Causal Identification Brief → Experiment Contract → Decision Record → Decision Communication Pack**
-
-> **Predire chi perderemo non equivale a sapere chi possiamo salvare. E sapere chi possiamo salvare non equivale ancora a sapere se conviene farlo.**
+[^ms-churn]: Microsoft Learn, *Predict transaction churn*, https://learn.microsoft.com/en-us/dynamics365/customer-insights/data/predict-transactional-churn ; Microsoft Learn, *Subscription churn prediction sample guide*, https://learn.microsoft.com/en-us/dynamics365/customer-insights/data/sample-guide-predict-subscription-churn
