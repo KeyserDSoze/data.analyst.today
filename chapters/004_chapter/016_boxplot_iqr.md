@@ -1,84 +1,29 @@
-## 4.15 Box plot e IQR: confrontare distribuzioni senza ridurle a una media
+## 4.15 Box plot e IQR: confrontare distribuzioni senza fingere che la media basti
 
-Il box plot è utile perché comprime in poco spazio **posizione e dispersione** di una distribuzione. Mostra la mediana, i quartili, l'intervallo interquartile e, secondo una convenzione molto comune, evidenzia osservazioni lontane dalla parte centrale dei dati.
+Quando dobbiamo confrontare più gruppi, un istogramma per ciascuno può diventare ingombrante. Il **box plot** comprime centro e dispersione in una forma compatta: mostra mediana, quartili e interquartile range, cioè la larghezza del 50% centrale della distribuzione.
 
-Il cuore del grafico è l'**interquartile range**, o IQR:
+```text
+IQR = Q3 - Q1
+```
 
-`IQR = Q3 − Q1`
+Una convenzione molto diffusa estende i *whisker* fino ai valori compatibili con `Q1 - 1,5 × IQR` e `Q3 + 1,5 × IQR`, segnalando separatamente le osservazioni oltre quei limiti.[^nist-boxplot] La parola importante è **segnalando**. La regola non stabilisce che un punto sia sbagliato e non ordina di eliminarlo.
 
-`Q1` è il 25° percentile e `Q3` il 75° percentile. Tra i due si trova quindi il 50% centrale delle osservazioni.
+Consideriamo **FastLane Distribution**, che confronta quattro hub. Le medie dei tempi di consegna sono quasi identiche: Torino 2,8 giorni, Bologna 2,7, Roma 2,9, Napoli 2,8. Se la performance venisse riassunta da quella sola riga, i quattro processi sembrerebbero equivalenti.
 
-Una costruzione molto diffusa segnala come valori esterni ai *whisker* quelli inferiori a:
+Il box plot mostra invece che Bologna ha una parte centrale molto compatta, Torino è un po' più dispersa, Roma ancora di più e Napoli presenta una mediana simile agli altri ma una coda di consegne lente. Per Napoli `Q1 = 2,2`, mediana `2,6`, `Q3 = 3,1` e `IQR = 0,9`; la soglia superiore convenzionale è quindi `4,45` giorni. Nel trimestre **184 spedizioni** la superano e il massimo arriva a 13,8 giorni.
 
-`Q1 − 1,5 × IQR`
+L'indagine sul processo mostra che il 78% di quelle spedizioni lente riguarda due isole minori servite soltanto tre volte a settimana. I punti sono reali e rappresentano esattamente una parte dell'esperienza che Operations deve conoscere. Cancellarli renderebbe il box plot più ordinato, non il servizio più affidabile.
 
-o superiori a:
+## Il box plot serve soprattutto a formulare la domanda successiva
 
-`Q3 + 1,5 × IQR`
+La lettura utile non è “Napoli ha molti outlier”. È chiedere se la coda appartenga a un segmento identificabile, se il problema sia generalizzato o se una regola operativa produca tempi diversi. A quel punto possiamo confrontare il KPI completo con una sensitivity analysis per segmento senza modificare retroattivamente la definizione della popolazione.
 
-NIST descrive questa come una delle costruzioni standard del box plot.[^nist-boxplot]
+Il box plot, inoltre, comprime anch'esso informazione. Due distribuzioni possono avere quartili quasi identici e forme molto diverse: una unimodale, l'altra bimodale; una concentrata vicino alla mediana, l'altra divisa in due cluster. Quando la forma conta conviene quindi affiancare istogramma o density plot, punti individuali se il campione è gestibile, numerosità del gruppo e percentili operativi come P90 o P95.
 
-La parola importante, però, è **segnala**. La regola `1,5 × IQR` non dimostra che un valore sia errato e non ordina di cancellarlo.
+Questa complementarità è importante: non stiamo cercando il grafico “migliore” in assoluto, ma una rappresentazione che conservi le proprietà rilevanti per la domanda. Il box plot è particolarmente forte quando vogliamo confrontare rapidamente posizione, dispersione e code tra gruppi.
 
-Nel Capitolo 3 abbiamo già affrontato la domanda di data quality: *questa osservazione rappresenta un fatto reale o un errore?* Qui la domanda è diversa:
+La stessa esigenza di confronto si presenta anche quando le variabili non sono numeriche. In quel caso la struttura non vive nei quartili ma nelle combinazioni di categorie e nei loro denominatori: il tema della prossima sezione.
 
-> **Che cosa cambia nella nostra lettura quando osserviamo l'intera distribuzione invece della sola media?**
+> **Una statistica compatta è utile quando sappiamo sia ciò che rende visibile sia ciò che ha dovuto comprimere.**
 
-### Caso simulato/composito — Quattro hub con quasi la stessa media
-
-La società logistica immaginaria **FastLane Distribution** confronta quattro hub italiani.
-
-| Hub | Media giorni |
-|---|---:|
-| Torino | 2,8 |
-| Bologna | 2,7 |
-| Roma | 2,9 |
-| Napoli | 2,8 |
-
-Guardando soltanto la media, i quattro processi sembrano quasi equivalenti.
-
-I box plot cambiano la lettura.
-
-A Bologna il 50% centrale delle consegne è concentrato tra 2,5 e 2,9 giorni. Torino è un po' più dispersa. Roma mostra maggiore variabilità. Napoli ha una mediana simile agli altri hub, ma una coda di consegne molto lente.
-
-Per Napoli:
-
-- `Q1 = 2,2` giorni;
-- mediana `= 2,6`;
-- `Q3 = 3,1`;
-- `IQR = 0,9`;
-- soglia superiore convenzionale `= 4,45` giorni.
-
-Nel trimestre 184 spedizioni superano 4,45 giorni e il massimo è 13,8.
-
-La media di 2,8 giorni non era falsa. Era insufficiente per descrivere la stabilità del servizio.
-
-### Un punto fuori dal box non è un ordine di cancellazione
-
-Il 78% delle 184 spedizioni lente riguarda due isole minori servite solo tre volte a settimana. I valori sono reali e rappresentano proprio una parte dell'esperienza che operations deve conoscere.
-
-Eliminarli renderebbe il grafico più ordinato, non il processo migliore.
-
-Per questo, quando un punto estremo influenza molto una conclusione, l'EDA dovrebbe fare un **sensitivity check**:
-
-- risultato con tutte le osservazioni;
-- risultato senza il punto o il gruppo influente;
-- spiegazione del perché l'osservazione esiste;
-- decisione che cambia, oppure non cambia, tra le due letture.
-
-### Il box plot comprime anche informazione
-
-Il vantaggio del box plot è anche il suo limite. Due distribuzioni con quartili simili possono avere forme differenti: una può essere unimodale, un'altra bimodale; una può avere molti punti vicino alla mediana, un'altra due cluster separati.
-
-Per questo, quando la forma conta, è utile affiancare al box plot:
-
-- istogramma o density plot;
-- punti individuali, se il campione è gestibile;
-- numerosità del gruppo;
-- eventualmente P90/P95 quando le code hanno valore operativo.
-
-Il box plot è quindi soprattutto uno strumento di **confronto tra distribuzioni**, non una radiografia completa.
-
-> **Una statistica compatta è utile quando sappiamo anche che cosa sta comprimendo.**
-
-[^nist-boxplot]: NIST/SEMATECH, *Box Plot*, e-Handbook of Statistical Methods: https://itl.nist.gov/div898/handbook/eda/section3/boxplot.htm
+[^nist-boxplot]: NIST/SEMATECH, *Box Plot*. https://itl.nist.gov/div898/handbook/eda/section3/boxplot.htm
