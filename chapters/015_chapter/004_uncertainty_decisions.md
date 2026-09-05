@@ -1,16 +1,6 @@
 ## 15.3 Decidere sotto incertezza: agire, aspettare o comprare informazione
 
-Le decisioni reali arrivano quasi sempre prima della certezza.
-
-Questo non significa che dobbiamo scegliere tra due estremi:
-
-```text
-agire subito senza capire
-vs
-aspettare finché sapremo tutto
-```
-
-Esiste uno spazio molto più utile di mosse intermedie.
+Le decisioni reali arrivano quasi sempre prima della certezza. Questo non ci obbliga a scegliere tra agire alla cieca e aspettare finché sapremo tutto. Esiste un insieme più utile di mosse:
 
 ```text
 ACT
@@ -20,89 +10,21 @@ BUY INFORMATION
 ABANDON
 ```
 
-La qualità della decisione dipende anche dal saper scegliere **quale di queste mosse è appropriata al tipo di incertezza che abbiamo davanti**.
+La qualità della decisione dipende anche dal saper scegliere **quale mossa è appropriata al tipo di incertezza e al costo del commitment**.
 
-### Non tutta l'incertezza è uguale
+Una prima distinzione è tra incertezza realisticamente riducibile prima della deadline, incertezza che non possiamo ridurre nel tempo utile e scenario uncertainty, cioè futuri qualitativamente diversi per i quali una singola distribuzione puntuale sarebbe artificiale. Possiamo misurare il CAC di un nuovo mercato con un pilot; non possiamo conoscere con precisione la risposta di un competitor tra tre anni; possiamo invece costruire scenari credibili nei quali domanda, pricing power e costi cambiano insieme.
 
-Per una decisione operativa distinguiamo almeno tre categorie.
+Questa distinzione evita una scorciatoia frequente: “servono più dati”. Prima di chiedere un'altra query o un altro modello chiediamo invece:
 
-**Incertezza riducibile**
+> **Quale informazione aggiuntiva potrebbe realmente cambiare la preferenza tra le alternative?**
 
-Possiamo realisticamente ottenere più informazione.
+Se non sappiamo nominarla, rischiamo analysis for analysis's sake. Se la risposta è precisa, il lavoro analitico diventa progettare il modo più economico e credibile per ottenerla.
 
-Esempi:
+### Comprare informazione con una decisione più piccola
 
-- non conosciamo il CAC di un nuovo mercato ma possiamo fare un pilot;
-- non sappiamo il tasso di errore di un processo ma possiamo campionare manualmente;
-- non conosciamo l'effetto di una feature ma possiamo sperimentare.
+Una società SaaS europea valuta un investimento di €2M per aprire un team locale in Portogallo. Ha già 420 clienti acquisiti organicamente, retention a 12 mesi superiore alla media europea, ARPA leggermente inferiore e forte inbound in tre verticali. Quasi non possiede, però, evidenza sul CAC di un sales motion locale.
 
-**Incertezza difficilmente riducibile nel tempo utile**
-
-Potremmo saperne di più in futuro, ma non prima della decisione.
-
-Esempi:
-
-- risposta di un competitor;
-- shock macroeconomico;
-- evoluzione normativa ancora non definita;
-- domanda di mercato tra tre anni.
-
-**Incertezza strutturale / scenario uncertainty**
-
-Non abbiamo una singola distribuzione affidabile degli esiti. Esistono futuri qualitativamente differenti.
-
-Esempio:
-
-- nuovo mercato cresce molto oppure resta di nicchia;
-- una tecnologia diventa standard oppure viene sostituita;
-- un cambio di piattaforma modifica radicalmente i costi unitari.
-
-Questa distinzione serve perché non ogni incertezza merita altra analisi.
-
-### La domanda chiave: cosa potrebbe davvero cambiare la scelta?
-
-Prima di chiedere un'altra query, un altro modello o un altro workshop, chiediamo:
-
-> **Quale informazione aggiuntiva potrebbe ribaltare la preferenza tra le alternative?**
-
-Se non sappiamo nominare quell'informazione, rischiamo di fare analysis for analysis' sake.
-
-Se invece la risposta è precisa, abbiamo una guida per il prossimo investimento informativo.
-
-Esempio:
-
-```text
-Decisione:
-aprire un team commerciale locale?
-
-Uncertainty che domina:
-CAC locale sostenibile
-
-Informazione che potrebbe cambiare la decisione:
-CAC osservato dopo 100 lead qualificati
-```
-
-A quel punto il lavoro analitico diventa progettare il modo più economico e credibile per ottenere quell'informazione.
-
-### Caso simulato/composito — espansione SaaS in Portogallo
-
-Una società SaaS europea valuta un investimento di €2M per aprire un team locale in Portogallo.
-
-Dati disponibili:
-
-- 420 clienti acquisiti organicamente;
-- retention a 12 mesi superiore alla media europea;
-- ARPA leggermente inferiore;
-- forte inbound in tre verticali;
-- quasi nessuna evidenza sul CAC di un motion commerciale locale.
-
-Il management chiede:
-
-> “Il mercato giustifica €2M?”
-
-Una risposta falsa sarebbe produrre un unico business case con parametri puntuali e trattarlo come previsione.
-
-Il Decision Record elenca invece:
+Il management chiede se il mercato giustifica €2M. Un business case con parametri puntuali darebbe l'impressione di una previsione che i dati non possono sostenere. Il Decision Record rende invece esplicite quattro alternative:
 
 ```text
 A — business as usual: continuare inbound senza team locale
@@ -111,9 +33,7 @@ C — pilot commerciale da €250k
 D — partnership con reseller locale
 ```
 
-La variabile che più separa B da C/D è il CAC ottenibile dal sales motion locale.
-
-Scenari iniziali:
+La variabile che più discrimina B da C e D è il CAC ottenibile dal sales motion locale. Gli scenari iniziali sono:
 
 | Scenario | CAC | Sales conversion | Retention 24m | Lettura |
 |---|---:|---:|---:|---|
@@ -121,141 +41,50 @@ Scenari iniziali:
 | Centrale | €1.800 | 18% | 70% | caso interessante |
 | Upside | €1.450 | 22% | 75% | forte economics |
 
-Il team non ha bisogno di conoscere subito il futuro a 24 mesi con precisione.
+Il team non deve conoscere oggi il futuro a 24 mesi. Deve capire se può **comprare informazione sul CAC e sulla conversion senza impegnare tutto il capitale**. La recommendation diventa quindi un pilot da €250k con criteri di go/no-go predefiniti. L'investimento completo resta un'opzione, non un impegno.
 
-Ha bisogno di capire **se può comprare informazione sul CAC e sulla conversion senza impegnare tutto il capitale**.
+Questa non è indecisione. È una decisione progettata per apprendere.
 
-La raccomandazione diventa:
+### Value of Information: la domanda pratica prima della formula
 
-> “Finanziare un pilot da €250k con criteri di go/no-go predefiniti. Il pilot serve a misurare CAC e funnel locale; l'investimento completo resta un'opzione, non un impegno.”
-
-Questa non è indecisione.
-
-È una decisione progettata per apprendere.
-
-### Il valore dell'informazione, senza falsa precisione
-
-In teoria possiamo formalizzare il **Value of Information**.
-
-Nel lavoro quotidiano spesso basta una versione qualitativa molto potente.
-
-Per ogni informazione candidata chiediamo:
+Il Capitolo 5 ha già introdotto il Value of Information. Qui ci interessa il suo uso decisionale. Per ogni informazione candidata chiediamo:
 
 ```text
-1. potrebbe cambiare la decisione?
-2. quanto è plausibile che la cambi?
-3. quanto costa ottenerla?
-4. quanto tempo richiede?
-5. quanto costa aspettare?
-6. l'informazione arriverà prima che la decisione perda valore?
+potrebbe cambiare la decisione?
+quanto è plausibile che la cambi?
+quanto costa ottenerla?
+quanto tempo richiede?
+quanto costa aspettare?
+arriverà prima che la decisione perda valore?
 ```
 
-Se una ricerca costa €100k e può realisticamente evitare un investimento irreversibile da €10M, il suo valore può essere alto.
+Una ricerca da €100k può essere molto conveniente se evita realisticamente un commitment irreversibile da €10M. La stessa ricerca può essere inutile se richiede sei mesi e la finestra commerciale chiude tra quattro settimane.
 
-Se richiede sei mesi e la finestra commerciale chiude tra quattro settimane, può arrivare troppo tardi.
-
-### Delay cost: anche aspettare è una scelta con un costo
-
-“Raccogliamo più dati” suona prudente.
-
-Ma aspettare può costare:
-
-- revenue persa;
-- rischio non mitigato;
-- clienti esposti a un problema;
-- finestra competitiva;
-- capacità immobilizzata;
-- apprendimento rinviato.
-
-Il Decision Record dovrebbe quindi contenere:
+Per questo il Decision Record deve rendere confrontabili tre costi:
 
 ```text
-cost of acting wrong:
-cost of waiting:
-cost of learning:
+cost of acting wrong
+cost of waiting
+cost of learning
 ```
 
-Solo così possiamo confrontare davvero `ACT`, `WAIT` e `BUY INFORMATION`.
+“Raccogliamo più dati” non è automaticamente prudenza. Aspettare può significare revenue persa, rischio non mitigato, clienti ancora esposti, capacità immobilizzata o una finestra competitiva che si chiude.
 
-### Reversibilità: quando possiamo agire con meno certezza
+### Reversibilità cambia l'evidence threshold
 
-Il livello di evidenza richiesto dovrebbe dipendere dalla reversibilità della scelta.
+Una nuova email testata sul 5% della base e la chiusura di un magazzino non richiedono lo stesso livello di evidenza. La prima decisione è economica, reversibile e con blast radius limitato; la seconda introduce transizione, perdita di capacità e costi difficili da recuperare.
 
-Confrontiamo:
+Una scelta reversibile può quindi essere usata come **strumento di apprendimento**. Il *Green Book 2026* tratta esplicitamente flessibilità e real options quando incertezza e irreversibilità sono rilevanti, pur avvertendo che assegnare probabilità troppo precise a scenari fragili può introdurre spurious accuracy.[^green-book-real-options]
 
-**A — Testare una nuova email sul 5% della base**
+Nel lavoro analitico questo si traduce in pilot, rollout per regione, investimento a tranche, contratti più brevi, capacità modulare o stop/go gate. Il valore di un'opzione non è soltanto ciò che produce oggi, ma anche il diritto che conserva di scegliere diversamente domani.
 
-- costo basso;
-- rollback immediato;
-- blast radius limitato.
+### WAIT e ABANDON devono essere decisioni finite
 
-**B — Chiudere un magazzino**
+`WAIT` è legittimo soltanto se dichiara quale informazione attendiamo e quando rivaluteremo. “Aspettiamo più dati” è procrastinazione; “non approviamo il rollout completo finché non abbiamo almeno 8 settimane di retention sul pilot e CAC sotto €1.900 su 100 lead qualificati; review il 15 novembre” è una decisione con soglia, owner e scadenza.
 
-- costi di transizione elevati;
-- perdita di capacità;
-- difficile rollback;
-- impatto su persone e servizio.
+Anche `ABANDON` è un esito analiticamente valido. Diventa razionale quando l'upside massimo plausibile è piccolo, il downside è inaccettabile, l'informazione critica costa più del valore che potrebbe sbloccare, il costo dell'attesa domina oppure un'alternativa è chiaramente superiore. Continuare a studiare una decisione morta è un opportunity cost.
 
-La stessa incertezza non giustifica la stessa azione.
-
-Una scelta reversibile può essere usata come **strumento di apprendimento**.
-
-### Real options: preservare il diritto di scegliere più avanti
-
-Il Green Book 2026 tratta esplicitamente la flessibilità e le **real options** quando l'incertezza e l'irreversibilità sono rilevanti.
-
-Fonte: https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2026
-
-Nel lavoro analitico la traduzione pratica è:
-
-- pilot prima del rollout;
-- contratto annuale prima di uno pluriennale;
-- rollout per regione;
-- investimento a tranche;
-- capacità modulare;
-- stop/go gate dopo nuova evidenza.
-
-Il valore di una soluzione non è soltanto ciò che produce oggi.
-
-Può includere **la flessibilità che preserva domani**.
-
-### Una decisione può essere “non ancora”
-
-`WAIT` è legittimo soltanto se contiene una condizione esplicita.
-
-Debole:
-
-> “Aspettiamo più dati.”
-
-Forte:
-
-> “Non approviamo il rollout completo finché non abbiamo almeno 8 settimane di retention sul pilot e CAC sotto €1.900 su 100 lead qualificati. Review il 15 novembre.”
-
-Ora l'attesa ha:
-
-- informazione richiesta;
-- soglia;
-- owner;
-- data di revisione.
-
-Non è procrastinazione indefinita.
-
-### Quando abbandonare
-
-Anche `ABANDON` è una decisione analitica.
-
-Può diventare razionale quando:
-
-- l'upside massimo plausibile è piccolo;
-- il downside è inaccettabile;
-- le informazioni critiche sono troppo costose da ottenere;
-- il costo dell'attesa supera il valore potenziale;
-- un'alternativa domina chiaramente;
-- il problema non è più strategicamente rilevante.
-
-Continuare a studiare una decisione morta consuma capacità che potrebbe essere usata altrove.
-
-### Decision Record — blocco uncertainty
+Il blocco uncertainty del Decision Record resta quindi operativo:
 
 ```text
 key uncertainty:
@@ -271,18 +100,6 @@ next information gate:
 review date:
 ```
 
-### Regola operativa
-
-Quando manca certezza non chiediamo automaticamente “servono più dati?”.
-
-Chiediamo:
-
-1. quale incertezza domina la scelta?
-2. è realmente riducibile?
-3. quale informazione potrebbe cambiare decisione?
-4. quanto costa ottenerla?
-5. quanto costa aspettarla?
-6. possiamo comprare informazione con una scelta più piccola e reversibile?
-7. qual è il punto in cui smettiamo di analizzare e scegliamo?
-
 > **Una buona decisione sotto incertezza non richiede conoscere tutto. Richiede sapere quale incertezza vale la pena ridurre, quale dobbiamo accettare e quale scelta preserva il maggior valore mentre impariamo.**
+
+[^green-book-real-options]: HM Treasury, *The Green Book 2026*, https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2026
