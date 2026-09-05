@@ -1,10 +1,12 @@
-# Release Candidate — stato corrente
+# Release Candidate — v1.0.0-rc3
 
-Ultimo aggiornamento: **5 settembre 2026**.
+Data candidate: **5 settembre 2026**.
 
-Il repository contiene release candidate storiche già pubblicate, ma il manoscritto corrente ha ricevuto successivamente una revisione prose-first sostantiva dell'intero corpo. Questo file non riutilizza quindi RC1 o RC2 come se descrivessero ancora la baseline editoriale corrente.
+Stato: **release candidate editoriale selezionata per la pubblicazione come prerelease**.
 
-## Candidate storiche
+RC1 e RC2 restano candidate storiche già pubblicate. RC3 è la prima candidate successiva alla revisione prose-first sostantiva completata su tutto il manoscritto, front matter e reference layer.
+
+## Perché RC3
 
 ### v1.0.0-rc1
 
@@ -14,11 +16,15 @@ Prima release candidate pubblica. La relativa nota resta in `release-notes/v1.0.
 
 Seconda release candidate pubblica, focalizzata principalmente su identità editoriale, frontespizio, impaginazione e formati distributivi. La relativa nota resta in `release-notes/v1.0.0-rc2.md`.
 
-RC2 dichiarava esplicitamente che quell'intervento non modificava il contenuto sostantivo. Il pass editoriale completato il **5 settembre 2026** è invece sostantivo e coinvolge tutti i Capitoli 0–19, front matter e reference layer. Per questo RC1/RC2 restano artefatti storici e non vengono sovrascritti.
+RC2 dichiarava esplicitamente che quell'intervento non modificava il contenuto sostantivo. Il pass completato il **5 settembre 2026** è invece sostantivo e coinvolge tutti i Capitoli 0–19. Per questo non viene riutilizzato un tag precedente: la nuova candidate è **`v1.0.0-rc3`**.
 
-## Stato del manoscritto post-revisione
+Le note pubbliche della candidate sono in:
 
-La baseline di contenuto e apparati validata dopo il pass finale è:
+`release-notes/v1.0.0-rc3.md`
+
+## Baseline di contenuto validata
+
+La baseline di contenuto e apparati validata prima dei soli commit di metadata RC3 è:
 
 `470ad51bd762c912a15addbce40619f03e42c415`
 
@@ -26,50 +32,57 @@ Book CI run `33980921004`: **SUCCESS**.
 
 La run conferma:
 
-- **20 capitoli**;
-- **321 file Markdown** nel corpo;
-- **247.697 parole stimate**;
-- **1.772.827 caratteri**;
-- **189 URL esterni distinti**;
-- **0 file con LaTeX residuo**;
-- **0 file con grafie ASCII legacy**;
-- **723 pagine PDF**;
-- **344 voci outline PDF**;
-- **232 tabelle DOCX** con repeating header;
-- **30 documenti XHTML EPUB**;
-- metadata autore `Alessandro Rapiti` verificati nei formati distributivi;
-- nessuna footnote Markdown irrisolta negli output.
+| Indicatore | Valore |
+|---|---:|
+| Capitoli | 20 |
+| File Markdown corpo | 321 |
+| Parole stimate corpo | 247.697 |
+| Caratteri corpo | 1.772.827 |
+| URL esterni distinti | 189 |
+| File con LaTeX residuo | 0 |
+| Grafie ASCII legacy | 0 |
+| PDF | 723 pagine |
+| PDF outline | 344 voci |
+| Tabelle DOCX con repeating header | 232 |
+| EPUB | 30 documenti XHTML |
+| Metadata autore PDF/DOCX/EPUB | Alessandro Rapiti |
 
-Il source/factual audit è stato riallineato alla revisione finale. In particolare il precedente customer case NXP del Capitolo 17 e i claim `75% / 90%` sono stati rimossi e sostituiti con documentazione AWS corrente su cost allocation e unit metrics.
+La CI ha inoltre confermato assenza di footnote Markdown irrisolte negli output, outline PDF valido, repeating header su tutte le tabelle DOCX, frontespizio DOCX con first-page footer separato e vuoto e struttura EPUB valida.
 
-Dettagli:
+I commit successivi a questa baseline, fino al commit che modifica `release.json`, riguardano esclusivamente note e metadata della candidate. Il corpo dei Capitoli 0–19 non viene modificato.
 
-- `EDITORIAL_AUDIT.md`;
-- `SOURCE_FACTUAL_AUDIT.md`.
+## Gate RC3
 
-## Nessuna nuova candidate pubblicata automaticamente
-
-Questo pass non modifica il release manifest e non pubblica una nuova GitHub Release. Gli step release-specific della CI risultano infatti correttamente `skipped`.
-
-La prossima candidate pubblica dovrà usare **un nuovo identificatore** invece di riutilizzare RC1 o RC2. Il numero/tag esatto resta una decisione di pubblicazione separata.
-
-## Gate per la prossima candidate
-
-Prima di creare una nuova candidate pubblica devono essere veri contemporaneamente:
-
-| Gate | Stato corrente |
+| Gate | Stato |
 |---|---|
 | Capitoli 0–19 revisionati | **PASS** |
 | Front matter allineato | **PASS** |
 | Reference layer allineato | **PASS** |
 | Source/factual audit corrente | **PASS** |
 | Freshness recheck finale | **PASS** |
+| Caso NXP ritirato e audit riallineato | **PASS** |
 | Normalized sources | **PASS** |
 | Lint strict | **PASS** |
 | Markdown/DOCX/PDF/EPUB build | **PASS** |
 | Output guardrails | **PASS** |
-| Nuovo tag / release identifier scelto | **OPEN — publishing decision** |
-| Copyright/licenza definitiva | **OPEN — publishing decision** |
+| Release identifier | **v1.0.0-rc3** |
+| Prerelease | **SÌ** |
+| Copyright/licenza definitiva | **OPEN — publishing decision per release stabile** |
+
+## Meccanismo di pubblicazione
+
+La pipeline pubblica una GitHub Release soltanto quando cambia `release.json` su `main`. Per RC3 il manifest deve indicare:
+
+```json
+{
+  "tag": "v1.0.0-rc3",
+  "name": "Data Analyst Today v1.0.0-rc3",
+  "prerelease": true,
+  "notes_file": "release-notes/v1.0.0-rc3.md"
+}
+```
+
+La stessa run deve prima completare con successo `validate-and-build`; solo dopo usa gli artifact prodotti da quella build per creare la prerelease.
 
 ## Tesi da preservare
 
@@ -81,8 +94,8 @@ Ultima riga del corpo:
 
 > **Gli strumenti cambieranno. Il timone resta una responsabilità.**
 
-## Criterio di freeze
+## Freeze RC3
 
-Il pass editoriale descritto in questa conversazione è chiuso. Nuove modifiche alla futura candidate dovrebbero essere motivate da errori fattuali o tipografici, source decay, regressioni di build/rendering, accessibilità/navigazione, metadata di pubblicazione oppure da una nuova revisione sostantiva esplicitamente aperta.
+Una volta pubblicata `v1.0.0-rc3`, nuove modifiche al contenuto dovrebbero essere motivate da errori fattuali o tipografici dimostrati, source decay, regressioni di build/rendering, problemi di accessibilità/navigazione o metadata di pubblicazione.
 
-Non è necessario riaprire l'intero manoscritto per preferenze stilistiche marginali o per aggiungere esempi non richiesti da una lacuna dimostrata.
+Preferenze stilistiche marginali o nuovi esempi non necessari non riaprono automaticamente il manoscritto.
