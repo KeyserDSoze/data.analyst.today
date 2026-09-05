@@ -1,22 +1,8 @@
-## 4.17 Conteggi, proporzioni e tassi: il denominatore è parte della metrica
+## 4.17 Conteggi, proporzioni e tassi: il denominatore decide quale rischio stiamo descrivendo
 
-Un conteggio dice **quanto** è successo. Un tasso o una proporzione prova a dire **quanto è successo rispetto alla popolazione o all'esposizione rilevante**.
+Un conteggio dice quante volte è avvenuto qualcosa. Un tasso o una proporzione mette quell'evento in relazione con la popolazione o l'esposizione che avrebbe potuto produrlo. Il passaggio sembra elementare, ma può invertire completamente la priorità operativa.
 
-Questa distinzione sembra elementare, ma cambia continuamente le conclusioni.
-
-### Caso simulato/composito — Lo stabilimento con più incidenti
-
-La società industriale immaginaria **IronPeak Components** gestisce tre stabilimenti.
-
-| Stabilimento | Incidenti |
-|---|---:|
-| Torino | 18 |
-| Verona | 11 |
-| Bari | 9 |
-
-Il primo report mette Torino in rosso: registra il doppio degli incidenti di Bari.
-
-Poi l'analista aggiunge l'esposizione:
+**IronPeak Components** gestisce tre stabilimenti. Torino registra 18 incidenti, Verona 11 e Bari 9. Il primo report mette Torino in rosso perché ha il doppio degli incidenti di Bari. Quando però aggiungiamo le ore lavorate, la lettura cambia:
 
 | Stabilimento | Incidenti | Ore lavorate | Incidenti per 100.000 ore |
 |---|---:|---:|---:|
@@ -24,81 +10,32 @@ Poi l'analista aggiunge l'esposizione:
 | Verona | 11 | 280.000 | 3,93 |
 | Bari | 9 | 170.000 | 5,29 |
 
-La graduatoria si ribalta.
+Torino produce più incidenti assoluti perché è lo stabilimento più grande; Bari mostra il rischio più alto per unità di esposizione. Se dobbiamo capire **dove il processo è più rischioso**, il tasso è centrale. Se dobbiamo dimensionare il numero totale di persone, investigazioni o giornate perse, il conteggio continua ad avere valore. Normalizzare non cancella il volume: risponde a una domanda diversa.
 
-Torino genera più incidenti assoluti perché è il sito più grande. Bari mostra invece il tasso più alto rispetto alle ore lavorate.
+Il CDC usa lo stesso principio nell'epidemiologia descrittiva: i tassi rendono confrontabili conteggi provenienti da popolazioni o periodi di dimensione diversa soltanto quando il denominatore rappresenta in modo appropriato la popolazione da cui gli eventi sono emersi.[^cdc-rates]
 
-Per una decisione sulla **frequenza del rischio** guarderemmo soprattutto il tasso. Per una decisione sul **numero totale di persone o casi coinvolti** potrebbe continuare a contare anche il volume assoluto.
+## Il denominatore è una definizione del fenomeno
 
-Nessuno dei due numeri sostituisce automaticamente l'altro.
+Prima di leggere una percentuale dobbiamo sapere chi era eleggibile a produrre l'evento, quanta esposizione aveva, se numeratore e denominatore coprono lo stesso periodo e quale unità stiamo contando.
 
-### Quattro domande sul denominatore
+Prendiamo un `return_rate`. Può significare ordini con almeno un reso diviso ordini consegnati, unità restituite diviso unità vendute oppure valore economico restituito diviso valore venduto. Tutte e tre le metriche possono essere corrette; rispondono a domande diverse su esperienza dell'ordine, qualità dei prodotti e impatto economico.
 
-Prima di fidarci di una percentuale conviene chiedere:
+Lo stesso fenomeno appare nel tempo. Se le cancellazioni mensili passano da 900 a 1.100 mentre gli abbonati attivi crescono da 25.000 a 40.000, il conteggio aumenta del 22,2% ma il tasso scende dal 3,6% al 2,75%. Customer Success può preoccuparsi del carico assoluto di cancellazioni; chi valuta la salute della base può considerare positivo il rischio relativo. Nessuna delle due prospettive è completa senza sapere quale decisione stiamo supportando.
 
-1. **Elegibilità** — chi avrebbe potuto produrre l'evento del numeratore?
-2. **Esposizione** — quanto è stata esposta ogni unità all'opportunità o al rischio?
-3. **Tempo** — numeratore e denominatore coprono davvero lo stesso intervallo?
-4. **Unità** — stiamo contando persone, ordini, articoli, sessioni o ore?
+## Un denominatore corretto può ancora descrivere popolazioni non comparabili
 
-Il CDC, nel suo materiale di epidemiologia applicata, sottolinea proprio la necessità di mettere gli eventi in relazione alla popolazione o all'esposizione appropriata quando si confrontano gruppi di dimensione diversa.[^cdc-rates]
+Supponiamo che un marketplace osservi 240 reclami su 120.000 ordini per il seller A, cioè 2,0 per mille, e 90 su 18.000 per B, cioè 5,0 per mille. Il tasso normalizzato rende B apparentemente peggiore. Se però B vende quasi esclusivamente prodotti complessi con una probabilità intrinseca di reclamo molto maggiore, `reclami / ordini` può essere aritmeticamente corretto e analiticamente incompleto.
 
-In business analytics il principio è identico.
+Il denominatore ha corretto la differenza di volume, ma non il **mix di rischio**. È per questo che normalizzazione e comparabilità devono rimanere concetti distinti.
 
-### Lo stesso nome può nascondere denominatori diversi
-
-Prendiamo un `return_rate`.
-
-Può significare:
-
-- ordini con almeno un reso / ordini consegnati;
-- unità restituite / unità vendute;
-- valore economico restituito / valore venduto.
-
-Sono tre metriche legittime e tre domande differenti.
-
-Un ordine con dieci articoli, di cui uno restituito, produce:
-
-- un ordine con reso;
-- una unit return rate del 10%;
-- una value return rate che dipende dal prezzo dell'articolo restituito.
-
-Scrivere semplicemente `return_rate = 8%` senza definire il denominatore lascia aperta una parte essenziale del significato.
-
-### Il denominatore può cambiare la direzione del trend
-
-Una piattaforma registra:
-
-- gennaio: 900 cancellazioni su 25.000 abbonati attivi;
-- giugno: 1.100 cancellazioni su 40.000 abbonati attivi.
-
-Il numero di cancellazioni cresce del 22,2%.
-
-Il tasso passa invece dal 3,6% al 2,75%.
-
-Il volume peggiora, il rischio relativo migliora.
-
-La domanda di business decide quale prospettiva è rilevante. Il team customer success può preoccuparsi del carico assoluto di 1.100 cancellazioni; chi valuta la salute della base clienti può essere interessato soprattutto al tasso.
-
-### Attenzione al denominatore “quasi giusto”
-
-Un marketplace confronta due seller:
-
-- seller A: 240 reclami su 120.000 ordini → 2,0 per 1.000 ordini;
-- seller B: 90 reclami su 18.000 ordini → 5,0 per 1.000 ordini.
-
-B sembra peggiore dopo la normalizzazione.
-
-Ma se B vende quasi esclusivamente prodotti complessi con un rischio di reclamo molto più alto, anche `reclami / ordini` può essere un confronto incompleto. Il denominatore è corretto aritmeticamente, ma la **popolazione esposta non è necessariamente comparabile**.
-
-Questo è il ponte verso la sezione successiva: scegliere un denominatore è necessario, ma non sempre sufficiente.
-
-### La frase di controllo
-
-Prima di interpretare una percentuale, completa:
+Una frase semplice aiuta a proteggere il significato:
 
 > **Il numeratore conta ________; il denominatore rappresenta ________; entrambi coprono il periodo ________ e la popolazione eleggibile ________.**
 
-Se non riusciamo a riempire questi spazi senza ambiguità, non abbiamo ancora una metrica sufficientemente definita.
+Se non possiamo completarla senza ambiguità, la percentuale non è ancora sufficientemente definita per sostenere un confronto.
 
-[^cdc-rates]: CDC, *Describing Epidemiologic Data*, Field Epidemiology Manual: https://www.cdc.gov/field-epi-manual/php/chapters/describing-epi-data.html
+La sezione successiva aggiunge l'ultimo pezzo: anche con numeratore e denominatore corretti, due gruppi possono operare in condizioni troppo diverse perché la stessa metrica produca una classifica sensata.
+
+> **Una percentuale non è un numero autonomo. È una frase compressa su evento, esposizione, tempo e popolazione.**
+
+[^cdc-rates]: CDC, *Describing Epidemiologic Data*, Field Epidemiology Manual. https://www.cdc.gov/field-epi-manual/php/chapters/describing-epi-data.html
