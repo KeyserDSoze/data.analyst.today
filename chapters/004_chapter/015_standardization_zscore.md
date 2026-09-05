@@ -1,120 +1,29 @@
-## 4.14 Z-score: confrontare una posizione rispetto al proprio contesto
+## 4.14 Z-score: un valore è eccezionale soltanto rispetto a una popolazione
 
-Un valore assoluto non ci dice quanto sia insolito rispetto alla popolazione da cui proviene.
-
-`82` può essere alto, basso o perfettamente ordinario.
-
-Lo **z-score** esprime la distanza di un'osservazione dalla media in unità di deviazione standard:
+Un numero assoluto non contiene da solo il proprio contesto. `82` può essere enorme, modesto o perfettamente ordinario. Lo **z-score** rende esplicita una forma particolare di confronto: misura la distanza di un'osservazione dalla media della propria distribuzione in unità di deviazione standard.
 
 ```text
 z = (valore - media) / deviazione standard
 ```
 
-Se `z = 0`, il valore coincide con la media.
+`z = 0` indica un valore sulla media; `z = +2` un'osservazione due deviazioni standard sopra; `z = -1,5` una posizione una deviazione e mezza sotto. La scala originale scompare, ma soltanto dopo aver scelto **quale popolazione fornisce media e deviazione standard**.
 
-Se `z = +2`, si trova due deviazioni standard sopra la media.
+È questa scelta, più della formula, a determinare il significato.
 
-Se `z = -1,5`, si trova una deviazione standard e mezza sotto.
+Consideriamo **Northstar Retail**, 84 negozi molto diversi per dimensione e mercato. Un ranking di fatturato assoluto mette Milano Centro a **€1,84M** e Aosta a **€0,21M**. Se interpretiamo il ranking come performance, stiamo confondendo dimensione del negozio e capacità di generare ricavi.
 
-Il vantaggio è che la scala originale scompare e possiamo ragionare sulla **posizione relativa**.
+Il team passa allora al fatturato per metro quadrato e definisce peer group comparabili. Nei grandi negozi urbani la media è `€1.420/m²`, la deviazione standard `€160/m²` e Milano Centro raggiunge `€1.650/m²`, circa `z = +1,44`. Nei piccoli negozi di provincia la media è `€910/m²`, SD `€70/m²` e Aosta arriva a `€1.075/m²`, circa `z = +2,36`.
 
-### Caso simulato/composito — Il negozio più piccolo che risultò tra i migliori
+Aosta continua ad avere il fatturato assoluto più basso, ma è molto più eccezionale **rispetto al proprio contesto operativo**. Lo z-score non ha scoperto una verità che il fatturato nascondeva; ha cambiato la domanda da “chi produce più ricavi?” a “chi si discosta maggiormente dai propri peer?”.
 
-**Northstar Retail** gestisce 84 negozi molto diversi per superficie e mercato.
+## La reference population viene prima della standardizzazione
 
-Un ranking per fatturato mensile produce:
+Possiamo calcolare uno z-score anche mescolando flagship cittadini, outlet, store aeroportuali e piccoli negozi turistici. Il risultato sarà matematicamente valido, ma media e deviazione standard descriveranno un miscuglio di processi. Dichiarare un valore “due sigma sopra la media” non serve a molto se la media di riferimento non rappresenta un confronto sensato.
 
-```text
-Milano Centro: €1,84M
-Aosta:         €0,21M
-```
+Per la stessa ragione uno z-score elevato non significa automaticamente “evento quasi impossibile”. Soglie come `|z| > 2` o `|z| > 3` acquistano un'interpretazione probabilistica specifica soltanto sotto assunzioni sulla distribuzione, in particolare quando si invoca la normale. Distribuzioni asimmetriche, multimodali o a code pesanti possono produrre molti valori lontani dalla media senza che siano errori.
 
-Chiamare Milano "migliore" e Aosta "peggiore" confonde dimensione e performance.
+Lo z-score rimane comunque utile per confrontare performance relative dentro peer group, evidenziare valori che meritano ispezione, mettere variabili su una scala comune o misurare quanto un valore corrente sia distante da una baseline storica appropriata. Ma standardizzazione e comparabilità non sono sinonimi: non corregge mix, differenze temporali, metriche incoerenti o causalità.
 
-Il team confronta quindi il fatturato per metro quadrato **all'interno di gruppi di negozi comparabili**.
+Quando la distribuzione è fortemente asimmetrica, mediana, percentili, IQR o ranking percentile possono descrivere la posizione relativa in modo più robusto. Il box plot della prossima sezione è precisamente uno di questi strumenti: riassume centro e dispersione senza costruire tutto attorno alla media.
 
-Grandi negozi urbani:
-
-```text
-media = €1.420/m²
-SD    = €160/m²
-Milano Centro = €1.650/m²
-z ≈ +1,44
-```
-
-Piccoli negozi di provincia:
-
-```text
-media = €910/m²
-SD    = €70/m²
-Aosta = €1.075/m²
-z ≈ +2,36
-```
-
-Aosta ha il fatturato assoluto più basso, ma rispetto al proprio peer group è molto più eccezionale.
-
-### La popolazione di riferimento viene prima della formula
-
-Possiamo calcolare uno z-score su qualsiasi insieme numerico.
-
-Questo non rende automaticamente sensato l'insieme.
-
-Se standardizziamo insieme:
-
-- flagship cittadini;
-- outlet;
-- negozi aeroportuali;
-- piccoli store turistici;
-
-la media e la deviazione standard descrivono un miscuglio di processi differenti.
-
-Il risultato sarà matematicamente valido e analiticamente debole.
-
-La domanda corretta è:
-
-> **rispetto a quale popolazione voglio definire questo valore come alto o basso?**
-
-### Z-score elevato non significa automaticamente "probabilità quasi zero"
-
-È comune associare soglie come `|z| > 2` o `|z| > 3` a osservazioni rare.
-
-Questa interpretazione probabilistica richiede assunzioni sulla distribuzione, in particolare quando vogliamo usare le proprietà della distribuzione normale.
-
-Nell'EDA non dobbiamo trasformare una soglia pratica in una legge universale.
-
-Distribuzioni fortemente asimmetriche, multimodali o a code pesanti possono produrre molti z-score elevati senza che i valori siano errori.
-
-### Standardizzazione e comparabilità non sono sinonimi
-
-Lo z-score risolve una parte del problema di scala.
-
-Non risolve:
-
-- composizione diversa;
-- causalità;
-- differenze temporali;
-- metriche definite in modo differente;
-- peer group mal scelti.
-
-Serve quindi come **strumento descrittivo**, non come certificato di equità del confronto.
-
-### Quando è utile
-
-Esempi:
-
-- confrontare performance relative dentro peer group;
-- evidenziare valori che meritano ispezione esplorativa;
-- mettere variabili su una scala comune per alcune visualizzazioni o modelli;
-- osservare quanto un valore corrente sia distante dal comportamento storico, se la baseline è appropriata.
-
-### Quando preferire strumenti robusti
-
-Se la distribuzione è molto asimmetrica o dominata da code lunghe, può essere più informativo usare:
-
-- mediana;
-- percentili;
-- IQR;
-- ranking percentili;
-- trasformazioni motivate dal fenomeno.
-
-> **Uno z-score dice quanto un valore è lontano dal centro della distribuzione di riferimento. La parte più importante della frase è “distribuzione di riferimento”.**
+> **Uno z-score dice quanto un valore è lontano dal centro della distribuzione di riferimento. La scelta analitica decisiva è quale distribuzione meriti di essere il riferimento.**
