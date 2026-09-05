@@ -1,31 +1,18 @@
-## 5.12 Intervalli di confidenza: una stima dovrebbe mostrare anche la propria precisione
+## 5.12 Intervalli di confidenza: mostrare la precisione insieme alla stima
 
-Una stima puntuale comprime due informazioni in una sola:
+Una stima puntuale è facile da comunicare perché sembra completa. “CSAT 84%”, “conversion 6,1%”, “tempo medio 31,4 minuti” occupano poco spazio e invitano il lettore a trattare il numero come se il parametro fosse noto esattamente.
 
-- ciò che abbiamo osservato;
-- quanto è incerto ciò che stiamo stimando.
+Lo standard error ci ha mostrato che non è così. Un campione diverso avrebbe prodotto una stima diversa. L'**intervallo di confidenza** porta quella variabilità accanto al punto centrale invece di nasconderla.
 
-Se una survey produce `62%`, il lettore tende naturalmente a trattare quel numero come se il parametro fosse noto con precisione.
+In un caso classico la struttura è:
 
-L'**intervallo di confidenza** rende visibile la seconda parte.
+`stima ± valore critico × standard error`.
 
-Per una media, in un caso classico, la struttura generale è:
+La larghezza dell'intervallo dipende quindi dalla variabilità campionaria, dalla numerosità informativa, dal livello di confidenza e dal metodo utilizzato. NIST descrive il confidence interval proprio come uno strumento per rappresentare quanto bene una statistica campionaria approssima il parametro della popolazione.[^nist-ci]
 
-`stima ± valore critico × standard error`
+## Tre filiali, tre quantità di informazione
 
-L'intervallo dipende quindi da:
-
-- stima osservata;
-- variabilità campionaria;
-- numerosità effettiva;
-- livello di confidenza;
-- assunzioni del metodo utilizzato.
-
-NIST descrive il confidence interval come un intervallo costruito per esprimere quanto bene una statistica campionaria approssima il parametro di popolazione.[^nist-ci]
-
-### Caso simulato/composito — Tre filiali, tre livelli di precisione
-
-Una banca misura il CSAT dopo un nuovo processo di onboarding.
+Una banca misura il CSAT dopo un nuovo processo di onboarding:
 
 | Filiale | CSAT stimato | Intervallo 95% | Risposte |
 |---|---:|---:|---:|
@@ -33,103 +20,55 @@ Una banca misura il CSAT dopo un nuovo processo di onboarding.
 | Novara | 87% | 79%–93% | 74 |
 | Biella | 83% | 81%–85% | 1.110 |
 
-Se guardassimo soltanto il punto centrale, Novara sarebbe prima.
+Se ordinassimo soltanto la stima puntuale, Novara sarebbe la migliore. L'intervallo racconta però che quella posizione è sostenuta da molta meno informazione: il 87% è compatibile, secondo il modello utilizzato, con un ventaglio di valori molto più ampio.
 
-Ma il suo intervallo è molto più ampio. Il campione è piccolo e il dato è compatibile con un ventaglio di valori molto più largo.
+La conclusione corretta non è “Novara è sicuramente la filiale migliore”, ma:
 
-Il management non dovrebbe leggere:
+> **Novara ha la stima puntuale più alta, ma la sua performance è conosciuta con molta meno precisione.**
 
-> “Novara è sicuramente la filiale migliore.”
+Il ranking smette così di confondere livello osservato e certezza della stima.
 
-Dovrebbe leggere:
+## Che cosa significa davvero “95%”
 
-> **“Novara ha la stima puntuale più alta, ma al momento la sua performance è conosciuta con molta meno precisione.”**
+Nell'interpretazione frequentista classica, dopo aver calcolato un intervallo specifico non diciamo che “c'è il 95% di probabilità che il parametro vero sia dentro”. Il parametro viene trattato come fisso. È il **procedimento** a possedere una proprietà di copertura: se ripetessimo molte volte lo stesso disegno di campionamento e costruissimo ogni volta l'intervallo con lo stesso metodo, circa il 95% degli intervalli conterrebbe il parametro reale.
 
-È un'informazione più completa.
+NIST esplicita questa distinzione nelle sue pagine sui confidence limits.[^nist-ci-mean]
 
-### Che cosa significa davvero un intervallo al 95%
+Davanti a un pubblico manageriale non serve trasformare il risultato in una lezione filosofica. Serve però non attribuire all'intervallo una probabilità che il metodo frequentista non sta calcolando.
 
-Nell'interpretazione frequentista classica, dopo che l'intervallo è stato calcolato non diciamo:
+## Un intervallo quantifica soltanto l'incertezza che il metodo sa vedere
 
-> “c'è il 95% di probabilità che il parametro vero sia dentro questo specifico intervallo”.
+Questa limitazione è più importante della distinzione terminologica. Un confidence interval classico può quantificare bene la variabilità campionaria sotto un certo disegno e un insieme di assunzioni. Non incorpora automaticamente selection bias, nonresponse bias, measurement error, definizioni sbagliate, missing non ignorabili, drift della popolazione o confondimento causale.
 
-Il parametro è trattato come fisso. È il **procedimento** ad avere una proprietà di copertura: se ripetessimo il campionamento e costruissimo ogni volta l'intervallo con lo stesso metodo, circa il 95% degli intervalli così ottenuti conterrebbe il parametro reale.
+Una survey selezionata male può produrre un intervallo strettissimo attorno a una stima distorta. Per questo:
 
-NIST sottolinea esplicitamente questa distinzione.[^nist-ci-mean]
+> **intervallo stretto significa precisione rispetto al modello; non garanzia universale di accuratezza.**
 
-Non serve trasformarla in una disputa filosofica davanti a un executive. Serve evitare una spiegazione statisticamente sbagliata.
+È il motivo per cui il Capitolo 5 continua a dipendere dai Capitoli 2 e 3. Prima dobbiamo aver definito correttamente il fenomeno e capito come i dati lo rappresentano; solo allora ha senso quantificare con precisione la variabilità della stima.
 
-### L'intervallo non contiene tutti gli errori possibili
+## Precisione e materialità non sono la stessa domanda
 
-Questo punto è ancora più importante.
+Una piattaforma con milioni di sessioni può stimare che una modifica aumenti la conversione da 4,000% a 4,015% con un intervallo molto stretto. Possiamo conoscere quell'effetto con grande precisione e scoprire comunque che è economicamente irrilevante dopo costi, complessità e guardrail.
 
-Un intervallo di confidenza classico può quantificare l'incertezza dovuta al modello di campionamento e alla variabilità statistica **sotto le assunzioni adottate**.
+Al contrario, un nuovo prodotto B2B con 42 clienti può mostrare churn del 12% e un intervallo molto ampio. La conclusione professionale può essere che, con i dati attuali, non riusciamo ancora a distinguere bene uno scenario sano da uno problematico. L'intervallo largo non è un fallimento dell'analisi: è **la misura corretta della poca informazione disponibile**.
 
-Non incorpora automaticamente:
+A quel punto la decisione può essere aspettare, raccogliere nuovi dati, agire in modo reversibile oppure intervenire comunque perché il costo dell'attesa è maggiore. L'inferenza non elimina la scelta; rende visibile quanto stiamo scegliendo sotto incertezza.
 
-- selection bias;
-- nonresponse bias;
-- measurement error;
-- definizioni sbagliate;
-- dati mancanti non ignorabili;
-- drift della popolazione;
-- confondimento causale.
+Per un pubblico tecnico possiamo riportare:
 
-Un survey campionato male può produrre un intervallo strettissimo attorno a una stima distorta.
+> `CSAT 84%, CI 95% 82%–86%, secondo metodo e assunzioni dichiarate.`
 
-Quindi:
+Per un pubblico manageriale possiamo tradurre senza perdere il caveat:
 
-> **intervallo stretto = precisione rispetto al modello; non garanzia universale di accuratezza.**
+> `La migliore stima è 84%; l'incertezza di campionamento la colloca circa tra 82% e 86%. L'intervallo non include eventuali bias di raccolta.`
 
-### Precisione statistica e materialità sono due domande diverse
+La seconda frase è più lunga di un singolo KPI, ma impedisce al lettore di attribuire al numero una precisione che non possiede.
 
-Una piattaforma con milioni di sessioni stima che una modifica aumenti la conversione da 4,000% a 4,015%.
+> **Una stima puntuale dice dove guardare. Un intervallo dice quanto precisamente riusciamo a vedere quel punto sotto il metodo che abbiamo scelto.**
 
-Con un campione enorme l'intervallo può essere strettissimo.
+---
 
-La stima può quindi essere molto precisa e, contemporaneamente, economicamente irrilevante dopo costi, complessità e guardrail.
+### Fonti
 
-Questo ci porta a una distinzione centrale:
-
-- **precisione:** quanto conosciamo bene l'effetto o il parametro;
-- **materialità:** quanto quel valore cambia una decisione.
-
-La sezione 5.17 tornerà esplicitamente su significatività statistica vs rilevanza business.
-
-### Un intervallo largo può essere la risposta corretta
-
-Un nuovo prodotto B2B ha 42 clienti. Il churn osservato è 12%, ma l'intervallo è ampio.
-
-La conclusione professionale può essere:
-
-> “Con i dati disponibili non possiamo ancora distinguere bene uno scenario di churn strutturalmente basso da uno potenzialmente problematico.”
-
-Questa non è assenza di analisi.
-
-È un'informazione decisionale: **l'evidenza disponibile non è ancora abbastanza precisa**.
-
-A quel punto possiamo decidere se:
-
-- aspettare altri dati;
-- raccogliere informazione aggiuntiva;
-- prendere una decisione reversibile;
-- agire comunque perché il costo dell'attesa è maggiore.
-
-Questa logica collegherà l'inferenza al Capitolo 15 sulla decisione.
-
-### Come comunicare un intervallo
-
-Per un pubblico tecnico:
-
-> “CSAT stimato 84%, CI 95% 82%–86%, secondo il metodo e le assunzioni dichiarate.”
-
-Per un pubblico manageriale:
-
-> “La nostra migliore stima è 84%; la precisione del campione colloca la stima in un intervallo circa 82%–86%. Questo intervallo non include eventuali bias di raccolta.”
-
-La seconda frase è meno elegante di un singolo `84%`, ma è molto più difficile da usare oltre ciò che i dati consentono.
-
-> **Una stima puntuale dice dove guardare. Un intervallo dice quanto vicino possiamo vedere.**
-
-[^nist-ci]: NIST/SEMATECH, *What are confidence intervals?*: https://www.itl.nist.gov/div898/handbook/prc/section1/prc14.htm
-[^nist-ci-mean]: NIST/SEMATECH, *Confidence Limits for the Mean*: https://www.itl.nist.gov/div898/handbook/eda/section3/eda352.htm
+[^nist-ci]: NIST/SEMATECH, *What are confidence intervals?*. https://www.itl.nist.gov/div898/handbook/prc/section1/prc14.htm
+[^nist-ci-mean]: NIST/SEMATECH, *Confidence Limits for the Mean*. https://www.itl.nist.gov/div898/handbook/eda/section3/eda352.htm
