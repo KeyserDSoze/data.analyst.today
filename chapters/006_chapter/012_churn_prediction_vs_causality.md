@@ -1,98 +1,32 @@
 ## 6.11 Churn prediction: rischio, diagnosi e persuadibilità sono problemi diversi
 
-Dopo aver descritto segmenti, coorti, activation, retention e valore, arriva spesso una richiesta naturale:
+Dopo aver descritto segmenti, coorti, activation, retention e valore, la richiesta naturale è: **possiamo prevedere chi se ne andrà?**
 
-> Possiamo prevedere chi se ne andrà?
+Spesso sì. Ma prima dell'algoritmo dobbiamo separare tre problemi che vengono facilmente confusi: **prediction**, cioè chi ha maggiore probabilità di churn; **diagnosis**, cioè quali condizioni accompagnano il churn; **intervention**, cioè su quali clienti una certa azione riduce davvero la probabilità di uscita.
 
-Sì, spesso possiamo costruire un modello utile. Ma il lifecycle analysis deve fissare una distinzione prima ancora di parlare di algoritmo.
+Un modello predittivo risponde soprattutto alla prima domanda.
 
-Esistono almeno tre domande diverse:
+### Northstar CRM: un buon ranking non è ancora una strategia di retention
 
-1. **Prediction** — chi ha maggiore probabilità di churnare?
-2. **Diagnosis** — quali condizioni e pattern sono associati al churn?
-3. **Intervention** — su quali clienti una certa azione riduce realmente il churn?
+**Northstar CRM** serve circa **18.000 aziende**. Il team Data Science assegna settimanalmente un risk score a ogni account. Fra i segnali più predittivi emergono riduzione dei login, meno utenti attivi nel workspace, mancato uso delle automazioni, aumento dei ticket di supporto e assenza dell'integrazione contabile. Gli account nel decile di rischio più alto churnano molto più spesso della media.
 
-Un modello predittivo risponde soprattutto alla prima.
+Il modello è quindi utile per il ranking. Il salto problematico arriva quando il Customer Success conclude: “pochi login predicono churn, quindi dobbiamo far aumentare i login”.
 
-### Caso simulato/composito: Northstar CRM
+Pochi login possono essere sintomo di un prodotto diventato meno utile, di un champion che ha lasciato l'azienda, di una migrazione già decisa, di un ridimensionamento o perfino di un workflow diventato più efficiente. Il segnale predittivo localizza il rischio; non identifica automaticamente la leva.
 
-**Northstar CRM** serve circa 18.000 aziende. Il team Data Science assegna settimanalmente a ogni account un risk score.
-
-Tra i segnali più predittivi emergono:
-
-- riduzione dei login;
-- meno utenti attivi nel workspace;
-- mancato utilizzo delle automazioni;
-- aumento dei ticket al supporto;
-- assenza dell'integrazione contabile.
-
-Gli account nel decile di rischio più alto churnano molto più frequentemente della media.
-
-Il modello è utile per il **ranking** del rischio.
-
-Il Customer Success team propone però:
-
-> i clienti con pochi login sono a rischio, quindi dobbiamo farli usare di più.
-
-Il salto logico è troppo grande.
-
-### Un segnale predittivo non è automaticamente una leva
-
-Pochi login possono significare che:
-
-- il prodotto è diventato meno utile;
-- il champion interno ha lasciato l'azienda;
-- il cliente ha acquistato un concorrente;
-- il team si è ridimensionato;
-- l'account ha già deciso di non rinnovare;
-- il workflow è diventato più efficiente e richiede meno accessi.
-
-Aumentare artificialmente il numero di login non risolve necessariamente nessuno di questi problemi.
-
-Il segnale aiuta a localizzare il rischio. Non ci dice ancora quale trattamento funzioni.
-
-### Il caso dei ticket di supporto
-
-Nel modello Northstar, molti ticket sono associati a churn elevato.
-
-Sarebbe assurdo concludere che bisogna impedire ai clienti di contattare il supporto.
-
-È più plausibile che:
+Il caso dei ticket di supporto rende il punto ancora più evidente. Se molti ticket sono associati a churn elevato, non ne segue che bisogna impedire ai clienti di contattare il supporto. È più plausibile una struttura del tipo:
 
 `problema del cliente → più ticket`
 
-e contemporaneamente:
-
 `problema del cliente → maggiore rischio di churn`
 
-Il ticket è in parte un proxy del problema sottostante.
+Il ticket può essere un proxy del problema sottostante. **Predittore e causa non sono sinonimi.**
 
-Questo esempio è utile perché rende evidente la differenza tra **predittore** e **causa**, anche senza un modello causale formale.
+### Il cliente più facile da prevedere può essere il più difficile da salvare
 
-### Rischio elevato non significa cliente salvabile
+Northstar può intervenire su **300 account al mese**. Se prende semplicemente i 300 risk score più alti, può finire per contattare clienti che hanno già comunicato la disdetta, stanno cessando l'attività o hanno completato la migrazione verso un concorrente. Sono casi facili da prevedere e poco influenzabili.
 
-Supponiamo che il Customer Success possa intervenire su 300 account al mese.
-
-Se seleziona semplicemente i 300 risk score più alti, può finire per contattare soprattutto clienti che:
-
-- hanno già comunicato la disdetta;
-- stanno cessando l'attività;
-- hanno completato una migrazione verso un concorrente;
-- non hanno più il bisogno che il prodotto soddisfaceva.
-
-Sono clienti facili da prevedere e difficili da influenzare.
-
-La lista operativa dovrebbe quindi considerare almeno:
-
-- rischio di churn;
-- valore economico;
-- tempo prima del momento decisionale;
-- tipo di problema osservato;
-- possibilità concreta di intervento.
-
-### Risk score, value score, actionability
-
-Un modo semplice per evitare che il modello domini la decisione è separare tre colonne:
+Per una lista operativa conviene quindi tenere separate almeno tre dimensioni:
 
 | Dimensione | Domanda |
 | --- | --- |
@@ -100,40 +34,18 @@ Un modo semplice per evitare che il modello domini la decisione è separare tre 
 | Value | Quanto valore è a rischio? |
 | Actionability | Abbiamo ancora una leva plausibile e il tempo per usarla? |
 
-Non devono necessariamente essere fuse subito in un unico punteggio.
+A queste si aggiunge spesso il tempo al rinnovo. Un account ad alto rischio e alto valore può comunque non essere prioritario se la decisione di uscire è irreversibile; un account con rischio leggermente più basso può avere più valore atteso se esiste ancora un problema concreto e risolvibile.
 
-Vederle separatamente aiuta il team a capire perché un account viene prioritizzato.
+### Persuadibilità: chi cambia comportamento proprio grazie all'intervento?
 
-### E la persuadibilità?
+C'è infine una domanda ancora più esigente: **quale cliente cambierebbe comportamento proprio grazie alla nostra azione?**
 
-Esiste una quarta domanda ancora più difficile:
+Un cliente ad alto rischio può churnare comunque. Uno a basso rischio sarebbe rimasto anche senza intervento. Il gruppo più interessante può essere quello per cui il trattamento produce un effetto incrementale. È il territorio dell'uplift modeling, degli heterogeneous treatment effects e della sperimentazione mirata.
 
-> quale cliente cambierebbe comportamento **proprio grazie** al nostro intervento?
-
-Un cliente ad alto rischio potrebbe churnare comunque. Un cliente a basso rischio sarebbe rimasto anche senza intervento. Il segmento più interessante può essere quello intermedio: clienti per i quali il trattamento produce un effetto incrementale.
-
-Questa idea porta a uplift modeling, heterogeneous treatment effects e sperimentazione mirata.
-
-La incontreremo nei capitoli dedicati a causalità, sperimentazione e modelli.
-
-### Confine con i capitoli successivi
-
-Questo capitolo non deve diventare un tutorial di machine learning.
-
-Qui il punto è capire **dove entra la prediction nel lifecycle**.
-
-- Nel **Capitolo 8** approfondiremo il ragionamento causale e i treatment effect.
-- Nel **Capitolo 9** vedremo come progettare esperimenti e interventi controllati.
-- Nel **Capitolo 10** costruiremo e valuteremo modelli predittivi, compresi leakage, calibration, threshold e monitoring.
+Questo capitolo non deve anticipare un tutorial di machine learning. Deve chiarire dove la prediction entra nel lifecycle e dove smette di bastare. Il Capitolo 8 affronterà causalità e treatment effect; il Capitolo 9 la sperimentazione; il Capitolo 10 i modelli predittivi, compresi leakage, calibration, threshold e monitoring.
 
 La regola da portare avanti è semplice:
 
-**Un modello che predice bene chi churnerà non dimostra perché churnerà e non identifica automaticamente chi possiamo salvare.**
+> **Un modello che predice bene chi churnerà non dimostra perché churnerà e non identifica automaticamente chi possiamo salvare.**
 
-### La domanda operativa
-
-Prima di costruire un churn model chiediamo:
-
-> Quale decisione prenderemo con il ranking, quanta capacità operativa abbiamo e quale evidenza useremo per scegliere l'intervento?
-
-Se nessuno conosce la risposta, il rischio è costruire un modello tecnicamente corretto per una decisione ancora indefinita.
+Prima di costruire un churn model dobbiamo quindi sapere quale decisione userà il ranking, quanta capacità operativa esiste e quale evidenza guiderà l'intervento. Senza queste risposte rischiamo di produrre un modello tecnicamente corretto per una decisione ancora indefinita.
