@@ -1,14 +1,12 @@
 ## 6.13 Lifecycle Diagnostic Map: il deliverable operativo del capitolo
 
-Il rischio di un capitolo su retention e churn è terminare con una collezione di metriche.
+Questa sezione resta volutamente strutturata. Non è un riepilogo espositivo del capitolo, ma un **artefatto operativo** da usare quando retention, churn o valore cambiano e serve ricostruire dove nasce il problema.
 
-Il deliverable operativo dovrebbe invece essere una **Lifecycle Diagnostic Map**: una sintesi che collega il KPI iniziale al punto del lifecycle in cui il comportamento cambia, separando ciò che è osservato da ciò che deve ancora essere dimostrato.
+La Lifecycle Diagnostic Map collega il KPI iniziale al punto del percorso in cui la traiettoria cambia e obbliga a separare osservazione, interpretazione e causalità non ancora dimostrata.
 
 ### 1. KPI iniziale
 
 Scrivi il problema come variazione osservata, non come spiegazione.
-
-Esempio:
 
 > La retention M6 delle nuove coorti è scesa dal 67% al 59%.
 
@@ -16,151 +14,59 @@ Non:
 
 > Il nuovo onboarding sta causando churn.
 
-La seconda frase contiene già una causa non ancora verificata.
-
 ### 2. Chi
 
-Quali popolazioni spiegano materialmente il cambiamento?
-
-Controlla almeno le dimensioni che hanno significato operativo:
-
-- prodotto/piano;
-- canale;
-- paese;
-- device;
-- segmento cliente;
-- dimensione account;
-- comportamento iniziale.
-
-Evita segmentazioni infinite: il segmento deve cambiare la diagnosi o l'azione.
+Identifica le popolazioni che spiegano materialmente il cambiamento. Usa solo dimensioni con significato operativo — prodotto/piano, canale, paese, device, segmento cliente, dimensione account, comportamento iniziale — e mostra sempre il denominatore. Se una segmentazione non cambia diagnosi o azione, probabilmente non serve nella mappa.
 
 ### 3. Quando
 
-Definisci il momento zero e confronta le coorti alla stessa maturità.
-
-Dichiara:
-
-- evento di ingresso nel lifecycle;
-- granularità della coorte;
-- età raggiunta;
-- cambi di prodotto/processo avvenuti nella timeline.
+Definisci il momento zero e confronta coorti alla stessa maturità. Registra evento di ingresso nel lifecycle, granularità della coorte, età raggiunta e cambi di prodotto, processo o tracking avvenuti nella timeline.
 
 ### 4. Dove
 
-Costruisci il funnel o il percorso essenziale.
-
-Per ogni step specifica:
-
-- evento;
-- unità di analisi;
-- denominatore;
-- ordine richiesto;
-- finestra temporale;
-- eventuali percorsi alternativi.
+Ricostruisci il funnel o il percorso essenziale. Per ogni step conserva evento, unità di analisi, denominatore, ordine richiesto, finestra temporale ed eventuali percorsi alternativi.
 
 La domanda è: **in quale passaggio si concentra il cambiamento?**
 
 ### 5. Primo valore
 
-Definisci il candidato di activation.
-
-Chiedi:
-
-- rappresenta davvero valore per il cliente?
-- è disponibile abbastanza presto?
-- è misurabile senza ambiguità?
-- l'unità corretta è utente o account?
-- il comportamento è solo correlato alla retention o abbiamo evidenza che sia una leva?
+Definisci il candidato di activation e verifica che rappresenti valore per il cliente, sia osservabile abbastanza presto, misurabile senza ambiguità e costruito sull'unità corretta — utente o account. Distingui sempre correlazione con retention da evidenza che l'evento sia una leva causale.
 
 Aggiungi distribuzione e percentili del time-to-value, non soltanto la media.
 
 ### 6. Persistenza
 
-Non limitarti a un singolo punto di retention.
-
-Controlla:
-
-- curva completa;
-- punti in cui cambia pendenza;
-- hazard/momenti di rischio;
-- coorti con diversa maturità;
-- censoring;
-- first value vs repeat value.
+Non fermarti a un solo punto di retention. Guarda curva completa, punti in cui cambia pendenza, hazard o momenti di rischio, maturità delle coorti, censoring e passaggio da first value a repeat value.
 
 ### 7. Churn
 
-Dichiara quale perdita stai misurando:
-
-- logo/customer churn;
-- revenue churn;
-- GRR;
-- NRR;
-- downgrade/contraction;
-- churn volontario;
-- churn involontario.
-
-Se il contratto ha scadenze discrete, usa una popolazione eleggibile coerente con il rinnovo.
+Dichiara quale perdita stai misurando: logo/customer churn, revenue churn, GRR, NRR, downgrade/contraction, churn volontario o involontario. Se il contratto ha scadenze discrete, costruisci il denominatore sulla popolazione realmente eleggibile al rinnovo.
 
 ### 8. Reactivation
 
-Se il prodotto consente ritorni dopo inattività, separa:
-
-- primo evento di ritorno;
-- ritorno duraturo;
-- valore dopo la riattivazione;
-- costo dell'incentivo;
-- ritorno spontaneo di baseline.
+Se il prodotto consente ritorni dopo inattività, separa primo evento di ritorno, durable reactivation, valore successivo, costo dell'incentivo e baseline di ritorno spontaneo.
 
 ### 9. Valore economico
 
-Per le coorti più rilevanti mostra almeno:
-
-- revenue cumulata;
-- margine/contribution profit quando disponibile;
-- CAC;
-- payback period;
-- valore osservato vs LTV previsto;
-- maturità della coorte.
+Per le coorti rilevanti mostra revenue cumulata, margine o contribution profit quando disponibile, CAC, payback period, valore osservato rispetto a LTV previsto e maturità della coorte.
 
 ### 10. Rischio e actionability
 
-Se esiste un modello di churn, non usare il risk score come unica priorità.
-
-Mantieni visibili:
-
-- rischio;
-- valore a rischio;
-- tempo prima del rinnovo;
-- causa/problema ipotizzato;
-- actionability;
-- capacità operativa del team.
+Se esiste un churn model, non usare il risk score come unica priorità. Mantieni visibili rischio, valore a rischio, tempo al rinnovo, problema ipotizzato, actionability e capacità operativa del team.
 
 ### 11. Evidence status
 
-Questa è la parte più importante della mappa.
-
-Dividi le conclusioni in tre blocchi:
+Questa è la parte che impedisce alla mappa di diventare una nuova dashboard.
 
 **Osservato** — ciò che i dati mostrano direttamente.
 
-**Interpretazione plausibile** — spiegazioni compatibili con l'evidenza, ma non ancora causalmente dimostrate.
+**Interpretazione plausibile** — spiegazioni compatibili con il pattern ma non ancora dimostrate causalmente.
 
 **Non dimostrato** — affermazioni che richiedono un metodo ulteriore.
 
 ### 12. Prossimo metodo
 
-Una buona lifecycle analysis deve sapere quando fermarsi.
-
-Il prossimo passo può essere:
-
-- altra EDA;
-- correzione del tracking;
-- analisi causale;
-- A/B test;
-- survival model;
-- churn prediction;
-- studio qualitativo/interviste;
-- intervento operativo misurato.
+La lifecycle analysis deve anche sapere quando fermarsi. Il passo successivo può essere altra EDA, correzione del tracking, analisi causale, A/B test, survival model, churn prediction, studio qualitativo o intervento operativo misurato.
 
 ### Template compatto
 
@@ -183,10 +89,6 @@ Il prossimo passo può essere:
 | Non dimostrato |  |
 | Prossimo metodo |  |
 
-### La regola finale
+La mappa è completa quando un decision maker può capire **dove si sta creando o perdendo valore nel lifecycle, per chi, da quando, con quale forza dell'evidenza e quale domanda deve essere risolta dopo**.
 
-La Lifecycle Diagnostic Map è completa quando permette a un decision maker di capire:
-
-> **dove si sta perdendo o creando valore nel lifecycle, per chi, da quando, con quale evidenza e quale domanda deve essere risolta dopo.**
-
-Se contiene soltanto retention, churn e LTV, è ancora una dashboard di metriche. Se collega quelle metriche a un punto del processo e a una decisione, è diventata analisi.
+Se contiene soltanto retention, churn e LTV, è ancora una dashboard. Se collega quelle metriche a una traiettoria e a una decisione, è diventata analisi.
