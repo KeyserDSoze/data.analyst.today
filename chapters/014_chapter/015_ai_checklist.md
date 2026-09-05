@@ -1,34 +1,16 @@
-## 14.14 AI Analysis Control Sheet: il deliverable operativo del capitolo
+## 14.14 AI Analysis Control Sheet: collegare delega, evidenza e responsabilità
 
-I capitoli precedenti hanno costruito artefatti diversi per problemi diversi:
+I capitoli precedenti hanno costruito artefatti diversi per problemi diversi: Analytical Brief, Data Readiness Review, EDA Evidence Map, Uncertainty Brief, Temporal Decision Brief, Causal Identification Brief, Experiment Contract, Predictive Decision Card, Analytical Data Contract, Data Flow Architecture Map e Tooling Decision Record.
 
-- Analytical Brief;
-- Data Readiness Review;
-- EDA Evidence Map;
-- Uncertainty Brief;
-- Temporal Decision Brief;
-- Causal Identification Brief;
-- Experiment Contract;
-- Predictive Decision Card;
-- Analytical Data Contract;
-- Data Flow Architecture Map;
-- Tooling Decision Record.
+L'AI non sostituisce nessuno di questi oggetti. **Li attraversa.** La AI Analysis Control Sheet serve a documentare dove entra la delega, quali boundary la limitano, quali artefatti produce, quali gate devono passare e quale livello di decisione resta sotto responsabilità umana.
 
-L'AI non sostituisce questi oggetti.
+La domanda non è:
 
-Li attraversa.
+> L'analisi è stata fatta con AI?
 
-Per questo il deliverable del Capitolo 14 è una **AI Analysis Control Sheet**: una scheda che documenta **dove l'AI entra nella catena, cosa può fare, quale evidenza produce, come viene verificata e quale livello di decisione è autorizzato**.
+È:
 
-### Il principio
-
-Non chiediamo:
-
-> “L'analisi è stata fatta con AI?”
-
-Chiediamo:
-
-> **“Quale parte è stata delegata, dentro quale perimetro, con quali controlli e con quale responsabilità residua?”**
+> **Quale parte è stata delegata, dentro quale perimetro, con quali controlli e con quale responsabilità residua?**
 
 ### Template canonico
 
@@ -153,73 +135,34 @@ owner accepting responsibility:
 next monitoring/review:
 ```
 
-### I quattro stati finali
+La scheda è deliberatamente più ampia di un prompt template, perché il prompt è soltanto una parte del sistema. Non tutti i campi vanno compilati con lo stesso dettaglio per ogni task: è il **rischio** a determinare la profondità del controllo.
 
-#### APPROVED
+### Stati finali
 
-I controlli richiesti dal rischio sono superati e il claim è adatto alla decisione prevista.
+**APPROVED** significa che i controlli richiesti dal contesto sono superati e il claim è adatto alla decisione prevista. Non significa "vero per sempre"; significa evidenza sufficiente per questo uso, in questo momento.
 
-Non significa “vero per sempre”.
+**APPROVED WITH CAVEATS** significa che il risultato è utilizzabile ma deve viaggiare con limitazioni esplicite, per esempio un forecast valido per capacity planning con intervallo insolitamente ampio in un regime instabile.
 
-Significa **evidenza sufficiente per questo uso, in questo momento**.
+**PROVISIONAL** consente di orientare attenzione o investigazione, non di prendere ancora la decisione finale. Un esempio tipico è una revenue intraday ancora incompleta: alert diagnostico sì, comunicazione Finance finale no.
 
-#### APPROVED WITH CAVEATS
+**BLOCKED** significa che manca una condizione necessaria: dato non autorizzato, metrica ambigua, source non riconciliata, causal claim senza identification, critical eval failure, permission boundary troppo ampia o owner assente. `BLOCKED` non è un fallimento dell'analista. È il sistema di controllo che funziona.
 
-Il risultato è utilizzabile, ma alcune limitazioni devono accompagnarlo.
+### Risk tier e autonomy level sono dimensioni diverse
 
-Esempio:
+Una classificazione semplice del rischio può essere:
 
-```text
-forecast utilizzabile per capacity planning
-ma intervallo più ampio del normale per regime instabile
-```
-
-#### PROVISIONAL
-
-Il risultato può orientare l'attenzione ma non autorizza ancora la decisione finale.
-
-Esempio:
-
-```text
-revenue intraday incompleta
-→ alert diagnostico sì
-→ comunicazione Finance finale no
-```
-
-#### BLOCKED
-
-Manca una condizione necessaria.
-
-Esempi:
-
-- dato non autorizzato;
-- metrica ambigua;
-- source non riconciliata;
-- causal claim senza identification;
-- critical eval failure;
-- tool permission troppo ampia;
-- nessun owner per l'azione.
-
-`BLOCKED` non è un fallimento dell'analista.
-
-È il sistema di controllo che funziona.
-
-### Risk tier: non controlliamo tutto allo stesso modo
-
-Una classificazione semplice può essere:
-
-| Tier | Esempio | Controllo |
+| Tier | Esempio | Controllo tipico |
 |---|---|---|
 | R0 | spiegare una funzione SQL | review leggera |
 | R1 | query/EDA interna reversibile | sanity check + trace minimo |
 | R2 | KPI o recommendation management | reconciliation + peer/human review |
-| R3 | azione con denaro, persone, compliance o grande blast radius | eval formale + approval + audit + rollback |
+| R3 | denaro, persone, compliance o grande blast radius | eval formale + approval + audit + rollback |
 
-La classificazione deve seguire il contesto reale, non il nome del tool.
+Il risk tier non coincide con l'autonomy level. Un task R3 può essere gestito da un sistema A0 che propone soltanto; un task a rischio minore può arrivare ad A3 se policy, reversibilità ed eval lo consentono.
 
-### Claim level: l'AI non può salire la scala in fase di scrittura
+### Claim gate
 
-Un'altra dimensione indipendente è il claim.
+La Control Sheet mantiene separata anche la scala del claim:
 
 ```text
 C0 — output non verificato
@@ -231,13 +174,11 @@ C5 — causal claim con identification adeguata
 C6 — action recommendation con economics, guardrail e owner
 ```
 
-Un executive-summary agent può comprimere un C2.
-
-Non può trasformarlo in C5.
+Un executive-summary agent può comprimere un C2, ma non trasformarlo in C5. Per causalità, forecasting, experimentation o predictive modeling la Control Sheet richiama gli artefatti specialistici già costruiti: non li duplica.
 
 ### Verification Bundle minimo
 
-Per SQL/analytics generato:
+Per SQL o analytics generato, il percorso minimo è:
 
 ```text
 schema exists
@@ -246,40 +187,28 @@ schema exists
 → metric/date/filter semantics verified
 → totals reconciled
 → edge cases tested
-→ result compared with independent reference
+→ independent reference compared
 ```
 
-Per un modello aggiungiamo la Predictive Decision Card.
+Per un modello aggiungiamo la Predictive Decision Card; per causalità il Causal Identification Brief; per forecasting il Temporal Decision Brief; per un esperimento l'Experiment Contract. L'AACS collega il passaggio AI al gate metodologico che gli compete.
 
-Per causalità il Causal Identification Brief.
+### Human review deve dire che cosa guardare
 
-Per forecasting il Temporal Decision Brief.
-
-L'AI Control Sheet **non duplica** questi deliverable: li collega al passaggio AI che li usa.
-
-### La review umana deve avere una domanda precisa
-
-Non scriviamo:
-
-```text
-human review: yes
-```
-
-Scriviamo:
+`human review: yes` è un controllo troppo vago. Una review reale dichiara, per esempio:
 
 ```text
 reviewer: Finance Analytics Lead
 must inspect:
 - metric id
 - reconciliation delta
-- provisional/final status
+- READY / PROVISIONAL status
 - claim wording
 - action exposure
 ```
 
-Questo riduce approval theater.
+Questo riduce l'approval theater e rende la responsabilità verificabile.
 
-### Un esempio sintetico
+### Esempio compatto
 
 ```text
 Decision:
@@ -309,16 +238,6 @@ Action:
 nessuna pausa; rivalutare T+1
 ```
 
-La scheda non serve a produrre burocrazia.
+La scheda non esiste per produrre burocrazia. Esiste per rendere visibile **perché un sistema ha avuto o non ha avuto il diritto di passare dall'evidenza all'azione**.
 
-Serve a rendere **visibile il motivo per cui non abbiamo agito troppo presto**.
-
-### La domanda finale
-
-Prima di consegnare un output AI-assisted chiediamoci:
-
-> **Se questa conclusione fosse sbagliata, sappiamo indicare quali boundary, assunzioni, verifiche e gate avrebbero dovuto intercettare l'errore?**
-
-Se la risposta è no, non abbiamo ancora un processo sufficientemente controllato.
-
-> **L'AI può entrare in quasi ogni passaggio della catena analitica. La AI Analysis Control Sheet serve a impedire che la delega renda invisibile il passaggio in cui evidenza, claim e responsabilità smettono di essere allineati.**
+> **Se una conclusione fosse sbagliata, dobbiamo sapere quali boundary, assunzioni, verifiche e gate avrebbero dovuto intercettarla. Se non sappiamo rispondere, il workflow non è ancora sufficientemente controllato.**
