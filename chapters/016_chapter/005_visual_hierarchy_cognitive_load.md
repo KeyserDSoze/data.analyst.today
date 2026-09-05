@@ -1,165 +1,55 @@
 ## 16.4 Gerarchia visiva e cognitive load: progettare l'attenzione
 
-Quando tutto sembra importante, niente lo è davvero.
+Quando tutto sembra importante, niente lo è davvero. Una pagina può contenere numeri corretti e fallire perché trasferisce al lettore troppo lavoro: capire dove guardare, ricordare una legenda lontana, confrontare scale, distinguere headline e dettaglio, capire se una nota è un caveat decision-critical o semplice documentazione.
 
-Una pagina può contenere numeri corretti e fallire perché trasferisce al lettore troppo lavoro:
+Il cognitive load non è quindi soltanto un problema estetico. È **rischio di interpretazione**.
 
-- capire dove guardare;
-- distinguere segnale e contesto;
-- ricordare una legenda lontana;
-- confrontare scale;
-- ricostruire quale numero è headline e quale è diagnostico;
-- capire quali dettagli sono caveat e quali sono decorazioni.
+### Salienza visiva = priorità implicita
 
-Il cognitive load non è solo un problema estetico. È **rischio di interpretazione**.
+Posizione, dimensione, contrasto, spazio bianco, peso tipografico, colore e annotazioni compongono un vero **salience budget**. Se usiamo massima enfasi su dieci elementi, non abbiamo dieci priorità: abbiamo perso la gerarchia.
 
-## Il salience budget
+Per questo conviene allineare la gerarchia grafica a quella semantica del Decision Record:
 
-Ogni pagina ha un budget limitato di attenzione.
+| Livello | Ruolo |
+|---|---|
+| **P1 — decision-critical** | recommendation, guardrail violato, soglia superata, caveat che può cambiare scelta |
+| **P2 — supporting evidence** | prove che sostengono o discriminano le alternative |
+| **P3 — context / verification** | dettaglio utile per comprensione, audit o drill-down |
 
-Possiamo spenderlo con:
+Questa classificazione non obbliga a un layout fisso. Impone però una regola: **ciò che può cambiare decisione non può ricevere meno salienza di ciò che la sostiene**.
 
-- posizione;
-- dimensione;
-- contrasto;
-- spazio bianco;
-- peso tipografico;
-- colore;
-- annotazioni.
+### Caso simulato/composito — Quattro KPI, sedici colori
 
-Se usiamo massima enfasi su dieci elementi, non abbiamo dieci priorità. Abbiamo perso la gerarchia.
+Una fintech monitora default rate, loss given default, approval rate e fraud loss. La dashboard usa sedici colori per prodotti, stati, regioni e alert. Durante la review il management dedica diversi minuti a un segmento rosso che sembra critico; il rosso, però, indica soltanto una categoria prodotto.
 
-Una regola utile è classificare gli elementi:
-
-### P1 — Decision-critical
-
-Deve emergere immediatamente.
-
-Esempi:
-
-- recommendation;
-- gap che supera una soglia;
-- guardrail violato;
-- caveat che cambia la decisione.
-
-### P2 — Supporting evidence
-
-Deve essere visibile senza competere con P1.
-
-### P3 — Context / verification
-
-Serve per capire o controllare, ma può vivere più in basso o in appendix.
-
-La gerarchia visiva dovrebbe seguire questa gerarchia semantica.
-
-## Caso simulato/composito — Quattro KPI, sedici colori
-
-Una fintech prepara una dashboard rischio con quattro metriche centrali:
-
-- default rate;
-- loss given default;
-- approval rate;
-- fraud loss.
-
-La pagina usa sedici colori per segmenti, prodotti, stati, alert e regioni.
-
-Durante la review il management dedica diversi minuti a un segmento rosso che sembra critico.
-
-Il rosso indica in realtà soltanto una categoria prodotto.
-
-Il redesign usa:
-
-- tono neutro per il contesto;
-- enfasi riservata agli scostamenti decisionali;
-- etichette dirette;
-- simbolo/testo per gli alert;
-- palette di categoria separata dal linguaggio di stato.
-
-I numeri non cambiano. Cambia la probabilità di interpretarli correttamente.
+Il redesign separa i linguaggi visivi. Le categorie restano neutre; l'enfasi è riservata agli scostamenti decisionali; gli alert usano testo e simboli oltre al colore; le linee sono etichettate direttamente. I dati non cambiano, ma cambia la probabilità che il lettore assegni correttamente priorità.
 
 ## Ridurre il lavoro di memoria
 
-Il lettore non dovrebbe ricordare continuamente:
+Una pagina efficace non chiede al lettore di ricordare quale colore era il target, quale linea rappresentava l'anno corrente o quale unità usava il grafico precedente. Etichette dirette, unità vicine al numero, filtri decision-critical visibili, annotazioni nel punto a cui si riferiscono e encoding coerenti tra pagine riducono il carico di memoria e rendono più difficile una lettura accidentale.
 
-- quale linea è l'anno corrente;
-- quale colore è il target;
-- quale unità usa il grafico precedente;
-- quale filtro è attivo.
+Lo spazio bianco svolge lo stesso compito. Non è “vuoto”: separa gruppi semantici, distingue evidence e recommendation, segnala un cambio di livello di dettaglio. Riempire ogni centimetro aumenta la quantità di informazione presente e può ridurre quella effettivamente utilizzabile.
 
-Quando possibile:
+## Precision budget
 
-- etichettiamo direttamente le linee;
-- mettiamo unità vicino ai numeri;
-- mostriamo il filtro decision-critical in pagina;
-- mettiamo l'annotazione vicino al punto a cui si riferisce;
-- manteniamo lo stesso encoding per lo stesso concetto tra pagine.
+Anche i decimali competono per attenzione. `31,847362%` può sembrare rigoroso, ma se nessuna decisione cambia sotto 0,1 punti percentuali e il dato stesso ha incertezza maggiore, sei decimali comunicano una precisione che il processo non può usare.
 
-La coerenza riduce il costo cognitivo cumulativo.
+Chiamiamo **precision budget** la quantità di dettaglio numerico che il metodo può difendere e la decisione può realmente utilizzare. Mostrare meno cifre non significa essere meno precisi: significa evitare che precisione tipografica venga scambiata per certezza epistemica.
 
-## Precision budget: più decimali non significa più rigore
+## Il caveat non è una footnote se attraversa la decision boundary
 
-`31,847362%` comunica precisione apparente.
+Supponiamo che il beneficio centrale di un progetto sia **€1,2M**, con range plausibile **€0,4M–€1,9M**, contro un costo di **€1,0M**. Il range attraversa il break-even. Se la recommendation è P1, anche questa uncertainty è P1. Metterla in piccolo in fondo alla slide altererebbe la struttura della decisione costruita nel Capitolo 15.
 
-La precisione mostrata dovrebbe dipendere dalla soglia decisionale.
+È qui che gerarchia visiva e decision quality diventano la stessa cosa.
 
-Se nessuna decisione cambia per differenze inferiori a 0,1 punti percentuali, sei decimali non aiutano. Possono anzi rendere invisibile la vera incertezza.
+## Testare la gerarchia
 
-Chiamiamo questo **precision budget**:
+Un controllo semplice è mostrare la pagina a una persona non coinvolta. Dopo pochi secondi chiediamo che cosa sembra più importante; dopo dieci secondi chiediamo quale problema o decisione pensa che la pagina stia evidenziando. Se le risposte non coincidono con l'intento, la gerarchia è sbagliata anche se ogni elemento isolato è corretto.
 
-> mostriamo soltanto la precisione che il processo decisionale può realmente utilizzare e che il metodo può difendere.
+## Accessibilità come disciplina della ridondanza
 
-## Spazio bianco come separazione semantica
+W3C WCAG 2.2 richiede che il colore non sia l'unico mezzo per comunicare informazione.[^wcag-color] Questo obbligo migliora anche la comunicazione generale: label, simboli, ordine e struttura rendono il significato più robusto su proiettori, screenshot, stampa e display differenti.
 
-Lo spazio bianco non è vuoto.
+> **La gerarchia visiva è una decisione su dove spendere l'attenzione del lettore. Va allocata con la stessa disciplina con cui allochiamo evidenza, tempo e budget analitico.**
 
-Comunica:
-
-- questi elementi appartengono allo stesso gruppo;
-- questo blocco è più importante;
-- questa evidenza è distinta dalla raccomandazione;
-- qui cambia livello di dettaglio.
-
-Riempire ogni centimetro spesso aumenta la quantità di informazione visibile e diminuisce quella effettivamente utilizzabile.
-
-## Il test dei tre secondi e dei dieci secondi
-
-Mostriamo la pagina a una persona non coinvolta nell'analisi.
-
-Dopo tre secondi chiediamo:
-
-> “Che cosa ti sembra più importante?”
-
-Dopo dieci:
-
-> “Quale decisione o problema pensi che questa pagina stia evidenziando?”
-
-Se le risposte non coincidono con l'intento, la gerarchia è sbagliata anche se ogni singolo elemento è corretto.
-
-## La gerarchia non deve occultare il caveat
-
-Un errore frequente è mettere la recommendation enorme e l'incertezza in piccolo.
-
-Se il caveat attraversa lo switching value del Capitolo 15, è P1 anch'esso.
-
-Esempio:
-
-> “Progetto con beneficio centrale €1,2M”
-
-ma range plausibile:
-
-> “€0,4M–€1,9M contro costo €1,0M.”
-
-Il range non è footnote. È parte del messaggio principale.
-
-## Accessibilità e gerarchia
-
-La gerarchia non può dipendere soltanto dal colore. W3C WCAG 2.2 richiede che il colore non sia l'unico mezzo per distinguere informazione; testo, forma, etichette e struttura devono fornire ridondanza.
-
-Questa non è una limitazione creativa. È una buona disciplina comunicativa anche per chi vede perfettamente i colori.
-
-> **La gerarchia visiva è una decisione su dove spendere l'attenzione del lettore. Va allocata con la stessa disciplina con cui allochiamo tempo e budget analitico.**
-
-### Fonti
-
-- W3C, *WCAG 2.2 — Understanding 1.4.1 Use of Color*: https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html
-- Government Analysis Function, *Accessible charts: a checklist of the basics*: https://analysisfunction.civilservice.gov.uk/policy-store/charts-a-checklist/
+[^wcag-color]: W3C, *WCAG 2.2 — Understanding 1.4.1 Use of Color*, https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html
