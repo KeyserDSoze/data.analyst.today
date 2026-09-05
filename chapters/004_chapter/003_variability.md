@@ -1,115 +1,31 @@
-## 4.2 Variabilità: la media dice dove siamo, la dispersione dice quanto possiamo fidarci del centro
+## 4.2 Variabilità: la parte del fenomeno che il centro non racconta
 
-Due processi possono avere la stessa media e produrre esperienze completamente diverse.
+Due processi possono avere la stessa media e produrre esperienze operative completamente diverse. Per questo la dispersione non è un'aggiunta tecnica al riepilogo: spesso è ciò che determina capacità di pianificazione, rischio, affidabilità e qualità del servizio.
 
-Per questo una misura di posizione dovrebbe quasi sempre essere accompagnata da una misura di **dispersione**.
+Immaginiamo due centri logistici che processano entrambi, in media, **118 ordini per addetto al giorno**. Nel magazzino A quasi tutti i valori delle ultime sei settimane cadono tra 108 e 128; nel magazzino B alcuni giorni scendono a 65 e altri superano 170. La media coincide, ma il primo processo è molto più prevedibile. Nel secondo la stessa capacità media convive con un'incertezza operativa molto maggiore.
 
-### Caso simulato/composito — Due magazzini con la stessa produttività media
+Non possiamo ancora dire perché. Turni, mix di ordini, sistemi, domanda o staffing possono produrre quella dispersione. L'EDA deve prima descrivere la differenza senza trasformarla in una causa: **la media rappresenta il comportamento abituale del magazzino A molto meglio di quello del magazzino B**.
 
-Due centri logistici processano in media **118 ordini per addetto al giorno**.
+Le diverse misure di variabilità sono modi differenti di comprimere questa informazione. Il **range**, `massimo - minimo`, è immediato ma dipende completamente da due osservazioni e può esplodere per un singolo caso eccezionale. È utile come primo segnale, non come descrizione completa.
 
-Se guardiamo soltanto la media, sembrano equivalenti.
-
-Nelle ultime sei settimane, però:
-
-- nel magazzino A quasi tutti i valori giornalieri cadono tra 108 e 128;
-- nel magazzino B alcuni giorni scendono a 65 e altri superano 170.
-
-Il secondo processo non ha necessariamente lavoratori "più eterogenei". La variabilità potrebbe derivare da turni, mix di ordini, sistemi, domanda, staffing o altre condizioni operative.
-
-Ciò che possiamo dire descrittivamente è più semplice:
-
-> **la media rappresenta molto meglio il comportamento abituale del magazzino A che quello del magazzino B.**
-
-Per Operations questa differenza è concreta: capacità di pianificazione, buffer, SLA e rischio di picchi dipendono dalla dispersione, non solo dal valore medio.
-
-### Range: intuitivo ma fragile
-
-Il **range** è:
-
-```text
-massimo - minimo
-```
-
-È facile da leggere, ma dipende interamente da due osservazioni. Un singolo valore eccezionale può farlo esplodere.
-
-È quindi utile soprattutto come primo controllo, non come unica misura di variabilità.
-
-### Varianza e deviazione standard
-
-La **varianza** riassume gli scarti quadratici dalla media.
-
-La **deviazione standard** è la radice quadrata della varianza e torna nell'unità originale della variabile.
-
-Il suo vantaggio è che incorpora tutte le osservazioni. Il limite è lo stesso della media: valori estremi possono influenzarla molto.
-
-Dire:
-
-```text
-media = 100
-SD = 4
-```
-
-racconta un processo molto diverso da:
-
-```text
-media = 100
-SD = 38
-```
-
-anche se il valore centrale coincide.
-
-### IQR: la dispersione della metà centrale
-
-L'**interquartile range** è:
+La **varianza** incorpora invece gli scarti quadratici dalla media, mentre la **deviazione standard** riporta quella dispersione nell'unità originale della variabile. Un processo con `media = 100` e `SD = 4` racconta una storia molto diversa da uno con `media = 100` e `SD = 38`, anche se il centro è identico. Poiché però deviazione standard e media sono entrambe sensibili ai valori estremi, nelle distribuzioni asimmetriche può essere più informativo affiancare la mediana all'**interquartile range**:
 
 ```text
 IQR = Q3 - Q1
 ```
 
-e descrive la larghezza del 50% centrale della distribuzione.
+L'IQR descrive la larghezza del 50% centrale della distribuzione. Media + deviazione standard e mediana + IQR non sono coppie concorrenti: osservano aspetti differenti e diventano più o meno utili a seconda della forma del fenomeno.
 
-È meno influenzato dalle code e diventa particolarmente utile quando il fenomeno è asimmetrico.
+Quando dobbiamo confrontare dispersioni su scale molto diverse possiamo incontrare anche il **coefficiente di variazione**, `SD / media`. Una deviazione standard di 10 euro pesa molto se la media è 20 e molto poco se è 2.000. Il CV rende questa differenza relativa, ma perde interpretabilità quando la media è vicina a zero o la scala non ha uno zero significativo. Anche qui, la formula non sostituisce il contesto.
 
-Media + deviazione standard e mediana + IQR non sono coppie rivali. Sono due modi di descrivere aspetti differenti della distribuzione.
+## La variabilità può essere struttura, non rumore
 
-### Coefficiente di variazione: confrontare dispersione relativa
+Una dispersione ampia non è necessariamente qualcosa da “ripulire”. Può essere il segnale che abbiamo mescolato segmenti con comportamenti diversi, che esiste stagionalità, che il processo cambia tra condizioni operative o che il rischio è davvero concentrato in una coda.
 
-Quando le grandezze hanno scale molto diverse, possiamo incontrare il **coefficiente di variazione**:
+Questo cambia il modo di esplorare. Se la variabilità complessiva è alta ma ogni segmento è internamente stabile, il problema può essere soprattutto di **composizione**. Se invece ogni segmento resta molto disperso, stiamo osservando un fenomeno diverso. La domanda non è quindi come ridurre la deviazione standard nel dataset, ma **come è organizzata la variabilità e quale parte conta per la decisione**.
 
-```text
-CV = deviazione standard / media
-```
+Per esempio, dire “il tempo medio di evasione è 4,2 ore” lascia il processo quasi invisibile. Dire “la mediana è 3,7 ore; metà degli ordini cade tra 2,8 e 5,1 ore, mentre una coda di casi molto lenti porta la media a 4,2” rende visibili insieme centro, dispersione e asimmetria.
 
-Una deviazione standard di 10 euro è enorme rispetto a una media di 20 e piccola rispetto a una media di 2.000.
+La sezione successiva entra proprio in quella coda. In molti processi operativi il costo più importante non vive vicino alla media, ma nei casi peggiori.
 
-Il CV può aiutare a esprimere la dispersione in termini relativi, ma non va usato meccanicamente. Diventa difficile da interpretare quando la media è vicina a zero o quando la scala non possiede uno zero significativo.
-
-### Variabilità non significa automaticamente rumore
-
-Una distribuzione ampia può nascondere:
-
-- segmenti differenti;
-- stagionalità;
-- processi operativi diversi;
-- concentrazione di rischio;
-- comportamento reale dei clienti;
-- errori di misura già identificati nella Data Readiness Review.
-
-L'EDA non deve "ridurre la variabilità". Deve capire **come è organizzata**.
-
-Se la deviazione complessiva è elevata ma ogni segmento è stabile, la dispersione aggregata potrebbe essere soprattutto una questione di composizione. Se ogni segmento è a sua volta instabile, il fenomeno è diverso.
-
-### Un modo migliore di comunicare
-
-Invece di:
-
-> Il tempo medio di evasione è 4,2 ore.
-
-potremmo dire:
-
-> Il tempo mediano è 3,7 ore; metà degli ordini cade tra 2,8 e 5,1 ore, mentre una coda di casi molto lenti porta la media a 4,2.
-
-La seconda frase racconta il comportamento della distribuzione, non soltanto il suo centro.
-
-> **La dispersione non è un dettaglio statistico attorno alla media. È spesso la parte del fenomeno che determina rischio, capacità e qualità dell'esperienza.**
+> **La dispersione non è un dettaglio statistico attorno al centro. È spesso la parte della distribuzione che determina rischio, capacità e qualità dell'esperienza.**
