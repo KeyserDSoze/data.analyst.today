@@ -2,33 +2,17 @@
 
 > **Il tempo non è soltanto una dimensione del dato. È informazione sul processo che ha generato il dato.**
 
-Nel Capitolo 4 abbiamo guardato il tempo come una delle dimensioni dell'EDA: trend visivi, confronti tra periodi, pattern che meritano attenzione.
+Nel Capitolo 6 il tempo era soprattutto l'età della relazione con il cliente: quando entra, quanto impiega a raggiungere valore, quando aumenta il rischio di uscita. Qui il tempo diventa qualcosa di ancora più strutturale. Una serie temporale conserva calendario, memoria, stagionalità e cambi di regime; per questo il valore di oggi non è intercambiabile con una riga qualsiasi del passato.
 
-Qui facciamo un passo diverso.
+Un lunedì può assomigliare più agli altri lunedì che alla domenica precedente. Un picco può essere eccezionale rispetto alla media del mese e perfettamente normale per Black Friday. Una previsione che funzionava ieri può degradare senza che l'algoritmo sia cambiato, semplicemente perché è cambiato il processo economico che collegava passato e futuro.
 
-Una serie temporale contiene **dipendenza, calendario, memoria e cambi di regime**. Il valore di oggi può essere informativo su domani. Un lunedì può assomigliare più agli altri lunedì che alla domenica precedente. Un picco può essere eccezionale rispetto alla media, ma perfettamente normale per Black Friday.
-
-Questo cambia tre domande che in un dashboard sembrano simili ma non lo sono:
-
-1. **Descrizione temporale:** che struttura osserviamo nel passato?
-2. **Anomaly detection:** ciò che sta accadendo ora è insolito rispetto a una baseline appropriata?
-3. **Forecasting:** quali valori futuri sono plausibili, con quale incertezza, dato ciò che sappiamo oggi?
-
-E nessuna delle tre risponde automaticamente a una quarta domanda:
-
-> **Perché il cambiamento è avvenuto?**
-
-Quella è una domanda causale, che appartiene al Capitolo 8.
+Il capitolo ruota quindi attorno a tre domande che in dashboard spesso vengono confuse. La prima è descrittiva: **quale struttura contiene la serie?** La seconda è diagnostica: **ciò che sta accadendo è davvero insolito rispetto a una baseline appropriata?** La terza è predittiva: **quali valori futuri sono plausibili, con quale incertezza, usando soltanto ciò che era conoscibile al momento della previsione?** Nessuna delle tre, da sola, risponde a una quarta domanda: *perché il cambiamento è avvenuto?* Quella è una domanda causale e sarà il punto di partenza del Capitolo 8.
 
 ## 7.0 Dal grafico temporale alla decisione
 
-NIST sottolinea che le serie temporali possono contenere struttura interna — autocorrelazione, trend e stagionalità — e che questa struttura deve essere considerata nell'analisi e nella modellazione.[^nist-ts]
+NIST ricorda che le serie temporali possono contenere trend, stagionalità e autocorrelazione e che questa struttura deve essere considerata prima di modellare il processo.[^nist-ts] Hyndman e Athanasopoulos aggiungono una condizione ancora più importante: il forecasting quantitativo ha senso quando disponiamo di dati storici rilevanti e abbiamo ragioni per credere che **almeno una parte della struttura passata continui nel futuro**.[^fpp-data]
 
-Hyndman e Athanasopoulos pongono un principio complementare: il forecasting quantitativo ha senso quando esistono dati storici rilevanti e quando è ragionevole aspettarsi che **almeno una parte della struttura passata continui nel futuro**.[^fpp-data]
-
-Questa seconda condizione è spesso la più importante e la meno discussa.
-
-Un modello può essere sofisticato, validato e apparentemente preciso. Se nel frattempo il processo economico è cambiato, il passato può avere perso proprio la relazione che rendeva utile il forecast.
+Questa continuità non è un dettaglio tecnico. È il contratto implicito di ogni previsione. Un modello sofisticato può essere perfettamente calcolato e diventare poco credibile se cambia il prezzo, il canale, la capacità, il comportamento dei clienti o il sistema che genera una feature. Prima di chiederci quale algoritmo usare, dobbiamo quindi chiederci quale passato sia davvero comparabile con il presente e quale informazione sarebbe stata disponibile al momento della decisione.
 
 ### Caso simulato/composito — Il lunedì in cui “crollano le vendite”
 
@@ -44,68 +28,19 @@ Il dashboard mostra:
 | Domenica corrente | 1,40 M€ |
 | Variazione | -23,9% |
 
-Il numero è corretto rispetto ai dati caricati. La sua interpretazione non è ancora pronta.
+Il numero è corretto rispetto ai dati caricati, ma la sua interpretazione non è pronta. La domenica precedente coincideva con un weekend promozionale nazionale, quindi il confronto recente usa una baseline eccezionale. Rispetto alla domenica comparabile dell'anno precedente, il dato disponibile appare invece in crescita. Infine, trentasei negozi non hanno ancora inviato la chiusura di cassa.
 
-L'analista controlla tre cose.
+Quando gli eventi mancanti arrivano, i ricavi diventano **1,51 M€**. Il movimento non scompare, ma cambia natura. Non stiamo osservando un business che “crolla del 24%”: stiamo osservando una giornata inizialmente incompleta, confrontata con un riferimento promozionale non comparabile.
 
-**1. Baseline comparabile.** La domenica precedente coincideva con un weekend promozionale nazionale.
+Questo episodio contiene quasi tutto il capitolo. Il dato temporale deve prima essere collocato dentro una baseline e un calendario; poi va verificata la completezza; soltanto a quel punto possiamo decidere se lo scostamento sia normale, anomalo o parte di un nuovo regime. Se infine vogliamo anticipare ciò che accadrà dopo, dobbiamo trasformare quella struttura in un forecast e collegarne l'errore alla decisione.
 
-**2. Calendario.** Rispetto alla domenica comparabile dell'anno precedente, il dato disponibile appare in crescita.
+Un'anomalia, anche quando è reale, non è una causa. Se la domenica restasse molto sotto una baseline stagionale corretta avremmo evidenza di un comportamento insolito, non la prova che il problema sia prezzo, stock-out, meteo, checkout, competitor o mix. Un detector produce un **segnale di investigazione**; la spiegazione richiede altro lavoro.
 
-**3. Freshness.** Trentasei negozi non hanno ancora inviato la chiusura di cassa.
-
-Dopo l'arrivo dei dati mancanti, i ricavi diventano 1,51 M€.
-
-Il movimento non scompare, ma cambia significato: non è più “il business è improvvisamente crollato del 24%”. È un confronto contro una baseline promozionale eccezionale, costruito inizialmente su una giornata incompleta.
-
-Questo episodio contiene l'intero capitolo in miniatura:
-
-**dato temporale → baseline → calendario → completezza → struttura → anomalia → previsione → decisione**.
-
-### Una anomalia non è una causa
-
-Supponiamo che, una volta corretti i dati, la domenica rimanga davvero molto sotto la baseline stagionale.
-
-Abbiamo allora evidenza di un comportamento insolito.
-
-Non abbiamo ancora dimostrato che la causa sia:
-
-- prezzo;
-- competitor;
-- stock-out;
-- meteo;
-- campagna;
-- checkout;
-- cambiamento di mix.
-
-Un detector di anomalie produce un **segnale di investigazione**, non una spiegazione causale.
-
-Questo confine sarà mantenuto in tutto il capitolo.
-
-### Un forecast non è una promessa
-
-Supponiamo invece che il modello dica:
-
-> vendite previste per domenica prossima: 1,62 M€.
-
-Quel numero non è il futuro. È un punto centrale ottenuto sotto determinate assunzioni e sulla base delle informazioni disponibili al momento della previsione.
-
-Per essere decisionale servono almeno:
-
-- orizzonte;
-- intervallo o distribuzione di previsione;
-- confronto con una baseline semplice;
-- errore storico fuori campione;
-- condizioni sotto cui il modello rimane valido;
-- costo di sovrastima e sottostima.
-
-Una previsione può essere statisticamente buona e operativamente inutile. Può anche essere mediocre in una metrica media e molto utile proprio dove l'errore costa di più.
+Lo stesso vale per il forecast. Se il modello stima **1,62 M€** per domenica prossima, quel numero non è il futuro: è un punto centrale dentro una distribuzione di esiti plausibili, condizionata alle informazioni e alle assunzioni disponibili oggi. Per renderlo decisionale dobbiamo conoscere l'orizzonte, la baseline semplice che il modello deve battere, l'errore storico fuori campione, l'incertezza della previsione, le condizioni di validità e il costo di sovrastimare o sottostimare.
 
 ## Il deliverable del capitolo: Temporal Decision Brief
 
-Alla fine del capitolo ogni analisi temporale importante dovrebbe poter essere sintetizzata in un **Temporal Decision Brief**.
-
-La struttura è:
+Alla fine del capitolo una analisi temporale importante dovrebbe poter essere condensata in un **Temporal Decision Brief**. Non è documentazione del modello: è il punto in cui serie, incertezza e decisione vengono ricomposte.
 
 ```text
 SERIE
@@ -142,17 +77,7 @@ AZIONE / MONITORAGGIO
 Quale decisione cambia e quali segnali richiedono override o revisione?
 ```
 
-Non è un template di model documentation. È un ponte tra la struttura temporale e la decisione.
-
-### Il percorso del capitolo
-
-Seguiremo questa sequenza:
-
-**Series contract → baseline temporale → trend/stagionalità → lag/autocorrelazione → decomposizione → anomaly triage → forecast baseline → backtest → metriche e costo → prediction interval → regime change → Temporal Decision Brief**
-
-L'obiettivo non è diventare specialisti di ogni famiglia di modelli.
-
-È imparare a riconoscere quando il tempo contiene informazione, quando un modello sta usando il futuro senza accorgersene, quando un'anomalia appartiene al sistema di osservazione e quando una previsione è abbastanza affidabile da meritare una decisione.
+Il percorso del capitolo seguirà tre movimenti. Prima capiremo **quale passato è comparabile**, leggendo baseline, trend, stagionalità, lag, autocorrelazione e decomposizione. Poi useremo quella struttura per distinguere un'anomalia del dato, un evento contestuale, un vero scostamento e un cambio di regime. Infine passeremo al forecasting: target e orizzonte, baseline, validazione `as-of`, metriche, business loss, intervalli, drift e condizioni di validità.
 
 > **Il forecast migliore non è quello che sembra conoscere il futuro. È quello che dichiara correttamente ciò che sa, ciò che assume e quanto costa quando sbaglia.**
 
