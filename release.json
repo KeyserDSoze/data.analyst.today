@@ -1,6 +1,6 @@
 {
-  "tag": "v1.0.0-rc2",
-  "name": "Data Analyst Today v1.0.0-rc2",
+  "tag": "v1.0.0-rc3",
+  "name": "Data Analyst Today v1.0.0-rc3",
   "prerelease": true,
-  "notes_file": "release-notes/v1.0.0-rc2.md"
+  "notes_file": "release-notes/v1.0.0-rc3.md"
 }
