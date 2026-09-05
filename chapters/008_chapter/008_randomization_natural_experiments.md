@@ -1,100 +1,29 @@
 ## 8.7 Randomizzazione e natural experiment: quando l'assegnazione rende credibile il confronto
 
-La domanda centrale di un design causale è:
-
-> **Perché il gruppo non trattato rappresenta ciò che sarebbe successo ai trattati senza intervento?**
-
-La randomizzazione offre una risposta particolarmente forte: l'assegnazione viene generata da un meccanismo noto che, in media, non dipende dalle caratteristiche preesistenti delle unità.
+Dopo aver ricostruito confondenti, timing e selection mechanism possiamo finalmente chiedere quale proprietà dell'assegnazione renda plausibile il controfattuale. La randomizzazione offre una risposta particolarmente forte: l'assegnazione viene generata da un meccanismo noto che, in media, non dipende dalle caratteristiche preesistenti delle unità. Non elimina ogni problema possibile, ma cambia radicalmente il motivo per cui possiamo credere al confronto.
 
 ### Caso simulato/composito — Nuovo onboarding B2B
 
-Una piattaforma assegna casualmente nuovi account a:
-
-- onboarding standard;
-- onboarding guidato.
-
-Dopo sei settimane:
+Una piattaforma assegna casualmente nuovi account a onboarding standard o onboarding guidato:
 
 | Gruppo | Account | Activation D14 | Retention D60 |
 |---|---:|---:|---:|
 | Standard | 4.812 | 42,6% | 31,8% |
 | Guidato | 4.776 | 47,9% | 35,1% |
 
-La differenza osservata non diventa causale perché esiste una colonna `variant`.
+La differenza non diventa causale perché esiste una colonna `variant`. Diventa interpretabile causalmente perché **l'assegnazione è stata randomizzata prima dell'outcome** e perché l'analisi preserva quel meccanismo. Il Capitolo 9 entrerà nei failure mode operativi degli A/B test; qui il principio è che il controfattuale nasce dall'assignment, non dalla sofisticazione del modello.
 
-Diventa interpretabile causalmente perché **l'assegnazione era randomizzata prima dell'outcome**, a condizione che il design e l'analisi rispettino quell'assegnazione.
+Questa logica obbliga a scegliere l'unità giusta. Se una promozione viene applicata a un intero punto vendita, la randomization unit può essere il negozio, non la singola transazione. Randomizzare **40 store** non produce automaticamente centinaia di migliaia di osservazioni indipendenti solo perché esistono molte ricevute. Il livello di assignment determina l'estimand, la dipendenza tra osservazioni e i possibili spillover.
 
-Il Capitolo 9 affronterà in dettaglio gli errori operativi degli A/B test. Qui ci interessa il principio:
+Va inoltre distinta l'**assegnazione** dall'**exposure effettiva**. Alcune unità assegnate al trattamento possono non riceverlo o non aderire. Confrontare i gruppi secondo l'assegnazione conserva il vantaggio della randomizzazione e stima spesso un effetto **intent-to-treat**. Se invece selezioniamo soltanto chi ha effettivamente aderito, compliance, motivazione o capacità possono reintrodurre selezione.
 
-> la randomizzazione costruisce il controfattuale attraverso il meccanismo di assegnazione.
+### Quando la randomizzazione non è deliberata
 
-### Randomizzazione dell'unità giusta
+Molte esposizioni reali dipendono da norme, soglie amministrative, rollout geografici, vincoli di capacità, timing esterno o shock istituzionali. A volte queste strutture creano variazione utilizzabile causalmente. Ma “è successo fuori dal nostro controllo” non basta per chiamare un evento **natural experiment**: dobbiamo capire come l'evento assegna il trattamento e perché quell'assegnazione interrompe, almeno nel confronto rilevante, il normale processo di selezione.
 
-Se la promozione è applicata a un intero punto vendita, l'unità di randomizzazione può essere il negozio, non la transazione.
+Il Premio Sveriges Riksbank 2021 ha riconosciuto proprio il contributo di David Card, Joshua Angrist e Guido Imbens allo studio dei natural experiment e all'interpretazione degli effetti causali che essi consentono di identificare.[^nobel] Il punto metodologico è che policy o eventi reali possono generare gruppi trattati differentemente in modo abbastanza simile a un esperimento da sostenere un causal argument — ma solo dopo averne difeso il meccanismo.
 
-Se 40 store vengono randomizzati, non abbiamo automaticamente centinaia di migliaia di unità indipendenti solo perché esistono molte ricevute.
-
-Il livello di assignment influenza:
-
-- l'estimand;
-- la dipendenza tra osservazioni;
-- l'incertezza;
-- gli spillover possibili.
-
-### Intent-to-treat e trattamento ricevuto
-
-In un esperimento alcune unità assegnate al trattamento possono non riceverlo davvero.
-
-È importante distinguere:
-
-- **assignment:** ciò che la randomizzazione ha deciso;
-- **exposure:** ciò che è realmente successo.
-
-Confrontare i gruppi secondo l'assegnazione conserva il vantaggio della randomizzazione e stima spesso un effetto **intent-to-treat**.
-
-Confrontare soltanto chi ha effettivamente aderito può reintrodurre selezione, perché compliance e motivazione possono essere correlate all'outcome.
-
-### Quando non possiamo randomizzare
-
-Molte esposizioni sono determinate da:
-
-- norme;
-- soglie amministrative;
-- rollout geografici;
-- vincoli di capacità;
-- timing esterno;
-- shock naturali o istituzionali.
-
-A volte questi processi creano variazione che può essere sfruttata causalmente.
-
-Ma “è successo fuori dal nostro controllo” non basta per chiamarlo natural experiment.
-
-Dobbiamo capire **come l'evento assegna l'esposizione** e perché quell'assegnazione può essere considerata plausibilmente indipendente dalle cause dell'outcome, almeno nel confronto rilevante.
-
-## Caso reale documentato — Natural experiments e Premio Nobel 2021
-
-Il comitato del Premio Sveriges Riksbank 2021 ha riconosciuto David Card per contributi empirici all'economia del lavoro e Joshua Angrist e Guido Imbens per contributi metodologici all'analisi causale. La motivazione sottolinea come i **natural experiments** abbiano permesso di rispondere a domande per cui una randomizzazione deliberata sarebbe impossibile o inappropriata.[^nobel]
-
-Tra gli esempi discussi nei materiali del Nobel compare il confronto sul salario minimo tra aree sottoposte a cambiamenti di policy differenti: la variazione istituzionale crea una situazione simile, per alcuni aspetti, a un esperimento.[^nobel-lessons]
-
-La lezione metodologica è più generale del caso economico:
-
-> **cercare eventi o regole che producano esposizione per ragioni esterne al normale processo di selezione può rendere disponibili confronti causali che i dati osservazionali standard non offrono.**
-
-### Natural experiment non significa assumption-free
-
-Un evento esterno può comunque essere confuso con:
-
-- altre policy simultanee;
-- differenze territoriali;
-- anticipazione dell'intervento;
-- migrazione tra gruppi;
-- shock specifici;
-- cambi di measurement.
-
-Quindi il lavoro non termina dicendo “è un esperimento naturale”.
-
-Inizia documentando:
+Un natural experiment rimane quindi pieno di assunzioni. Una policy può coincidere con un'altra riforma, una regione può subire uno shock specifico, i soggetti possono anticipare il cambiamento, il measurement può cambiare o la popolazione può migrare tra gruppi. La scheda iniziale dovrebbe poter rispondere:
 
 ```text
 Qual è la fonte di variazione?
@@ -104,17 +33,9 @@ Quali altre cose cambiano nello stesso momento?
 Quanto è locale l'effetto identificato?
 ```
 
-### Il ponte verso i prossimi metodi
-
-Difference-in-Differences, RDD e IV possono essere letti come modi diversi di sfruttare strutture nel processo di assegnazione:
-
-- **DiD:** un gruppo cambia esposizione mentre un altro rappresenta la dinamica controfattuale;
-- **RDD:** il trattamento cambia bruscamente a una soglia;
-- **IV:** una fonte esterna modifica la probabilità di trattamento.
-
-Matching segue una logica diversa: tenta di costruire comparabilità sulle covariate osservate quando il processo di assegnazione non offre una quasi-randomizzazione forte.
+La World Bank organizza i principali metodi di impact evaluation proprio attorno alle caratteristiche operative del programma e alla capacità di costruire un gruppo di confronto valido.[^worldbank-methods] Questo aiuta a leggere i design successivi con una logica comune. La **Difference-in-Differences** sfrutta una traiettoria di confronto nel tempo; la **RDD** una discontinuità nella regola di assegnazione; le **IV** una fonte esterna che modifica la probabilità di trattamento. Il **matching** segue invece una logica più debole: cerca comparabilità sulle covariate osservate quando non esiste una quasi-randomizzazione forte.
 
 > **Il nome del metodo viene dopo. Prima dobbiamo capire quale caratteristica del processo di assegnazione rende possibile il confronto.**
 
 [^nobel]: Nobel Prize, *The Prize in Economic Sciences 2021 — Press release*: https://www.nobelprize.org/prizes/economic-sciences/2021/press-release/
-[^nobel-lessons]: Nobel Prize, *Nobel Prize Lessons 2021 — Natural experiments*: https://www.nobelprize.org/uploads/2021/10/Speakersmanuscript_All_Nobelprizes_2021_Nobelprizelessons.pdf
+[^worldbank-methods]: World Bank e Inter-American Development Bank, *Impact Evaluation in Practice, Second Edition*, parte II: https://www.worldbank.org/en/programs/sief-trust-fund/publication/impact-evaluation-in-practice
