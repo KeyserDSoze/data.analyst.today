@@ -1,160 +1,41 @@
-## 16.3 Dashboard operative, diagnostiche e decisionali: tre prodotti diversi
+## 16.3 Una dashboard deve sapere quale responsabilità sta assumendo
 
-Una dashboard diventa confusa quando prova a servire contemporaneamente monitoraggio, diagnosi e decisione strategica.
+Una dashboard diventa confusa quando prova a essere contemporaneamente monitor operativo, ambiente diagnostico e superficie di decisione strategica. Le tre funzioni possono condividere dati e semantic layer, ma hanno cadenze, audience e failure mode differenti.
 
-Questi tre usi hanno cadenze, audience e requisiti differenti.
+Una vista **operativa** deve rispondere a “che cosa richiede attenzione adesso?”. Qui contano freshness, soglie, owner dell'alert, runbook e tempi di risposta. Payment failure rate, backlog, stockout risk o pipeline freshness hanno valore soltanto se il segnale è abbastanza tempestivo e qualcuno sa che cosa fare quando supera la soglia. Per questo metriche come time-to-detect, time-to-acknowledge e time-to-action possono essere importanti quanto il KPI business stesso.
 
-## 1. Dashboard operativa — rilevare e agire
+Una vista **diagnostica** risponde invece a “dove si concentra il problema e quale ipotesi dobbiamo verificare?”. Ha bisogno di più libertà esplorativa: segmentazioni, decomposition, funnel, cohort, distribuzioni, filtri e drill-through. Il suo obiettivo non è decidere da sola, ma ridurre il percorso da segnale a spiegazione verificabile.
 
-Domanda:
+Una vista **decisionale** parte dal Decision Record. Deve rendere facile vedere la scelta aperta, la baseline, i driver materiali, le alternative, il downside, l'incertezza che può cambiare ranking, lo switching value, i guardrail e l'ask. Non è “tutto il business in una schermata”: è una **superficie di scelta**.
 
-> **“Cosa richiede attenzione adesso?”**
+### Caso simulato/composito — 54 visual, quattro domande
 
-Caratteristiche:
+Una catena retail costruisce una “Executive Sales Dashboard” con **54 visualizzazioni su sei pagine**. Dopo due mesi il CEO usa quasi sempre la dashboard per quattro domande: siamo sopra o sotto piano? dove si concentra il delta? il fenomeno è transitorio o persiste? quale decisione richiede attenzione questa settimana?
 
-- refresh coerente con la velocità del processo;
-- pochi segnali critici;
-- baseline e soglie operative;
-- stato del dato/freshness visibile;
-- owner dell'alert;
-- azione o runbook associato;
-- drill-down rapido.
+Il redesign smette di cercare una sola pagina universale. La home decisionale mostra revenue e contribution margin vs plan, decomposition del gap, forecast di fine mese con range e tre exception con owner e decision requested. Una pagina diagnostica conserva categorie, regioni, canali, funnel, promozioni e mix. Un evidence layer espone tabelle dettagliate, definizioni, freshness, lineage e controlli.
 
-Esempi:
+La home contiene meno elementi, ma il sistema offre **più accesso alla complessità** perché il percorso dal segnale alla prova è esplicito.
 
-- payment failure rate;
-- backlog di ordini;
-- stockout risk;
-- call-center queue;
-- pipeline freshness.
+## One screen come disciplina, non come dogma
 
-Metriche utili non sono soltanto i KPI business. Possiamo misurare anche:
+Microsoft Learn raccomanda di pensare all'audience, mettere in evidenza le informazioni più importanti e, quando possibile, evitare che la dashboard richieda scroll per capire lo stato principale.[^ms-dashboard] Questo non significa che l'intero sistema analitico debba vivere su una sola pagina. Significa che la prima vista dovrebbe rispondere rapidamente a una domanda: **c'è qualcosa che richiede una decisione o un'azione?**
 
-- **time to detect**;
-- **time to acknowledge**;
-- **time to action**.
+La Government Analysis Function 2026 usa una logica simile: headline content prima, dettaglio in altri layer, minimizzazione di scroll e click, user testing e attenzione ai diversi dispositivi.[^gaf-test]
 
-Un alert che nessuno possiede è decorazione operativa.
+## Testare il task, non il gusto
 
-## 2. Dashboard diagnostica — localizzare e spiegare
+“Ti piace?” è una domanda debole per validare una dashboard. Un test migliore chiede a un utente reale di trovare l'anomalia più importante, indicare rispetto a quale baseline è anomala, capire se il dato è maturo, localizzare il driver, dire quale azione sembra richiesta e trovare definizione e fonte.
 
-Domanda:
+Misuriamo così **task success, errori di interpretazione e tempo di comprensione**. Se l'informazione esiste ma il compito fallisce, la dashboard non sta facendo bene il proprio lavoro.
 
-> **“Dove si concentra il problema e quali ipotesi dobbiamo verificare?”**
+## Anche una dashboard deve avere un lifecycle
 
-Qui servono più libertà esplorativa:
+Una dashboard non merita di esistere per sempre solo perché è stata costruita. Va riesaminata quando le metriche sono duplicate, l'owner scompare, il processo business cambia, gli alert vengono ignorati, le definizioni non sono più mantenute o gli utenti esportano sistematicamente i dati per ricostruire altrove la vista che serve davvero.
 
-- segmentazioni;
-- decomposizioni;
-- funnel;
-- coorti;
-- distribuzioni;
-- filtri;
-- drill-through;
-- confronto con baseline e periodi alternativi.
+La Government Analysis Function raccomanda infatti di costruire dashboard soltanto quando esiste un user need chiaro, gli aggiornamenti sono frequenti, l'interattività aggiunge valore e l'organizzazione ha risorse per mantenerle.[^gaf-lifecycle]
 
-È normale che questa dashboard sia più ricca della vista executive.
+> **Una buona dashboard non mostra tutto. Assume una responsabilità precisa e collega quella responsabilità alla profondità giusta di evidenza, con un percorso chiaro da segnale ad azione e una condizione per essere ridisegnata o ritirata.**
 
-Il suo obiettivo non è decidere da sola, ma ridurre il tempo necessario per passare da segnale a diagnosi.
-
-## 3. Dashboard decisionale — confrontare alternative
-
-Domanda:
-
-> **“Quale scelta è aperta e quali evidenze possono cambiarla?”**
-
-Una vista decisionale dovrebbe derivare dal Decision Record e rendere visibili soprattutto:
-
-- decision question;
-- stato corrente e baseline;
-- driver materiali;
-- alternative;
-- valore/upside e downside;
-- incertezza decision-critical;
-- switching value o soglia;
-- guardrail;
-- decision requested.
-
-Non è un report di tutto il business. È una **superficie di scelta**.
-
-## Caso simulato/composito — La executive dashboard da 54 visual
-
-Una catena retail costruisce una “Executive Sales Dashboard” con 54 visualizzazioni su sei pagine.
-
-Dopo due mesi il CEO usa quasi sempre soltanto quattro domande:
-
-1. siamo sopra o sotto piano?
-2. dove si concentra il delta?
-3. il fenomeno è transitorio o persiste?
-4. quale decisione richiede attenzione questa settimana?
-
-Il redesign separa i prodotti.
-
-### Home decisionale
-
-- revenue e contribution margin vs plan;
-- decomposition del gap;
-- forecast di fine mese con range;
-- tre exception con owner e decision requested.
-
-### Pagina diagnostica
-
-- categorie, regioni, canali, funnel, promozioni e mix.
-
-### Evidence layer
-
-- tabelle dettagliate;
-- definizioni;
-- freshness;
-- lineage e controlli.
-
-La dashboard contiene meno elementi nella home ma offre **più accesso alla complessità** perché la gerarchia è esplicita.
-
-## One screen: disciplina, non dogma
-
-Microsoft suggerisce di rendere visibile la storia principale senza costringere il lettore a scorrere o cercare tra troppi elementi, quando possibile.
-
-Questo non significa che un sistema analitico debba avere una sola pagina.
-
-Significa che la prima vista deve rispondere:
-
-> **“C'è qualcosa che richiede una decisione?”**
-
-prima di chiedere all'utente di esplorare.
-
-## Dashboard testing: non basta chiedere “ti piace?”
-
-La Government Analysis Function britannica raccomanda di testare i dashboard rispetto ai bisogni reali degli utenti e su dispositivi e modalità di accesso differenti.
-
-Un test utile può chiedere a un utente reale di:
-
-1. trovare l'anomalia più importante;
-2. spiegare quale confronto la rende anomala;
-3. individuare il dettaglio necessario a diagnosticarla;
-4. dire quale azione ritiene richiesta;
-5. trovare fonte, definizione e data di aggiornamento.
-
-Misuriamo così **task success e tempo di comprensione**, non soltanto preferenza estetica.
-
-## Dashboard lifecycle
-
-Una dashboard deve poter anche morire.
-
-Segnali di retirement o redesign:
-
-- non supporta più una decisione reale;
-- metriche duplicate altrove;
-- definizioni non mantenute;
-- owner assente;
-- utenti esportano sistematicamente i dati per ricostruire la vera vista;
-- alert ignorati;
-- il processo business è cambiato.
-
-Mantenere per sempre dashboard obsolete aumenta il costo di trovare la fonte autorevole.
-
-> **Una buona dashboard non mostra tutto. Collega un bisogno decisionale alla profondità giusta di evidenza, con un percorso chiaro da segnale ad azione.**
-
-### Fonti
-
-- Microsoft Learn, *Tips for designing a great Power BI dashboard*: https://learn.microsoft.com/en-us/power-bi/create-reports/service-dashboards-design-tips
-- Government Analysis Function, *Data visualisation: testing dashboards for design and accessibility*: https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-testing-dashboards-for-design-and-accessibility/
+[^ms-dashboard]: Microsoft Learn, *Tips for designing a great Power BI dashboard*, https://learn.microsoft.com/en-us/power-bi/create-reports/service-dashboards-design-tips
+[^gaf-test]: Government Analysis Function, *Data visualisation: testing dashboards for design and accessibility*, https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-testing-dashboards-for-design-and-accessibility/
+[^gaf-lifecycle]: Government Analysis Function, *Data visualisation: building and managing dashboards*, https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-building-and-managing-dashboards/
