@@ -1,33 +1,21 @@
-## 14.12 Versioning e auditability: ricostruire il sistema, non soltanto il prompt
+## 14.12 Versioning e auditability: ricostruire il sistema che ha prodotto il claim
 
-Nei workflow AI il prompt è parte della logica, ma non è l'intera logica.
+Nei workflow AI il prompt è parte della logica, ma non è l'intera logica. La stessa istruzione può produrre comportamenti diversi se cambiano modello, reasoning configuration, tool, permessi, semantic model, retrieval corpus, dati, orchestration, budget di step o evaluator. Per questo il vero oggetto da versionare è il **sistema di esecuzione**.
 
-La stessa istruzione può produrre comportamenti diversi se cambiano:
+### Execution Manifest
 
-- modello;
-- reasoning configuration;
-- tool disponibili;
-- permessi;
-- semantic model;
-- retrieval corpus;
-- dati;
-- orchestration logic;
-- budget di step o retry;
-- evaluator;
-- policy di approval.
+Per un'analisi ad alto impatto registriamo abbastanza informazioni da poter rispondere, quando serve, a una domanda semplice:
 
-Per questo il vero oggetto da versionare è il **sistema di esecuzione**.
+> **Quale sistema ha prodotto questa decisione e su quale evidenza?**
 
-### Dal prompt version al Execution Manifest
-
-Per un'analisi ad alto impatto registriamo un manifest minimo.
+Un manifest minimo può contenere:
 
 ```text
 run_id:
 timestamp:
-user / triggering process:
+trigger / user:
 model + configuration:
-system/instruction version:
+instruction version:
 context pack version:
 semantic model / metric version:
 data snapshot or as-of timestamp:
@@ -35,184 +23,55 @@ retrieval sources:
 tools enabled:
 agent identity + permission scope:
 step/retry/cost budget:
-queries/tool calls:
+queries / tool calls:
 checks executed:
 human interventions:
 final claim:
 final action / output:
 ```
 
-Questo non significa salvare ogni token per sempre.
+Non significa conservare ogni token per sempre. Significa mantenere la catena minima necessaria per ricostruire il comportamento rilevante.
 
-Significa conservare abbastanza informazione da rispondere, quando serve:
+### Una frase può cambiare un KPI
 
-> **“Quale sistema ha prodotto questa decisione e su quale evidenza?”**
+Un team Finance usa un agente per generare la sintesi del lunedì. Per mesi l'istruzione dice: "Usa la revenue riconosciuta nel periodo, metrica certificata Finance." Dopo una semplificazione diventa: "Analizza la revenue della settimana." Il modello seleziona `invoice_amount`, che include importi emessi ma non ancora riconosciuti secondo la policy interna.
 
-### Caso simulato/composito — il KPI cambia senza cambiare la dashboard
+Dashboard, warehouse e pipeline di invio non cambiano. Cambia soltanto l'istruzione, e il CFO riceve un miglioramento apparente che non esiste secondo la metrica governata. Senza versioning dell'istruzione e della metrica selezionata, il failure è difficile da spiegare.
 
-Un team Finance usa un agente per generare ogni lunedì una sintesi automatica.
+### Versionare anche il contesto recuperato
 
-Per mesi l'istruzione contiene:
+Un prompt può restare identico mentre cambia il corpus. Se una definizione churn passa da v17 a v18 o una verified answer viene aggiornata, la stessa richiesta può produrre una risposta diversa. Per workflow importanti registriamo quindi almeno document/version id, metric/version id, retrieval timestamp e gli eventuali artefatti governati recuperati.
 
-> “Usa la revenue riconosciuta nel periodo, metrica certificata Finance.”
+### Reproducibility non significa stessa frase
 
-Dopo una semplificazione diventa:
-
-> “Analizza la revenue della settimana.”
-
-Il modello seleziona `invoice_amount`.
-
-Quel campo include importi emessi ma non ancora riconosciuti secondo la policy contabile interna.
-
-La dashboard non cambia.
-
-Il warehouse non cambia.
-
-La pipeline di invio non cambia.
-
-Eppure il CFO riceve un miglioramento apparente che non esiste secondo la definizione governata.
-
-La modifica critica era una frase.
-
-Senza versioning dell'istruzione e della metrica selezionata, l'incidente sembra inspiegabile.
-
-### Versionare anche il Context Pack
-
-Un prompt può restare identico mentre cambia il contesto recuperato.
-
-Esempio:
-
-```text
-metric definition v17:
-churn = cancellations / active-at-start
-```
-
-poi:
-
-```text
-metric definition v18:
-churn include anche expiry > 30 giorni
-```
-
-Se l'agente usa retrieval dinamico, la stessa domanda può produrre una risposta diversa perché il corpus è cambiato.
-
-Quindi registriamo almeno:
-
-- document/version id;
-- metric/version id;
-- retrieval timestamp;
-- eventuali verified answers utilizzate.
-
-### Reproducibility non significa output identico parola per parola
-
-I sistemi generativi possono essere non deterministici.
-
-L'obiettivo di audit non è sempre ottenere la stessa identica frase.
-
-È poter ricostruire:
-
-- stesso perimetro di dati;
-- stesse regole;
-- stessa versione del sistema;
-- stesso livello di autorizzazione;
-- stesso set di controlli;
-- una conclusione semanticamente compatibile.
+I sistemi generativi possono essere non deterministici. L'obiettivo dell'audit non è necessariamente ottenere lo stesso identico wording, ma ricostruire lo stesso perimetro di dati, le stesse regole, la stessa versione del sistema, lo stesso livello di autorizzazione e gli stessi controlli.
 
 Possiamo distinguere:
 
-**execution reproducibility**
+- **execution reproducibility**: riusciamo a ricostruire configurazione e input della run?
+- **semantic reproducibility**: la stessa evidenza porta allo stesso livello di claim e alla stessa decision policy?
 
-Riusciamo a ricostruire la configurazione e gli input della run?
+Per analytics la seconda è spesso più importante della ripetizione parola per parola.
 
-**semantic reproducibility**
+### Prompt come soft code
 
-La stessa evidenza porta allo stesso livello di claim e alla stessa decision policy?
-
-Per analytics, la seconda è spesso più importante della formulazione verbale identica.
-
-### Un output senza provenance è più difficile da fidarsi
-
-Ogni artefatto importante dovrebbe indicare almeno:
-
-```text
-metric/source version
-as-of timestamp
-status READY / PROVISIONAL
-AI-assisted: yes
-verification status
-human owner
-```
-
-Non serve esporre dettagli tecnici a ogni executive.
-
-Serve che il sistema li renda recuperabili.
-
-### Prompt come “soft code”
-
-Le istruzioni AI hanno proprietà simili al codice:
-
-- modificano il comportamento;
-- possono introdurre regressioni;
-- hanno dipendenze;
-- richiedono review;
-- possono essere rollbackate.
-
-Ma hanno anche una differenza importante: il comportamento può variare anche senza cambiare l'istruzione.
-
-Per questo il promotion flow dovrebbe essere:
+Le istruzioni AI modificano il comportamento, possono introdurre regressioni, hanno dipendenze, richiedono review e possono essere rollbackate. Ma il comportamento può cambiare anche senza modificare il testo. Per questo il promotion flow deve essere:
 
 ```text
 change
-→ diff semantico
+→ semantic diff
 → regression eval
-→ review dei failure case
+→ failure-case review
 → staged rollout
 → monitoring
-→ rollback se necessario
+→ rollback if needed
 ```
 
-Non:
+Il diff testuale è soltanto un indizio. Il vero diff è **comportamentale**: quali eval cambiano esito, quali tool vengono chiamati diversamente, cambia il tasso di escalation, cambiano le metriche selezionate, aumentano costo o failure mode?
 
-```text
-prompt migliore nella demo
-→ produzione
-```
+### Multi-agent: provenance fino alla sorgente
 
-### Il diff che conta è comportamentale
-
-Due prompt possono sembrare quasi identici ma cambiare fortemente l'output.
-
-Viceversa, una modifica grande al testo può non cambiare il comportamento sui task rilevanti.
-
-Quindi dopo un change chiediamo:
-
-- quali eval cambiano esito?
-- quali tool vengono chiamati diversamente?
-- cambia la frequenza di escalation?
-- cambia il tipo di metriche selezionate?
-- aumenta il costo?
-- compaiono nuovi failure mode?
-
-Il diff testuale è soltanto un indizio.
-
-Il vero diff è **nel comportamento osservato**.
-
-### Audit trail per multi-agent
-
-In una catena:
-
-```text
-planner
-→ SQL agent
-→ reviewer
-→ executive writer
-```
-
-ogni output deve avere provenance.
-
-Non basta sapere che “l'executive writer ha prodotto il memo”.
-
-Dobbiamo poter risalire a:
+In una catena `planner → SQL agent → reviewer → executive writer`, non basta sapere chi ha prodotto il memo finale. Dobbiamo poter risalire:
 
 ```text
 memo claim
@@ -222,44 +81,13 @@ memo claim
 → metric definition
 ```
 
-Se un agente modifica o riassume un claim, il trace deve rendere visibile quel passaggio.
+Se un agente riassume o modifica un claim, il trace deve rendere visibile quel passaggio e il claim level non può aumentare senza un nuovo gate.
 
-### Auditability proporzionata al rischio
-
-Una sessione EDA personale può richiedere poco logging.
-
-Un sistema che:
-
-- pubblica KPI ufficiali;
-- invia comunicazioni esterne;
-- modifica budget;
-- usa dati personali;
-- produce raccomandazioni ad alto impatto;
-
-richiede molto di più.
-
-NIST struttura la gestione del rischio AI lungo l'intero lifecycle; Microsoft, per gli agenti, include esplicitamente action audit logging, identity, authorization e human oversight tra i controlli da governare.
+L'auditability resta proporzionata al rischio. Una sessione EDA personale può richiedere logging leggero; un sistema che pubblica KPI ufficiali, usa dati personali o prepara azioni ad alto impatto richiede molto di più. NIST tratta il rischio lungo il lifecycle; Microsoft include identity, authorization, human oversight e action audit logging tra i controlli da governare negli agenti.
 
 Fonti:
 
-- NIST, *Generative AI Profile*: https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
-- Microsoft, *AI agent shared responsibility model*: https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility-ai-agent
-
-### Campo della AI Analysis Control Sheet
-
-```text
-run id:
-system version:
-model/config:
-instruction version:
-context/retrieval version:
-metric/semantic version:
-data as-of:
-tools + permissions:
-checks/eval version:
-human interventions:
-claim/output version:
-rollback reference:
-```
+- https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
+- https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility-ai-agent
 
 > **Auditability non significa conservare tutto. Significa conservare la catena minima necessaria per ricostruire perché un sistema ha avuto il diritto di produrre quel claim o quell'azione.**
