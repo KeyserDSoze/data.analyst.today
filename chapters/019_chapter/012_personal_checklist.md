@@ -1,83 +1,29 @@
 ## 19.11 Personal Career Operating Plan
 
-Una checklist può essere utile per ricordare ciò che conta.
+Il capitolo può ora trasformarsi in un artefatto operativo. Il **Personal Career Operating Plan** non è un curriculum, una lista di corsi o un piano quinquennale rigido. È una fotografia periodica di quali responsabilità vogliamo saper possedere, quali capacità le sostengono, che cosa possiamo delegare e quale verification reserve dobbiamo continuare a mantenere.
 
-Ma alla fine di questo libro possiamo fare qualcosa di più operativo.
+### Stati
 
-Costruire un **Personal Career Operating Plan**.
+Per evitare punteggi arbitrari usiamo quattro stati:
 
-Non è un curriculum.
+| Stato | Significato |
+|---|---|
+| `STRONG` | applico la capacità in autonomia, conosco i failure mode principali e so revisionare output altrui o AI |
+| `DEVELOPING` | lavoro sul problema con supporto; alcune assunzioni o failure mode richiedono review |
+| `DEPENDENT` | produco soprattutto grazie a tool, AI o altre persone, senza verification reserve sufficiente |
+| `UNKNOWN` | non ho abbastanza esposizione reale per valutare la capacità |
 
-Non è una lista di corsi da completare.
-
-Non è neppure un piano quinquennale rigido.
-
-È una fotografia periodica di:
-
-- quali responsabilità vogliamo saper possedere;
-- quali capacità sostengono quelle responsabilità;
-- cosa possiamo delegare;
-- che cosa dobbiamo ancora saper verificare;
-- dove stiamo accumulando domain leverage;
-- quale optionality stiamo costruendo;
-- quale evidence dimostra che stiamo davvero crescendo.
-
-## Stato, non voto
-
-Evitiamo un punteggio numerico arbitrario.
-
-Per ogni area possiamo usare quattro stati.
-
-### STRONG
-
-Posso applicare la capacità in autonomia, spiegare i principali failure mode e revisionare output altrui o AI.
-
-### DEVELOPING
-
-Posso lavorare sul problema con supporto, ma alcune assunzioni o failure mode richiedono review.
-
-### DEPENDENT
-
-Riesco a produrre un risultato soprattutto grazie a tool, AI o altre persone, ma non possiedo ancora sufficiente verification reserve.
-
-### UNKNOWN
-
-Non ho abbastanza esposizione reale per sapere quanto sono forte.
-
-`UNKNOWN` è spesso più sano di un falso `STRONG`.
+`UNKNOWN` è più utile di un falso `STRONG`.
 
 ## 1. Target Responsibility
 
-La prima domanda non è:
+La prima domanda è: **quale responsabilità voglio essere capace di possedere meglio fra 12–24 mesi?** Può essere una retention investigation end-to-end, experiment governance, semantic ownership di un dominio, forecast-to-capacity decision, pricing analytics, agent eval, executive decision analysis o la trasformazione di un workflow ricorrente in data product affidabile.
 
-> “Quale posizione voglio?”
-
-È:
-
-> **“Quale responsabilità voglio essere capace di possedere meglio fra 12–24 mesi?”**
-
-Esempi:
-
-- possedere una retention investigation end-to-end;
-- progettare e governare experiment di prodotto;
-- essere semantic owner di un dominio;
-- tradurre forecast in capacity decision;
-- gestire analytics per pricing;
-- costruire eval e operating contract per agenti analitici;
-- guidare executive decision analysis;
-- trasformare workflow ricorrenti in data product affidabili.
-
-Scrivere una responsabilità è più utile di scrivere:
-
-> “diventare senior”.
-
-Perché possiamo capire quali capacità mancano.
+Scrivere “diventare senior” non indica che cosa dobbiamo imparare. Scrivere una responsabilità sì.
 
 ## 2. Decision Portfolio
 
-Quali decisioni sappiamo già migliorare?
-
-Costruiamo una tabella personale.
+Registriamo poche decisioni o classi di problema su cui abbiamo esperienza reale.
 
 | Decisione / problema | Ruolo attuale | Stato | Evidence |
 |---|---|---|---|
@@ -86,88 +32,17 @@ Costruiamo una tabella personale.
 | forecast → staffing | nessuna esperienza | UNKNOWN | — |
 | agent eval | reviewer | DEPENDENT | uso framework esistente |
 
-L'obiettivo non è riempire cento righe.
-
-È rendere visibile il proprio **decision span reale**.
+La tabella rende visibile il decision span reale, non quello suggerito dal titolo.
 
 ## 3. Capability Portfolio
 
-Rivediamo le quattro dimensioni del paragrafo 19.4.
+Valutiamo le quattro dimensioni già incontrate: **Breadth, Depth, Domain, Operating responsibility**. Per ciascuna non basta elencare temi; dobbiamo sapere se riusciamo a spiegare assunzioni, failure mode, trade-off e verification strategy.
 
-### Breadth
-
-Quali discipline riesco a comprendere abbastanza da scegliere il metodo e collaborare?
-
-Possibili aree:
-
-- EDA/statistica;
-- experimentation;
-- causalità;
-- forecasting;
-- prediction;
-- SQL/data modeling;
-- architecture;
-- visualization;
-- decision analysis;
-- AI/agent workflow;
-- reliability/governance.
-
-### Depth
-
-Dove so andare oltre la superficie?
-
-Scegliere poche aree in cui possiamo spiegare:
-
-- assunzioni;
-- failure mode;
-- alternative;
-- trade-off;
-- verification strategy.
-
-### Domain
-
-Dove stiamo accumulando conoscenza che non deriva soltanto da un corso?
-
-Esempi:
-
-- payments;
-- marketplace;
-- SaaS;
-- retail;
-- supply chain;
-- finance;
-- healthcare.
-
-### Operating responsibility
-
-Che cosa abbiamo già posseduto?
-
-- singola analisi;
-- metrica;
-- experiment;
-- predictive policy;
-- dashboard/prodotto;
-- data product;
-- agent workflow;
-- recurring decision process.
-
-Per ogni area segnare:
-
-`STRONG / DEVELOPING / DEPENDENT / UNKNOWN`.
+Nella breadth possono rientrare statistica/EDA, experimentation, causalità, forecasting, prediction, SQL/data modeling, architecture, visualization, decision analysis, AI workflow e reliability. Nella depth scegliamo poche aree in cui sappiamo andare oltre l'uso superficiale. Nel domain registriamo contesti realmente accumulati. Nell'operating responsibility indichiamo che cosa abbiamo già posseduto nel lifecycle: analisi, metrica, experiment, policy, data product, agent workflow o recurring decision process.
 
 ## 4. Task Exposure Map
 
-Prendiamo le attività che occupano una parte significativa del nostro tempo.
-
-Per ognuna chiediamo:
-
-- il costo di automazione sta scendendo?
-- il task è ripetitivo?
-- il risultato è facilmente verificabile?
-- quale failure cost contiene?
-- quale parte della responsabilità resta umana?
-
-Esempio:
+Osserviamo le attività che consumano tempo e chiediamo quanto il costo di esecuzione stia scendendo, quanto siano verificabili e quale responsibility moat resti.
 
 | Task | Exposure | Decisione personale |
 |---|---|---|
@@ -175,227 +50,67 @@ Esempio:
 | metric definition | media | KEEP / SPECIALIZE |
 | chart formatting | alta | DELEGATE MORE |
 | causal design review | media | REBUILD / SPECIALIZE |
-| weekly manual export | alta | RETIRE/AUTOMATE |
+| weekly manual export | alta | RETIRE / AUTOMATE |
 | executive challenge handling | bassa-media | KEEP |
 
-Il punto non è automatizzare tutto.
+Il punto non è automatizzare tutto. È smettere di spendere capitale professionale dove non costruisce più vantaggio o verification capability.
 
-È smettere di spendere capitale professionale dove non costruisce più vantaggio.
+## 5. Delegation Boundary e Verification Reserve
 
-## 5. Delegation Boundary
+Per i workflow principali indichiamo il livello di delega attuale e quello desiderabile:
 
-Per i workflow principali, quale livello di delega è appropriato?
+`A Human execution → B AI draft → C AI execution + targeted verification → D Agent workflow + sampling/audit → E Bounded autonomous service`
 
-Richiamiamo i livelli:
-
-- **A — Human execution**;
-- **B — AI draft**;
-- **C — AI execution + targeted verification**;
-- **D — Agent workflow + sampling/audit**;
-- **E — Bounded autonomous service**.
-
-Per ogni workflow chiediamo:
-
-1. a quale livello sono oggi?
-2. quale livello sarebbe economicamente utile?
-3. che cosa devo saper verificare per salire di un livello?
-4. quali failure mode devono essere coperti prima?
-
-Questo trasforma “devo usare più AI” in un piano concreto.
-
-## 6. Verification Reserve
-
-Quali competenze devono restare vive anche se le usiamo meno manualmente?
-
-Una scheda personale può includere:
+Poi rendiamo esplicita la verification reserve che permette di salire di livello.
 
 | Verification skill | Stato | Come la mantengo |
 |---|---|---|
 | grain/cardinality | STRONG | query review + incident |
-| uncertainty/power | DEVELOPING | experiment review mensile |
+| uncertainty/power | DEVELOPING | experiment review |
 | causal identification | DEVELOPING | case critique |
 | temporal leakage | STRONG | forecast/model review |
 | semantic modeling | DEPENDENT | progetto dedicato |
 
-Se una skill è `DEPENDENT` ma protegge un failure mode importante del nostro lavoro, diventa una priorità di apprendimento.
+Se una skill è `DEPENDENT` e protegge un failure mode importante del nostro lavoro, diventa una priorità.
 
-## 7. Learning Portfolio
+## 6. Learning Portfolio
 
-Un piano equilibrato dovrebbe includere più di corsi e tutorial.
+L'apprendimento deve attraversare più modalità:
 
-### Learn
+**Learn → Apply → Review → Teach → Operate**
 
-Un concetto o metodo nuovo.
+`Learn` introduce il concetto; `Apply` lo porta in un caso end-to-end; `Review` ci obbliga a criticare lavoro proprio, altrui o AI; `Teach` verifica se sappiamo spiegare il modello; `Operate` mostra cosa accade quando il metodo incontra dati sporchi, stakeholder e failure. Una competenza che esiste soltanto in `Learn` è ancora fragile.
 
-### Apply
+## 7. Domain ed Evidence Portfolio
 
-Un progetto reale o simulato end-to-end.
+Per il dominio possiamo mantenere un notebook con economics, driver, definizioni, processi, stakeholder, failure mode ricorrenti, regolazione, stagionalità e metriche spesso confuse. L'obiettivo è costruire un modello del sistema, non un'enciclopedia.
 
-### Review
+Per l'evidence portfolio conserviamo invece, nei limiti di privacy e confidenzialità, decision case che mostrino problema, decisione, failure mode, metodo e alternative scartate, verification, uncertainty, recommendation, outcome/learning e ruolo dell'AI. Un portfolio così dimostra judgment meglio di una galleria di output.
 
-Criticare lavoro proprio, altrui o AI.
+## 8. Escalation Network
 
-### Teach
+Il Capability Portfolio non deve diventare autosufficienza. Registriamo le persone o funzioni a cui possiamo passare rapidamente un rischio quando serve profondità diversa: Finance, Legal/Privacy, Security, Data Engineering, ML Engineering, statistica/causal specialist, domain expert, Product, Operations. La seniority comprende anche la qualità di questa rete.
 
-Spiegare il concetto a qualcuno o scriverne una nota.
+## 9. Optionality Stress Test e Career Experiments
 
-### Operate
+Periodicamente stressiamo il piano contro più futuri: tool che cambia, organizzazione diversa, nuovo dominio, AI che accelera più del previsto, AI che delude, requisiti di audit più forti. Lo scopo non è eliminare ogni dipendenza, ma individuare quella che potrebbe azzerare troppo capitale professionale.
 
-Vedere cosa succede quando il metodo entra in un processo reale e incontra dati sporchi, stakeholder e failure.
+Le lacune possono essere esplorate con **career experiments** reversibili: guidare un experiment review per qualche mese, diventare owner di una metrica certificata, fare shadowing di data incident, costruire un progetto causale con specialist review, trasformare un report in Analytics Operating Contract, creare una agent eval suite o lavorare su un nuovo dominio. Ogni esperimento dovrebbe avere una capacità da testare, evidence attesa, reviewer e criterio per decidere se approfondire.
 
-Una competenza che esiste soltanto in `Learn` è ancora fragile.
+## Personal Review Gate
 
-## 8. Domain Accumulation Plan
+A ogni review assegniamo alle attività e capacità una delle seguenti azioni:
 
-La conoscenza di dominio cresce lentamente.
+| Azione | Quando usarla |
+|---|---|
+| `KEEP` | resta importante e il livello è adeguato |
+| `DELEGATE MORE` | il task è maturo e verificabile; il tempo può spostarsi verso responsabilità maggiori |
+| `REBUILD SKILL` | la verification reserve sta scendendo troppo |
+| `SPECIALIZE` | l'area ha valore, profondità e feedback sufficienti per un investimento maggiore |
+| `ESCALATE / BUILD NETWORK` | il lavoro incontra rischi che richiedono specialisti non ancora raggiungibili bene |
+| `RETIRE` | skill, tool o attività hanno ritorno troppo basso rispetto alle alternative |
 
-Per renderla deliberata possiamo mantenere un **domain notebook** con:
-
-- economics;
-- driver principali;
-- definizioni;
-- processi;
-- stakeholder;
-- failure mode ricorrenti;
-- regolazione rilevante;
-- stagionalità;
-- metriche che vengono spesso confuse;
-- domande che il business continua a ripetere.
-
-L'obiettivo non è diventare enciclopedia del settore.
-
-È costruire un modello del sistema abbastanza ricco da formulare ipotesi migliori.
-
-## 9. Evidence Portfolio
-
-Come dimostriamo le nostre capacità?
-
-Per ogni progetto importante conserviamo, nei limiti consentiti da privacy e confidenzialità:
-
-- problema;
-- decisione;
-- Analytical Brief;
-- failure mode trovato;
-- metodo scelto e alternative scartate;
-- verification;
-- uncertainty;
-- recommendation;
-- outcome/learning;
-- cosa abbiamo delegato all'AI;
-- cosa abbiamo verificato personalmente.
-
-Il portfolio professionale del futuro potrebbe assomigliare sempre meno a una galleria di dashboard e sempre più a una raccolta di **decision case**.
-
-## 10. Escalation Network
-
-Nessun Capability Portfolio deve essere autosufficiente.
-
-Chi possiamo coinvolgere quando serve profondità diversa?
-
-Costruiamo una rete reale:
-
-- Finance;
-- Legal/privacy;
-- Security;
-- Data Engineering;
-- ML Engineering;
-- statistica/causal specialist;
-- domain expert;
-- Product;
-- Operations.
-
-Conoscere il nome del tipo di esperto non basta.
-
-Una carriera senior include anche relazioni attraverso cui possiamo **escalare rapidamente un rischio**.
-
-## 11. Career Optionality Stress Test
-
-Una volta l'anno chiediamo:
-
-### Tool change
-
-Se il mio stack sparisse, quanto velocemente potrei ricostruire produttività?
-
-### Organization change
-
-Le mie skill funzionano soltanto nell'azienda attuale perché conosco eccezioni non documentate?
-
-### Domain change
-
-Quale parte del mio sapere è trasferibile e quale deve essere ricostruita?
-
-### AI acceleration
-
-Se il mio task principale diventasse 10 volte più economico, quale responsabilità superiore potrei assumere?
-
-### AI disappointment
-
-Se l'automazione procedesse più lentamente, possiedo ancora abbastanza capacità esecutiva?
-
-### Regulation/risk
-
-Se aumentassero requisiti di audit e human approval, saprei lavorare in modo più rigoroso?
-
-L'obiettivo non è essere perfettamente robusti.
-
-È evitare una singola dipendenza nascosta.
-
-## 12. Twelve-month career experiments
-
-Una carriera non deve essere pianificata soltanto con grandi decisioni irreversibili.
-
-Possiamo usare **career experiments**.
-
-Esempi:
-
-- guidare un experiment review per tre mesi;
-- diventare owner di una metrica certificata;
-- fare shadowing a un data incident rotation;
-- costruire un progetto di causal inference con specialist review;
-- trasformare un report ricorrente in Analytics Operating Contract;
-- costruire un agent eval suite;
-- lavorare su un problema in un dominio nuovo;
-- presentare una Decision Communication Pack a leadership.
-
-Ogni esperimento deve avere:
-
-- competenza da testare;
-- evidence attesa;
-- durata;
-- mentor/reviewer;
-- criterio per decidere se approfondire.
-
-Questo costruisce optionality con rischio limitato.
-
-## Il Personal Review Gate
-
-Ogni trimestre o semestre, per le principali skill e attività scegliamo una delle azioni seguenti.
-
-### KEEP
-
-È ancora importante e il livello è adeguato.
-
-### DELEGATE MORE
-
-Il task è maturo, verificabile e occupa tempo che può essere spostato verso responsabilità più alte.
-
-### REBUILD SKILL
-
-La verification reserve sta diventando troppo bassa.
-
-### SPECIALIZE
-
-L'area ha abbastanza valore, interesse e profondità da meritare maggiore investimento.
-
-### ESCALATE / BUILD NETWORK
-
-Il lavoro incontra rischi che richiedono specialisti con cui non abbiamo ancora una relazione efficace.
-
-### RETIRE
-
-La skill/tool/activity ha ritorno troppo basso rispetto alle alternative.
-
-Una carriera cresce anche attraverso ciò che scegliamo **di smettere di mantenere**.
+Una carriera cresce anche attraverso ciò che scegliamo di non mantenere più.
 
 ## Template sintetico
 
@@ -437,14 +152,8 @@ Next review date:
 Actions: KEEP / DELEGATE MORE / REBUILD / SPECIALIZE / ESCALATE / RETIRE
 ```
 
-## La domanda finale del piano
+La domanda finale del piano non è soltanto “che cosa devo imparare?”. È:
 
-Non chiedere soltanto:
-
-> “Che cosa devo imparare?”
-
-Chiedi:
-
-> **“Quale responsabilità voglio essere capace di possedere, quale lavoro posso delegare per arrivarci e quali competenze devo mantenere vive per meritare quella delega?”**
+> **Quale responsabilità voglio essere capace di possedere, quale lavoro posso delegare per arrivarci e quali competenze devo mantenere vive per meritare quella delega?**
 
 Questo è il career operating model del libro.
