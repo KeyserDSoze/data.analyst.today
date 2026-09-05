@@ -1,18 +1,10 @@
 ## 6.5 Churn: distinguere perdita di relazione, perdita di valore e perdita evitabile
 
-Il churn viene spesso trattato come l'opposto della retention. Questa scorciatoia funziona solo in contesti semplici.
+Il churn viene spesso trattato come l'opposto della retention. La scorciatoia funziona solo quando popolazione, contratto e valore sono semplici. Nel lavoro reale perdere il 3% dei clienti può significare cose molto diverse a seconda di **chi** esce, **quanto valore** porta con sé e **per quale meccanismo** la relazione si interrompe.
 
-Nel lavoro reale dobbiamo distinguere almeno tre domande:
+### CloudLedger: stessi loghi persi, molto più valore che esce
 
-- quanti clienti perdiamo?
-- quanto valore economico perdiamo?
-- quanta parte della perdita deriva da una decisione del cliente e quanta da problemi operativi recuperabili?
-
-Queste domande possono produrre diagnosi molto diverse.
-
-### Caso simulato/composito: CloudLedger e il churn apparentemente stabile
-
-**CloudLedger** vende software contabile a PMI e aziende mid-market. Nel trimestre il customer churn mensile rimane quasi invariato.
+**CloudLedger**, software contabile per PMI e mid-market, vede il customer churn mensile restare quasi stabile:
 
 | Metrica | Trimestre precedente | Trimestre attuale |
 | --- | ---: | ---: |
@@ -20,106 +12,34 @@ Queste domande possono produrre diagnosi molto diverse.
 | Gross revenue churn mensile | 2,8% | 5,4% |
 | ARR medio cliente perso | 8.400 € | 19.700 € |
 
-Se guardiamo i loghi, la situazione sembra stabile. Se guardiamo la revenue, il deterioramento è evidente.
+Guardando i loghi il deterioramento sembra minimo. Guardando la revenue, la storia cambia: l'azienda non sta perdendo molti più clienti, sta perdendo **clienti mediamente più grandi**. La priorità operativa cambia immediatamente.
 
-Il problema non è “stiamo perdendo molti più clienti”. È:
-
-> stiamo perdendo clienti mediamente più grandi.
-
-La priorità operativa cambia immediatamente.
-
-### Logo churn, revenue churn e retention della revenue
-
-Nel SaaS è utile separare:
-
-**Logo o customer churn** — quanti account escono.
-
-**Gross revenue churn** — quanta revenue ricorrente viene persa per cancellazioni e contrazioni.
-
-**Gross Revenue Retention (GRR)** — quanta revenue iniziale rimane senza considerare espansioni.
-
-**Net Revenue Retention (NRR)** — quanta revenue iniziale rimane dopo churn e contraction, includendo anche expansion.
-
-Una formulazione comune è:
+È il motivo per cui in un business ricorrente conviene distinguere logo/customer churn, gross revenue churn, Gross Revenue Retention e Net Revenue Retention. La NRR può essere espressa come:
 
 `NRR = (revenue iniziale - churn - contraction + expansion) / revenue iniziale`
 
-Una NRR superiore al 100% indica che, sulla base considerata, l'espansione dei clienti rimasti compensa più che completamente le perdite.
+Una NRR sopra il 100% significa che l'espansione dei clienti rimasti compensa più che completamente churn e contraction sulla base considerata. Ma anche questo aggregato può nascondere traiettorie opposte. CloudLedger ha NRR complessiva del **104%**, mentre i segmenti mostrano **SMB 111%**, **mid-market 102%** ed **enterprise 91%**. L'espansione degli account piccoli può quindi convivere con una perdita strutturale di valore nell'enterprise.
 
-Ma l'aggregato può ancora ingannare.
+### Non tutto il churn è una scelta del cliente
 
-CloudLedger ha NRR complessiva del 104%:
+Un abbonamento può interrompersi perché il cliente decide di andarsene, ma anche perché un pagamento fallisce. Stripe tratta esplicitamente questo secondo caso come **involuntary churn** e documenta strumenti di revenue recovery, notifiche e retry automatici per pagamenti ricorrenti falliti.[^stripe-recovery]
 
-- SMB: 111%;
-- mid-market: 102%;
-- enterprise: 91%.
+Carta scaduta, fondi insufficienti, rifiuto temporaneo dell'emittente, autenticazione non completata o metodo di pagamento non più valido non sono lo stesso problema di un cliente che ha deciso di lasciare il prodotto. La distinzione conta perché cambia l'intervento: a un cliente che vuole restare ma ha una carta scaduta non serve una campagna sul valore del prodotto; serve un processo di recovery del pagamento.
 
-L'espansione degli account piccoli nasconde una perdita di valore nell'enterprise.
+Per lo stesso motivo lo stato del cliente non dovrebbe essere ridotto a un booleano `churned`. Un account può essere contrattualmente attivo ma comportamentalmente inattivo, molto attivo ma vicino a un mancato rinnovo, temporaneamente `past_due`, oppure cancellato ma ancora autorizzato all'uso fino alla fine del periodo pagato. In un business subscription conviene spesso mantenere distinti **uso del prodotto, stato della subscription, stato del pagamento e stato contrattuale/commerciale**.
 
-### Churn volontario e involontario
+### Evento osservato, stato di rischio e previsione non sono la stessa cosa
 
-Un cliente può uscire perché non vuole più il prodotto. Ma un abbonamento può interrompersi anche perché il pagamento fallisce.
+“Il cliente ha cancellato”, “non usa il prodotto da trenta giorni” e “ha il 72% di probabilità di churn” appartengono a tre livelli differenti. Il primo è un evento osservato, il secondo uno stato comportamentale, il terzo una previsione. Mescolarli porta a dashboard e interventi incoerenti.
 
-Stripe documenta esplicitamente il problema dell'**involuntary churn** e offre strumenti di revenue recovery e retry automatici per pagamenti ricorrenti falliti.[^stripe-recovery]
+Anche il denominatore deve seguire il contratto. In un prodotto cancellabile in qualunque momento può avere senso usare la base attiva all'inizio del periodo. In un business con rinnovi annuali concentrati, la popolazione davvero esposta al rischio di churn in un mese può essere soprattutto quella eleggibile al rinnovo. La frequenza va quindi costruita sul processo reale, non su una formula copiata da un altro modello di business.
 
-Le cause possono includere:
+Una diagnosi utile dovrebbe permettere di completare questa frase:
 
-- carta scaduta;
-- fondi insufficienti;
-- rifiuto temporaneo dell'emittente;
-- autenticazione richiesta e non completata;
-- metodo di pagamento non più valido.
+> **Stiamo perdendo ______, per un valore di ______, soprattutto nella popolazione ______, nel momento ______, attraverso il meccanismo osservabile ______.**
 
-Questo cambia completamente il tipo di intervento.
+Segmenti, coorti e lifecycle analysis possono spesso riempire le prime parti. L'ultima domanda — *perché accade e quale intervento lo riduce* — richiede spesso evidenza causale o sperimentale.
 
-Se il cliente vuole rimanere ma la carta è scaduta, una campagna “perché ci stai lasciando?” è la risposta sbagliata. Serve un processo di recovery del pagamento.
+È qui che churn smette di essere una percentuale di dashboard e diventa un problema di relazione, economics e meccanismo.
 
-### Stato contrattuale e stato comportamentale
-
-Un cliente può essere:
-
-- contrattualmente attivo ma praticamente inattivo;
-- molto attivo ma vicino a una scadenza non rinnovata;
-- temporaneamente `past_due` per un pagamento fallito;
-- cancellato ma ancora autorizzato a usare il prodotto fino alla fine del periodo pagato.
-
-Per questo “churned” non dovrebbe essere una colonna booleana priva di definizione.
-
-In un business subscription conviene spesso modellare separatamente:
-
-1. **uso del prodotto**;
-2. **stato della subscription**;
-3. **stato del pagamento**;
-4. **stato commerciale/contrattuale**.
-
-### Churn osservato e churn a rischio
-
-Un altro errore consiste nel mescolare un evento già avvenuto con una previsione.
-
-- “Il cliente ha cancellato” è un evento osservato.
-- “Il cliente non usa il prodotto da 30 giorni” è uno stato comportamentale.
-- “Il cliente ha 72% di rischio di churn” è una previsione.
-
-Sono tre informazioni diverse e richiedono azioni diverse.
-
-### Il churn deve avere un denominatore coerente
-
-Anche qui il denominatore conta.
-
-Per un churn mensile su subscription, il denominatore può essere la base attiva all'inizio del periodo. In altri contesti può essere una popolazione eleggibile al rinnovo.
-
-Un business annuale con rinnovi concentrati non dovrebbe interpretare allo stesso modo un churn mensile di un prodotto cancellabile in qualunque momento.
-
-La metrica deve seguire il contratto e il ciclo del cliente.
-
-### La domanda operativa
-
-Prima di aprire un progetto di churn, conviene completare questa frase:
-
-> Stiamo perdendo ______, per un valore di ______, soprattutto nella popolazione ______, nel momento ______, attraverso il meccanismo osservabile ______.
-
-Le prime quattro parti possono spesso essere descritte con segmenti, coorti e lifecycle analysis.
-
-L'ultima — **perché accade e quale intervento lo riduce** — richiederà spesso strumenti causali o sperimentali che incontreremo più avanti.
-
-[^stripe-recovery]: Stripe Documentation, “Revenue recovery” e “Automate payment retries”, https://docs.stripe.com/billing/revenue-recovery ; https://docs.stripe.com/billing/revenue-recovery/smart-retries
+[^stripe-recovery]: Stripe Documentation, *Revenue recovery* e *Automate payment retries*: https://docs.stripe.com/billing/revenue-recovery ; https://docs.stripe.com/billing/revenue-recovery/smart-retries
