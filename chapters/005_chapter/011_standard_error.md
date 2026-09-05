@@ -1,97 +1,43 @@
-## 5.10 Standard error: quanto oscilla la nostra stima
+## 5.10 Standard error: misurare quanto oscilla la stima, non quanto varia il fenomeno
 
-Lo **standard error** misura la variabilità di una statistica tra possibili campioni ottenuti con lo stesso processo.
+La sampling distribution ci ha mostrato che una statistica cambia da campione a campione. Lo **standard error** riassume la dispersione di quella distribuzione: misura, in altre parole, quanto tende a oscillare la stima quando ripetiamo lo stesso processo di campionamento.
 
-Per la media, sotto condizioni semplici di campionamento indipendente, una stima comune è:
+Per la media, in condizioni semplici di osservazioni indipendenti, una stima comune è:
 
-`SE(x̄) ≈ s / √n`
+`SE(x̄) ≈ s / √n`.
 
-La formula mostra una relazione fondamentale:
+La formula rende visibile una relazione fondamentale: a parità di variabilità del fenomeno, aumentando il campione la media diventa più precisa. Ma la precisione migliora con la **radice quadrata** di `n`, non linearmente. Raddoppiare il campione non dimezza lo standard error; per dimezzarlo servono, in prima approssimazione, quattro volte le osservazioni.
 
-> a parità di variabilità del fenomeno, aumentando il campione la media stimata tende a diventare più precisa.
+## Deviazione standard e standard error parlano di oggetti diversi
 
-Ma la precisione migliora con la **radice quadrata** di `n`.
+Questa distinzione è facile da perdere perché entrambe le quantità descrivono dispersione.
 
-Raddoppiare il campione non dimezza lo standard error. Per dimezzarlo servono, in prima approssimazione, quattro volte le osservazioni.
+La **deviazione standard** riguarda le osservazioni: quanto differiscono tra loro consegne, ordini, clienti o ticket.
 
-### Deviazione standard e standard error non sono sinonimi
+Lo **standard error** riguarda una statistica: quanto differirebbe, per esempio, la media se ripetessimo il campionamento.
 
-La **deviazione standard** risponde a:
+Un processo può avere consegne molto eterogenee e una media conosciuta con grande precisione grazie a milioni di ordini. Oppure può avere consegne abbastanza omogenee e una media poco precisa perché osserviamo pochi casi. Confondere i due livelli significa confondere **variabilità del mondo** e **incertezza della nostra conoscenza del suo centro**.
 
-> quanto variano le singole osservazioni?
+## Milano e Parma: stessa dispersione, diversa precisione
 
-Lo **standard error** risponde a:
+Una piattaforma di food delivery confronta i tempi medi mensili.
 
-> quanto varierebbe la statistica che sto stimando se ripetessi il campionamento?
+**Milano** osserva 48.200 ordini, media 31,4 minuti e deviazione standard 9,8 minuti. **Parma** osserva 620 ordini, media 29,9 minuti e deviazione standard 10,1 minuti.
 
-Un processo può avere tempi di consegna molto variabili e, grazie a milioni di ordini, una media conosciuta con grande precisione.
+La variabilità delle singole consegne è quasi identica. La precisione delle due medie no. Parma ha una base molto più piccola, quindi il suo valore medio può muoversi sensibilmente da un periodo all'altro anche senza un cambiamento strutturale. Se la settimana successiva passa a 33,1 minuti e poi torna a 30,4, il management non dovrebbe cercare automaticamente una nuova spiegazione operativa per ogni oscillazione. Una parte può essere semplice **sampling variability**.
 
-Oppure può avere osservazioni relativamente omogenee ma una media poco precisa perché abbiamo pochi casi.
+Questo è anche il motivo per cui le classifiche di molti store, seller o team tendono a spingere le unità con denominatori piccoli verso gli estremi: non necessariamente perché siano sistematicamente migliori o peggiori, ma perché la loro stima è più rumorosa.
 
-Questa distinzione è una delle più importanti del capitolo.
+## Diecimila righe non sono necessariamente diecimila osservazioni indipendenti
 
-### Caso simulato/composito — Milano e Parma
+La formula `s / √n` è utile proprio perché mostra il ruolo di `n`; diventa pericolosa quando interpretiamo `n` come il numero di righe senza verificare l'unità informativa.
 
-Una piattaforma di food delivery confronta il tempo medio di consegna mensile.
+Diecimila eventi possono provenire da diecimila utenti oppure da cento utenti con cento eventi ciascuno. Ordini dello stesso store, clienti della stessa azienda, osservazioni serialmente correlate o unità campionate in cluster condividono struttura. In questi casi la quantità di informazione indipendente può essere molto inferiore al numero fisico di record.
 
-**Milano**
+Lo stesso vale per survey con pesi e disegni complessi. L'errore standard corretto dipende dal processo di raccolta, dall'unità di analisi e dalle dipendenze presenti. Trattare ogni riga come indipendente può produrre un'incertezza artificialmente piccola e una sicurezza che il dataset non possiede.
 
-- `n = 48.200` ordini;
-- media = 31,4 minuti;
-- deviazione standard = 9,8 minuti.
+Per questo un ranking professionale, quando la precisione conta, dovrebbe rendere visibile almeno la stima, il denominatore, il periodo e una misura coerente dell'incertezza. Ordinare soltanto per il punto centrale trasforma facilmente rumore in reputazione.
 
-**Parma**
-
-- `n = 620` ordini;
-- media = 29,9 minuti;
-- deviazione standard = 10,1 minuti.
-
-Le deviazioni standard sono simili: le singole consegne hanno variabilità comparabile.
-
-Ma la media di Parma è stimata su una base molto più piccola e quindi oscilla molto di più da periodo a periodo.
-
-La settimana successiva Parma passa a 33,1 minuti; poi torna a 30,4. Il management cerca ogni volta una spiegazione operativa.
-
-Una parte di quei movimenti può invece essere semplicemente la maggiore **sampling variability** di un mercato piccolo.
-
-### La formula semplice non vale automaticamente per ogni dataset
-
-`SE = s / √n` presuppone una struttura semplice. Nel lavoro reale possiamo avere:
-
-- utenti con più eventi;
-- clienti raggruppati per azienda;
-- ordini dentro lo stesso store;
-- osservazioni serialmente correlate nel tempo;
-- campionamenti stratificati o clusterizzati;
-- pesi di survey.
-
-In questi casi 10.000 righe non equivalgono necessariamente a 10.000 osservazioni indipendenti.
-
-Trattarle come tali può sottostimare l'incertezza.
-
-Questo è un principio che ricomparirà negli A/B test: **l'unità di analisi e l'unità di randomizzazione determinano quanta informazione indipendente abbiamo realmente**.
-
-### Le classifiche spingono i piccoli campioni agli estremi
-
-Se ordiniamo decine di unità per un KPI, quelle con pochi casi tenderanno più facilmente a comparire tra i valori estremi semplicemente perché le loro stime sono più rumorose.
-
-Per questo un ranking professionale dovrebbe mostrare, quando utile:
-
-- valore stimato;
-- denominatore;
-- intervallo di incertezza;
-- periodo di osservazione.
-
-Ordinare soltanto per la stima puntuale può trasformare rumore in reputazione.
-
-### Dalla precisione all'intervallo
-
-Lo standard error è un ingrediente centrale degli intervalli di confidenza.
-
-La logica è:
-
-**stima puntuale + variabilità campionaria → intervallo di valori compatibili con il metodo**.
-
-Prima, però, dobbiamo capire perché in molti problemi la sampling distribution assume una forma abbastanza regolare da permetterci questo passaggio. È il ruolo del Central Limit Theorem.
+Lo standard error ci dà quindi l'ingrediente che mancava alla stima puntuale. Il passaggio successivo sarà usarlo per costruire intervalli; prima dobbiamo capire perché, in molti problemi, la sampling distribution della media diventa abbastanza regolare da permettere approssimazioni utili.
 
 > **La dimensione del dataset non è la stessa cosa della quantità di informazione indipendente contenuta nel dataset.**
