@@ -1,10 +1,8 @@
 ## 5.19 Caso end-to-end — Quando un risultato “significativo” non basta
 
-> **Caso simulato/composito.** Questo caso usa un confronto A/B perché rende concreti i concetti inferenziali del capitolo. Il disegno e la gestione operativa degli esperimenti — randomizzazione, SRM, contaminazione, durata, stopping, CUPED e rollout — saranno trattati nel Capitolo 9.
+> **Caso simulato/composito.** Il confronto A/B serve qui a rendere concreti i concetti inferenziali del capitolo. Disegno e gestione operativa degli esperimenti — randomizzazione, SRM, contaminazione, durata, stopping, CUPED e rollout — saranno trattati nel Capitolo 9.
 
-Una piattaforma e-commerce confronta una nuova pagina prodotto con la versione corrente per 14 giorni.
-
-Risultati osservati:
+Una piattaforma e-commerce confronta per 14 giorni una nuova pagina prodotto con la versione corrente. Al termine vede questi risultati:
 
 | Metrica | Controllo | Variante |
 |---|---:|---:|
@@ -14,119 +12,65 @@ Risultati osservati:
 | Revenue per visitor | 3,44 € | 3,55 € |
 | Return rate | 7,9% | 9,6% |
 
-Sulla conversione:
+La conversione aumenta di **+0,19 punti percentuali**, circa **+3,9%** in termini relativi, e il confronto produce `p = 0,028`.
 
-- delta assoluto: **+0,19 punti percentuali**;
-- delta relativo: circa **+3,9%**;
-- p-value: **0,028**.
-
-La prima lettura del team è:
+La prima lettura del team è immediata:
 
 > **“La variante vince.”**
 
-Il compito dell'analista è trasformare questa frase in una valutazione completa dell'incertezza.
+Quella frase contiene però più certezza e più decisione di quanta ne abbia ancora prodotta l'analisi.
 
-### Passo 1 — Qual era la domanda pre-specificata?
+## La prima sorpresa non è statistica: è nella domanda
 
-Prima del test il team aveva dichiarato come metrica primaria **revenue per visitor**, non conversion rate.
+Prima dell'esperimento il team aveva dichiarato come metrica primaria **revenue per visitor**, non purchase conversion. La conversione era una metrica diagnostica importante, ma il prodotto doveva aumentare il valore economico per visita.
 
-La conversione era una metrica diagnostica importante, ma il prodotto doveva aumentare il valore economico per visita.
+Il `p = 0,028` non diventa falso per questo. Cambia il suo ruolo nell'insieme dell'evidenza. Se scegliamo dopo il test la metrica che mostra il risultato più favorevole, trasformiamo un segnale diagnostico in claim principale e introduciamo una forma di molteplicità che il singolo p-value non rappresenta.
 
-Questa informazione cambia immediatamente il peso del `p = 0,028`.
+La domanda torna quindi a essere quella prevista: **la nuova pagina aumenta abbastanza il valore economico per visita da meritare rollout?**
 
-Non perché la conversione sia improvvisamente falsa, ma perché selezionare dopo il test la metrica con il risultato più favorevole introduce molteplicità e modifica la domanda rispetto a quella pianificata.
+## L'effect size apre il problema economico
 
-### Passo 2 — Effect size prima dell'etichetta
+Il +0,19 pp di conversione è il primo pezzo da interpretare. Su una baseline del 4,82% equivale a circa +3,9% relativo. Se l'effetto persistesse, produrrebbe più ordini.
 
-`+0,19 pp` di conversione è il primo numero da comprendere.
+Ma la tabella mostra contemporaneamente che l'AOV scende da 71,40 € a 70,95 € e il return rate cresce dal 7,9% al 9,6%. Una metrica localmente positiva non basta quindi a descrivere l'economia del sistema.
 
-Su una baseline del 4,82% equivale a circa +3,9% relativo.
+Supponiamo che l'analisi della conversione produca una stima di **+0,19 pp**, con CI 95% circa **+0,02 / +0,36 pp**. Il team stima inoltre che, dati costi e margini, serva almeno **+0,15 pp di conversione equivalente a parità di qualità economica** per giustificare il rollout.
 
-La domanda successiva non è ancora “è significativo?”. È:
+La migliore stima supera la soglia. L'intervallo, però, attraversa il break-even: contiene sia scenari quasi nulli sia miglioramenti più interessanti.
 
-> **Quanto valore economico produrrebbe questo effetto se fosse persistente?**
+Il risultato non è quindi semplicemente “positivo”. È:
 
-La variante aumenta leggermente il numero di ordini ma riduce l'AOV e aumenta il return rate.
+> **La stima centrale supera la soglia economica, ma l'incertezza comprende anche scenari che non la raggiungono.**
 
-Per questo conversione e revenue lordo non bastano.
+## Il guardrail cambia la storia più del p-value
 
-### Passo 3 — L'intervallo deve incontrare la soglia economica
+L'aumento del return rate di **+1,7 pp** obbliga il team a ricalcolare il valore netto. Quando i resi vengono sottratti dal beneficio economico, gran parte del vantaggio apparente scompare.
 
-Supponiamo che l'analisi della conversione produca una stima del tipo:
+Questo è esattamente ciò che il p-value della conversione non può sapere. Il test quantifica un pezzo specifico dell'evidenza; non contiene il costo dei resi, il margine o le dipendenze tra metriche economiche.
 
-> `+0,19 pp`, CI 95% circa `+0,02 / +0,36 pp`.
+A questo punto la frase “la variante vince” non è soltanto troppo sicura. Sta ottimizzando la metrica sbagliata rispetto alla decisione dichiarata.
 
-Il range è compatibile con un miglioramento quasi nullo oppure con uno più interessante.
+## L'esplorazione successiva produce ipotesi, non eccezioni retroattive
 
-Il team stima che, dati costi e margini, serva almeno **+0,15 pp di conversione equivalente a parità di qualità economica** per giustificare il rollout.
+Il team prova allora a capire dove il segnale sia più forte. Esplora desktop, mobile web, iOS, Android, nuovi utenti, returning e i principali canali di acquisizione. Alcuni segmenti, soprattutto mobile, sembrano molto promettenti.
 
-L'intervallo attraversa quella soglia.
+Questa è una scoperta utile. Non era però un claim confermativo pre-specificato. Il risultato deve quindi entrare nel registro delle ipotesi:
 
-Quindi il risultato non è semplicemente:
+> **Possibile effetto eterogeneo su mobile; da verificare nel prossimo test.**
 
-> “positivo”.
+Trasformarlo immediatamente in “la variante funziona sicuramente su mobile” significherebbe dimenticare quante opportunità di trovare un segmento interessante abbiamo creato dopo aver visto il risultato globale.
 
-È:
+## Anche un esperimento ben stimato vive dentro un periodo storico
 
-> **“La migliore stima supera la soglia, ma l'incertezza include anche scenari che non la raggiungono.”**
+C'è infine un'altra forma di incertezza che il confidence interval della conversione non contiene. Il segnale è particolarmente forte nei primi quattro giorni, proprio mentre è attiva una campagna premium.
 
-### Passo 4 — Il guardrail cambia l'economia
+Questo non implica necessariamente un difetto statistico del confronto. Solleva una domanda di **generalizzazione temporale**: l'effetto medio dei 14 giorni rappresenta anche settimane future senza quella campagna?
 
-Il return rate passa da 7,9% a 9,6%.
+Sampling uncertainty e validità esterna non sono la stessa cosa. Possiamo avere una stima molto precisa per la popolazione osservata e restare incerti sulla persistenza dell'effetto quando cambiano condizioni commerciali, mix o calendario.
 
-Quando il team calcola il **revenue netto dopo i resi**, gran parte del beneficio apparente scompare.
+## L'Uncertainty Brief del caso
 
-Questo mostra perché una metrica localmente positiva non deve essere interpretata separatamente dal sistema economico.
-
-Il p-value sulla conversione non incorpora il costo dell'aumento dei resi.
-
-### Passo 5 — I segmenti scoperti dopo sono ipotesi, non verdetti
-
-A posteriori il team esplora:
-
-- desktop;
-- mobile web;
-- iOS;
-- Android;
-- nuovi utenti;
-- returning;
-- organic;
-- paid search;
-- paid social;
-- direct.
-
-Alcuni segmenti mostrano effetti molto positivi.
-
-Il mobile sembra particolarmente promettente.
-
-Ma questi confronti non erano definiti come claim confermativi prima dell'analisi.
-
-La formulazione corretta è:
-
-> **“Abbiamo trovato un possibile effetto eterogeneo su mobile; è un'ipotesi per il prossimo test.”**
-
-Non:
-
-> “La variante funziona sicuramente su mobile.”
-
-### Passo 6 — L'orizzonte osservato fa parte dell'incertezza
-
-Il risultato è particolarmente forte nei primi quattro giorni, che coincidono con una campagna premium.
-
-Questo non è necessariamente un difetto statistico del test. È un problema di **generalizzazione temporale**:
-
-> l'effetto medio dei 14 giorni rappresenta anche periodi futuri senza quella campagna?
-
-La statistica inferenziale può essere precisa rispetto ai dati raccolti e il business può avere ancora incertezza sulla persistenza dell'effetto.
-
-Questa distinzione è essenziale:
-
-- **sampling uncertainty**;
-- **external validity / stabilità nel tempo**;
-
-non sono la stessa cosa.
-
-### L'Uncertainty Brief del caso
+Il valore del capitolo è raccogliere questi livelli nello stesso posto:
 
 | Campo | Sintesi |
 |---|---|
@@ -142,34 +86,10 @@ non sono la stessa cosa.
 | **Conclusione** | Evidenza di aumento conversione, ma non evidenza sufficiente di aumento del valore netto. |
 | **Prossimo passo** | Nuovo test pre-specificato su metrica economica netta e segmenti prioritari. |
 
-Questa tabella contiene più valore decisionale di:
+Questa tabella contiene più informazione decisionale del `p = 0,028` perché spiega **che cosa il test ha imparato, che cosa la decisione richiede e quali incertezze restano fuori dal test**.
 
-> `p = 0,028`.
+Il team non effettua quindi un rollout generale. Usa il risultato per progettare il confronto successivo con metrica primaria economica netta, return rate come guardrail esplicito, segmenti prioritari pre-specificati e durata sufficiente a includere condizioni commerciali più normali.
 
-### La decisione
+Il Capitolo 9 mostrerà come progettare quel test. Qui la lezione è già completa: un risultato statisticamente interessante diventa evidenza decisionale soltanto quando dimensione, precisione, popolazione, molteplicità, guardrail e valore economico vengono letti nello stesso sistema.
 
-Il team non lancia la variante in produzione su tutti gli utenti.
-
-Decide di usare il risultato per progettare il confronto successivo con:
-
-- metrica primaria economica netta;
-- return rate come guardrail esplicito;
-- segmenti di interesse pre-specificati;
-- durata sufficiente a coprire condizioni commerciali normali.
-
-Il Capitolo 9 spiegherà come farlo operativamente.
-
-### Il punto del caso
-
-L'inferenza non serve a produrre un'etichetta `WIN / LOSE`.
-
-Serve a rispondere, nell'ordine:
-
-1. **quanto è grande il segnale?**
-2. **quanto è incerto?**
-3. **rispetto a quale popolazione e disegno?**
-4. **quali bias o fonti di instabilità non sono dentro l'intervallo?**
-5. **quante opportunità avevamo di trovare un risultato interessante?**
-6. **l'effetto supera una soglia che conta davvero?**
-
-> **Un risultato statisticamente interessante diventa evidenza decisionale solo quando dimensione, incertezza e valore economico vengono letti insieme.**
+> **L'inferenza non deve produrre un'etichetta `WIN / LOSE`. Deve impedire che una stima più precisa di una singola metrica diventi una decisione più sicura di quanto l'insieme dell'evidenza consenta.**
