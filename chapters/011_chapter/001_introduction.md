@@ -2,40 +2,17 @@
 
 ## 11.0 Una query può essere corretta e il numero può essere sbagliato
 
-SQL viene spesso insegnato come una sequenza di costrutti: `SELECT`, `JOIN`, `GROUP BY`, funzioni finestra, CTE. Sono strumenti necessari, ma non sono il vero problema professionale.
+SQL viene spesso insegnato come una sequenza di costrutti — `SELECT`, `JOIN`, `GROUP BY`, funzioni finestra, CTE — ma nel lavoro reale la difficoltà più importante viene prima della sintassi. Una query può essere valida, veloce, produrre numeri plausibili e alimentare una dashboard perfettamente funzionante, e tuttavia rispondere alla domanda sbagliata.
 
-Nel lavoro reale una query può:
+Succede quando durante la trasformazione cambia silenziosamente il significato del dato. Una riga per ordine diventa più righe dopo un join; un `INNER JOIN` elimina dal denominatore chi non ha avuto un evento; una data di ordine sostituisce una data di competenza; una dimensione corrente riscrive retroattivamente il passato; uno stock viene sommato nel tempo come se fosse un flusso; una deduplicazione sceglie arbitrariamente quale versione sopravvive; un modello incrementale dimentica refund o rettifiche tardive.
 
-- essere sintatticamente valida;
-- terminare senza errori;
-- produrre numeri plausibili;
-- essere veloce;
-- alimentare una dashboard perfettamente funzionante;
-
-e tuttavia rispondere alla domanda sbagliata.
-
-Succede quando durante la trasformazione cambia silenziosamente il significato del dato:
-
-- una riga per ordine diventa più righe per ordine dopo un join;
-- il denominatore esclude casi che dovrebbero restare nella popolazione;
-- la data di ordine viene usata al posto della data di competenza;
-- una dimensione corrente viene applicata retroattivamente al passato;
-- un saldo viene sommato nel tempo come se fosse un flusso;
-- una metrica chiamata `revenue` incorpora una definizione diversa da quella di Finance;
-- una deduplicazione sceglie arbitrariamente quale record conservare;
-- un modello incrementale dimentica record arrivati in ritardo.
-
-Il principio guida del capitolo è quindi:
+Il principio guida del capitolo è quindi questo:
 
 > **SQL non serve soltanto a interrogare tabelle. Serve a rendere eseguibile una definizione analitica senza modificarne il significato lungo il percorso.**
 
-### Caso simulato/composito — Aurora Market e i 3,8 milioni di euro apparsi dal nulla
+### Aurora Market: 3,8 milioni di euro apparsi dal nulla
 
-Aurora Market, marketplace europeo di prodotti per la casa, prepara il board meeting trimestrale.
-
-Il dashboard commerciale mostra revenue Q2 pari a **48,6 milioni di euro**. Finance chiude invece il trimestre a **44,8 milioni**.
-
-La differenza è troppo grande per essere attribuita ad arrotondamenti o timing di chiusura.
+Aurora Market, marketplace europeo di prodotti per la casa, prepara il board meeting trimestrale. Il dashboard commerciale mostra revenue Q2 pari a **48,6 milioni di euro**; Finance chiude invece il trimestre a **44,8 milioni**. La differenza è troppo grande per essere attribuita ad arrotondamenti o timing di chiusura.
 
 La query del dashboard contiene un join apparentemente innocuo:
 
@@ -51,7 +28,7 @@ WHERE o.order_date >= DATE '2026-04-01'
   AND o.order_date <  DATE '2026-07-01';
 ```
 
-Il modello operativo ha però tre grain differenti:
+Il problema non è `SUM`. È il grain delle sorgenti:
 
 | tabella | grain |
 |---|---|
@@ -59,17 +36,13 @@ Il modello operativo ha però tre grain differenti:
 | `order_lines` | una riga per linea d’ordine |
 | `payments` | una riga per movimento di pagamento |
 
-Un ordine con quattro linee e due movimenti di pagamento diventa otto righe dopo il join. Il valore delle linee viene ripetuto due volte.
+Un ordine con quattro linee e due movimenti di pagamento diventa otto righe. Il valore delle linee viene ripetuto due volte. La query calcola correttamente ciò che il join le ha consegnato; è la rappresentazione costruita prima dell’aggregazione a essere sbagliata.
 
-L’errore non nasce da `SUM`. Nasce prima: il team non ha dichiarato quale entità dovesse esistere una sola volta nel dataset finale.
-
-Questa distinzione è fondamentale perché l’AI rende sempre più economico generare SQL. Un assistente può scrivere il join in pochi secondi. Non può però decidere automaticamente che cosa significhi “revenue Q2” per quell’organizzazione se grain, popolazione, tempo e definizione della metrica non sono espliciti.
+Questo esempio contiene quasi tutto il capitolo. Prima di scrivere codice dobbiamo sapere quale entità stiamo rappresentando, quale grain deve avere l’output, quali chiavi sono uniche, quali relazioni moltiplicano righe, quale popolazione deve sopravvivere, quale tempo appartiene alla domanda e quali misure possono essere aggregate senza perdere significato.
 
 ### L’Analytical Data Contract
 
-Il deliverable operativo del capitolo sarà l’**Analytical Data Contract**.
-
-Prima che una trasformazione importante diventi una query ricorrente, un modello condiviso o una fonte per dashboard, dovremmo poter compilare almeno questi campi:
+Per rendere queste scelte verificabili useremo un **Analytical Data Contract**. Non è un contratto legale e non richiede un prodotto specifico: è una specifica condivisa che rende esplicite le proprietà che una trasformazione deve preservare.
 
 | Campo | Domanda |
 |---|---|
@@ -86,11 +59,9 @@ Prima che una trasformazione importante diventi una query ricorrente, un modello
 | Cost / performance | Quanto costa produrlo e a quale frequenza? |
 | Lineage / owner | Da dove arriva e chi risponde della definizione? |
 
-Il contratto non sostituisce SQL. Rende SQL verificabile.
+Il contratto non sostituisce SQL. Rende SQL revisionabile da chi non ha scritto la query e permette di trasformare le assunzioni più importanti in test.
 
-### Il collegamento con i capitoli precedenti
-
-Il percorso operativo del libro diventa:
+Il percorso operativo costruito fin qui nel libro diventa:
 
 ```text
 Analytical Brief
@@ -100,44 +71,17 @@ Analytical Brief
 → analisi / modello / dashboard
 ```
 
-L’**Analytical Brief** specifica quale domanda dobbiamo supportare.
+L’**Analytical Brief** definisce quale realtà vogliamo conoscere e quale decisione supportare. La **Data Readiness Review** verifica se le fonti possono sostenere quella pretesa. L’**Analytical Data Contract** specifica come trasformare quelle fonti senza perdere la semantica necessaria. Questo ultimo passaggio è essenziale perché proprio durante join, filtri, aggregazioni, storicizzazione e incrementalità una definizione apparentemente stabile può cambiare.
 
-La **Data Readiness Review** verifica se le fonti sono adatte all’uso previsto.
+### Il confine con i capitoli vicini
 
-L’**Analytical Data Contract** stabilisce come trasformare quelle fonti senza perdere il significato necessario alla domanda.
+Il Capitolo 3 chiedeva se i dati fossero adatti alla domanda. Questo capitolo chiede come trasformarli preservandone il significato. Il Capitolo 12 allargherà ancora l’inquadratura: quale architettura produce, trasporta e serve queste trasformazioni con freshness, recovery, sicurezza e costi adeguati?
 
-Questa sequenza evita un errore comune: credere che una volta trovate le tabelle “giuste” il problema semantico sia finito. In realtà è proprio durante join, filtri, aggregazioni e storicizzazione che molte definizioni cambiano.
+L’obiettivo non è quindi “saper scrivere query complesse”. È poter difendere una frase più forte:
 
-### Le domande che vengono prima del codice
+> **So che questo numero rappresenta ciò che diciamo che rappresenta, e posso mostrare dove grain, popolazione, tempo e metrica vengono preservati nel codice e nei test.**
 
-Prima di scrivere una query importante, dovremmo riuscire a rispondere a queste domande:
-
-1. qual è l’entità business che voglio rappresentare?
-2. qual è il grain desiderato dell’output?
-3. qual è il grain di ogni sorgente?
-4. quali chiavi sono uniche e in quale dominio?
-5. quale popolazione entra nel calcolo?
-6. quale tempo rappresenta la domanda: evento, competenza, stato, validità?
-7. quali misure sono additive, semi-additive o non additive?
-8. quali join possono moltiplicare righe?
-9. quali trasformazioni cambiano il grain?
-10. quali invarianti posso testare automaticamente?
-11. la metrica esiste già in un layer condiviso?
-12. come saprò se la stessa query domani sta ancora calcolando la stessa cosa?
-
-### Il confine con il Capitolo 3 e il Capitolo 12
-
-Questo capitolo non ripete la qualità dei dati del Capitolo 3 e non anticipa l’architettura del Capitolo 12.
-
-- **Capitolo 3:** i dati sono adatti alla domanda?
-- **Capitolo 11:** come trasformiamo quei dati preservandone il significato analitico?
-- **Capitolo 12:** quale architettura produce, trasporta e serve quelle trasformazioni in modo affidabile e scalabile?
-
-Il risultato a cui puntiamo non è “saper scrivere query complesse”.
-
-È saper difendere questa frase:
-
-> **So che questo numero rappresenta ciò che diciamo che rappresenta, e posso mostrare dove quella semantica viene preservata nel codice e nei test.**
+L’AI rende questa disciplina ancora più importante. Un assistente può generare in pochi secondi un join sintatticamente perfetto; non può decidere da solo che cosa significhi `revenue Q2`, quale versione storica di un cliente usare o quale denominatore il business intenda, se queste informazioni non sono state rese esplicite.
 
 ### Riferimenti
 
