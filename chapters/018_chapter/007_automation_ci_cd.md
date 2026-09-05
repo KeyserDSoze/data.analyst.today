@@ -1,127 +1,60 @@
-## 18.6 Automazione e CI/CD: incorporare il controllo invece di automatizzare la speranza
+## 18.6 Automazione e CI/CD: incorporare il controllo, non automatizzare la speranza
 
-Quando un'analisi diventa ricorrente, la domanda cambia da:
+Quando un'analisi diventa ricorrente, la domanda non è più soltanto “funziona oggi?”, ma **come possiamo cambiarla decine o centinaia di volte senza perdere il diritto di fidarci del risultato?** È qui che pratiche di software engineering come version control, review, test automatici, ambienti separati, release e rollback diventano rilevanti per analytics.
 
-> “Funziona oggi?”
+Non perché un data team debba imitare DevOps per moda. Perché una modifica SQL, una configurazione o un semantic change possono alterare una decisione senza produrre un errore tecnico evidente.
 
-a:
-
-> **“Come facciamo a cambiare questo prodotto cento volte senza perdere il diritto di fidarci del risultato?”**
-
-È qui che analytics incontra pratiche di software engineering:
-
-- version control;
-- review;
-- test automatici;
-- ambienti separati;
-- release;
-- rollback;
-- observability.
-
-Il punto non è imitare DevOps per moda.
-
-È riconoscere che una modifica SQL o semantica può produrre un impatto business altrettanto reale di un bug applicativo.
-
-## Automatizzare un processo fragile lo rende soltanto più veloce
-
-Consideriamo un processo manuale:
-
-1. export;
-2. mapping;
-3. formula;
-4. controllo con Finance;
-5. pubblicazione.
-
-Se automatizziamo i primi tre punti e rimuoviamo il quarto senza capire perché esistesse, abbiamo aumentato la velocità riducendo il controllo.
-
-DORA sottolinea un principio simile per la continuous delivery: ripetere più spesso il vecchio processo senza redesign di processo, architettura e capability può aumentare failure rate e burnout.
+DORA definisce continuous delivery come la capacità di rilasciare rapidamente e in modo sicuro e sostenibile e avverte che fare deployment più spesso senza migliorare processo, architettura e capability tende ad aumentare failure e burnout.
 
 Fonte: https://dora.dev/capabilities/continuous-delivery/
 
-Per analytics la sequenza corretta è spesso:
+La traduzione per analytics è semplice: **prima si rende esplicito il controllo, poi lo si automatizza**.
+
+## Il controllo manuale che non doveva essere rimosso
+
+Immaginiamo un processo settimanale: export, mapping, formula, controllo con Finance, pubblicazione. Automatizziamo export, mapping e formula; poi eliminiamo la reconciliation perché “ora la pipeline è automatica”. Abbiamo aumentato velocità riducendo il solo gate che confrontava l'output con una fonte indipendente.
+
+La sequenza corretta è diversa:
 
 ```text
 understand recurring work
 → remove unnecessary steps
 → make semantics explicit
-→ define tests and owner
+→ define tests + ownership
 → automate
 → observe
 → improve
 ```
 
-Non:
+Schedulare lo script non trasforma un processo in prodotto. Lo rende soltanto ricorrente.
+
+## Il KPI che cambia senza rompersi
+
+Una società SaaS usa `active_customer` nel denominatore dell'executive retention. Un analytics engineer esclude gli account in grace period. La query compila, gira, non produce null e mantiene schema e tipo. Il KPI passa da `108,4%` a `104,9%`.
+
+Il sistema tecnico è sano. Il cambiamento è decision-critical.
+
+Una delivery chain che controlla solo syntax e schema non protegge il consumer. Per un prodotto T2 serve una sequenza più vicina a:
 
 ```text
-manual process
-→ schedule script
-→ hope
-```
-
-## Caso simulato/composito: il KPI che cambia senza rompersi
-
-Una società SaaS usa `active_customer` nel denominatore di una executive retention metric.
-
-Un analytics engineer modifica una condizione per escludere account in grace period.
-
-La query:
-
-- compila;
-- gira;
-- non produce null;
-- mantiene schema e tipo.
-
-Il KPI passa da `108,4%` a `104,9%`.
-
-Il sistema tecnico è sano.
-
-Il cambiamento è semanticamente materiale.
-
-Una CI che verifica soltanto codice e schema non protegge la decisione.
-
-## La pipeline di release analitica
-
-Per un prodotto T2 possiamo immaginare:
-
-```text
-branch / proposed change
-→ static checks
-→ structural tests
-→ unit / logic tests
-→ data contract checks
+proposed change
+→ static / structural checks
+→ logic + contract tests
 → reconciliation
 → semantic diff
-→ impact analysis
-→ owner approval if needed
-→ pre-production / shadow run
+→ consumer impact analysis
+→ approval at the right ownership level
+→ shadow / pre-production run
 → deploy
 → post-deploy verification
 → certification
 ```
 
-Non ogni asset necessita tutti questi gate.
+Non tutti gli asset richiedono tutti i gate. Il criticality tier decide profondità e costo del processo.
 
-Il criticality tier decide la profondità.
+## Semantic diff: il test che rende visibile il giudizio necessario
 
-## Semantic diff: che cosa cambia nei numeri?
-
-Uno dei controlli più potenti prima della release è confrontare vecchio e nuovo output.
-
-Non basta chiedere:
-
-> “I test passano?”
-
-Chiediamo:
-
-- quali righe cambiano?
-- quali metriche cambiano?
-- di quanto?
-- in quali segmenti?
-- la variazione è attesa?
-- cambia una soglia decisionale?
-- il passato viene riscritto?
-
-Esempio di release summary:
+Uno dei controlli più potenti prima di una release è confrontare vecchio e nuovo output. Non chiediamo soltanto se “i test passano”, ma quali righe e metriche cambiano, di quanto, in quali segmenti, se il delta è atteso e se attraversa una soglia decisionale.
 
 | Metrica | Old | New | Delta | Atteso? |
 |---|---:|---:|---:|---|
@@ -129,195 +62,42 @@ Esempio di release summary:
 | NRR | 108,4% | 104,9% | -3,5 pp | sì, effetto denominatore |
 | Churn rate | 2,8% | 2,9% | +0,1 pp | da investigare |
 
-Il semantic diff non decide da solo se la modifica sia corretta.
+Il semantic diff non decide se la modifica sia corretta. Dice **dove il giudizio umano è ancora necessario**. È esattamente il tipo di controllo che l'automazione deve preparare, non sostituire.
 
-Rende visibile dove serve giudizio.
+## Development, validation e production separano esperimento e promessa
 
-## Dev, test e prod: separare esperimento da promessa
+Un asset esplorativo deve poter cambiare rapidamente. Un asset certificato non dovrebbe essere modificato direttamente nella superficie che alimenta decisioni business-critical. La separazione può essere fisica o logica, ma i ruoli sono chiari: development consente di costruire e rompere; validation usa dati rappresentativi, contract e metric diff; production contiene soltanto versioni che hanno superato i gate richiesti dal tier.
 
-Un asset esplorativo deve poter cambiare rapidamente.
-
-Un asset certificato non dovrebbe essere modificato direttamente in produzione.
-
-La separazione può essere tecnica o logica, ma il principio è:
-
-### Development
-
-Libertà di costruire e rompere.
-
-### Validation / test
-
-Controllo su dati rappresentativi, contract e metric diff.
-
-### Production
-
-Solo versioni che hanno superato i gate richiesti dal tier.
-
-Microsoft descrive una soluzione analytics considerata **essential** come distinta tra ambiente di produzione e sviluppo/test, con change e release management più controllati proprio per l'impatto dei cambiamenti.
+Microsoft, nei maturity level della Fabric Adoption Roadmap, associa contenuti più essenziali al decision making a separazione più forte tra sviluppo/test e produzione, supporto definito e change management controllato.
 
 Fonte: https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-maturity-levels
 
-## Shadow run e parallel run
+## Shadow run, dual run e rollout progressivo
 
-Per una breaking change, una strategia utile è eseguire vecchio e nuovo prodotto in parallelo.
+Una breaking change non deve necessariamente apparire a tutti nello stesso istante. Vecchio e nuovo prodotto possono convivere temporaneamente per quantificare delta, aggiornare threshold e verificare casi limite. `revenue_v1` e `revenue_v2` per due closing cycle non sono duplicazione permanente: sono **observability del cambiamento**.
 
-Serve per:
+Lo stesso principio abilita rollout progressivi: semantic model a un gruppo pilota, API versionata, dual-read per alcuni consumer, canary su una regione o nuova metrica visibile inizialmente soltanto a Finance e Analytics. Più grande il blast radius, maggiore il valore di una fase limitata.
 
-- quantificare delta;
-- osservare casi limite;
-- aggiornare threshold;
-- verificare consumer;
-- preparare rollback.
+## Rollback nei dati: il codice può tornare indietro, la decisione no
 
-Esempio:
+Nel software rollback spesso significa ripristinare una versione. Nei dati dobbiamo distinguere almeno tre cose. Il **code rollback** può riportare la logica precedente. Il **data replay/backfill** può ricostruire output già scritti. Ma il **consumer impact** può essere irreversibile: un report è stato esportato, una comunicazione inviata, una decisione presa.
 
-`revenue_v1` e `revenue_v2` vengono calcolate per due closing cycle prima della migrazione.
+Per questo il recovery plan deve includere cache, snapshot, backfill, consumer notification e re-certification. Riparare la tabella non annulla automaticamente ciò che è già accaduto downstream.
 
-Non è duplicazione permanente.
+## Configuration is code quando la configurazione decide il numero
 
-È una finestra di osservabilità del cambiamento.
+Molti incidenti non nascono dal SQL ma da mapping territoriali, liste di esclusione, threshold, currency rate source, calendar o business-day definition. Se un file CSV può modificare un KPI materiale, non è “solo configurazione”: deve avere owner, versioning, review proporzionata e traceability.
 
-## Deployment progressivo
+Questo completa il senso della CI: dobbiamo versionare tutto ciò che può cambiare la promessa, non soltanto il codice che gli ingegneri riconoscono come software.
 
-Anche un prodotto dati può essere rilasciato progressivamente.
+## Prima, durante e dopo il deploy
 
-Possibili strategie:
+Una delivery chain affidabile combina test prima del release, controllo durante il rollout e osservazione dopo. Il post-deploy check deve confermare freshness, plausibilità, reconciliation, superficie consumer e SLO. Una CI perfetta con un deployment manuale fragile è incompleta; un deployment automatico che pubblica output senza consumer impact check lo è altrettanto.
 
-- nuova semantic model a un gruppo pilota;
-- new metric version visibile solo a Finance/Analytics;
-- dual-read per un subset di consumer;
-- API versioned;
-- canary su una regione;
-- feature flag per un report.
+Possiamo monitorare deployment frequency, lead time change→production, change fail rate, hotfix, incident causati da release, tempo di certification e toil residuo. La velocità è utile soltanto se non compra throughput sacrificando reliability.
 
-Più il blast radius è alto, più il rollout progressivo può avere valore.
+Il criticality tier rimane la regola di proporzione. T0 può vivere con version control consigliato. T1 aggiunge review e test base. T2 richiede semantic diff, reconciliation, change classification, rollback/fallback e post-deploy verification. T3 può richiedere segregazione, audit, independent verification e recovery testato.
 
-## Rollback: che cosa significa davvero nei dati?
+> **Automazione non significa eliminare il controllo umano o tecnico. Significa spostare i controlli ripetibili dal ricordo delle persone alla pipeline, lasciando al giudizio umano le modifiche di significato e rischio che una regola non può approvare da sola.**
 
-Nel software, rollback può significare ripristinare una versione.
-
-Nel dato può essere più complesso.
-
-Se una trasformazione errata ha già scritto output o propagato snapshot, servono decisioni su:
-
-- code rollback;
-- data rollback;
-- backfill;
-- cache invalidation;
-- consumer notification;
-- report già esportati;
-- decisioni già prese.
-
-Per questo l'Operating Contract deve distinguere:
-
-### rollbackable code
-
-Possiamo tornare alla logica precedente.
-
-### replayable data
-
-Possiamo ricostruire output corretti dalle sorgenti.
-
-### non-reversible consumption
-
-Una decisione o comunicazione può essere già avvenuta.
-
-Il recovery tecnico non annulla automaticamente l'impatto decisionale.
-
-## Release gate per criticality
-
-### T0
-
-- version control consigliato;
-- nessun deployment formale.
-
-### T1
-
-- review;
-- test base;
-- scheduled automation;
-- owner.
-
-### T2
-
-- CI automatica;
-- semantic diff;
-- reconciliation;
-- change classification;
-- rollback/fallback;
-- post-deploy verification.
-
-### T3
-
-- segregation più forte;
-- approval/audit appropriati;
-- UAT o independent verification quando necessario;
-- release window;
-- rollback/recovery testato;
-- change record.
-
-La disciplina cresce con il failure cost.
-
-## Configuration is code — quando la configurazione cambia il significato
-
-Molti incidenti non nascono dal SQL.
-
-Nascono da:
-
-- mapping territoriale;
-- lista di account esclusi;
-- threshold;
-- currency rate source;
-- feature flag;
-- calendar;
-- business-day definition.
-
-Se una configurazione può cambiare un KPI, deve avere:
-
-- owner;
-- versioning;
-- review proporzionata;
-- traceability.
-
-Un file CSV manuale non è “solo configurazione” se decide milioni di euro di reporting.
-
-## CI non è sufficiente senza CD operativa
-
-Possiamo avere una pipeline di test eccellente e un deployment manuale fragile.
-
-Oppure deployment automatico perfetto che pubblica output senza controllare il consumer impact.
-
-Una delivery chain affidabile unisce:
-
-- test prima;
-- controllo durante;
-- osservazione dopo.
-
-Il post-deploy check deve confermare:
-
-- dati freschi;
-- metriche plausibili;
-- reconciliation;
-- consumer surface disponibile;
-- nessun SLO in degradazione.
-
-## Release telemetry
-
-Un team può monitorare:
-
-- deployment frequency;
-- lead time change → production;
-- percentuale change con rollback/hotfix;
-- incident causati da release;
-- semantic breaking change;
-- tempo di certification post-release;
-- percentuale deployment progressivi;
-- manual step/toil residuo.
-
-La velocità non è un obiettivo isolato.
-
-È utile se la reliability non viene sacrificata.
-
-## La regola
-
-> **Automazione non significa eliminare il controllo umano o tecnico. Significa spostare i controlli ripetibili dal ricordo delle persone alla pipeline, lasciando al giudizio umano i cambiamenti di significato e rischio che non possono essere ridotti a una regola.**
+Per sapere quali controlli automatizzare, però, serve una domanda più precisa: quali failure mode vogliamo impedire che attraversino indisturbati la delivery chain? È il compito della testing strategy.
