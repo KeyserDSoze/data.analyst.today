@@ -1,38 +1,29 @@
-## 10.4 Regressione logistica: una baseline probabilistica, non una soglia a 0,5
+## 10.4 Regressione logistica: prima stimare il rischio, poi decidere la soglia
 
-Quando il target è binario — churn sì/no, default sì/no, frode sì/no — una regressione logistica è spesso una baseline molto forte.
-
-Il suo valore non sta nel produrre direttamente una classe. Sta nel produrre uno **score probabilistico** che possiamo valutare come ranking, calibrare e successivamente tradurre in una decisione.
+Quando il target è binario — churn sì/no, default sì/no, frode sì/no — la regressione logistica è spesso una baseline molto forte. Il suo valore non sta nel produrre direttamente una classe, ma nel generare uno **score probabilistico** che possiamo valutare come ranking, calibrare e soltanto dopo tradurre in una policy.
 
 In forma concettuale:
 
 `logit(p) = β0 + β1x1 + ... + βpxp`
 
-La funzione logistica trasforma poi quel valore in una probabilità compresa tra 0 e 1.
+La funzione logistica trasforma poi il risultato in un valore tra 0 e 1. La distinzione importante è che il modello stima uno score; la decisione su chi contattare, bloccare o revisionare appartiene a un livello successivo.
 
-Fonte: https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
+Riferimento: https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
 
-### Caso simulato/composito — AtlasTel e il churn a 60 giorni
+### Caso simulato/composito — AtlasTel
 
-AtlasTel offre connettività a piccole imprese.
+AtlasTel offre connettività a piccole imprese. Ogni lunedì alle 06:00 deve ordinare gli account attivi per rischio di cancellazione volontaria nei successivi 60 giorni, così il team retention può costruire la propria coda settimanale.
 
-**Prediction unit:** account attivo.  
-**Prediction time:** lunedì alle 06:00.  
-**Target:** cancellazione volontaria entro 60 giorni.  
-**Decisione:** costruire una coda settimanale per il team retention.
+```text
+Prediction unit: account attivo
+Prediction time: lunedì 06:00
+Target: churn volontario entro 60 giorni
+Decisione: priorità della coda retention
+```
 
-Feature disponibili al prediction time:
+Le feature disponibili al prediction time comprendono tenure, fatture insolute negli ultimi 90 giorni, variazione di utilizzo, ticket già aperti, outage sperimentati, prezzo in vigore, chiamate storiche al supporto e uso del portale.
 
-- tenure;
-- fatture insolute negli ultimi 90 giorni;
-- variazione di utilizzo;
-- ticket tecnici già aperti;
-- outage sperimentati;
-- prezzo attuale e variazioni già entrate in vigore;
-- chiamate al supporto storiche;
-- utilizzo del portale.
-
-Il modello produce:
+Il modello produce, per esempio:
 
 | Account | Score di churn |
 |---|---:|
@@ -41,48 +32,25 @@ Il modello produce:
 | C | 0,64 |
 | D | 0,81 |
 
-A questo punto non sappiamo ancora chi contattare.
+Questa tabella non dice ancora chi chiamare. Dice soltanto come il modello ordina e quantifica il rischio secondo la propria rappresentazione del problema.
 
-La statistica ha prodotto una stima. La policy deve ancora essere progettata.
+### I coefficienti restano predittivi
 
-### Odds e coefficienti: leggibili, ma facili da abusare
+La regressione logistica è lineare nei log-odds; esponendo un coefficiente otteniamo un odds ratio. Se `exp(β) = 1,5`, un aumento unitario della feature è associato a odds dell'evento 1,5 volte maggiori, condizionatamente alle altre feature incluse.
 
-La regressione logistica è lineare nei log-odds. Esponendo un coefficiente otteniamo un odds ratio.
+Questo non trasforma l'odds ratio in un treatment effect. Nel modello AtlasTel il numero di chiamate al supporto può essere fortemente associato al churn perché segnala disservizi, fatture errate o problemi tecnici. Ridurre artificialmente le chiamate non è una strategia di retention.
 
-Se `exp(β) = 1,5`, un aumento unitario della feature è associato a odds dell'evento 1,5 volte maggiori, condizionatamente alle altre feature incluse.
+La regola del capitolo resta quindi la stessa: **una feature può essere un ottimo segnale senza essere una leva**.
 
-Due cautele:
+### Il threshold 0,5 non appartiene al problema business
 
-1. odds e probabilità non sono la stessa cosa;
-2. un odds ratio predittivo non diventa automaticamente un effetto causale.
+La documentazione scikit-learn separa esplicitamente il problema statistico di stimare score/probabilità dal problema decisionale di scegliere un'azione. Il cutoff `0,5` è una convenzione predefinita di classificazione, non una soglia universalmente corretta.
 
-Nel primo modello AtlasTel il numero di chiamate al supporto è fortemente associato al churn.
+Riferimento: https://scikit-learn.org/stable/modules/classification_threshold.html
 
-Ridurre artificialmente le chiamate non è una strategia di retention. Le chiamate possono essere un segnale di disservizi, fatture errate o problemi tecnici.
+AtlasTel potrebbe usare la stessa distribuzione di score per contattare il top 5%, tutti sopra 0,70, i primi 2.000 clienti oppure una graduatoria combinata con valore economico a rischio. In tutti questi casi il modello è identico; cambia la **policy**.
 
-### Il modello produce probabilità; la policy produce classi
-
-Scikit-learn distingue esplicitamente il problema statistico di stimare score/probabilità dal problema decisionale di trasformarli in un'azione. Il threshold predefinito di 0,5 è solo una convenzione software e non è ottimale per la maggior parte dei problemi business.
-
-Fonte: https://scikit-learn.org/stable/modules/classification_threshold.html
-
-AtlasTel può usare la stessa distribuzione di score in modi molto diversi:
-
-- contattare il top 5%;
-- contattare tutti sopra 0,70;
-- prendere il top 2.000 perché quella è la capacità settimanale;
-- combinare probabilità e valore economico;
-- applicare soglie differenti per segmenti, se la policy è giustificata e governata.
-
-La scelta non dovrebbe essere incorporata implicitamente dentro `predict()`.
-
-### Ranking prima della soglia
-
-Prima di discutere il cutoff conviene chiedere se il modello ordina bene i casi.
-
-Se i clienti nel decile più alto di score non hanno più churn dei decili inferiori, la soglia non può salvare il modello.
-
-Un controllo semplice è costruire una tabella per decili o quantili:
+Prima di discutere il cutoff conviene verificare che il ranking contenga davvero segnale. Una vista per decili può renderlo intuitivo:
 
 | Decile di rischio | Churn osservato |
 |---|---:|
@@ -91,28 +59,18 @@ Un controllo semplice è costruire una tabella per decili o quantili:
 | 9 | 18,4% |
 | 10 — più alto | 31,7% |
 
-Questa vista non sostituisce ROC-AUC o PR-AUC, ma rende il ranking comprensibile anche a stakeholder non tecnici.
+Se il decile 10 non contiene più eventi dei decili inferiori, nessuna soglia può salvare il modello. ROC-AUC e PR-AUC daranno una lettura più formale; la tabella rende il comportamento comprensibile anche fuori dal team tecnico.
 
-### Probability estimate e expected value
+### Probabilità e valore atteso
 
-Quando uno score è sufficientemente calibrato possiamo combinarlo con quantità economiche.
-
-Esempio semplificato:
+Quando lo score è sufficientemente calibrato può entrare in calcoli come:
 
 `expected_churn_loss = P(churn) × value_at_risk`
 
-Due clienti con score 0,60 possono così ricevere priorità molto diversa se il valore a rischio è 200 euro oppure 20.000 euro.
+Due clienti con `P(churn)=0,60` possono avere priorità molto diversa se il valore a rischio è 200 € oppure 20.000 €. Anche qui però manca ancora un pezzo: il rischio atteso non dice quanto churn verrà **evitato** dall'intervento. Per quello servono evidenze causali sulla policy, come nei Capitoli 8 e 9.
 
-Attenzione però: questo calcolo descrive il rischio atteso dell'evento. Non dice quanto valore verrà salvato dall'intervento. Per quello servono anche evidenze sull'effetto causale dell'azione, come discusso nei Capitoli 8 e 9.
+### Perché resta una baseline importante
 
-### Perché la logistica resta una baseline eccellente
+Un modello più complesso — per esempio gradient boosting — deve dimostrare di migliorare non soltanto una metrica astratta ma la performance fuori campione **nel punto operativo che conta**. La regressione logistica offre un benchmark veloce, regolarizzabile e leggibile, e rende evidente quanto valore predittivo stiamo realmente comprando con la complessità.
 
-Anche quando il modello finale sarà gradient boosting o un altro estimatore complesso, la regressione logistica offre un confronto utile:
-
-- è veloce;
-- è regolarizzabile;
-- produce ranking e probabilità;
-- rende visibili coefficienti e segni;
-- mette in evidenza quanto valore predittivo stiamo realmente guadagnando dalla complessità.
-
-> **La regressione logistica non è il modello “semplice prima di fare ML vero”. È un benchmark probabilistico che un modello più complesso deve battere fuori campione e nella decisione reale.**
+> **La regressione logistica non è il modello semplice che precede il “vero ML”. È il benchmark probabilistico che obbliga ogni modello successivo a dimostrare un vantaggio reale nella decisione.**
