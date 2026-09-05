@@ -1,26 +1,14 @@
 ## 6.6 Dall'aggregato al punto di rottura: combinare segmento, coorte e funnel
 
-Segmentazione, coorti e funnel diventano davvero utili quando vengono usati insieme.
+Segmentazione, coorti e funnel diventano davvero utili quando smettono di essere tre viste separate e vengono usati come passaggi successivi della stessa diagnosi: **chi** contribuisce al cambiamento, **da quando** e **dove** il percorso inizia a divergere.
 
-La segmentazione localizza **chi** contribuisce al cambiamento. La coorte mostra **quando** il problema è comparso. Il funnel individua **dove** il comportamento si interrompe.
+### Asteria CRM: il churn attribuito troppo presto al prezzo
 
-Questa sezione non è ancora il caso end-to-end del capitolo. È un esercizio di diagnosi: partire da una spiegazione intuitiva e restringere progressivamente lo spazio delle ipotesi.
+**Asteria CRM** è un SaaS B2B europeo con circa **18.000 account paganti**. Nel primo semestre aumenta del **12%** il listino del piano Professional. Due mesi dopo il churn mensile complessivo passa dal **2,7% al 3,6%**.
 
-### Caso simulato/composito: Asteria CRM e il churn attribuito al prezzo
+La storia sembra già pronta: abbiamo alzato i prezzi e i clienti stanno scappando. È plausibile, ma i dati non la sostengono ancora.
 
-**Asteria CRM** è un SaaS B2B europeo con circa 18.000 account paganti. Nel primo semestre aumenta il listino del piano Professional del 12%.
-
-Due mesi dopo, il churn mensile complessivo passa dal 2,7% al 3,6%.
-
-La storia è pronta:
-
-> abbiamo alzato i prezzi e i clienti stanno scappando.
-
-È plausibile. Ma plausibile non significa ancora supportato dai dati.
-
-### 1. Segmento — chi sta peggiorando?
-
-L'analista separa i piani:
+La prima apertura per piano produce questo quadro:
 
 | Piano | Churn prima | Churn dopo |
 | --- | ---: | ---: |
@@ -28,15 +16,9 @@ L'analista separa i piani:
 | Professional | 2,5% | 2,8% |
 | Enterprise | 1,1% | 1,2% |
 
-Il piano interessato dall'aumento di prezzo peggiora di poco. Il deterioramento maggiore è sullo Starter.
+Il piano interessato dall'aumento di prezzo peggiora poco; il deterioramento maggiore è sullo Starter. Il pricing non può essere escluso completamente — potrebbero esistere effetti indiretti o cambi di mix — ma smette di essere la spiegazione dominante.
 
-La prima ipotesi perde forza.
-
-Non è ancora esclusa: effetti indiretti di pricing o cambi di mix potrebbero esistere. Ma non è più la spiegazione dominante.
-
-### 2. Coorte — quando nasce il problema?
-
-L'analista misura la retention D90 delle nuove coorti Starter:
+Il team guarda allora le nuove coorti Starter alla stessa età. La retention D90 evolve così:
 
 | Coorte | Retention D90 |
 | --- | ---: |
@@ -47,11 +29,7 @@ L'analista misura la retention D90 delle nuove coorti Starter:
 | Maggio | 66% |
 | Giugno | 65% |
 
-La rottura comincia ad aprile.
-
-La timeline del business mostra che a fine marzo Asteria aveva lanciato una nuova campagna self-service per microimprese, aumentando fortemente i trial Starter.
-
-### 3. Canale — quale popolazione porta il cambiamento?
+La rottura comincia ad aprile. Nella stessa finestra Asteria aveva lanciato una nuova campagna self-service per microimprese, aumentando fortemente i trial Starter. La segmentazione per canale restringe ancora il problema:
 
 | Canale | Retention D90 |
 | --- | ---: |
@@ -60,64 +38,22 @@ La timeline del business mostra che a fine marzo Asteria aveva lanciato una nuov
 | Paid search | 76% |
 | Nuova campagna paid social | 51% |
 
-A questo punto il churn aggregato può essere descritto come un problema molto più specifico:
+A questo punto non stiamo più indagando “il churn dell'azienda”. Stiamo osservando soprattutto **nuove coorti Starter provenienti dalla campagna paid social**.
 
-> le nuove coorti Starter provenienti dalla campagna paid social hanno retention molto più bassa.
+Il funnel dei primi quattordici giorni mostra dove queste coorti divergono. Il percorso osservato è trial avviato → importazione contatti → prima pipeline → primo task assegnato → almeno tre utenti invitati. Le registrazioni crescono, ma solo il **22%** degli utenti della nuova campagna completa l'importazione dei contatti, contro il **47%** degli altri canali.
 
-### 4. Funnel — dove si interrompe il percorso?
+La timeline rende il pattern ancora più interpretabile. Il messaggio pubblicitario prometteva “CRM operativo in cinque minuti”, mentre il prodotto richiedeva migrazione dati, configurazione della pipeline e collaborazione del team. L'ipotesi più coerente diventa quindi che la campagna stia acquisendo una popolazione con aspettative e intent diversi, molti dei quali non raggiungono un primo valore operativo abbastanza presto.
 
-Il team costruisce il funnel dei primi quattordici giorni:
+È una diagnosi molto più forte della spiegazione iniziale, ma resta osservazionale. Non abbiamo dimostrato che cambiare il messaggio, ridisegnare l'onboarding o annullare il pricing produrrà una determinata variazione della retention.
 
-1. trial avviato;
-2. importazione contatti;
-3. prima pipeline creata;
-4. primo task assegnato;
-5. almeno tre utenti invitati.
+Questa distinzione cambia comunque la decisione. Asteria non annulla immediatamente l'aumento di prezzo del Professional. Separa il monitoraggio Starter/Professional, rivede targeting e promessa della campagna, porta nel dashboard il passaggio trial → importazione → primo workflow e decide di definire una metrica di activation entro quattordici giorni da verificare con un intervento controllato.
 
-Gli utenti della nuova campagna arrivano numerosi al trial, ma solo il 22% completa l'importazione dei contatti, contro il 47% degli altri canali.
-
-Le registrazioni crescono. Il passaggio verso l'uso reale no.
-
-### 5. Timeline e ipotesi
-
-Il messaggio pubblicitario prometteva “CRM operativo in cinque minuti”. Il prodotto richiedeva invece migrazione dati, configurazione della pipeline e collaborazione del team.
-
-L'ipotesi aggiornata diventa:
-
-> la nuova campagna sta acquisendo una popolazione con aspettative e livello di intent diversi; molti trial non raggiungono il primo valore operativo e le coorti risultano meno persistenti.
-
-Questa formulazione è più forte della spiegazione iniziale, ma resta ancora una diagnosi osservazionale.
-
-Non abbiamo dimostrato che cambiare il messaggio della campagna o l'onboarding aumenterà la retention.
-
-### La decisione che cambia
-
-Asteria non annulla immediatamente l'aumento di prezzo del Professional.
-
-Decide invece di:
-
-- separare il monitoraggio dello Starter dal Professional;
-- ridefinire targeting e promessa della campagna;
-- misurare il passaggio trial → importazione → primo workflow;
-- creare una metrica di activation entro quattordici giorni;
-- progettare una verifica controllata degli interventi di onboarding.
-
-Il valore dell'analisi non è aver “trovato la causa”.
-
-È aver trasformato:
+Il valore dell'analisi non è avere “trovato la causa”. È avere trasformato:
 
 > il churn sale, probabilmente per il prezzo
 
 in:
 
-> il deterioramento è concentrato nelle nuove coorti Starter acquisite da un nuovo canale e si manifesta prima del raggiungimento del valore iniziale.
+> **il deterioramento è concentrato nelle nuove coorti Starter acquisite da un nuovo canale e si manifesta prima del raggiungimento del valore iniziale.**
 
-Questa seconda frase delimita molto meglio ciò che sappiamo, ciò che sospettiamo e ciò che dobbiamo testare.
-
-### Il pattern operativo
-
-Il percorso può essere riutilizzato:
-
-**KPI aggregato → segmento → coorte → funnel → timeline → ipotesi → prossimo metodo**
-
-Il passo successivo è capire che cosa intendiamo per **primo valore**. È il tema dell'activation.
+Questa frase separa meglio ciò che sappiamo da ciò che dobbiamo ancora testare. Il passo successivo è quindi naturale: definire che cosa intendiamo davvero per **primo valore** e quanto tempo impiega il cliente a raggiungerlo.
