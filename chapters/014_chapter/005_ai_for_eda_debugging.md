@@ -1,143 +1,53 @@
-## 14.4 AI per EDA e debugging: aumentare il search space senza aumentare l'autoinganno
+## 14.4 AI per EDA e debugging: ampliare il search space senza promuovere il primo pattern interessante
 
-L'AI è molto utile nell'Exploratory Data Analysis perché rende economico generare:
+L'AI è molto utile nell'EDA perché rende economico generare segmentazioni, query diagnostiche, controlli sui missing, visualizzazioni, ipotesi alternative e possibili failure boundary. Questa velocità ha però un costo epistemico: se possiamo esplorare cento volte più rapidamente, possiamo anche trovare cento volte più pattern plausibili che non reggeranno.
 
-- segmentazioni;
-- query diagnostiche;
-- possibili anomaly slice;
-- controlli sui missing;
-- visualizzazioni;
-- spiegazioni alternative;
-- ipotesi su failure di pipeline.
+Il workflow deve quindi governare tre cose: **search, falsification e promotion dell'evidenza**.
 
-Questa è una capacità potente.
+### Usare l'AI come hypothesis generator
 
-Ma introduce un nuovo rischio:
-
-> **se possiamo esplorare cento volte più velocemente, possiamo anche trovare cento volte più pattern plausibili che non reggeranno.**
-
-Il problema del workflow non è quindi soltanto trovare più idee.
-
-È governare **search, falsification e promotion dell'evidenza**.
-
-## 14.4.1 L'AI come hypothesis generator
-
-Un uso ad alto valore è chiedere:
+Una richiesta utile non è "qual è la causa?", ma:
 
 > Quali decomposizioni distinguerebbero queste ipotesi?
 
-invece di:
-
-> Qual è la causa?
-
-### Caso simulato/composito — conversion Android
-
-Una travel app vede conversion da 4,7% a 3,9% in due giorni.
-
-Il sistema propone una **hypothesis map**:
+Una travel app vede conversion scendere da `4,7%` a `3,9%` in due giorni. Il sistema costruisce una hypothesis map:
 
 | Ipotesi | Pattern atteso | Test discriminante |
 |---|---|---|
 | bug app | drop per versione | app version × funnel |
 | PSP outage | drop per payment rail | error code × PSP |
-| tracking issue | orders stabili, session/conversion cambiano | reconciliation backend |
+| tracking issue | ordini stabili, session/conversion cambiano | reconciliation backend |
 | traffic mix | drop per channel/geo | within-segment comparison |
 | inventory | drop concentrato su route/hotel type | availability signal |
 
-Il valore dell'AI non è aver “indovinato il bug”.
+Il valore non è aver indovinato il bug. È aver trasformato una domanda vaga in test falsificabili. I dati mostrano poi iOS stabile, drop Android, concentrazione su Android 14, break tra `payment_started` e `payment_success` e aumento di `WALLET_TOKEN_EXPIRED`. Solo dopo Engineering conferma un problema nel wallet SDK.
 
-È aver trasformato una domanda vaga in **test falsificabili**.
+### Diagnostic search log e search budget
 
-I dati mostrano poi:
-
-- iOS stabile;
-- drop Android;
-- forte concentrazione su Android 14;
-- break tra `payment_started` e `payment_success`;
-- `WALLET_TOKEN_EXPIRED` in aumento.
-
-Engineering conferma successivamente un problema nel wallet SDK.
-
-## 14.4.2 Diagnostic search log
-
-Quando l'AI può generare molte esplorazioni, registriamo almeno:
+Quando il costo di generare esplorazioni crolla, aumenta il bisogno di registrare quali esplorazioni abbiamo fatto. Un **Diagnostic Search Log** può essere molto semplice:
 
 ```text
 hypothesis
 why considered
-query/test
+test/query
 result
 status: supported | weakened | unresolved
 next cheapest discriminating test
 ```
 
-Questo evita che il processo diventi:
+Questo evita il pattern "provo 80 slice, una sembra interessante, la racconto come se fosse la domanda iniziale". Possiamo anche fissare un **search budget**: per esempio cinque famiglie di ipotesi nel primo passaggio, due test per famiglia e stop immediato se emerge un data-quality failure; nel secondo passaggio approfondiamo soltanto le ipotesi migliori e cerchiamo almeno un test che possa indebolirle.
 
-```text
-provo 80 slice
-→ una sembra interessante
-→ la racconto come se fosse la domanda iniziale
-```
+Non è una regola statistica universale. È una disciplina contro il researcher degree of freedom che l'AI rende più economico esercitare.
 
-Il log rende visibile anche il **researcher degree of freedom** introdotto dalla velocità.
+### Usare l'AI anche per attaccare l'ipotesi favorita
 
-## 14.4.3 Search budget
+Una volta emersa una working hypothesis, chiediamo al sistema di proporre meccanismi alternativi compatibili con lo stesso pattern e il test più economico per distinguerli. Questo è utile contro confirmation bias umano e narrative lock-in del modello. L'AI non deve essere soltanto un generatore di spiegazioni; può diventare un **generatore di obiezioni verificabili**.
 
-Possiamo stabilire un search budget proporzionato alla fase.
+### Debugging: trovare il primo boundary rotto
+
+La stessa logica funziona sulle pipeline. Invece di chiedere genericamente "perché mancano dati?", forniamo DAG, row count per layer, freshness, schema changes, deploy recenti e test falliti. Poi chiediamo di identificare il primo invariant che cambia.
 
 Esempio:
-
-```text
-first pass:
-- 5 hypothesis families
-- 2 test per family
-- stop se emerge data-quality failure
-
-second pass:
-- approfondire top 2
-- cercare almeno 1 falsification test per ipotesi
-```
-
-Non è una regola statistica universale.
-
-È un modo per impedire che l'esplorazione illimitata venga scambiata per conferma.
-
-## 14.4.4 Adversarial questioning
-
-Una volta trovata un'interpretazione favorita, usiamo l'AI anche per attaccarla.
-
-Prompt operativo:
-
-> La working hypothesis è che la release Android abbia ridotto conversion. Proponi cinque meccanismi alternativi che produrrebbero lo stesso pattern e per ciascuno il test più economico che potrebbe distinguerlo.
-
-Questo è utile contro:
-
-- confirmation bias umano;
-- narrative lock-in del modello;
-- correlazioni proxy.
-
-L'AI non deve essere usata soltanto come **generator di spiegazioni**, ma come **generator di obiezioni verificabili**.
-
-## 14.4.5 Debugging come ricerca del primo boundary rotto
-
-Per una pipeline che perde righe, invece di chiedere genericamente:
-
-> Perché mancano dati?
-
-forniamo:
-
-- DAG;
-- row count per layer;
-- freshness;
-- schema changes;
-- deploy recenti;
-- test falliti.
-
-Poi chiediamo:
-
-> Identifica il primo boundary in cui un invariant cambia e proponi il test minimo per confermarlo.
-
-### Caso simulato/composito — 480.000 order line mancanti
 
 ```text
 Raw:    2,80M
@@ -145,63 +55,22 @@ Silver: 2,80M
 Gold:   2,32M
 ```
 
-Il primo boundary rotto è Silver → Gold.
+Il primo boundary rotto è `Silver → Gold`. Un nuovo `INNER JOIN` al product master elimina 480.000 order line associate a SKU nuovi non ancora presenti nella dimensione. L'AI accelera la diagnosi perché aiuta a **localizzare la perdita**; la causa viene confermata dal controllo sul join.
 
-Un nuovo `INNER JOIN` al product master elimina 480.000 righe associate a SKU nuovi non ancora caricati nella dimensione.
+### Data-health gate prima della narrativa
 
-L'AI accelera la diagnosi perché ragiona sulla **localizzazione della perdita**, non perché “conosce la causa”.
-
-## 14.4.6 EDA non è confirmation
-
-Se l'AI scopre dopo decine di slice che un segmento ha un uplift apparente, quel risultato deve restare etichettato come esplorativo finché non supera un gate appropriato.
-
-A seconda della domanda può servire:
-
-- holdout temporale;
-- campione indipendente;
-- test pre-specificato;
-- correzione per molteplicità;
-- esperimento;
-- Causal Identification Brief.
-
-Il Capitolo 5 ha trattato inferenza e multiple testing. Qui aggiungiamo un fatto operativo:
-
-> **AI riduce il costo di generare confronti, quindi aumenta il bisogno di registrare quali confronti abbiamo generato.**
-
-## 14.4.7 Data-health gate prima della narrativa
-
-Prima che un agente o copilota interpreti un'anomalia, dovrebbe verificare almeno:
-
-```text
-freshness
-completeness
-schema status
-grain/key invariants
-volume anomalies
-known incidents
-reconciliation headline KPI
-```
-
-Se fallisce un controllo critico, l'output corretto può essere:
+Prima di interpretare un'anomalia, il sistema deve verificare almeno freshness, completeness, schema status, grain/key invariants, volume anomalies, incidenti noti e reconciliation del KPI headline. Se fallisce un controllo critico, l'output corretto può essere:
 
 > Investigazione business sospesa: il denominatore sessioni è incompleto del 18% dopo il deploy del consent layer.
 
-Questo è più utile di una lista creativa di possibili cause business.
+Questo è più utile di una lista creativa di cause business.
 
-### Campo della AI Analysis Control Sheet
+### EDA non è confirmation
 
-```text
-EDA objective:
-Hypothesis families:
-Search budget:
-Diagnostic search log:
-Data-health gate:
-Current leading hypothesis:
-Alternative explanations tested:
-Falsification test:
-Promotion rule from exploratory to decision evidence:
-```
+Se dopo decine di slice emerge un uplift apparente, il risultato resta esplorativo finché non supera un gate adeguato: holdout temporale, campione indipendente, test pre-specificato, correzione per molteplicità, esperimento o Causal Identification Brief. Il Capitolo 5 ha già trattato multiple testing; qui aggiungiamo una conseguenza operativa:
 
-### Regola operativa
+> **Se l'AI riduce il costo di generare confronti, dobbiamo rendere più visibile quali confronti sono stati generati prima di promuoverne uno a evidenza decisionale.**
 
-> **Usa l'AI per ampliare e strutturare lo spazio delle ipotesi. Poi imponi un processo che renda costoso promuovere un pattern interessante a conclusione: servono falsificazione, log della ricerca e un gate di evidenza.**
+La AI Analysis Control Sheet registra obiettivo EDA, hypothesis families, search budget, search log, data-health gate, alternative testate, falsification test e regola di promozione dall'esplorazione alla decisione.
+
+> **Usa l'AI per ampliare e strutturare lo spazio delle ipotesi. Poi rendi costoso promuovere un pattern interessante a conclusione: servono falsificazione, log della ricerca e un gate di evidenza.**
