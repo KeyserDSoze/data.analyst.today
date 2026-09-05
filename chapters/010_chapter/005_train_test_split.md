@@ -1,138 +1,67 @@
-## 10.5 Train, validation e test: simulare il deployment, non dividere righe a caso
+## 10.5 Validation: simulare il deployment, non dividere il dataset
 
-Un modello predittivo viene giudicato su ciò che non ha ancora visto.
+Un modello predittivo viene giudicato su ciò che non ha ancora visto. Per questo il problema della validation non è scegliere `80/20`, ma costruire una simulazione credibile del futuro in cui lo useremo.
 
-Il problema della validation non è quindi scegliere una percentuale come `80/20`. È costruire una simulazione credibile del futuro in cui il modello verrà usato.
+Training, validation e test hanno ruoli diversi. Il training stima parametri e pattern; la validation supporta scelte di feature, modello, iperparametri e talvolta soglie; il test finale dovrebbe restare il più possibile isolato dal processo di sviluppo. Questa separazione serve a conservare almeno una misura di generalizzazione che non sia stata ottimizzata indirettamente dal team.
 
-Possiamo distinguere tre ruoli:
-
-- **training set**: stima parametri e pattern;
-- **validation set / cross-validation**: supporta scelte di feature, modello, iperparametri e talvolta soglie;
-- **test set**: resta il più possibile isolato fino alla valutazione finale.
-
-Questa separazione protegge una cosa preziosa: una misura di generalizzazione non continuamente ottimizzata durante lo sviluppo.
-
-### La domanda prima dello split
-
-Prima di dividere i dati chiediamo:
+La domanda che viene prima dello split è:
 
 > **a che cosa deve generalizzare il modello?**
 
-Possibili risposte:
+Potremmo voler prevedere nuovi eventi degli stessi clienti, clienti mai visti, nuovi negozi, nuove città, periodi futuri oppure una combinazione di questi casi. La risposta determina lo split corretto.
 
-- nuovi eventi degli stessi clienti;
-- clienti mai visti;
-- nuovi negozi;
-- nuove città;
-- periodi futuri;
-- device o mercati non presenti nel training;
-- una combinazione di questi casi.
+### Caso simulato/composito — FinSure
 
-La risposta determina il design della validation.
+FinSure costruisce un modello di default con dati 2021–2025. Uno split casuale produce ottime metriche, ma nel 2026 la performance scende nettamente. Nel 2025 erano cambiati criteri di acquisizione, pricing, underwriting, mix settoriale e canali commerciali.
 
-### Caso simulato/composito — FinSure e lo split che mescola due mondi
+Lo split casuale aveva distribuito righe degli stessi regimi nei due lati. Rispondeva quindi a:
 
-FinSure eroga finanziamenti a PMI. Costruisce un modello di default con dati 2021–2025.
+> “Quanto funzioniamo su altri esempi mescolati dello stesso archivio?”
 
-Uno split casuale produce ottime metriche.
+La domanda di produzione era:
 
-Nel 2026 la performance scende nettamente.
+> “Quanto funzioniamo sul prossimo periodo operativo?”
 
-Nel 2025 erano cambiati:
+Un test più onesto può usare train 2021–2024, validation gennaio–giugno 2025 e test luglio–dicembre 2025. La metrica può peggiorare; la qualità della misura migliora.
 
-- criteri di acquisizione;
-- pricing;
-- underwriting;
-- mix settoriale;
-- canali commerciali.
+Google raccomanda esplicitamente, per modelli destinati al futuro, di misurare performance su dati raccolti **dopo** quelli di training perché questa configurazione assomiglia maggiormente alla produzione.
 
-Lo split casuale aveva distribuito righe appartenenti allo stesso regime sia nel train sia nel test. Il test rispondeva quindi a:
+Riferimento: https://developers.google.com/machine-learning/guides/rules-of-ml/
 
-> "quanto funzioniamo su altri esempi mescolati dello stesso archivio?"
+### Il grain della validation deve seguire il grain della generalizzazione
 
-La domanda di produzione era invece:
+Consideriamo un churn model con uno snapshot mensile per cliente. Se gennaio–maggio dello stesso account sono nel training e giugno finisce nel test, il modello riconosce un soggetto che ha già visto.
 
-> "quanto funzioniamo sul prossimo periodo operativo?"
+Questo può essere corretto se in produzione prevederemo mesi futuri di clienti noti. È poco informativo se vogliamo sapere quanto generalizziamo a un cliente nuovo. In quel caso dobbiamo lasciare interi account da una sola parte dello split.
 
-Un test temporale più onesto può essere:
+Lo stesso problema ricorre con pazienti, device, negozi, aziende, prodotti e qualsiasi entità ripetuta. La validation non deve fingere indipendenza quando il deployment non la avrà.
 
-- train: 2021–2024;
-- validation: gennaio–giugno 2025;
-- test: luglio–dicembre 2025.
+### Caso simulato/composito — MoveNow
 
-La metrica può peggiorare. La qualità della valutazione migliora.
+MoveNow costruisce un ETA model su 12 milioni di consegne. Ottiene:
 
-Google raccomanda esplicitamente di testare modelli destinati al futuro su dati raccolti **dopo** quelli usati per il training, perché questo riflette meglio il comportamento in produzione.
+- split casuale tra consegne in città note: **MAE 5,8 minuti**;
+- holdout su città non viste: **MAE 11,4 minuti**.
 
-Fonte: https://developers.google.com/machine-learning/guides/rules-of-ml/
+Non esiste un unico numero “vero”. I due test rispondono a due domande: nuove consegne in contesti noti oppure generalizzazione a una città nuova. Se il prodotto promette entrambi gli use case, deve riportare entrambi gli scope.
 
-### Group split: quando la riga non è indipendente
+### Anche la validation viene contaminata dal processo di ricerca
 
-Immaginiamo un modello di churn con uno snapshot mensile per cliente.
+Se proviamo centinaia di combinazioni di feature sullo stesso validation set, le decisioni del team iniziano ad adattarsi anche a quel campione. Per questo, nei progetti con molte iterazioni, un test finale untouched o un periodo out-of-time successivo può avere molto valore.
 
-Se gennaio–maggio dello stesso account finiscono nel training e giugno nel test, il modello può sfruttare segnali quasi identici dello stesso soggetto.
+Il test non è “sacro” per rituale statistico. Serve a misurare quanto il processo di model search abbia imparato anche il set usato per scegliere.
 
-Questo può essere corretto se in produzione vogliamo prevedere mesi futuri di clienti già conosciuti.
+### Split e frontiera informativa sono due controlli diversi
 
-Può essere sbagliato se la domanda è:
+Uno split corretto non salva feature costruite con il futuro. La validation ha due dimensioni complementari:
 
-> "quanto generalizziamo su un nuovo cliente?"
+- **quali osservazioni** il modello può usare;
+- **quali informazioni** dentro ogni osservazione erano disponibili al prediction time.
 
-In quel caso lo split dovrebbe preservare i gruppi.
+La prima viene governata dal validation design. La seconda sarà il tema della sezione sul leakage.
 
-Lo stesso problema compare con:
+Nella Predictive Decision Card non scriveremo soltanto “5-fold” o “80/20”, ma una frase come:
 
-- pazienti con più visite;
-- device con più eventi;
-- negozi con più giorni;
-- aziende con più dipendenti;
-- prodotti con più transazioni.
+> **“Valutiamo il modello su account non usati nel training e su un periodo successivo, perché in produzione dovrà generalizzare sia a clienti nuovi sia a mesi futuri.”**
 
-### Caso simulato/composito — MoveNow e due domande entrambe valide
-
-MoveNow costruisce un ETA model su 12 milioni di consegne.
-
-Ottiene:
-
-- split casuale tra consegne in città note: MAE 5,8 minuti;
-- holdout su città non viste: MAE 11,4 minuti.
-
-Non esiste un unico numero "vero" di performance.
-
-I due test rispondono a domande diverse:
-
-1. **new event, known context** — nuove consegne in città già presenti;
-2. **new context** — generalizzazione all'apertura di una città nuova.
-
-Se il business vuole entrambi gli use case, la Predictive Decision Card deve riportare entrambi gli scope.
-
-### Validation set contaminato dal processo di sviluppo
-
-Anche un validation set può diventare, di fatto, parte del training mentale del team.
-
-Se proviamo 300 combinazioni di feature e scegliamo quella che performa meglio sullo stesso validation set, stiamo adattando decisioni di sviluppo anche a quel campione.
-
-Per questo nei progetti con molte iterazioni può essere utile mantenere un test finale realmente untouched.
-
-Il test set non è sacro per motivi rituali. Serve a ridurre il rischio che il processo di ricerca ottimizzi inconsapevolmente anche la valutazione.
-
-### Il test deve rispettare la frontiera informativa
-
-Uno split corretto non basta se le feature sono costruite usando informazioni future.
-
-Train/test design e leakage sono due controlli complementari:
-
-- lo split decide **quali osservazioni** il modello può usare;
-- la frontiera informativa decide **quali informazioni dentro ogni osservazione** erano disponibili al prediction time.
-
-La sezione successiva affronta proprio questo secondo problema.
-
-### Regola operativa
-
-La strategia di validation deve essere scritta in una frase business, non solo in codice.
-
-Esempio:
-
-> **"Valutiamo il modello su account non usati nel training e su un periodo successivo, perché in produzione lo applicheremo ogni mese anche a nuovi clienti in un mercato che cambia nel tempo."**
-
-> **Il miglior split non è quello che usa meglio il dataset. È quello che simula meglio il fallimento che ci aspetta dopo il deployment.**
+> **Il miglior split non è quello che usa meglio il dataset. È quello che riproduce meglio il modo in cui il modello potrà fallire dopo il deployment.**
