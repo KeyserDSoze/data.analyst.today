@@ -1,25 +1,12 @@
 ## 8.16 Causal Identification Brief: il gate prima di usare il verbo “causare”
 
-Prima di presentare una causal claim, l'analista dovrebbe riuscire a compilare una scheda come questa.
+Questa sezione resta deliberatamente strutturata. Non è un riepilogo da memorizzare: è un **artefatto operativo** da compilare prima di presentare una causal claim. Il suo compito è rendere visibile dove l'evidenza deriva dai dati e dove dipende da assunzioni sul processo.
 
-Non è burocrazia.
+### Decisione ed estimand
 
-È il modo per separare ciò che sappiamo dai passaggi che dipendono da assunzioni.
+Prima di tutto deve essere chiaro quale decisione cambierebbe se l'effetto fosse diverso, chi la prende, quale azione è realmente disponibile e quanto è reversibile. Senza questa connessione la causal analysis rischia di diventare un esercizio di attribuzione.
 
-## 1. Decisione
-
-```text
-Quale decisione cambierebbe se l'effetto fosse diverso?
-Chi decide?
-Quale azione è realmente disponibile?
-Quanto è reversibile?
-```
-
-Una causal analysis senza una decisione o policy collegata rischia di diventare un esercizio di attribuzione senza uso operativo.
-
-## 2. Estimand
-
-Specificare:
+L'estimand deve poi essere scritto senza abbreviazioni concettuali:
 
 ```text
 Unità:
@@ -31,27 +18,17 @@ Popolazione target:
 Effetto desiderato: ATE / ATT / CATE / locale / altro:
 ```
 
-La frase “effetto del programma” è quasi sempre troppo vaga.
+“Effetto del programma” è quasi sempre troppo vago.
 
-## 3. Treatment versions e timing
+### Treatment, timing e assignment mechanism
 
-Documentare:
+Il trattamento deve corrispondere a qualcosa di abbastanza stabile da poter essere interpretato. Documentiamo momento di assignment, exposure effettiva, intensità, durata, versioni diverse, cross-over o non-compliance, finestra pre-treatment e outcome window.
 
-- quando avviene assignment;
-- quando avviene exposure;
-- intensità e durata;
-- versioni diverse del trattamento;
-- cross-over o non-compliance;
-- finestra pre-treatment;
-- finestra outcome.
+La domanda di controllo è:
 
-Chiedere:
+> **Tutte le unità classificate come trattate hanno ricevuto qualcosa di sufficientemente simile da meritare lo stesso nome?**
 
-> **tutte le unità classificate come trattate hanno ricevuto qualcosa di sufficientemente simile da meritare lo stesso nome?**
-
-## 4. Assignment mechanism
-
-Questa è spesso la sezione più importante.
+Subito dopo viene la parte spesso più importante del brief:
 
 ```text
 Perché alcune unità ricevono T e altre no?
@@ -64,42 +41,19 @@ Policy territoriale?
 Timing esterno?
 ```
 
-Se non comprendiamo come nasce il trattamento, non sappiamo quali bias aspettarci.
+Se non sappiamo come nasce il trattamento, non sappiamo quali bias aspettarci e non possiamo scegliere coerentemente l'identification strategy.
 
-## 5. Causal model
+### Causal model e controfattuale
 
-Disegnare o descrivere:
+Disegniamo o descriviamo cause comuni di trattamento e outcome, interventi reattivi, selection mechanism, collider, mediatori, variabili post-treatment, spillover e cause importanti non osservate. Il DAG può essere semplice; deve però rendere criticabile la storia causale.
 
-- cause comuni di trattamento e outcome;
-- reverse causality / treatment by indication;
-- selection mechanism;
-- collider plausibili;
-- mediatori;
-- variabili post-treatment;
-- spillover/interference;
-- cause importanti non osservate.
+Poi completiamo una frase che dovrebbe essere impossibile lasciare vaga:
 
-Il DAG può essere semplice. Deve però rendere esplicita la storia.
+> **Il controfattuale dei trattati è rappresentato da ______ perché ______.**
 
-## 6. Controfattuale
+Il primo spazio può contenere un gruppo randomizzato al controllo, una regione con traiettoria comparabile, unità appena oltre una soglia, matched controls nell'area di overlap o variazione indotta da uno strumento. Il secondo spazio è l'identification argument. Se non sappiamo riempirlo, il metodo non è ancora giustificato.
 
-Scrivere in una frase:
-
-> “Il controfattuale dei trattati è rappresentato da ______ perché ______.”
-
-Esempi:
-
-- gruppo randomizzato al controllo;
-- regione con traiettoria comparabile;
-- unità appena oltre una soglia;
-- matched controls nell'area di overlap;
-- variazione indotta da uno strumento.
-
-Se il secondo spazio resta vago, l'identificazione non è ancora chiara.
-
-## 7. Identification strategy
-
-Il metodo deve seguire il processo di assegnazione.
+### Identification strategy
 
 | Struttura disponibile | Design possibile | Assunzione centrale |
 |---|---|---|
@@ -109,90 +63,23 @@ Il metodo deve seguire il processo di assegnazione.
 | cutoff di eleggibilità | RDD | continuity / no problematic manipulation |
 | fonte esterna che muove T | IV | relevance + independence + exclusion + interpretazione locale |
 
-Non esiste una gerarchia universale che renda automaticamente un metodo “causale”.
+Questa tabella non è una gerarchia universale dei metodi. Serve a ricordare che il design deve seguire la struttura che rende possibile il confronto.
 
-Esiste un metodo più o meno coerente con la struttura del problema.
+### Diagnostics specifici del design
 
-## 8. Diagnostics
+Per una **randomizzazione** controlliamo integrità dell'assignment, attrition e altre esclusioni post-randomizzazione, compliance e interference. Il Capitolo 9 aggiungerà SRM, peeking, stopping, exposure e telemetry checks perché un esperimento valido sulla lavagna può rompersi in produzione.
 
-### Randomizzazione
+Per una **DiD** guardiamo pre-trends, announcement e anticipation, shock differenziali, composizione della popolazione e treatment timing. Per **matching/weighting** controlliamo overlap, balance prima e dopo, pesi estremi, effective sample size e unità escluse. Per **RDD** verifichiamo manipolazione della running variable, covariate continuity, altre policy al cutoff, bandwidth sensitivity e placebo cutoff quando sensato. Per **IV** documentiamo first stage, plausibilità dell'exogeneity, possibili percorsi alternativi verso `Y`, weak-instrument risk e popolazione dei compliers.
 
-- assignment integrity;
-- attrition/post-randomization exclusions;
-- compliance;
-- interference.
+### Falsification e sensitivity
 
-Il Capitolo 9 aggiungerà SRM, peeking, stopping e gli altri controlli sperimentali.
+Una causal claim forte dovrebbe cercare attivamente modi per essere smentita. A seconda del design possono essere utili placebo outcome, placebo treatment date, effetti apparenti pre-trattamento, cutoff fittizi, specifiche alternative, esclusione di periodi anomali, negative controls, balance checks o sensitivity a unobserved confounding.
 
-### DiD
+Un risultato che esiste soltanto nella specifica più favorevole merita una causal claim più debole, non una presentazione più selettiva.
 
-- pre-trends;
-- announcement/anticipation;
-- shock differenziali;
-- composizione;
-- treatment timing.
+### Effect, uncertainty e scope
 
-### Matching / weighting
-
-- overlap;
-- balance pre/post;
-- pesi estremi;
-- effective sample size;
-- unità escluse.
-
-### RDD
-
-- manipolazione running variable;
-- covariate continuity;
-- altri trattamenti al cutoff;
-- bandwidth sensitivity;
-- placebo cutoff quando sensato.
-
-### IV
-
-- first stage;
-- plausibilità dell'exogeneity;
-- percorsi alternativi verso Y;
-- weak instrument risk;
-- popolazione dei compliers.
-
-## 9. Falsification e sensitivity
-
-Una causal claim forte dovrebbe cercare modi per provare a smentirsi.
-
-Possibili test:
-
-- placebo outcome;
-- placebo treatment date;
-- effetto apparente prima del trattamento;
-- cutoff fittizi;
-- specifiche alternative;
-- exclusion di periodi anomali;
-- balance checks;
-- negative controls quando appropriati;
-- sensitivity a unobserved confounding, se disponibile.
-
-Un risultato che esiste solo nella specifica più favorevole merita prudenza.
-
-## 10. Effect + uncertainty
-
-Non consegnare soltanto il segno del coefficiente.
-
-Specificare:
-
-- dimensione assoluta;
-- dimensione relativa se utile;
-- intervallo di incertezza;
-- denominatore;
-- popolazione a cui si riferisce;
-- eventuale eterogeneità;
-- rilevanza economica.
-
-Il Capitolo 5 fornisce il linguaggio dell'incertezza; il Capitolo 15 collegherà effetto, economics e decisione.
-
-## 11. Scope ed external validity
-
-Chiedere:
+Non consegniamo soltanto il segno del coefficiente. Il brief deve riportare dimensione assoluta, eventuale dimensione relativa, intervallo di incertezza, denominatore, popolazione, heterogeneity e rilevanza economica. Il Capitolo 5 fornisce il linguaggio della precisione; qui dobbiamo legarlo allo scope del design.
 
 ```text
 L'effetto è locale a un cutoff?
@@ -203,33 +90,22 @@ Il mercato/periodo è particolare?
 La treatment implementation è replicabile?
 ```
 
-Internal validity e generalizzazione non sono la stessa domanda.
+Internal validity ed external validity sono domande diverse. Una stima locale molto credibile non diventa automaticamente una policy globale.
 
-## 12. Claim ladder finale
+### Claim ladder finale
 
-Scegliere deliberatamente il livello di linguaggio.
+| Livello | Linguaggio |
+|---|---|
+| Descrittivo | I trattati mostrano outcome migliori/peggiori. |
+| Aggiustato osservazionale | La differenza rimane dopo bilanciamento delle covariate osservate. |
+| Causale condizionato | Sotto le assunzioni del design, la stima è compatibile con un effetto causale di questa dimensione. |
+| Decisionale | Per questa popolazione, l'effetto stimato e il suo valore economico giustificano questa policy, con questi guardrail. |
 
-**Descrittivo**
+La regola è usare la frase più forte che l'evidenza sostiene, non quella più forte che il management vorrebbe sentire.
 
-> “I trattati mostrano outcome migliori.”
+### Cosa non sappiamo
 
-**Aggiustato osservazionale**
-
-> “La differenza rimane dopo bilanciamento delle covariate osservate.”
-
-**Causale condizionato**
-
-> “Sotto le assunzioni del design, la stima è compatibile con un effetto causale di questa dimensione.”
-
-**Decisionale**
-
-> “Per questa popolazione, l'effetto stimato e il suo valore economico giustificano questa policy, con questi guardrail.”
-
-Usare la frase più forte che l'evidenza sostiene, non quella più forte che il management vorrebbe sentire.
-
-## 13. Cosa non sappiamo
-
-Ogni brief deve contenere almeno una sezione:
+Ogni brief deve contenere anche il confine dell'evidenza:
 
 ```text
 Incertezza statistica:
@@ -240,9 +116,7 @@ Possibili spillover:
 Dato o esperimento che ridurrebbe maggiormente l'incertezza:
 ```
 
-Una limitazione dichiarata non indebolisce automaticamente una causal analysis.
-
-Permette di sapere **dove finisce l'evidenza**.
+Dichiarare un limite non indebolisce automaticamente l'analisi. Permette al decision maker di sapere **dove termina la conoscenza attuale e quale nuova evidenza avrebbe più valore**.
 
 ## Template finale
 
@@ -269,18 +143,18 @@ What we do not know:
 Next evidence-generating step:
 ```
 
-## La frase da evitare
+La frase da evitare rimane:
 
 > “Abbiamo controllato per tutte le variabili, quindi è causale.”
 
-Non possiamo quasi mai dimostrare che tutte le cause rilevanti siano state misurate e aggiustate correttamente.
+Non possiamo quasi mai dimostrare che tutte le cause rilevanti siano state misurate, temporizzate e aggiustate correttamente. La formulazione professionale è più precisa:
 
-## La frase professionale
+> **Questo design identifica l'effetto sotto queste assunzioni; questi diagnostics le rendono più o meno plausibili; l'effetto stimato vale per questa popolazione e la causal claim non va estesa oltre questo scope senza nuova evidenza.**
 
-> **“Questo design identifica l'effetto sotto queste assunzioni; questi diagnostics le rendono più o meno plausibili; l'effetto stimato vale per questa popolazione e la causal claim non va estesa oltre questo scope senza nuova evidenza.”**
+## Dal design all'esperimento reale
 
-È meno comoda di un coefficiente isolato.
+Il Capitolo 8 termina dove comincia il problema operativo del Capitolo 9. Qui abbiamo visto **perché** la randomizzazione può costruire un controfattuale forte. Nel prossimo capitolo vedremo quanto è facile distruggere quel vantaggio durante l'implementazione: identità instabile, contamination, exposure diversa dall'assignment, Sample Ratio Mismatch, telemetria incompleta, metriche cambiate durante il test, peeking e rollout che modifica il sistema.
 
-È il tipo di frase su cui si possono costruire decisioni serie.
+Il Causal Identification Brief definisce quale confronto dovrebbe essere credibile. L'**Experiment Contract** del Capitolo 9 dovrà preservare quella credibilità dal primo bucket fino alla decisione di ship.
 
 > **La causalità professionale non consiste nel sembrare certi. Consiste nel sapere esattamente quale confronto rende credibile la conclusione, quali assunzioni restano e quale frase siamo autorizzati a difendere.**
