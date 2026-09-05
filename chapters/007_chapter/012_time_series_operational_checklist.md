@@ -1,21 +1,10 @@
 ## 7.11 Temporal Decision Brief: il deliverable operativo del capitolo
 
-Una buona analisi temporale non termina con un grafico, un alert o un forecast.
+Una buona analisi temporale non termina con un grafico, un alert o un forecast. Termina con una sintesi che renda visibili **che cosa stiamo misurando, quale passato stiamo usando come riferimento, quanta incertezza resta e quale decisione cambia davvero**.
 
-Termina con una sintesi che renda visibili:
-
-- ciò che la serie rappresenta;
-- quale struttura temporale è stata modellata;
-- quale baseline è stata superata;
-- quanta incertezza resta;
-- in quali condizioni la previsione può fallire;
-- quale decisione usa davvero il risultato.
-
-Questo è il **Temporal Decision Brief**.
+Per questo il **Temporal Decision Brief** deve restare strutturato e scansionabile. Non è una lista editoriale: è un artefatto operativo da compilare durante la review.
 
 ### 1. Series contract
-
-Prima del modello, definisci la serie.
 
 ```text
 Metrica:
@@ -29,7 +18,7 @@ Revisioni retroattive:
 Freshness attesa:
 ```
 
-Una serie oraria in UTC e una serie oraria in ora locale possono produrre pattern diversi durante daylight saving time. Una revenue giornaliera che viene revisionata per sette giorni non è la stessa cosa di una misura “finale” disponibile in tempo reale.
+Una serie oraria in UTC e una serie in ora locale possono produrre pattern differenti durante il daylight saving time. Una revenue giornaliera che viene revisionata per sette giorni non equivale a una misura “finale” disponibile in tempo reale.
 
 ### 2. Decisione e forecast target
 
@@ -47,25 +36,16 @@ Il forecast deve essere progettato attorno al momento in cui la decisione viene 
 
 ### 3. Baseline temporale
 
-Dichiara quale confronto rappresenta l'atteso.
+```text
+Baseline scelta:
+Perché è coerente con il processo:
+Eventuali aggiustamenti di calendario:
+Che cosa NON controlla:
+```
 
-Possibili baseline:
-
-- periodo precedente;
-- stesso giorno della settimana;
-- stesso periodo dell'anno precedente;
-- seasonal naïve;
-- media mobile;
-- drift;
-- forecast corrente.
-
-Aggiungi:
-
-> Perché questa baseline è coerente con il processo?
+La baseline può essere il periodo precedente, lo stesso giorno della settimana, lo stesso periodo stagionale, una media mobile, drift, seasonal naïve o un forecast già in uso. Conta la coerenza con la domanda, non la semplicità della formula.
 
 ### 4. Struttura della serie
-
-Descrivi sinteticamente:
 
 ```text
 Trend:
@@ -78,11 +58,9 @@ Cambi di varianza:
 Trasformazioni/differenziazione:
 ```
 
-Non serve documentare ogni test. Serve rendere visibile la struttura che il modello deve conoscere.
+Non serve riportare ogni test eseguito. Serve rendere visibile quale struttura il modello deve riuscire a rappresentare.
 
 ### 5. Anomaly triage
-
-Per un alert o scostamento importante:
 
 ```text
 Segnale:
@@ -101,23 +79,21 @@ Ipotesi:
 Cosa non è dimostrato:
 ```
 
-Un detector non dovrebbe saltare direttamente da “inusuale” a “causato da”.
+Un detector deve poter dire “inusuale” senza trasformarlo automaticamente in “causato da”.
 
 ### 6. Baseline model
-
-Ogni forecast deve avere un benchmark dichiarato.
 
 ```text
 Baseline:
 Accuracy baseline:
-Perché è una baseline credibile:
+Perché è credibile:
 Quanto il modello la migliora:
 In quali segmenti/horizon NON la migliora:
 ```
 
-Un modello che non batte il seasonal naïve non deve essere salvato dalla sua complessità.
+Un modello che non batte una baseline sensata non viene salvato dalla propria complessità.
 
-### 7. Backtest as-of
+### 7. Backtest `as-of`
 
 ```text
 Training window:
@@ -130,11 +106,9 @@ Periodi speciali inclusi:
 Leakage checks:
 ```
 
-La domanda chiave è:
+La domanda chiave è: **se fossimo davvero tornati a quella data, avremmo potuto produrre esattamente questa previsione con le informazioni allora disponibili?**
 
-> Se fossimo davvero tornati a quella data, avremmo potuto produrre esattamente questa previsione?
-
-### 8. Accuracy e loss
+### 8. Accuracy e business loss
 
 ```text
 Metrica primaria:
@@ -149,7 +123,7 @@ Performance per segmento:
 Business loss:
 ```
 
-La metrica primaria deve riflettere il tipo di errore che interessa alla decisione.
+La metrica primaria deve riflettere il tipo di errore che interessa alla decisione, non soltanto quello che fa apparire migliore il modello.
 
 ### 9. Forecast uncertainty
 
@@ -164,21 +138,11 @@ Scenari:
 Incertezze non incluse nel modello:
 ```
 
-Un intervallo deve essere sia calibrato sia abbastanza stretto da essere utile.
+Un intervallo deve essere calibrato e, allo stesso tempo, abbastanza informativo da cambiare una decisione.
 
 ### 10. Conditions of validity
 
-Elenca esplicitamente ciò che il modello assume abbastanza stabile:
-
-- pricing;
-- mix;
-- capacità;
-- calendario;
-- relazione tra feature e target;
-- sistema di tracking;
-- comportamento di clienti/mercato.
-
-Poi definisci quali eventi invalidano o indeboliscono la previsione.
+Dichiara esplicitamente che cosa deve restare sufficientemente stabile: pricing, mix, capacità, calendario, relazione tra feature e target, tracking e comportamento del mercato. Poi definisci quali eventi obbligano a riaprire la previsione.
 
 ### 11. Monitoring e override
 
@@ -194,7 +158,7 @@ Motivazione obbligatoria:
 Valutazione ex-post degli override:
 ```
 
-Il modello deve avere un processo di uscita, non soltanto un processo di deployment.
+Un modello deve avere un processo di uscita e revisione, non soltanto un processo di deployment.
 
 ### 12. Decisione finale
 
@@ -230,10 +194,6 @@ Chiudi il brief con quattro righe:
 | Override |  |
 | Decisione finale |  |
 
-### La regola finale
+> **Il Temporal Decision Brief è completo quando un decision maker può capire che cosa il passato rende prevedibile, quale parte del futuro resta incerta, che cosa potrebbe rompere la previsione e come tutto questo modifica l'azione.**
 
-Un Temporal Decision Brief è completo quando permette a un decision maker di capire:
-
-> **che cosa il passato rende prevedibile, quale parte del futuro rimane incerta, quali condizioni potrebbero rompere la previsione e come questa incertezza modifica una decisione reale.**
-
-Se contiene soltanto “forecast = 12.400”, non è ancora un brief. È una linea su un grafico.
+Se contiene soltanto `forecast = 12.400`, non è ancora un brief. È una linea su un grafico.
