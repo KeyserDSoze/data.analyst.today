@@ -1,93 +1,30 @@
 ## 13.3 Python, R e notebook: scegliere programmabilità quando serve libertà metodologica
 
-Python e R diventano particolarmente utili quando il problema richiede una flessibilità che SQL o un foglio esprimono male.
-
-La proprietà importante non è semplicemente “scrivere codice”.
-
-È poter rappresentare in modo esplicito:
+Python e R diventano particolarmente utili quando il problema richiede una libertà che SQL o un foglio esprimono male. La proprietà importante non è semplicemente “scrivere codice”, ma poter rappresentare in modo esplicito una sequenza di lavoro:
 
 ```text
-input → trasformazione → metodo → diagnostica → output
+input
+→ trasformazione
+→ metodo
+→ diagnostica
+→ output
 ```
 
-usando librerie, funzioni, cicli, simulazioni e test che possono essere riutilizzati.
+con funzioni, librerie, iterazioni e test riusabili.
 
-### Quando la programmabilità crea valore
+La domanda quindi non è “posso farlo in Python?”. Quasi sempre la risposta è sì. La domanda è: **la programmabilità riduce davvero la complessità del metodo o stiamo spostando in codice un lavoro tabellare che il motore dati eseguirebbe meglio?**
 
-Python o R sono spesso una buona scelta quando servono:
+Immaginiamo un marketplace che deve analizzare **600 viste del lifecycle**, combinando paese, categoria, acquisition channel e tenure. Per ogni combinazione servono numerosità, retention, intervalli, delta dalla baseline, grafico e ranking dei deterioramenti. Costruire manualmente centinaia di pivot e chart sarebbe fragile; una funzione applicata sistematicamente alle stesse regole riduce variazioni e rende più visibile ciò che è stato eseguito. Qui il valore del codice non è prestigio tecnico: è **sistematicità**.
 
-- statistica avanzata;
-- machine learning;
-- simulazioni;
-- ottimizzazione;
-- bootstrap o procedure iterative;
-- text/image processing;
-- API e integrazioni custom;
-- grafici diagnostici;
-- automazioni non naturalmente relazionali.
+Programmazione e notebook diventano ancora più naturali quando servono statistica avanzata, machine learning, bootstrap, simulazione, ottimizzazione, API custom o diagnostica grafica. Ma la stessa libertà aumenta il numero dei failure mode: dipendenze, file locali, credenziali personali, chiamate di rete, stato mutabile e ambienti differenti diventano parte del processo.
 
-La domanda utile è:
+### Il notebook è un laboratorio, non una garanzia
 
-> **il problema richiede davvero libertà algoritmica oppure stiamo usando codice per un'aggregazione che il warehouse eseguirebbe meglio?**
+Il notebook è eccellente per EDA, prototipazione, confronto di modelli e documentazione tecnica perché mantiene testo, codice, output e grafici nello stesso spazio. Ma il suo vantaggio interattivo può introdurre **hidden state**.
 
-### Caso simulato/composito — 600 viste del lifecycle
+Un notebook di forecasting può funzionare perfettamente il venerdì e non essere riproducibile il lunedì da una collega se `forecast_input.csv` era stato modificato a mano, alcune celle erano state eseguite fuori ordine, una variabile proveniva da un tentativo precedente o la libreria aveva una versione differente. In quel caso il problema non è “Jupyter è inaffidabile”: è che il risultato dipende da stato che non fa parte dell'artefatto verificabile.
 
-Un marketplace vuole verificare centinaia di combinazioni di paese, categoria, acquisition channel e tenure.
-
-Per ogni combinazione servono:
-
-- numerosità;
-- retention;
-- intervalli;
-- delta rispetto alla baseline;
-- grafico;
-- ranking dei deterioramenti.
-
-Costruire manualmente centinaia di pivot e chart sarebbe fragile.
-
-Un programma può applicare la stessa funzione a ogni segmento, produrre controlli standard e rendere esplicito ciò che è stato eseguito.
-
-Qui il vantaggio del codice è **sistematicità**.
-
-### Il notebook è un laboratorio, non una garanzia di riproducibilità
-
-Il notebook è potente perché combina:
-
-- testo;
-- codice;
-- output;
-- grafici;
-- ragionamento.
-
-È quindi eccellente per:
-
-- EDA;
-- prototipazione;
-- analisi metodologica;
-- confronto di modelli;
-- documentazione tecnica interattiva.
-
-Ma introduce un rischio specifico: **hidden state**.
-
-Una cella può dipendere da qualcosa eseguito venti minuti prima e non più visibile nell'ordine del documento.
-
-### Caso simulato/composito — funziona solo sulla sessione di Marco
-
-Un notebook di forecasting produce correttamente il report del venerdì.
-
-Lunedì una collega lo apre e non riesce a riprodurre il risultato.
-
-Scopre che:
-
-- `forecast_input.csv` era un file locale modificato manualmente;
-- due celle erano state eseguite fuori ordine;
-- una variabile in memoria proveniva da un tentativo precedente;
-- la libreria usata aveva una versione diversa;
-- un path assoluto puntava alla cartella personale dell'autore.
-
-Il notebook non è “inaffidabile per natura”.
-
-Ma per fidarsi dobbiamo sapere se funziona:
+La prova utile è più concreta:
 
 ```text
 nuovo ambiente
@@ -96,89 +33,30 @@ nuovo ambiente
 = stesso processo
 ```
 
-### Dal notebook alla libreria o pipeline
-
-Quando una parte del lavoro si stabilizza, può essere utile estrarla.
+Quando una parte del lavoro diventa stabile e riusata, può meritare una casa più testabile dello stato interattivo:
 
 ```text
 notebook
 ├─ narrativa / exploration
 ├─ chiamate a funzioni stabili
-└─ output diagnostici
+└─ diagnostica
 
 src/
-├─ data preparation
+├─ preparation
 ├─ metrics
 ├─ models
 └─ tests
 ```
 
-Questo non significa che ogni notebook debba diventare un progetto software.
+Non ogni notebook deve diventare software di produzione. Il punto è riconoscere **quando la logica stabile ha acquisito obblighi diversi dall'esplorazione che l'ha generata**.
 
-Significa che **logica stabile e riusata** merita una casa più testabile dello stato interattivo.
+### Python o R: scegliere per il sistema, non per identità
 
-### Python o R: il contesto conta più dell'identità
+Entrambi coprono un'enorme parte del lavoro analitico. La scelta dovrebbe considerare librerie necessarie, ecosistema del team, deployment, standard interni, facilità di review e interoperabilità con la piattaforma dati. Un linguaggio leggermente meno comodo per il singolo analyst può avere un costo totale minore se altre otto persone possono revisionarlo e mantenerlo.
 
-Entrambi possono coprire moltissimi problemi analitici.
+Con l'aumentare della criticità diventano progressivamente importanti dependency management, test, version control, logging, secret management e separazione tra configurazione e logica. Non perché “il codice richiede sempre DevOps”, ma perché **la libertà general purpose deve essere accompagnata dai controlli proporzionati alla responsabilità che il processo assume**.
 
-La scelta dovrebbe considerare:
-
-- ecosistema del team;
-- librerie necessarie;
-- deployment;
-- standard interni;
-- facilità di review;
-- competenze già presenti;
-- interoperabilità con la piattaforma dati.
-
-Un linguaggio leggermente meno elegante per il singolo analyst può essere una scelta migliore se altre otto persone possono mantenerlo.
-
-### La flessibilità ha un costo di governance
-
-Con un linguaggio general purpose possiamo:
-
-- leggere file locali;
-- fare chiamate di rete;
-- cambiare dati;
-- introdurre dipendenze;
-- usare librerie arbitrarie;
-- serializzare oggetti;
-- automatizzare azioni.
-
-Questa libertà aumenta anche il numero dei failure mode.
-
-Per questo, con l'aumentare della criticità, diventano importanti:
-
-- environment/dependency management;
-- test;
-- version control;
-- logging;
-- secret management;
-- code review;
-- separazione tra configurazione e logica.
-
-### Campo del Tooling Decision Record
-
-Se scegliamo Python/R/notebook annotiamo:
-
-```text
-method requiring code:
-data size after pushdown:
-interactive vs recurring:
-notebook or module/pipeline:
-environment/dependencies:
-review owner:
-execution environment:
-output destination:
-reproducibility requirement:
-exit condition:
-```
-
-Esempio:
-
-> Il notebook resta ambiente esplorativo. Se lo score viene distribuito settimanalmente a Operations, spostare data prep e scoring in codice testato/schedulato e lasciare il notebook come diagnostica.
-
-### Regola operativa
+Nel Tooling Decision Record, quindi, non basta scrivere `Python`. Dobbiamo dichiarare quale metodo richiede codice, quanto dato resta dopo il pushdown, se il lavoro è interattivo o ricorrente, dove gira, chi lo revisiona, dove finisce l'output e quale evento obbliga a promuovere notebook o script in un processo più governato.
 
 > **Scegli la programmabilità quando riduce la complessità del metodo o rende il processo sistematico. Non scegliere il codice perché rende tecnicamente possibile fare tutto nello stesso posto.**
 
