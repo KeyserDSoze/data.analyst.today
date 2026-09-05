@@ -1,143 +1,58 @@
 ## 16.2 Scegliere la forma in base al compito cognitivo
 
-La domanda corretta non è:
+Il chart type viene dopo la decision question. La domanda non è quale visual sia più elegante o disponibile nel tool, ma **quale relazione deve diventare facile da percepire e quale errore di lettura dobbiamo rendere difficile**.
 
-> “Quale grafico è più bello?”
+Per questo useremo un piccolo **Visual Encoding Contract**. Per ogni visual importante registriamo mentalmente quattro elementi: il task percettivo richiesto, l'encoding usato, il riferimento necessario e il failure mode più probabile.
 
-né:
-
-> “Quale visual offre il tool?”
-
-È:
-
-> **“Quale confronto deve diventare facile da percepire, e quale errore di lettura dobbiamo evitare?”**
-
-La forma viene dopo la decision question, il grain e il tipo di relazione.
-
-## Un Visual Encoding Contract
-
-Per ogni visual importante possiamo dichiarare quattro cose:
-
-1. **task** — che cosa deve fare il lettore con gli occhi;
-2. **encoding** — posizione, lunghezza, area, colore, linea, testo;
-3. **reference** — baseline, target, zero, periodo o gruppo di confronto;
-4. **failure mode** — quale interpretazione sbagliata è più probabile.
-
-| Domanda | Forma spesso utile | Facilita | Failure mode tipico |
+| Domanda | Forma spesso utile | Riferimento essenziale | Rischio da controllare |
 |---|---|---|---|
-| Quale gruppo è più grande? | barre ordinate | confronto di magnitudine | asse troncato |
-| Come cambia nel tempo? | linea | trend, turning point | finestra cherry-picked |
-| Come è distribuito? | istogramma / boxplot / percentile | forma e code | media usata come sintesi totale |
-| Due variabili si muovono insieme? | scatter | relazione e dispersione | correlazione letta come causalità |
-| Come cambia la composizione? | stacked / 100% stacked / small multiples | quota o mix | confondere quota e volume |
-| Dove si perde una popolazione? | funnel / step conversion | drop-off | denominatori incompatibili |
-| Quanto siamo lontani da un target? | valore + delta + trend | distanza dalla soglia | gauge senza scala utile |
-| Devo leggere valori precisi? | tabella | lookup | heatmap decorativa |
+| Quale gruppo è più grande? | barre ordinate | zero / baseline comune | asse troncato |
+| Come cambia nel tempo? | linea | periodo, baseline, eventi | finestra cherry-picked |
+| Come è distribuito? | istogramma / boxplot / percentile | popolazione e unità | media che nasconde le code |
+| Due variabili si muovono insieme? | scatter | scala e popolazione | correlazione letta come causa |
+| Come cambia il mix? | stacked / small multiples | volume totale | quota confusa con volume |
+| Dove si perde la popolazione? | funnel | denominatori coerenti | step non comparabili |
+| Quanto siamo lontani da una soglia? | valore + delta + trend | target / switching value | gauge senza contesto |
+| Servono valori precisi? | tabella | unità e ordinamento | decorazione al posto del lookup |
 
-## Confrontare grandezze: lunghezze allineate prima di angoli e aree
+La tabella è un promemoria, non un catalogo rigido. La forma corretta dipende sempre da grain, semantica e decisione.
 
-Se dobbiamo confrontare categorie, barre ordinate su una scala comune sono spesso più leggibili di una torta.
+### Confrontare magnitudini
 
-Esempio:
+Quando il lettore deve distinguere valori relativamente vicini, una baseline comune e lunghezze allineate sono spesso più leggibili di angoli o aree. Se Home vale **€12,4M**, Beauty **€10,9M**, Sports **€9,8M** ed Electronics **€9,6M**, barre ordinate rendono il confronto diretto. La forma deve aiutare a vedere la differenza reale, non a creare varietà grafica.
 
-| Categoria | Revenue |
-|---|---:|
-| Home | €12,4M |
-| Beauty | €10,9M |
-| Sports | €9,8M |
-| Electronics | €9,6M |
+L'Office for National Statistics raccomanda infatti che i bar chart partano da zero, perché la lunghezza della barra rappresenta direttamente la magnitudine.[^ons-axis]
 
-Il compito è distinguere valori relativamente vicini. La lunghezza su una baseline comune rende quel confronto diretto.
+### Una forma giusta non corregge un grain sbagliato
 
-## Tempo: chart type corretto, grain sbagliato
+Una piattaforma food delivery può mostrare ordini mensili quasi invariati con un line chart perfettamente legittimo. Passando al dato giornaliero emerge però che lunedì–giovedì crescono mentre venerdì–domenica diminuiscono. I due movimenti si compensavano nell'aggregato.
 
-### Caso simulato/composito — Il mese stabile che nasconde il weekend
+Il failure mode non era il grafico. Era il **grain temporale**. Lo stesso vale per categoria, cohort, account o sessione: una visualizzazione chiara non salva una rappresentazione sbagliata del fenomeno.
 
-Una piattaforma food delivery mostra ordini mensili quasi invariati.
+### Centro, distribuzione e code
 
-Il line chart è tecnicamente corretto.
+Un delivery time medio di **2,4 giorni** può apparire ottimo; se il 90° percentile è **6,8 giorni**, il problema decisionale può vivere nella coda. Se dobbiamo monitorare un service level, media e percentile possono essere più utili di una singola media; se dobbiamo confrontare gruppi, boxplot o distribuzioni possono rendere visibile ciò che il centro nasconde.
 
-Passando al dato giornaliero emerge però che:
+### Relazione non significa causalità
 
-- lunedì–giovedì gli ordini crescono;
-- venerdì–domenica diminuiscono;
-- i due movimenti si compensano nell'aggregato mensile.
+Uno scatter plot può rendere una correlazione estremamente convincente. Proprio per questo titolo e annotazioni devono rispettare il claim level. “Gli account con maggiore adoption mostrano NRR più alta” descrive una relazione; “l'adoption aumenta la NRR” richiede un disegno causale che il grafico non può fornire.
 
-Il failure mode non era il grafico.
+### Quota e volume devono restare distinguibili
 
-Era il **grain temporale**.
+Un 100% stacked chart può mostrare bene come cambia la composizione e, nello stesso tempo, nascondere che il totale si è dimezzato. Se entrambi sono decision-critical, mostriamo volume e mix in due layer coordinati invece di chiedere a un solo encoding di rispondere a due domande diverse.
 
-> **Una forma visiva corretta non salva una domanda rappresentata alla granularità sbagliata.**
+Lo stesso principio vale per il funnel. Se `checkout_started` conta sessioni e `payment_success` conta ordini, la forma suggerisce una sequenza coerente mentre i denominatori non lo sono. Il visual contract eredita il semantic contract dei capitoli precedenti.
 
-## Distribuzioni: quando il centro nasconde la coda
+### Quando un asse ristretto è legittimo
 
-Delivery time medio: 2,4 giorni.
+Per line chart e scatter, in cui i punti non sono codificati come lunghezza dalla baseline, un asse ristretto può rendere leggibile una variazione piccola senza essere automaticamente manipolativo. ONS consente questo uso quando scala e contesto sono chiari; il problema nasce quando l'asse o il titolo producono un'impressione sproporzionata rispetto alla domanda.[^ons-axis]
 
-Se il 90° percentile è 6,8 giorni, il problema può vivere nella coda e non nel cliente medio.
+La verifica finale resta semplice:
 
-La Decision Communication Pack deve quindi scegliere la forma in base alla decisione:
+> **Se il destinatario avesse cinque secondi, quale relazione deve percepire correttamente?**
 
-- media + percentile se conta il service level;
-- boxplot se dobbiamo confrontare gruppi;
-- distribuzione se la forma stessa è il messaggio.
+Poi controlliamo che scala, grain, denominatore, baseline e titolo non gli facciano percepire qualcos'altro.
 
-## Relazione: visivamente forte non significa causalmente forte
+> **Il chart type non è una preferenza estetica. È una decisione sul compito cognitivo che rendiamo economico e sul failure mode che dobbiamo rendere visibile.**
 
-Uno scatter plot può rendere una correlazione estremamente convincente.
-
-Proprio per questo titolo e annotazioni devono rispettare il claim level.
-
-Meglio:
-
-> “Gli account con maggiore adoption mostrano NRR più alta”
-
-che:
-
-> “L'adoption aumenta la NRR”
-
-se non abbiamo un disegno causale adeguato.
-
-## Composizione: quota e volume non sono intercambiabili
-
-Un 100% stacked bar risponde bene a:
-
-> “Come cambia il mix?”
-
-ma può nascondere che il totale si è dimezzato.
-
-Se volume e composizione sono entrambi decision-critical, mostriamoli separatamente o con due livelli coordinati.
-
-## Funnel: una sequenza richiede una popolazione coerente
-
-Un funnel ha senso soltanto se gli step appartengono a una sequenza definita e i denominatori sono compatibili.
-
-Se `checkout_started` conta sessioni e `payment_success` conta ordini, la forma può sembrare perfetta mentre la conversione non ha un significato stabile.
-
-Il visual contract eredita quindi il semantic contract dei capitoli precedenti.
-
-## Target: spesso basta meno
-
-Per mostrare performance rispetto a una soglia spesso sono sufficienti:
-
-- valore corrente;
-- target;
-- delta;
-- trend;
-- eventuale uncertainty band.
-
-Un gauge occupa molto spazio e spesso aggiunge poco.
-
-## La domanda finale
-
-Prima di disegnare chiediamoci:
-
-> **“Se il destinatario avesse cinque secondi, quale relazione deve percepire correttamente?”**
-
-Poi controlliamo che scala, denominatore, baseline e titolo non gli facciano percepire una relazione diversa.
-
-> **Il chart type non è una preferenza estetica. È una scelta sul compito cognitivo che rendiamo facile e sull'errore che dobbiamo rendere difficile.**
-
-### Fonti
-
-- Office for National Statistics, *Data visualisation guidance — Axes and gridlines*: https://service-manual.ons.gov.uk/data-visualisation/guidance/axes-and-gridlines
-- Government Analysis Function, *Accessible charts: a checklist of the basics*: https://analysisfunction.civilservice.gov.uk/policy-store/charts-a-checklist/
+[^ons-axis]: Office for National Statistics, *Data visualisation guidance — Axes and gridlines*, https://service-manual.ons.gov.uk/data-visualisation/guidance/axes-and-gridlines
