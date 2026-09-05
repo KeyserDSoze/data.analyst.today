@@ -1,123 +1,31 @@
-## 4.9 Il tempo nell'EDA: trend, stagionalità e baseline prima del forecasting
+## 4.9 Il tempo nell'EDA: un confronto vale solo rispetto al calendario che lo rende sensato
 
-Una variabile temporale non è una dimensione qualsiasi.
+Una variabile temporale non è una dimensione qualsiasi. Quando osserviamo vendite, traffico, ticket o ordini giorno dopo giorno, l'ordine delle osservazioni contiene informazione: lunedì e domenica possono appartenere a regimi diversi, dicembre e gennaio a stagioni differenti, due mesi consecutivi possono condividere un trend di fondo.
 
-Quando osserviamo vendite, traffico, ticket, ordini o domanda giorno dopo giorno, l'ordine delle osservazioni contiene informazione. Un lunedì non è necessariamente confrontabile con una domenica; dicembre non è necessariamente confrontabile con gennaio; due mesi consecutivi possono condividere un trend di fondo.
+Il Capitolo 7 affronterà serie temporali, autocorrelazione, decomposizione e forecasting. Qui serve una disciplina più elementare: **non chiamare anomalo ciò che il calendario, la stagionalità o il trend rendono normale**.
 
-Nel Capitolo 7 affronteremo in modo sistematico serie temporali, autocorrelazione, decomposizione, anomalie e forecasting.
+Immaginiamo una catena di palestre che nella prima settimana di gennaio registra accessi superiori del **92%** rispetto alla prima settimana di dicembre. Una campagna è partita il 2 gennaio e la spiegazione sembra immediata. Quando però l'analista allunga la serie e confronta la stessa settimana su cinque anni, scopre che gennaio mostra sistematicamente un forte aumento di accessi e iscrizioni. Rispetto alla baseline stagionale, l'anno corrente è circa **+9%**.
 
-Qui ci serve un obiettivo più modesto e fondamentale:
+Il +92% non era sbagliato. Rispondeva alla domanda “quanto è diverso gennaio da dicembre?”. Non rispondeva bene alla domanda “quanto è eccezionale questo gennaio rispetto a ciò che normalmente accade in gennaio?”. La baseline modifica quindi l'interpretazione senza cambiare nessuna osservazione.
 
-> **evitare che l'EDA interpreti come eccezione ciò che il calendario o il trend rendono normale.**
+## Prima della storia, cerchiamo la struttura temporale
 
-### Caso simulato/composito — Il +92% che diventò +9%
+In una serie vogliamo distinguere almeno tre fenomeni descrittivi. Un **trend** è un movimento persistente di fondo. La **stagionalità** è una struttura che tende a ripetersi con una frequenza riconoscibile — giorno della settimana, mese, trimestre, festività, stagione turistica o ciclo commerciale. Uno **shock** o cambio di livello è invece un movimento improvviso che può coincidere con lancio prodotto, prezzo, outage, campagna, regolamentazione o evento esterno.
 
-Una catena di palestre osserva che nella prima settimana di gennaio gli accessi sono superiori del **92%** rispetto alla prima settimana di dicembre.
+L'EDA può mostrare la coincidenza tra shock e evento. Non può trasformarla automaticamente in causalità. Se conversion rate passa dal 4,2% al 5,1% subito dopo una release, possiamo dire che il livello cambia in coincidenza con la release; non abbiamo ancora dimostrato che la release abbia causato +0,9 punti percentuali. Nello stesso momento possono essere cambiati traffico, campagne, mix o stagionalità.
 
-La campagna di Capodanno è partita il 2 gennaio. Il team marketing attribuisce quasi tutto l'incremento alla campagna.
+La baseline deve quindi seguire il processo. “Rispetto a prima” può significare giorno precedente, stesso giorno della settimana precedente, media delle ultime quattro settimane, stesso mese dell'anno precedente o valore atteso per la stagione. Un ristorante può confrontare venerdì con altri venerdì; un SaaS B2B può preferire il confronto year-over-year; un e-commerce deve spesso allineare Black Friday e festività mobili invece di confrontare lo stesso numero di giorno del calendario.
 
-L'analista allunga la serie e confronta la stessa settimana su cinque anni.
+NIST sottolinea proprio che le osservazioni temporali possono contenere dipendenza, trend e stagionalità e che questa struttura deve essere riconosciuta nell'analisi.[^nist-timeseries]
 
-Gennaio mostra sistematicamente un forte aumento di accessi e iscrizioni.
+## Il tempo non sostituisce il denominatore
 
-Rispetto alla baseline stagionale, l'anno corrente è circa **+9%**.
+Un conteggio può aumentare semplicemente perché aumenta l'esposizione. Se le cancellazioni mensili passano da 900 a 1.100 mentre gli abbonati attivi crescono da 25.000 a 40.000, il volume assoluto aumenta ma il tasso diminuisce. Per il team che deve gestire 1.100 cancellazioni il carico cresce; per chi valuta il rischio individuale della base clienti il quadro migliora.
 
-Il +92% è un fatto descrittivo corretto rispetto a dicembre.
+La serie temporale deve quindi conservare, quando serve, numeratore e denominatore. Un trend apparentemente negativo nel conteggio può essere positivo nel tasso, e viceversa.
 
-Non è la baseline corretta per stimare quanto sia eccezionale gennaio.
+Un buon primo passaggio operativo rimane deliberatamente semplice: mostrare la serie grezza, affiancare volume o denominatore rilevante, confrontare cicli equivalenti, annotare eventi di business noti e verificare se il pattern aggregato cambia per segmento. Lo smoothing, che useremo nella prossima sezione, può aiutare a vedere il movimento di fondo, ma non crea una baseline corretta e non dimostra un trend.
 
-### Tre strutture da cercare prima di interpretare
-
-**Trend**
-
-Un movimento persistente di fondo.
-
-Esempio: ricavi crescono gradualmente da 24 mesi.
-
-**Stagionalità**
-
-Una struttura che tende a ripetersi con frequenza regolare:
-
-- giorno della settimana;
-- mese;
-- trimestre;
-- festività;
-- stagione turistica;
-- ciclo commerciale.
-
-**Shock o cambi di livello**
-
-Un cambiamento improvviso può essere associato a:
-
-- lancio prodotto;
-- modifica prezzo;
-- outage;
-- campagna;
-- nuova regolamentazione;
-- evento esterno.
-
-L'EDA può rilevare la coincidenza. Non dimostra automaticamente che l'evento abbia causato il cambiamento.
-
-### La baseline temporale deve seguire il processo
-
-"Rispetto a prima" può voler dire molte cose:
-
-- giorno precedente;
-- stessa giornata della settimana precedente;
-- media delle ultime quattro settimane;
-- stesso mese dell'anno precedente;
-- periodo pre-intervento;
-- valore atteso per la stagione.
-
-La baseline appropriata dipende dal ciclo naturale del fenomeno.
-
-Un ristorante può confrontare venerdì con gli altri venerdì. Un SaaS B2B potrebbe guardare il mese su anno. Un sito di e-commerce può dover allineare Black Friday e festività mobili, non semplicemente i numeri di giorno del calendario.
-
-### Il grafico temporale deve mostrare anche il denominatore quando serve
-
-Un conteggio può crescere solo perché cresce l'esposizione.
-
-Esempio:
-
-```text
-cancellazioni mensili: 900 → 1.100
-abbonati attivi:      25.000 → 40.000
-```
-
-Il conteggio aumenta, ma il tasso scende.
-
-Per questo un trend di numerator senza denominator può raccontare una storia diversa dal rischio individuale.
-
-### Un confronto before/after è ancora descrittivo
-
-Supponiamo che conversion rate passi da 4,2% a 5,1% subito dopo una release.
-
-L'EDA può dire:
-
-> il livello cambia in coincidenza temporale con la release.
-
-Non può ancora dire:
-
-> la release ha causato +0,9 pp.
-
-Nello stesso momento possono essere cambiati mix di traffico, campagne, stagionalità o altri fattori.
-
-Questa distinzione prepara il lavoro causale dei Capitoli 8 e 9.
-
-### Una sequenza pratica
-
-Per una metrica temporale:
-
-1. mostra la serie grezza;
-2. aggiungi il volume o denominatore rilevante;
-3. confronta cicli equivalenti;
-4. identifica trend e pattern ricorrenti;
-5. annota eventi di business noti;
-6. verifica se il pattern aggregato cambia per segmento;
-7. usa smoothing soltanto come supporto visivo, non come prova.
-
-NIST sottolinea che le osservazioni temporali possono presentare dipendenze e struttura e che stagionalità e trend devono essere riconosciuti nel processo analitico.[^nist-timeseries]
-
-> **Nel tempo, un numero non è "alto" o "basso" in assoluto. È alto o basso rispetto a ciò che era ragionevole aspettarsi in quel momento.**
+> **Nel tempo un valore non è alto o basso in assoluto. È alto o basso rispetto a ciò che era ragionevole aspettarsi in quel momento.**
 
 [^nist-timeseries]: NIST/SEMATECH, *Introduction to Time Series Analysis*. https://www.itl.nist.gov/div898/handbook/pmc/section4/pmc4.htm
