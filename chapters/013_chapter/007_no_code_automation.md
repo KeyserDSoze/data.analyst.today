@@ -1,162 +1,51 @@
 ## 13.6 No-code e low-code: comprare automazione senza nascondere il software
 
-Gli strumenti no-code e low-code riducono il costo iniziale dell'automazione.
+Gli strumenti no-code e low-code abbassano il costo iniziale dell'automazione. Possono essere una scelta eccellente quando il workflow è semplice, stabile e leggibile: collegare alcune sorgenti, applicare regole deterministiche, pubblicare un output e notificare qualcuno non richiede sempre software custom.
 
-Possono essere eccellenti per collegare sorgenti, trasformare dati, schedulare flussi, inviare notifiche e costruire piccoli processi senza sviluppare un'applicazione custom.
+Il vantaggio non è “non scrivere codice”. È **rendere economica un'automazione che rimane comprensibile e governabile**.
 
-Il loro vantaggio non è “non essere codice”.
+Immaginiamo un report del lunedì in cui un analyst scarica dati dal CRM, aggiorna un estratto billing, applica una tabella di mapping, produce un report e lo distribuisce a **18 manager**. Il processo richiede circa **90 minuti**. Se le sorgenti hanno connettori stabili, le regole sono semplici e gli errori sono facili da osservare, un workflow visuale può ridurre copy-paste, dimenticanze e dipendenza dalla presenza dell'analista con un costo di costruzione molto basso.
 
-È rendere economico automatizzare **workflow relativamente semplici, visibili e stabili**.
-
-### Caso simulato/composito — il report del lunedì
-
-Ogni lunedì un analyst:
-
-1. scarica dati dal CRM;
-2. aggiorna un estratto billing;
-3. applica una tabella di mapping;
-4. produce un report;
-5. lo distribuisce a 18 manager.
-
-Il processo richiede circa 90 minuti.
-
-Se le sorgenti sono supportate, le regole sono stabili e gli errori sono facili da osservare, un workflow visuale può eliminare gran parte del lavoro manuale con un investimento molto inferiore rispetto a una soluzione custom.
-
-Il valore non è soltanto il tempo risparmiato.
-
-Riduce anche:
-
-- copy-paste;
-- dimenticanze;
-- variazioni nell'ordine dei passaggi;
-- dipendenza dalla presenza dell'analista.
-
-### Automazione semplice vs software visuale
-
-Il problema nasce quando il workflow cresce.
-
-Una sequenza come:
+Il confine cambia quando la soluzione cresce. Un flusso lineare come:
 
 ```text
 trigger
-→ read file
+→ read
 → transform
 → publish
 → notify
 ```
 
-è facile da comprendere.
+è facile da revisionare. Ma se nel tempo compaiono decine di branch, loop, retry custom, chiamate API, mapping dinamici, stato persistente ed eccezioni accumulate, **stiamo costruendo software anche se lo rappresentiamo con blocchi**.
 
-Ma con:
+Nel caso simulato del team Operations, il workflow arriva a **146 blocchi, 11 branch, 8 retry e 4 API**. Quando cambia il payment provider, nessuno riesce a prevedere con sicurezza quali percorsi vengono impattati. Il problema non è che lo strumento visuale abbia “fallito”. È che il processo ha superato il livello di complessità per cui era stato scelto senza una nuova review.
 
-- decine di branch;
-- loop;
-- retry custom;
-- chiamate API;
-- mapping dinamici;
-- gestione di stato;
-- eccezioni accumulate negli anni;
+### Un complexity budget rende visibile il confine
 
-stiamo costruendo software, anche se lo rappresentiamo con blocchi.
-
-### Caso simulato/composito — 146 blocchi e nessun owner reale
-
-Un team Operations usa un workflow visuale per riconciliare ordini, pagamenti e refund.
-
-Nel tempo arriva a 146 blocchi, 11 branch, 8 retry e 4 API.
-
-Quando cambia il payment provider, il team non riesce più a prevedere quali percorsi verranno impattati.
-
-Il processo era nato per evitare software engineering.
-
-È diventato **software engineering senza gli strumenti che normalmente rendono il software revisionabile**.
-
-### Complexity budget
-
-Un Tooling Decision Record per no-code dovrebbe includere un vero **complexity budget**.
-
-Per esempio:
+Per evitare questa crescita accidentale possiamo dichiarare nel Tooling Decision Record alcune condizioni di riesame. Per esempio:
 
 ```text
-max critical integrations: 4
-max manual exception classes: 3
-workflow owner: 2 persone
-required execution log: sì
-required alert on failure: sì
-version / change history: obbligatoria
+critical integrations: max 4
+manual exception classes: max 3
+workflow owners: almeno 2
+execution log: obbligatorio
+alert on failure: obbligatorio
+version/change history: obbligatoria
 ```
 
-Non perché questi numeri siano universali, ma perché obbligano il team a dichiarare quando il processo deve essere riesaminato.
+I numeri non sono universali. Il loro valore è costringere il team a decidere **quando il workflow smette di essere automazione semplice e diventa un prodotto software con obblighi diversi**.
 
-### Quando no-code è particolarmente adatto
-
-- workflow lineare;
-- regole deterministicamente semplici;
-- volumi moderati;
-- connettori standard;
-- errore facilmente osservabile;
-- utenti che devono poter comprendere/modificare il flusso;
-- basso costo di failure;
-- nessuna necessità di algoritmi custom complessi.
-
-### Segnali di uscita
-
-Il processo dovrebbe essere riesaminato quando crescono:
-
-- branching;
-- stato persistente;
-- dipendenze;
-- volume;
-- criticità;
-- test necessari;
-- recovery;
-- gestione di segreti;
-- riuso di logica comune;
-- numero di persone che modificano il workflow.
-
-L'uscita non richiede necessariamente una “big rewrite”.
-
-Può essere progressiva:
+Con l'aumentare di branching, stato persistente, volume, criticità, recovery, gestione di segreti e riuso di logica comune, la migrazione può essere progressiva:
 
 ```text
 workflow visuale
-→ estrazione della logica più critica in SQL/code
-→ centralizzazione dei dataset condivisi
+→ estrazione della logica critica in SQL/code
+→ dataset condivisi centralizzati
 → workflow resta come orchestrazione leggera
 ```
 
-### Automazione non significa validazione
+Non serve una big rewrite per dimostrare maturità. Serve ridurre la parte di complessità che lo strumento corrente rende difficile da testare e possedere.
 
-Automatizzare un processo sbagliato non lo rende maturo.
-
-Prima bisogna sapere:
-
-- qual è la metrica;
-- quale input è authoritative;
-- quali eccezioni sono reali;
-- cosa succede se manca una sorgente;
-- come verifichiamo l'output;
-- chi riceve un alert.
-
-È la stessa lezione del Capitolo 0 sull'AI: **delegare esecuzione non significa delegare responsabilità**.
-
-### Campo del Tooling Decision Record
-
-```text
-workflow purpose:
-frequency:
-number of steps / branches:
-integrations:
-stateful logic:
-failure impact:
-observability:
-version/change history:
-owners:
-manual exception rate:
-maintenance hours/month:
-exit condition:
-```
-
-### Regola operativa
+Automazione e validazione restano due cose distinte. Un processo automatizzato può eseguire ogni lunedì una definizione sbagliata con precisione perfetta. Prima di automatizzare dobbiamo ancora sapere quale input è authoritative, quali eccezioni sono legittime, che cosa succede se una sorgente manca, quali controlli validano l'output e chi riceve l'allarme.
 
 > **No-code riduce il costo dell'automazione semplice. Quando la complessità cresce, non fingere che il processo non sia software soltanto perché il software è disegnato invece che scritto.**
