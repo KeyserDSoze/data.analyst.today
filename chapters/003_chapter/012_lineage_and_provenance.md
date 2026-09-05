@@ -1,39 +1,22 @@
-## 3.11 Lineage e provenance: da quale storia nasce questo numero?
+## 3.11 Lineage e provenance: la storia che separa la realtà dal numero
 
-Un dato senza storia è difficile da interpretare.
+Un dato senza storia è difficile da interpretare. Per **lineage** intendiamo il percorso che il dato compie attraverso sorgenti, ingestion, trasformazioni, modelli e report. Per **provenance** intendiamo più in generale l'origine e il contesto in cui quel dato è stato generato.
 
-Per **lineage** intendiamo il percorso che il dato compie attraverso sorgenti, trasformazioni e modelli. Per **provenance** intendiamo più in generale l'origine e il contesto in cui quel dato è stato generato.
-
-Nel lavoro dell'analista non serve ricostruire ogni dettaglio dell'infrastruttura. Serve conoscere abbastanza del percorso da capire **quali assunzioni sono state introdotte prima che il dato arrivasse a noi**.
+L'analista non deve necessariamente ricostruire tutta l'architettura. Deve però conoscere abbastanza della genealogia di una metrica da capire **quali scelte sono state introdotte prima che il numero arrivasse sullo schermo**.
 
 ### Caso simulato/composito — Due dashboard, due margini
 
-**Orion Foods** utilizza due dashboard per monitorare il margine lordo.
+Orion Foods utilizza due dashboard per monitorare il margine lordo. La dashboard commerciale mostra **34,8%**; Finance mostra **31,6%**. Le formule sembrano corrette e il nome della metrica è lo stesso: `gross_margin_pct`.
 
-La dashboard commerciale mostra **34,8%**.
+Il conflitto diventa comprensibile soltanto ricostruendo il lineage. La dashboard commerciale usa vendite aggiornate ogni notte e **costo standard** del prodotto. Finance usa un dataset mensile riconciliato con l'ERP e **costo effettivo**, includendo alcune rettifiche logistiche e d'acquisto.
 
-La dashboard Finance mostra **31,6%**.
+I due numeri non sono implementazioni concorrenti della stessa metrica. Sono due costruzioni economiche diverse. Il risultato della review non è scegliere un vincitore, ma nominare correttamente i concetti: `gross_margin_standard_pct` per il monitoraggio commerciale rapido e `gross_margin_actual_pct` per il consuntivo finanziario.
 
-Le formule sembrano entrambe corrette.
+Il lineage ha quindi risolto un problema semantico, non soltanto tecnico.
 
-Il conflitto si risolve ricostruendo il lineage.
+## Ogni trasformazione può cambiare il significato
 
-La dashboard commerciale utilizza vendite aggiornate ogni notte e **costo standard** del prodotto.
-
-Finance utilizza invece un dataset mensile riconciliato con l'ERP e **costo effettivo**, comprensivo di alcune rettifiche logistiche e di acquisto.
-
-Le due metriche avevano lo stesso nome: `gross_margin_pct`.
-
-Ma non rappresentavano la stessa costruzione economica.
-
-Il problema non era scegliere quale dashboard "avesse ragione" in assoluto. Era rendere esplicito il significato:
-
-- `gross_margin_standard_pct` per monitoraggio commerciale rapido;
-- `gross_margin_actual_pct` per consuntivo finanziario.
-
-### Ricostruire il percorso minimo
-
-Per una metrica critica vogliamo almeno una mappa del tipo:
+Per una metrica critica è sufficiente, almeno inizialmente, una mappa del tipo:
 
 ```text
 evento reale
@@ -51,45 +34,21 @@ semantic model / metrica
 report o analisi
 ```
 
-A ogni passaggio possono comparire decisioni che modificano il significato:
+A ogni passaggio possono comparire filtri, deduplicazioni, cambi di grain, conversioni di valuta, mapping di categorie, regole temporali, esclusioni di stati o rettifiche retroattive. Nessuna di queste operazioni è necessariamente sbagliata; diventa pericolosa quando resta invisibile al consumatore del dato.
 
-- filtri;
-- deduplicazioni;
-- cambi di grain;
-- mapping di categorie;
-- conversioni di valuta;
-- gestione dei null;
-- regole temporali;
-- esclusione di stati o record;
-- rettifiche retroattive.
+Il punto epistemico del lineage è proprio questo: sapere **quale versione del fenomeno stiamo osservando** e quali decisioni di modellazione l'hanno prodotta.
 
-L'architettura completa di questi passaggi sarà il tema del Capitolo 12. Qui ci interessa il loro effetto epistemico: **che cosa dobbiamo sapere per interpretare il dato finale?**
+Cinque domande aiutano a ricostruire il percorso minimo. Qual è la sorgente più vicina al fenomeno reale? Quali trasformazioni importanti ci separano da essa? La logica è cambiata nel tempo? Il dato può essere corretto retroattivamente? Chi possiede la definizione e può spiegare le eccezioni?
 
-### Cinque domande di lineage per l'analista
+Se nessuno sa rispondere, il problema non è soltanto documentale. Stiamo usando una misura senza conoscere completamente la sua genealogia.
 
-Quando una metrica conta davvero, dovremmo poter rispondere almeno a:
+## Lineage, semantica e AI
 
-1. **Qual è la sorgente più vicina al fenomeno reale?**
-2. **Quali trasformazioni importanti separano la sorgente dal dataset che sto usando?**
-3. **La logica è cambiata nel tempo?**
-4. **Il dato può essere corretto retroattivamente?**
-5. **Chi conosce o possiede la definizione?**
+Un assistente AI può interrogare molto rapidamente un warehouse o un semantic model. Ma se trova cinque colonne chiamate `revenue`, la velocità non gli dice quale sia quella corretta per la domanda. La semantica deve essere disponibile attraverso naming, documentazione, lineage, metric owner o contesto esplicito.
 
-Se nessuno sa rispondere, il problema non è soltanto documentale. Stiamo usando una misura di cui non conosciamo completamente la genealogia.
+L'AI può aiutare a leggere codice e dipendenze. Non può inventare con affidabilità una source of truth che l'organizzazione non ha definito.
 
-### Lineage e AI
-
-Un assistente AI può interrogare molto velocemente un warehouse o un semantic model.
-
-Ma se esistono cinque colonne chiamate `revenue`, la velocità non ci dice quale sia quella corretta per la domanda.
-
-La semantica deve già essere disponibile attraverso nomi, documentazione, lineage o contesto fornito dall'analista.
-
-L'AI può aiutare a esplorare dipendenze e codice. Non può dedurre in modo affidabile una definizione di business che l'organizzazione non ha chiarito.
-
-### Una scheda sufficiente, non una burocrazia perfetta
-
-Per una metrica critica può bastare una documentazione sintetica:
+Per una metrica importante può bastare una scheda sintetica:
 
 ```text
 Metrica: net_revenue
@@ -104,6 +63,6 @@ Valuta: EUR al cambio contabile
 Rettifiche storiche: possibili fino alla chiusura mensile
 ```
 
-Questa scheda non sostituisce un catalogo o un sistema di lineage quando l'organizzazione cresce. Ma permette già all'analista di sapere quale numero sta usando e perché.
+Questa documentazione non sostituisce un catalogo o un sistema di lineage quando l'organizzazione cresce. Ma permette già di raccontare come il numero nasce e quali assunzioni porta con sé.
 
-> **Prima di fidarti di una metrica, cerca di raccontarne la storia dalla realtà al report. Se manca un passaggio decisivo, manca anche una parte della tua evidenza.**
+> **Prima di fidarti di una metrica, prova a raccontarne la storia dalla realtà al report. Se manca un passaggio decisivo, manca anche una parte della tua evidenza.**
