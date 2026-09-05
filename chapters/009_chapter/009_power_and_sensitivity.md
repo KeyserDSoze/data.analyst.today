@@ -1,138 +1,38 @@
-## 9.8 Metric sensitivity: quando il problema non è il prodotto ma la misura
+## 9.8 Metric sensitivity: una misura deve essere giusta e capace di vedere il cambiamento
 
-Nel Capitolo 5 abbiamo definito la potenza statistica.
+Una metrica può essere importantissima per il business e, nello stesso tempo, poco adatta a un esperimento breve. Se l'outcome è raro, molto skewed, estremamente variabile o matura lentamente, il test può essere valido e tuttavia produrre intervalli troppo larghi per distinguere un effetto decision-relevant.
 
-Nel lavoro sperimentale quotidiano la domanda utile è spesso più concreta:
+La domanda sulla power diventa quindi una domanda di **metric design**:
 
-> **La metrica scelta è abbastanza sensibile da vedere un cambiamento decision-relevant con il traffico che abbiamo?**
-
-Una metrica può essere importante per il business e contemporaneamente pessima come strumento sperimentale di breve periodo.
+> **questa definizione rappresenta bene ciò che ci interessa e possiede abbastanza sensibilità con il traffico disponibile?**
 
 ### Caso simulato/composito — Task completati per utente
 
-Un prodotto collaboration testa un suggerimento automatico.
+Un prodotto collaboration testa un suggerimento automatico. Il controllo completa 1,84 task/utente, il trattamento 1,89: `+2,7%`, ma con un intervallo ancora ampio. Il test era stato progettato per rilevare +7%, mentre il business considera utile anche +2%.
 
-Dopo il test:
+In più la distribuzione ha una coda estrema: molti utenti completano 0–2 task, pochi power user decine o centinaia. La frase “non significativo, feature inutile” confonde effetto con capacità di misura. Il test non è abbastanza sensibile per distinguere la zona che ora interessa alla decisione.
 
-- controllo: 1,84 task completati/utente;
-- trattamento: 1,89;
-- delta: +2,7%;
-- intervallo ancora ampio.
-
-Il test era stato progettato per rilevare un aumento del 7%, ma il business considera interessante anche +2%.
-
-Inoltre la metrica ha una coda estrema:
-
-- molti utenti completano 0–2 task;
-- pochi power user ne completano decine o centinaia.
-
-Dire semplicemente:
-
-> “Non significativo, feature inutile.”
-
-sarebbe una lettura sbagliata.
-
-L'esperimento non è abbastanza sensibile per la domanda che il team ha scoperto di avere.
-
-### Non progettare la metrica dopo aver visto l'effetto
-
-Esiste però un rischio opposto.
-
-Se dopo un test piatto proviamo:
-
-- log transform;
-- winsorization;
-- cap a percentili diversi;
-- 12 denominatori;
-- 20 segmenti;
-
-finché una variante diventa significativa, abbiamo trasformato metric design in p-hacking.
-
-Le trasformazioni e alternative devono essere:
-
-- motivate da distribuzione e semantica;
-- idealmente valutate su dati pre-esperimento o test storici;
-- dichiarate prima dell'analisi confermativa del nuovo test.
+Questo non autorizza però a cambiare metrica dopo aver visto il risultato. Provare log transform, winsorization, cap differenti, dodici denominatori e venti segmenti finché qualcosa diventa verde trasforma il metric design in p-hacking. Le alternative devono essere motivate dalla distribuzione e dalla semantica, valutate idealmente su dati pre-esperimento o A/A e congelate prima dell'analisi confermativa.
 
 ### Caso reale documentato — Microsoft Teams e Time in App
 
-Microsoft Research descrive un processo di **metric sensitivity analysis** usato su metriche di Bing, MSN e Microsoft Teams. Per `Time in App`, Teams valutò differenti definizioni, trasformazioni e tecniche di variance reduction; la soluzione scelta fu una metrica basata sul **log del tempo capped**, applicando variance reduction quando possibile.[^ms-sensitivity]
+Microsoft Research descrive un processo di **metric sensitivity analysis** applicato a Bing, MSN e Microsoft Teams. Per `Time in App`, Teams valutò definizioni, trasformazioni e variance reduction e scelse una metrica basata sul log del tempo capped, con variance reduction quando disponibile.[^ms-sensitivity]
 
-La lezione non è “usa sempre il log”.
+La lezione non è usare sempre log o capping. È trattare la metrica come parte del design: una misura rumorosa può rendere invisibili effetti utili o richiedere traffico sproporzionato.
 
-È:
+### Sensibilità senza perdere la semantica
 
-> **metric design è parte del disegno sperimentale. Una metrica rumorosa può rendere invisibili effetti utili oppure richiedere traffico sproporzionato.**
+Le leve disponibili sono diverse ma appartengono alla stessa decisione. Possiamo scegliere un'aggregazione più coerente con la randomization unit, usare trasformazioni robuste per code estreme, sfruttare covariate pre-treatment, oppure ricorrere a una proxy più precoce quando l'outcome finale matura troppo lentamente.
 
-### Cinque leve di sensibilità
+Ogni leva cambia qualcosa. `time per active user` pesa la popolazione diversamente da `time per user`; una winsorization cambia il contributo dei power user; una proxy di breve termine non diventa magicamente il target lungo termine. La sensibilità non deve essere acquistata sacrificando il significato senza dichiararlo.
 
-#### 1. Definizione della metrica
+Una proxy è accettabile quando il legame con l'outcome più lontano è documentato abbastanza da renderla utile, quando non è facilmente gaming-able e quando guardrail e decisione riconoscono che stiamo stimando **l'effetto sulla proxy**, non garantendo il target futuro.
 
-Una metrica più vicina al comportamento influenzato dal trattamento può muoversi più facilmente.
+### Sensitivity significa informazione, non più vittorie
 
-Ma una proxy troppo locale può perdere il legame con il valore business.
+Una metrica migliore non dovrebbe rendere B significativa più spesso per definizione. Dovrebbe produrre intervalli più informativi attorno agli effetti che ci interessano. Se l'effetto reale è vicino a zero, una misura sensibile ci aiuta anche a escludere più chiaramente benefici o danni materialmente grandi.
 
-#### 2. Aggregation level
-
-`time per user`, `time per active user`, proportion of users above a threshold e altre aggregazioni pesano le unità in modi differenti.
-
-La scelta deve rispettare l'unità di randomizzazione e la decisione.
-
-#### 3. Trasformazioni robuste
-
-Per distribuzioni estremamente skewed possono essere utili:
-
-- log transform;
-- capping/winsorization predefiniti;
-- metriche robuste.
-
-Ma ogni trasformazione cambia interpretazione e weighting.
-
-#### 4. Covariate pre-experiment
-
-Informazione raccolta prima del trattamento può spiegare parte della varianza e aumentare precisione senza introdurre post-treatment bias.
-
-Questo è il principio alla base di CUPED, che vedremo subito dopo.
-
-#### 5. Outcome più precoce o proxy
-
-Un outcome di lungo termine può essere troppo lento per un esperimento di due settimane.
-
-Possiamo considerare una proxy se:
-
-- ha relazione documentata col target lungo termine;
-- non è facilmente gaming-able;
-- esistono guardrail;
-- la decisione riconosce che stiamo stimando un effetto sulla proxy, non direttamente sul target futuro.
-
-### Sensitivity non significa “più significatività”
-
-Una metrica sensibile non deve produrre più vittorie.
-
-Deve produrre **intervalli più informativi** attorno agli effetti che ci interessano.
-
-Se l'effetto reale è zero, una metrica più sensibile dovrebbe aiutarci anche a escludere più chiaramente effetti materialmente positivi o negativi.
-
-### Pre-experiment sensitivity analysis
-
-Prima del lancio possiamo usare storico o A/A data per stimare:
-
-- varianza;
-- skewness;
-- frequenza di zeri;
-- stabilità del denominatore;
-- expected standard error;
-- MDE a vari orizzonti;
-- guadagno potenziale di CUPED;
-- sensitivity per segmenti e randomization unit.
-
-Questo trasforma la domanda da:
-
-> “Quale metrica ci piace?”
-
-A:
-
-> “Quale definizione rappresenta bene la decisione **e** è misurabile con il sistema sperimentale disponibile?”
+Per questo la sensitivity analysis va fatta prima del lancio usando storico o A/A: varianza, skewness, zeri, stabilità del denominatore, expected standard error, MDE a diversi orizzonti e guadagno potenziale di variance reduction.
 
 ### Metric sensitivity card
 
@@ -152,6 +52,6 @@ Proxy vs long-term outcome trade-off:
 Chosen definition and interpretation:
 ```
 
-> **Una metrica sperimentale deve essere semanticamente giusta e statisticamente capace di muoversi. Se manca una delle due proprietà, il test può essere corretto e comunque poco utile.**
+> **Una metrica sperimentale deve essere semanticamente corretta e statisticamente capace di vedere gli effetti che cambiano la decisione. Se manca una delle due proprietà, il test può essere rigoroso e comunque poco utile.**
 
 [^ms-sensitivity]: Microsoft Research, *Beyond Power Analysis: Metric Sensitivity Analysis in A/B Tests*: https://www.microsoft.com/en-us/research/articles/beyond-power-analysis-metric-sensitivity-in-a-b-tests/
