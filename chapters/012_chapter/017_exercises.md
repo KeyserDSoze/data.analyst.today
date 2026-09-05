@@ -1,14 +1,10 @@
 ## 12.16 Esercizi: diagnosticare il percorso del dato
 
-Gli esercizi non chiedono di scegliere il servizio cloud “migliore”.
-
-Chiedono di costruire e criticare una **Data Flow Architecture Map** collegando requisiti decisionali, latenze, dipendenze e recovery.
+Gli esercizi non chiedono di scegliere il servizio cloud “migliore”. Chiedono di costruire e criticare una **Data Flow Architecture Map**, partendo dalla decisione e risalendo a latency, completeness, dependency, contract e recovery.
 
 ### Esercizio 1 — Il dashboard delle 09:00
 
-Il CEO apre un dashboard ogni mattina alle 09:00.
-
-Il flusso è:
+Il CEO apre il dashboard ogni mattina alle 09:00.
 
 ```text
 ERP export 05:00
@@ -21,46 +17,22 @@ ERP export 05:00
 
 Oggi il file ERP arriva alle 08:20 ma tutti i task downstream partono agli orari previsti e terminano `SUCCESS` usando il file precedente.
 
-Progetta:
-
-1. dependency/readiness condition corretta;
-2. freshness SLI/SLO;
-3. stato da mostrare sul dashboard;
-4. comportamento `BLOCK / STALE / DEGRADE`;
-5. alert e owner.
+Definisci dependency/readiness condition, freshness SLI/SLO, stato da mostrare sul dashboard, comportamento `BLOCK / STALE / DEGRADE`, alert e owner.
 
 ### Esercizio 2 — Full reload o CDC?
 
-Un e-commerce ha 600 milioni di righe ordine e circa 4 milioni di insert/update giornalieri.
+Un e-commerce ha **600 milioni di righe ordine** e circa **4 milioni di insert/update giornalieri**. Il full reload dura cinque ore.
 
-Il full reload dura cinque ore.
+Confronta:
 
-Disegna due alternative:
-
-**A. full reload**
-
+**A. full reload**  
 **B. initial snapshot + CDC**
 
-Per ciascuna valuta:
-
-- workload sulla sorgente;
-- freshness;
-- delete;
-- ordering;
-- idempotenza;
-- checkpoint;
-- recovery dopo 48 ore di outage;
-- possibilità di ricostruire lo stato.
-
-Non assumere che CDC sia automaticamente migliore.
+Valuta workload sulla sorgente, freshness, delete, ordering, idempotenza, checkpoint, recovery dopo 48 ore di outage e possibilità di ricostruire lo stato. Non assumere che CDC sia automaticamente migliore.
 
 ### Esercizio 3 — Pipeline verde, dato incompleto
 
-Arrivano 25 file regionali su 28.
-
-Il codice processa quelli presenti e termina senza errori.
-
-Il report globale mostra revenue -14%.
+Arrivano **25 file regionali su 28**. Il codice processa quelli presenti e termina senza errori. Il report globale mostra revenue `-14%`.
 
 Costruisci:
 
@@ -73,37 +45,13 @@ degraded behavior:
 consumer message:
 ```
 
-Spiega perché monitorare soltanto il job status non poteva intercettare il problema.
+Spiega perché il job status non poteva intercettare il problema.
 
 ### Esercizio 4 — Event time e late data
 
-Una pipeline streaming calcola transazioni per finestre di cinque minuti.
+Una pipeline streaming calcola finestre di cinque minuti. Tre eventi sono generati alle `10:01`, `10:03`, `10:04`, ma processati alle `10:02`, `10:04`, `10:14`.
 
-Tre eventi sono generati alle:
-
-```text
-10:01
-10:03
-10:04
-```
-
-ma vengono processati alle:
-
-```text
-10:02
-10:04
-10:14
-```
-
-Definisci:
-
-- event time;
-- processing time;
-- cosa significa late data;
-- come una watermark policy influenza la pubblicazione;
-- provisional result e final/reconciled result.
-
-Descrivi come testeresti il sistema con eventi early, on-time e late.
+Definisci event time, processing time, late data, watermark policy, provisional result e final/reconciled result. Descrivi anche come testeresti eventi early, on-time e late.
 
 ### Esercizio 5 — Il cambio schema che non rompe nulla
 
@@ -115,18 +63,11 @@ speed: number
 
 ma cambia l'unità da km/h a m/s.
 
-Rispondi:
-
-1. perché uno schema test può passare?
-2. perché è un semantic breaking change?
-3. quale producer contract avrebbe dovuto includere l'unità?
-4. quale plausibility test potrebbe intercettarlo?
-5. serve una nuova versione?
-6. quali consumer individueresti tramite lineage?
+Spiega perché schema validation può passare, perché il cambiamento è semantic breaking, quale metadata avrebbe dovuto contenere il producer contract, quale plausibility test potrebbe intercettarlo, se serve una nuova versione e quali consumer individueresti tramite lineage.
 
 ### Esercizio 6 — Raw, curated e serving
 
-Hai tre asset:
+Hai:
 
 ```text
 raw_events
@@ -134,130 +75,56 @@ valid_events
 customer_daily_activity
 ```
 
-Per ciascuno specifica:
-
-- state of data;
-- garanzie esistenti;
-- garanzie non ancora esistenti;
-- consumer ammessi;
-- replay source;
-- quality gate.
-
-Poi spiega quale layer useresti per:
-
-- debugging di un evento;
-- dashboard executive;
-- ricostruzione dopo un bug di business logic.
+Per ciascun asset specifica stato del dato, garanzie presenti e assenti, consumer ammessi, replay source e quality gate. Poi scegli quale useresti per debugging di un evento, dashboard executive e ricostruzione dopo un bug nella business logic.
 
 ### Esercizio 7 — Orchestrazione e retry
 
-Un task scrive 730.000 righe, fallisce e viene automaticamente ritentato.
+Un task scrive **730.000 righe**, fallisce e viene ritentato automaticamente. La seconda esecuzione usa `INSERT` puro.
 
-La seconda esecuzione usa `INSERT` puro.
-
-Disegna due strategie sicure, scegliendo tra:
-
-- staging + atomic publish;
-- idempotent merge;
-- partition replacement;
-- checkpoint.
-
-Per ciascuna indica come verificheresti il risultato dopo recovery.
+Progetta due strategie sicure scegliendo tra staging + atomic publish, idempotent merge, partition replacement e checkpoint. Per ciascuna spiega come verificheresti il risultato recuperato.
 
 ### Esercizio 8 — SLO per due user journey
 
-Lo stesso dominio dati serve:
+Lo stesso dominio serve:
 
-**A. fraud operations**
+**A. fraud operations**, con azione necessaria entro secondi/minuti;  
+**B. monthly Finance report**, con reconciliation e quasi totale completezza.
 
-azione necessaria entro pochi secondi/minuti.
-
-**B. monthly Finance report**
-
-richiede riconciliazione e quasi totale completezza.
-
-Progetta SLI/SLO separati per:
-
-- freshness;
-- completeness;
-- availability;
-- reconciliation;
-- recovery.
-
-Spiega perché un unico SLO per il dataset sarebbe poco informativo.
+Progetta SLI/SLO separati per freshness, completeness, availability, reconciliation e recovery. Spiega perché un unico SLO per il dataset sarebbe poco informativo.
 
 ### Esercizio 9 — Semantic layer e serving failure
 
 Il warehouse è aggiornato correttamente ma il semantic model non si aggiorna da sei ore.
 
-Disegna la mappa:
+Disegna:
 
 ```text
 source → storage → transform → serve → dashboard
 ```
 
-Indica:
+Indica failure boundary, SLI violato, comportamento last-known-good, timestamp da mostrare e quali consumer possono continuare a lavorare interrogando un layer precedente certificato.
 
-- dove si trova il failure;
-- quale SLI è violato;
-- se il dashboard deve usare last-known-good;
-- quale timestamp mostrare;
-- quali altri consumer possono continuare a lavorare interrogando il warehouse.
+### Esercizio 10 — Architecture review
 
-### Esercizio 10 — Cloud architecture review
+Un report viene consultato da 20 persone una volta al giorno. Il team propone streaming sub-second, multi-region active-active, cluster always-on, sette giorni di replay e refresh continuo.
 
-Un report viene consultato da 20 persone una volta al giorno.
-
-Il team propone:
-
-- streaming sub-second;
-- multi-region active-active;
-- cluster always-on;
-- sette giorni di event replay;
-- dashboard refresh continuo.
-
-Costruisci un'architecture review che chieda:
-
-1. decision deadline;
-2. cost of lateness;
-3. cost of failure;
-4. RTO/RPO necessari;
-5. alternative più semplici;
-6. trigger futuri che giustificherebbero maggiore complessità.
+Valuta decision deadline, cost of lateness, cost of failure, RTO/RPO necessari, alternative più semplici e trigger futuri che giustificherebbero maggiore complessità.
 
 ### Esercizio 11 — Caso VMO2
 
-Usando il caso pubblico Virgin Media O2 citato nel capitolo, identifica almeno cinque motivi per cui consolidare piattaforme può generare valore oltre al costo del compute.
+Usando il caso pubblico Virgin Media O2, identifica almeno cinque motivi per cui consolidare piattaforme può creare valore oltre al costo del compute. Spiega poi perché “unificare la piattaforma” non equivale ad “unificare la semantica”.
 
-Poi spiega perché:
+### Esercizio 12 — Contract evolution end-to-end
 
-> “unificare la piattaforma”
+Un producer aggiunge `battery_health` e successivamente cambia il tipo di `device_state`.
 
-non equivale automaticamente a:
-
-> “unificare la semantica”.
-
-### Esercizio 12 — Data contract end-to-end
-
-Un producer aggiunge una colonna `battery_health` e successivamente cambia il tipo di `device_state`.
-
-Per ogni modifica stabilisci:
-
-- additive / structural breaking / semantic breaking;
-- comportamento desiderato dell'ingestion;
-- auto-evolve / rescue / fail;
-- versioning;
-- consumer notification;
-- impact analysis;
-- eventuale backfill.
+Per ogni modifica stabilisci se è additive, structural breaking o semantic breaking e definisci comportamento dell'ingestion, auto-evolve/rescue/fail, versioning, consumer notification, impact analysis ed eventuale backfill.
 
 ### Esercizio 13 — Recovery dopo una business rule sbagliata
 
-Scopri che il modello `net_revenue` ha sottratto due volte un tipo di refund per 43 giorni.
+Scopri che `net_revenue` ha sottratto due volte un tipo di refund per **43 giorni**. La pipeline oggi funziona perfettamente.
 
-La pipeline oggi funziona perfettamente.
-
-Disegna il recovery:
+Disegna:
 
 ```text
 identify affected period
@@ -270,13 +137,11 @@ identify affected period
 → notify downstream
 ```
 
-Indica quali layer devono essere ricostruiti e quale raw/curated source useresti.
+Indica quali layer ricostruire e quale raw/curated source usare.
 
 ### Esercizio 14 — Costruisci la Data Flow Architecture Map
 
-Scegli un dataset reale che utilizzi nel tuo lavoro o un dominio che conosci.
-
-Completa:
+Scegli un dataset reale o un dominio che conosci e completa:
 
 ```text
 DECISION / CONSUMER
@@ -286,7 +151,6 @@ TRANSPORT
 STORAGE
 TRANSFORM
 SERVE
-CONSUME
 CONTRACT BOUNDARIES
 LINEAGE
 SLI/SLO
@@ -296,32 +160,12 @@ COST DRIVERS
 OWNERS
 ```
 
-Poi evidenzia in rosso, idealmente su un diagramma o in una tabella, tutti i campi per cui la risposta è:
-
-```text
-non lo so
-```
-
-Quelli sono rischi reali da investigare.
+Evidenzia tutti i campi per cui la risposta è `non lo so`: sono rischi reali da investigare.
 
 ### Autovalutazione
 
-Dovresti essere in grado di spiegare senza nominare un vendor:
+Alla fine del capitolo dovresti saper spiegare senza rifugiarti nel nome di un vendor perché system of record e analytical serving hanno responsabilità diverse; perché il replay dipende da dove preserviamo il dato; perché i layer rappresentano stati di affidabilità; perché real time è un requisito economico; come event time, watermark e late data influenzano la completezza; perché CDC non è ancora stato analitico; perché readiness vale più del calendario; come gli SLO descrivono l'esperienza del consumer; come contract evolution e recovery proteggono i downstream; e perché un'architettura può essere scalabile ma sproporzionata.
 
-- perché OLTP e analytical serving hanno workload differenti;
-- perché ingestion e transformation boundary contano per il replay;
-- cosa promettono raw/curated/business layers;
-- perché real time è un requisito economico, non estetico;
-- differenza tra event time e processing time;
-- cosa rappresenta una watermark;
-- perché CDC non è ancora stato analitico;
-- differenza tra scheduling e readiness orchestration;
-- perché `SUCCESS` non garantisce completeness;
-- come SLI/SLO descrivono l'esperienza del consumer;
-- differenza tra schema evolution e contract evolution;
-- cosa significa recovery del dato;
-- perché una soluzione può essere contemporaneamente scalabile e sproporzionata.
+La transizione al Capitolo 13 nasce proprio da qui. Dopo aver imparato che ogni componente deve guadagnarsi il diritto di esistere attraverso una garanzia necessaria, possiamo applicare lo stesso principio agli strumenti del lavoro analitico: **non scegliere una tecnologia perché è nuova, potente o diffusa, ma perché è la complessità minima sufficiente per il problema e per il suo lifecycle reale**.
 
-La frase finale del capitolo è:
-
-> **L'architettura è la sequenza di garanzie e failure boundary attraverso cui un evento del mondo reale diventa un'informazione disponibile per una decisione. Conoscerla significa sapere non soltanto dove si trova il dato, ma quando possiamo fidarci del fatto che sia arrivato intero, aggiornato e recuperabile.**
+> **L'architettura è la sequenza di garanzie e failure boundary attraverso cui un evento del mondo reale diventa informazione utilizzabile. Conoscerla significa sapere non soltanto dove si trova il dato, ma quando possiamo fidarci del fatto che sia arrivato intero, aggiornato e recuperabile.**
