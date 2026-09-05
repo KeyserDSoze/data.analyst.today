@@ -1,141 +1,56 @@
 ## 2.11 L'Analytical Brief: il contratto prima dell'analisi
 
-A questo punto possiamo riunire le scelte delle sezioni precedenti in un unico documento.
+A questo punto i pezzi costruiti nelle sezioni precedenti possono essere riuniti. Un **Analytical Brief** è una specifica breve che descrive che cosa stiamo cercando di capire, perché conta, quale decisione deve diventare più informata, quale evidenza servirà e quando il lavoro potrà considerarsi sufficientemente completo.
 
-Un **Analytical Brief** è una specifica breve che descrive che cosa stiamo cercando di capire, perché conta, quale evidenza serve e quando il lavoro sarà sufficientemente completo.
+Per molte analisi basta una pagina. La lunghezza non è il punto: ciò che conta è rendere esplicite le dipendenze che altrimenti emergerebbero durante l'esecuzione, quando cambiare direzione è già più costoso.
 
-Non è un project charter da dieci pagine.
+Il brief parte dal problema di business e dalla decisione, non dal dataset. Se la repeat purchase dei nuovi clienti sembra deteriorarsi, per esempio, il problema può essere la capacità di trasformare il primo ordine in una relazione ripetuta. La decisione potrebbe riguardare dove investire fra acquisizione, post-purchase experience e riattivazione. Solo a quel punto possiamo formulare una domanda diagnostica, scegliere la repeat purchase rate a 90 giorni come outcome, definire quali coorti sono mature, stabilire una baseline e chiedere quali segnali servano per distinguere le spiegazioni concorrenti.
 
-Per molte analisi basta una pagina.
+Questa sequenza è importante perché i campi del brief non sono indipendenti. Una modifica alla domanda può cambiare la metrica; una modifica alla metrica può cambiare la popolazione; una nuova ipotesi può richiedere un dato che non esiste; un gap dati può ridurre la pretesa massima dell'analisi; una decisione più rischiosa può richiedere controlli e stop rule diversi.
 
-La sua funzione è creare allineamento **prima** che l'esecuzione renda costoso cambiare direzione.
+## Dal problema alla promessa dell'analisi
 
-### I campi essenziali
+La prima parte del brief dovrebbe mantenere vicini **problema**, **decisione** e **domanda analitica**. Il problema spiega perché il lavoro esiste. La decisione specifica chi potrà agire, con quali alternative e con quale costo dell'errore. La domanda traduce quel bisogno in qualcosa che dati e metodo possono mettere alla prova.
 
-#### 1. Problema di business
+Subito dopo conviene dichiarare il **tipo di domanda e la pretesa massima**. Una frase come:
 
-Quale risultato, rischio o opportunità ha generato la richiesta?
+> “Diagnostica. L'analisi localizzerà il deterioramento e restringerà le ipotesi, ma non attribuirà automaticamente causalità ai driver osservati.”
 
-> La repeat purchase rate dei nuovi clienti sembra essersi deteriorata.
+protegge il progetto da una deriva frequente: iniziare con un'analisi osservazionale e finire con una raccomandazione formulata come se avessimo identificato un effetto causale.
 
-#### 2. Decisione
+## Metriche e scope rendono il fenomeno osservabile
 
-Quale scelta deve diventare più informata?
+Una volta stabilita la promessa, dobbiamo definire l'outcome, i driver e gli eventuali guardrail, insieme alla popolazione a cui si applicano. Qui entrano numeratore, denominatore, unità di analisi, finestra temporale, maturazione ed esclusioni.
 
-> Decidere se intervenire su acquisizione, post-purchase experience o campagne di riattivazione.
+Queste scelte devono essere lette come un blocco unico. Se l'outcome è repeat purchase a 90 giorni, non possiamo includere nel denominatore clienti acquisiti ieri. Se la decisione riguarda il valore economico delle campagne, una segmentazione per acquisition channel diventa probabilmente prioritaria. Se il fenomeno è stagionale, la baseline year-over-year può essere più informativa del mese precedente.
 
-Annotare anche owner, alternative, deadline e costo principale dell'errore.
+La baseline e le segmentazioni non completano la dashboard: completano **il significato del confronto**.
 
-#### 3. Domanda analitica primaria
+## Ipotesi e dati trasformano il brief in un piano di verifica
 
-Deve essere abbastanza specifica da guidare dati e metodo.
+Le ipotesi prioritarie dicono quali spiegazioni metteremo per prime sotto pressione. Per ognuna dovremmo sapere che cosa ci aspettiamo di osservare se fosse vera, che cosa la indebolirebbe e quale dato permetterebbe di distinguerla dalle alternative.
 
-> Quali segmenti e quali cambiamenti osservabili spiegano maggiormente il calo della repeat purchase rate a 90 giorni rispetto alle coorti comparabili?
+Da qui nascono i requisiti dati. Alcuni segnali sono required perché senza di essi l'outcome o il confronto non possono essere ricostruiti; altri sono useful perché aumentano la profondità; altri ancora sono proxy e devono essere accompagnati dai loro limiti. Se una fonte richiesta non esiste o ha grain incompatibile, il brief deve registrare il gap e il suo impatto sulla domanda.
 
-#### 4. Tipo di domanda e pretesa massima
+Il **metodo iniziale** viene scelto soltanto a questo punto. Non serve anticipare ogni query. Serve definire il percorso minimo capace di guadagnarsi la conclusione: sanity check dei dati e della metrica, ricostruzione dell'outcome, confronto con la baseline, decomposizione e segmentazione, test delle ipotesi prioritarie e quantificazione dell'impatto che conta per la decisione.
 
-> Diagnostica. L'analisi genererà e restringerà ipotesi; non attribuirà automaticamente causalità agli eventuali driver osservati.
+## Rischi, output e stop rule chiudono il contratto
 
-Questa riga impedisce che il deliverable venga giudicato secondo una promessa metodologica diversa da quella concordata.
+Il brief deve infine registrare i limiti già conosciuti: tracking cambiato, identità instabile, campioni piccoli, proxy imperfetti, popolazioni non comparabili o dati immaturi. Documentarli prima dell'analisi non significa decidere che il lavoro fallirà; significa sapere quali condizioni potrebbero abbassare la forza della conclusione.
 
-#### 5. Metriche
+Solo dopo ha senso specificare l'output. Un memo, un notebook riproducibile, un dataset, una dashboard, un modello o una proposta di esperimento sono mezzi diversi. Il formato dovrebbe derivare dalla decisione e dalla frequenza con cui l'informazione dovrà essere usata, non dalla forma con cui il requester ha aperto il ticket.
 
-Specificare:
-
-- outcome primaria;
-- driver principali;
-- guardrail, se rilevanti;
-- formula e popolazione;
-- target o soglie decisionali note.
-
-#### 6. Scope
-
-Definire:
-
-- popolazione eleggibile;
-- esclusioni;
-- unità di analisi;
-- periodo;
-- data/time field;
-- maturazione;
-- fuori scope.
-
-#### 7. Baseline
-
-Con quale riferimento giudicheremo il cambiamento e perché è comparabile?
-
-#### 8. Segmentazioni previste
-
-Quali gruppi potrebbero cambiare la spiegazione o la decisione?
-
-#### 9. Ipotesi prioritarie
-
-Non una lista infinita, ma le spiegazioni principali e l'evidenza che le rafforzerebbe o indebolirebbe.
-
-#### 10. Requisiti dati
-
-Quali dati sono required, useful o proxy? Quali gap conosciamo già?
-
-#### 11. Metodo iniziale
-
-Qual è il percorso analitico minimo che può rispondere alla domanda?
-
-Per esempio:
-
-1. data sanity check;
-2. ricostruzione outcome;
-3. confronto con baseline;
-4. decomposizione e segmentazione;
-5. test delle ipotesi prioritarie;
-6. quantificazione dell'impatto economico.
-
-Non serve pre-specificare ogni query. Serve impedire che il metodo venga scelto soltanto dopo aver visto il risultato che vogliamo spiegare.
-
-#### 12. Limiti e rischi noti
-
-Quali problemi potrebbero rendere l'analisi meno affidabile?
-
-- tracking cambiato;
-- piccolo campione;
-- identità cliente instabile;
-- popolazioni non comparabili;
-- proxy imperfetti;
-- dati ancora immaturi.
-
-#### 13. Output
-
-Che cosa serve davvero?
-
-- memo decisionale;
-- notebook riproducibile;
-- dataset;
-- dashboard;
-- modello;
-- esperimento proposto.
-
-L'output deriva dalla decisione, non il contrario.
-
-#### 14. Stop rule
-
-Quando l'evidenza sarà sufficiente per consegnare?
-
-Esempio:
+La **stop rule** stabilisce invece quando il primo ciclo avrà prodotto abbastanza evidenza o quando dovrà fermarsi perché i dati non consentono di distinguere le ipotesi. Per una diagnosi potremmo concordare:
 
 > “Concludiamo la prima fase quando abbiamo validato la metrica, localizzato almeno l'80% del delta osservato e testato le tre ipotesi prioritarie, oppure quando emerge un limite dati che impedisce di distinguerle.”
 
-La soglia non deve essere sempre numerica, ma dovrebbe impedire l'analisi infinita.
+Il criterio di successo non sarà quindi “dashboard consegnata”, ma qualcosa di più vicino a:
 
-#### 15. Criterio di successo
+> “Il decision owner dispone di evidenza sufficiente per scegliere il prossimo intervento e conosce le incertezze che rimangono.”
 
-Non:
+## Template riutilizzabile
 
-> “Dashboard consegnata.”
-
-Meglio:
-
-> “Il decision owner dispone di evidenza sufficiente per scegliere se intervenire e sa quali incertezze rimangono.”
-
-### Template riutilizzabile
+La forma strutturata ha valore proprio qui, perché il brief deve poter essere copiato, compilato, revisionato e versionato:
 
 ```text
 Problema di business:
@@ -179,12 +94,12 @@ Stop rule:
 Criterio di successo:
 ```
 
-### Il brief è vivo, ma non invisibilmente mutevole
+## Un documento vivo, ma non invisibilmente mutevole
 
-Nuove informazioni possono richiedere una modifica del piano. È normale.
+Il brief non è una promessa che nulla cambierà. Una buona analisi produce informazioni nuove e può rendere necessario modificare scope, metrica o perfino domanda. La disciplina consiste nel rendere quella modifica esplicita.
 
-La disciplina consiste nel **aggiornare esplicitamente il brief** quando cambiano domanda, metrica, scope o livello di evidenza richiesto, invece di lasciare che l'analisi evolva senza che stakeholder e analyst se ne accorgano.
+Se durante il sanity check scopriamo che la metrica storica è rotta, il piano non dovrebbe continuare silenziosamente come se nulla fosse. Il brief viene aggiornato, il decision owner viene riallineato e la ricostruzione della misura può diventare la nuova priorità. Se una nuova ipotesi richiede una fonte che non esiste, possiamo aprire una fase successiva invece di espandere indefinitamente il primo ciclo.
 
-In un ambiente in cui AI e strumenti self-service possono produrre output quasi immediatamente, il brief è ancora più prezioso: introduce pochi minuti di attrito nel punto in cui l'attrito costa meno.
+In un ambiente in cui AI e strumenti self-service possono produrre output quasi immediatamente, questi pochi minuti di attrito hanno un valore particolare: vengono spesi nel punto in cui cambiare idea costa meno.
 
-> **Un buon brief non rallenta l'analisi. Rende più difficile andare velocemente nella direzione sbagliata.**
+> **Il brief non rallenta l'analisi. Separa la velocità di esecuzione dalla fretta di impegnarsi su una domanda non ancora progettata.**
