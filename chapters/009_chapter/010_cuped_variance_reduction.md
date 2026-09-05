@@ -1,27 +1,12 @@
-## 9.9 CUPED e variance reduction: più precisione senza inventare più traffico
+## 9.9 CUPED e variance reduction: ridurre rumore senza confondere precisione e validità
 
-Una volta scelti estimand, randomization unit e metrica, possiamo chiederci:
+Dopo aver stabilito che randomizzazione, exposure, telemetria e metriche sono sane possiamo chiedere se lo stesso effetto può essere stimato con meno rumore usando informazione **pre-treatment**. È qui che entra **CUPED — Controlled-experiment Using Pre-Experiment Data**.
 
-> **possiamo stimare lo stesso effetto con meno rumore usando informazione che esisteva prima del trattamento?**
+L'intuizione è semplice: se il comportamento precedente all'esperimento predice bene la metrica durante il test, una parte della variabilità osservata non riguarda il trattamento. Possiamo usare quella covariata per ottenere uno stimatore dell'effetto con errore standard più piccolo.
 
-Una delle tecniche più note è **CUPED — Controlled-experiment Using Pre-Experiment Data**.
+Microsoft Research descrive CUPED come variance reduction dello **stimatore del treatment effect**, non come modifica della varianza del dato grezzo, e come una leva che aumenta la power senza aumentare la probabilità di una decisione sbagliata quando l'estimatore è costruito correttamente.[^ms-vr]
 
-L'intuizione è semplice: se il comportamento pre-esperimento predice bene la metrica durante il test, possiamo rimuovere parte della variabilità prevedibile che non è causata dal trattamento.
-
-### Non serve a correggere una randomizzazione rotta
-
-CUPED non ripara:
-
-- SRM;
-- contamination;
-- treatment-dependent missingness;
-- metriche semanticamente sbagliate;
-- leakage post-treatment;
-- un campione che non rappresenta la decisione.
-
-Microsoft Research descrive variance reduction come un modo per aumentare precisione/power di un esperimento **senza aumentare la probabilità di una decisione sbagliata**, quando lo stimatore è costruito correttamente.[^ms-vr]
-
-Quindi l'ordine rimane:
+L'ordine è quindi:
 
 ```text
 experiment health
@@ -31,87 +16,29 @@ valid design
 variance reduction
 ```
 
-non il contrario.
+CUPED non ripara SRM, contamination, treatment-dependent missingness, metriche semanticamente sbagliate o un estimand incoerente.
 
-### Caso simulato/composito — Watch time molto persistente
+### Caso simulato/composito — Watch time persistente
 
-Una piattaforma video testa una nuova home.
+Una piattaforma video testa una nuova home usando minuti visti per utente. Nel periodo precedente alcuni utenti guardavano meno di 30 minuti a settimana e altri oltre 1.000; questa eterogeneità persiste durante il test.
 
-La metrica è minuti visti per utente.
+Se `watch_time_pre` è fortemente correlato con `watch_time_during`, la covariata pre-period può spiegare parte delle differenze individuali che esistevano comunque. La randomizzazione resta la fonte della comparabilità causale; CUPED usa informazione precedente per rendere più precisa la stima di quella differenza.
 
-Nel periodo precedente al test:
+È una distinzione importante. Non stiamo “correggendo perché B aveva utenti peggiori”. Stiamo sfruttando una variabile pre-treatment predittiva per ridurre la varianza dello stimatore.
 
-- alcuni utenti guardavano meno di 30 minuti/settimana;
-- altri oltre 1.000.
+### Perché il pre-period è un confine causale
 
-Questa eterogeneità persiste anche durante il test e rende rumoroso il confronto.
+Usare `watch_time_primi_3_giorni_del_test` come covariata può essere pericoloso perché B potrebbe aver già modificato quel valore. Aggiustare per una variabile post-treatment può cambiare l'estimand o introdurre bias. La finestra CUPED deve quindi essere anteriore al momento in cui il trattamento può influenzare il comportamento rilevante.
 
-Se `watch_time_pre` è fortemente correlato con `watch_time_during`, può essere usato come covariata per spiegare parte della differenza individuale già presente prima dell'esperimento.
+Il beneficio tende a essere maggiore quando la metrica ha forte persistenza individuale, lo storico copre molte randomization units e la covariata è misurata bene. Aiuta poco quando molti utenti sono nuovi, l'identità non è stabile tra pre-period e experiment period o il comportamento è dominato da eventi completamente nuovi.
 
-Il risultato utile non è:
+### Effective traffic multiplier non significa utenti virtuali
 
-> “correggiamo perché il trattamento aveva casualmente utenti più pesanti.”
+Microsoft ExP descrive il guadagno di CUPED anche come **effective traffic multiplier**: ridurre la varianza può produrre una precisione simile a quella che avremmo ottenuto con più traffico.[^ms-vr] Non significa che il campione sia diventato più grande o più rappresentativo. Significa che abbiamo usato meglio informazione già disponibile.
 
-È:
+Questo punto è cruciale se soltanto una parte degli utenti possiede storico. Non dobbiamo restringere silenziosamente il test ai returning users per rendere CUPED più efficace. Dobbiamo dichiarare coverage della covariata, policy sui missing e popolazione a cui appartiene il risultato aggiustato.
 
-> **“usiamo una caratteristica pre-treatment predittiva per ridurre la varianza dello stimatore dell'effetto.”**
-
-La randomizzazione resta la fonte della comparabilità causale.
-
-### Perché deve essere pre-treatment
-
-Supponiamo di usare come covariata:
-
-`watch_time_primi_3_giorni_del_test`
-
-La variante può già avere influenzato quel valore.
-
-Aggiustare per una variabile post-treatment rischia di modificare l'estimand o introdurre bias.
-
-Una covariata CUPED tipica deve essere definita su una finestra precedente all'assegnazione/esposizione pertinente.
-
-### Quando aiuta molto
-
-Variance reduction tende a essere più utile quando:
-
-- la metrica ha forte persistenza individuale;
-- esiste storico per molte randomization units;
-- la covariata pre-period è misurata bene;
-- la metrica è rumorosa;
-- il traffico è costoso o il randomization level è aggregato.
-
-### Quando aiuta poco
-
-Può avere beneficio limitato quando:
-
-- molti utenti sono nuovi;
-- il pre-period è poco correlato con l'outcome;
-- l'identità non è stabile tra pre-period e experiment period;
-- il comportamento è dominato da eventi nuovi;
-- la metrica è già poco variabile.
-
-La tecnica non deve diventare un default rituale.
-
-### Caso reale documentato — Microsoft Experimentation Platform
-
-Microsoft ExP usa CUPED come tecnica di variance reduction e descrive il beneficio come un **effective traffic multiplier**: in alcuni contesti la riduzione della varianza produce una precisione simile a quella che si otterrebbe con più traffico, ma il guadagno varia molto tra metriche e prodotti.[^ms-vr]
-
-La stessa Microsoft include variance reduction tra le leve usate per rendere praticabili anche test con traffico più modesto, per esempio in cambi infrastrutturali interni.[^ms-infra]
-
-Questo non significa che gli utenti virtualmente “aumentino”.
-
-Significa che stiamo sfruttando meglio informazione già disponibile.
-
-### CUPED e nuovi utenti
-
-Se una grande quota della popolazione non ha storico, dobbiamo dichiarare:
-
-- chi dispone della covariata;
-- come trattiamo i missing;
-- se la disponibilità di storico cambia per variante;
-- se il risultato aggiustato conserva la popolazione decisionale desiderata.
-
-Non dobbiamo restringere silenziosamente il test ai returning users soltanto per rendere CUPED più efficace.
+Mostrare raw e adjusted estimate può essere utile per auditabilità: se la variance reduction funziona come previsto, il centro della stima dovrebbe restare compatibile mentre la precisione migliora, non trasformare magicamente un test rotto in un risultato affidabile.
 
 ### Variance reduction card
 
@@ -130,9 +57,6 @@ Adjusted estimate:
 Precision gain:
 ```
 
-È utile mostrare raw e adjusted result quando questo migliora auditabilità e comprensione.
+> **Variance reduction compra precisione, non validità. Prima dobbiamo sapere che il confronto è credibile; solo allora ha senso cercare di stimarlo con meno rumore.**
 
-> **Variance reduction non crea più evidenza dal nulla. Riduce il rumore sfruttando informazione pre-treatment che sappiamo già essere predittiva dell'outcome.**
-
-[^ms-vr]: Microsoft Research, *Deep Dive Into Variance Reduction*: https://www.microsoft.com/en-us/research/articles/deep-dive-into-variance-reduction/
-[^ms-infra]: Microsoft Research, *A/B Testing Infrastructure Changes at Microsoft ExP*: https://www.microsoft.com/en-us/research/articles/a-b-testing-infrastructure-changes-at-microsoft-exp
+[^ms-vr]: Microsoft Research, *Deep Dive Into Variance Reduction*: https://www.microsoft.com/en-us/research/group/experimentation-platform-exp/articles/deep-dive-into-variance-reduction/
