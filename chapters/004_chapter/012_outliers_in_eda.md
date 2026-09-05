@@ -1,107 +1,37 @@
-## 4.11 Osservazioni influenti: quanto dipende il pattern da pochi casi?
+## 4.11 Osservazioni influenti: quando un caso reale domina la storia
 
-Nel Capitolo 3 abbiamo affrontato gli outlier dal punto di vista della **data readiness**: un valore estremo è un errore, un caso impossibile oppure un evento raro ma reale?
+Nel Capitolo 3 abbiamo chiesto se un valore estremo rappresentasse un errore, un caso impossibile o un evento raro ma reale. Se il record ha superato quella verifica, nell'EDA nasce una domanda diversa: **quanto dipende il nostro pattern da quella singola osservazione o da quel piccolo gruppo di casi?**
 
-Qui la domanda è diversa.
+Un valore può essere perfettamente valido e influenzare enormemente media, deviazione standard, retta di regressione o correlazione. Non abbiamo quindi motivo di cancellarlo, ma abbiamo motivo di capire se il linguaggio con cui descriviamo l'intera popolazione dipenda quasi completamente da lui.
 
-Supponiamo che il dato sia valido.
+Consideriamo una società SaaS con `ACV medio = €21.600` e `ACV mediano = €12.900`. Nel periodo entra un contratto enterprise da **€186.000**, verificato e reale: un gruppo internazionale consolida 14 società in un unico accordo. Non esiste alcuna giustificazione per rimuoverlo dai KPI economici.
 
-Vogliamo sapere:
-
-> **quanto le nostre statistiche e relazioni dipendono da poche osservazioni estreme?**
-
-Un valore può essere perfettamente reale e avere comunque un'influenza enorme sulla media, sulla deviazione standard o sulla correlazione.
-
-### Caso simulato/composito — Il contratto enterprise che cambia la media
-
-Una società SaaS ha questi dati annuali:
+L'analista esegue però una sensitivity analysis descrittiva:
 
 ```text
-ACV medio:   €21.600
-ACV mediano: €12.900
+ACV medio con contratto enterprise: €21.600
+ACV medio senza quel contratto:     €18.900
+ACV mediano:                        €12.900
 ```
 
-Nel periodo compare un nuovo contratto da **€186.000**.
+La differenza rende la storia più precisa. Il valore economico medio del portafoglio è realmente aumentato grazie a un nuovo tipo di contratto, mentre l'esperienza del cliente centrale è cambiata molto meno. Il punto estremo non “falsa” la media; ci dice che **la crescita della media è concentrata in una parte particolare della distribuzione**.
 
-Il contratto è stato verificato ed è reale: un gruppo internazionale consolida 14 società in un unico accordo.
+## Sensitivity analysis significa misurare la dipendenza della conclusione
 
-Non c'è nessun motivo di cancellarlo.
+Una pratica utile è ripetere la statistica principale in versioni plausibili: dataset completo, mediana invece della media, analisi per segmento e, quando serve, risultato senza il punto o il gruppo più influente. Non facciamo questo per scegliere la versione che produce la headline preferita, ma per capire quanto la conclusione sia robusta.
 
-Ma l'analista vuole capire che ruolo svolge nella statistica:
+Se una correlazione passa da `0,74` a `0,18` quando separiamo un singolo punto reale dal resto, dobbiamo conservare entrambe le informazioni. Quel punto può essere economicamente importantissimo, ma la frase “esiste una forte relazione generale” non è più una buona descrizione dell'intera popolazione.
 
-```text
-ACV medio con contratto enterprise:    €21.600
-ACV medio senza quel contratto:        €18.900
-mediana:                               €12.900
-```
+Outlier e punto influente, inoltre, non sono sinonimi. Un'osservazione può essere estrema in una variabile e modificare poco la relazione che stiamo studiando; un altro punto può avere un valore `X` molto lontano dal resto e determinare quasi interamente una retta pur non sembrando eccezionale in `Y`. Il quartetto di Anscombe rende questo rischio visibile.
 
-La differenza è informazione.
+Per questo box plot, regole IQR e z-score — che vedremo più avanti — non devono essere letti come istruzioni di cancellazione. Segnalano una posizione relativa nella distribuzione; non stabiliscono se il record sia corretto, se appartenga a un nuovo segmento o se abbia valore economico.
 
-Il valore medio del business è realmente aumentato grazie al nuovo tipo di contratto, ma la distribuzione del cliente "tipico" è cambiata molto meno.
+Una comunicazione rigorosa può quindi suonare così:
 
-### Sensitivity analysis descrittiva
+> L'AOV medio è €128, ma è fortemente influenzato da una piccola quota di ordini B2B ad alto valore. La mediana è €64 e, in una sensitivity analysis che separa il top 1%, la media del resto scende a €91. Gli ordini estremi sono validi e rimangono inclusi nei KPI economici.
 
-Una pratica utile è calcolare la statistica principale in più versioni plausibili:
+La frase non nasconde né il totale né la fragilità del riepilogo. Mostra che il pattern cambia a seconda della parte di business che stiamo cercando di descrivere.
 
-- dataset completo;
-- senza il punto più influente;
-- mediana invece della media;
-- statistiche per segmento;
-- eventualmente una media troncata, quando ha una giustificazione.
+Questa disciplina prepara il caso successivo. Quando una correlazione molto alta spinge verso una riallocazione importante di budget, la prima responsabilità dell'EDA è chiedere **quanto quella correlazione sopravviva quando guardiamo punti, tempo, composizione e metrica economica completa**.
 
-Non per scegliere la versione che ci piace.
-
-Per capire **quanto è robusta la storia**.
-
-Se la correlazione passa da `0,74` a `0,18` togliendo un singolo punto reale, dobbiamo dirlo. Quel punto può essere essenziale per il business, ma la frase "esiste una forte relazione generale" diventa difficile da difendere.
-
-### Outlier e punto influente non sono sinonimi
-
-Un'osservazione può essere estrema in una singola variabile e avere poca influenza sulla relazione che studiamo.
-
-Al contrario, un punto non particolarmente estremo in Y può avere un valore X molto distante dal resto e determinare quasi completamente una retta di regressione o una correlazione.
-
-Il quartetto di Anscombe mostra precisamente questo tipo di rischio.
-
-Per l'EDA la domanda non è soltanto:
-
-> quanto è lontano questo valore?
-
-ma:
-
-> **che cosa succede alla conclusione se questo valore non domina più il riepilogo?**
-
-### Box plot e z-score non sono ordini di cancellazione
-
-Nelle sezioni successive vedremo strumenti che possono segnalare osservazioni lontane dalla massa centrale.
-
-Una soglia IQR o uno z-score elevato descrivono una posizione relativa nella distribuzione.
-
-Non stabiliscono:
-
-- se il record sia corretto;
-- se debba essere escluso;
-- se rappresenti un nuovo segmento;
-- se sia economicamente irrilevante.
-
-Queste decisioni richiedono il contesto già costruito nella Data Readiness Review.
-
-### Comunicare la sensibilità
-
-Una frase rigorosa può essere:
-
-> L'AOV medio è €128, ma è fortemente influenzato da una piccola quota di ordini B2B ad alto valore. La mediana è €64 e, escludendo il top 1% per una sensitivity analysis, la media scende a €91. Gli ordini estremi sono validi e restano inclusi nei KPI economici.
-
-Qui non nascondiamo né il totale né la distribuzione.
-
-### Regola operativa
-
-Quando un insight dipende da osservazioni estreme:
-
-1. verifica che siano già state validate dal punto di vista del dato;
-2. misura quanto influenzano il risultato;
-3. osserva statistiche robuste o segmentate;
-4. non rimuoverle senza una regola sostantiva;
-5. comunica la sensibilità quando cambia l'interpretazione.
-
-> **Un valore reale non deve essere cancellato perché rende la statistica scomoda. Ma una statistica fragile non deve essere presentata come se descrivesse uniformemente tutta la popolazione.**
+> **Un valore reale non va cancellato perché rende la statistica scomoda. Ma una statistica dominata da pochi casi non va raccontata come se descrivesse uniformemente tutta la popolazione.**
