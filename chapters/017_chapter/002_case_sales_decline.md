@@ -1,293 +1,65 @@
-## 17.1 “Le vendite stanno scendendo”: prima capire quale numero sta cambiando
+## 17.1 Orion Living — “Le vendite stanno scendendo”
 
-### Caso simulato/composito: Orion Living
+> **Caso simulato/composito.** Organizzazione, numeri e sequenza sono costruiti per la didattica.
 
-Una catena retail multicanale, **Orion Living**, chiude il mese con un alert: `-11,2% YoY`.
+Orion Living, catena retail multicanale, chiude il mese con un alert: **-11,2% YoY**. Il CEO chiede se sia un problema di domanda, prezzo o execution e il management sta già valutando promozioni per recuperare volume. Il failure cost principale è quindi immediato: se la spiegazione è sbagliata, l'azienda può spendere milioni in sconti, comprimere ulteriormente il margine e lasciare intatto il vero problema.
 
-Il CEO chiede:
+Per la decisione delle prossime 72 ore non serve ancora identificare causalmente ogni determinante delle vendite. Serve capire se l'evidenza giustifica una promozione generalizzata oppure indica che il valore si sta perdendo altrove. La prima stop rule è perciò semplice: **nessuna azione commerciale finché il -11,2% non è semanticamente e contabilmente riconciliato**.
 
-> “È un problema di domanda, prezzo o execution?”
+### Il primo routing cambia su una parola: “vendite”
 
-Questa è una domanda realistica perché contiene già tre spiegazioni concorrenti. Il rischio è trasformarle troppo presto in tre dashboard.
+Il board usa “vendite” come se fosse una metrica univoca. Il controllo iniziale mostra invece che il -11,2% riguarda **net sales**, non ordini né gross sales. Questa distinzione cambia il percorso prima ancora di aprire un modello.
 
-Il primo compito non è scegliere una tecnica. È capire **quale decisione dipende dalla risposta**.
+L'Analytical Brief minimale fissa quindi net sales come metrica decisionale, popolazione di ordini consumer completati e confronto YoY da rendere omogeneo. Poi il team costruisce una bridge tra ciò che accade prima dell'ordine e ciò che accade dopo:
 
-Il management sta considerando tre azioni molto diverse:
-
-- aumentare promozioni per recuperare domanda;
-- intervenire su prodotto e pricing;
-- correggere problemi operativi che stanno distruggendo valore dopo l'ordine.
-
-Agire sulla spiegazione sbagliata può costare milioni e peggiorare il fenomeno.
-
-## Routing iniziale
-
-Il Capstone Routing Canvas parte così:
-
-| Elemento | Domanda |
-|---|---|
-| Decisione | serve stimolare domanda o correggere execution? |
-| Failure cost | scontare inutilmente, erodere margine, ignorare un problema operativo |
-| Claim necessario | diagnostico prima che causale |
-| Tempo disponibile | 72 ore per la prima decisione |
-| Reversibilità | alta per analisi e test; media per campagne e rollback prodotto |
-| Primo gate | verificare che il `-11,2%` significhi davvero ciò che il board pensa |
-
-Questa classificazione evita un errore frequente: chiedere una prova causale perfetta quando per la prima decisione basta localizzare con affidabilità il meccanismo dominante.
-
-## 1. “Vendite” non è una metrica
-
-“Vendite” può significare:
-
-- ordini;
-- pezzi;
-- gross sales;
-- net sales;
-- revenue riconosciuta;
-- contribution margin.
-
-Il primo controllo mostra che il `-11,2%` riguarda **net sales**, non ordini né gross sales.
-
-Questa distinzione cambia completamente il routing.
-
-Se gross sales e ordini fossero crollati, la priorità sarebbe domanda/conversione.
-
-Se gli ordini fossero stabili ma net sales crollasse, dovremmo guardare cosa succede tra ordine e valore netto riconosciuto.
-
-### Deliverable attivato
-
-Serve subito un **Analytical Brief** minimale:
-
-- metrica decisionale: net sales;
-- baseline: stesso mese anno precedente, con verifica di comparabilità;
-- popolazione: ordini consumer completati;
-- decisione: promozione generalizzata sì/no nelle prossime due settimane;
-- stop rule iniziale: non proporre azioni commerciali finché gross e net sales non sono riconciliati.
-
-Non serve ancora un modello predittivo, un esperimento o un Causal Identification Brief.
-
-## 2. Decomporre prima di spiegare
-
-L'analista costruisce una bridge decomposition tra domanda e valore netto:
-
-- sessioni;
-- conversione;
-- unità per ordine;
-- prezzo medio;
-- mix prodotto;
-- cancellazioni;
-- resi;
-- valore netto finale.
-
-I risultati principali sono:
-
-- sessioni: `-2,1%`;
-- conversione: `-0,4 pp`;
-- unità per ordine: quasi stabile;
-- prezzo medio: `+3,8%`;
-- return rate osservato: `7,4% → 10,9%`.
-
-Il dato non sostiene più la storia semplice “la domanda è crollata”.
-
-La parte più anomala si trova dopo l'acquisto.
-
-### Evidence promotion
-
-In questa fase vengono prodotti molti breakdown. Solo una visualizzazione viene promossa a decision artifact: una bridge che mostra quanto del gap net sales arriva da traffico/conversione e quanto da cancellazioni/resi.
-
-Il suo ruolo è `orient`.
-
-Non prova ancora la causa. Riduce lo spazio delle ipotesi.
-
-## 3. Cercare concentrazione, non soltanto correlazione
-
-Per canale:
-
-| Canale | Net sales YoY |
+| Componente | Variazione |
 |---|---:|
-| Store | -3,1% |
-| Web desktop | -5,4% |
-| Mobile app | -24,8% |
+| Sessioni | -2,1% |
+| Conversione | -0,4 pp |
+| Unità per ordine | quasi stabile |
+| Prezzo medio | +3,8% |
+| Return rate osservato | 7,4% → 10,9% |
 
-Il calo è inoltre concentrato:
+La narrativa “la domanda è crollata” perde rapidamente forza. Traffico e conversione peggiorano, ma la parte più anomala del gap emerge dopo l'acquisto. Questa decomposition è già decision-relevant: rende meno plausibile che uno sconto generalizzato sia la prima leva da usare.
 
-- nell'arredo voluminoso;
-- su iOS;
-- in tre mercati che spiegano circa il 64% del delta.
+Il team approfondisce la concentrazione. Net sales scendono del **3,1%** negli store, del **5,4%** sul web desktop e del **24,8%** sulla mobile app. Il deterioramento è inoltre forte nell'arredo voluminoso, su iOS e in tre mercati che spiegano circa il **64% del delta**. A questo punto la release iOS diventa una working hypothesis naturale, ma l'Evidence Ledger la mantiene nella colonna **Inferred**, non in Observed.
 
-A questo punto il team potrebbe dire:
+### La readiness cambia di nuovo la storia
 
-> “È la nuova release iOS.”
+Prima di collegare il fenomeno a release o logistica, il team verifica event completeness, definizione del return rate, date di ordine/consegna/reso, versioni app realmente esposte, policy di reso, refund recognition e product mix.
 
-Sarebbe prematuro.
+Qui emerge il secondo cambio di routing: nello stesso periodo la finestra di reso è passata da **30 a 45 giorni in due mercati**. Il return rate `7,4% → 10,9%` è quindi un confronto tra processi commerciali non completamente omogenei. Il +3,5 pp osservato non ha il diritto di diventare automaticamente “deterioramento operativo”.
 
-Abbiamo localizzato **dove** il fenomeno è forte, non ancora **perché**.
+Dopo aver standardizzato il mix prodotto e confrontato finestre di reso omogenee, l'aumento comparabile scende a circa **+1,4 pp**. Il residuo è molto più informativo: circa **0,8 pp** sono concentrati sugli ordini bulky, circa **0,4 pp** sugli utenti esposti alla nuova esperienza iOS, con una quota diffusa restante.
 
-## 4. Data Readiness Review: prima di costruire una storia
+Nel bulky il lead time medio aumenta di **1,7 giorni**, i resi per prodotto danneggiato crescono fortemente e tre carrier spiegano gran parte del deterioramento. I mercati più colpiti coincidono inoltre con quelli in cui è cambiato il network di consegna. Questi fatti rendono più credibile un problema operativo localizzato. Non autorizzano però ancora la frase “la logistica ha causato il -11,2%” né trasformano l'associazione iOS in treatment effect.
 
-Il team controlla:
+### La prima decisione può chiudersi prima della causalità globale
 
-- completeness degli eventi;
-- definizione del return rate;
-- date ordine, consegna e reso;
-- versioni app realmente esposte;
-- policy di reso;
-- modalità di contabilizzazione dei refund;
-- eventuali cambiamenti di mix.
+La domanda urgente era se stimolare domanda con sconti generalizzati. Per questa scelta l'evidenza è già sufficiente. Sappiamo che la domanda aggregata non spiega la maggioranza del gap; una quota materiale del problema nasce dopo l'ordine; il deterioramento residuo è fortemente concentrato in flussi operativi specifici; una promozione generalizzata agirebbe poco su quei driver e ridurrebbe il margine.
 
-Emerge un fatto importante: nello stesso periodo la finestra di reso è stata estesa da 30 a 45 giorni in due mercati.
+Il Decision Record confronta quindi tre opzioni. **A — sconto generalizzato** può aiutare conversione ma interviene male sui resi e comprime il margine. **B — nessuna azione** evita costi immediati ma lascia proseguire danni e ritardi. **C — intervento mirato** combina audit dei carrier bulky nei tre mercati critici, test su packaging/carrier, monitoraggio separato di gross sales/returns/net sales e una verifica controllata della componente iOS sospetta.
 
-Il confronto YoY del return rate non è quindi semanticamente omogeneo.
+La scelta è **C**. Non perché il team abbia dimostrato una causa unica, ma perché C è robusta alle spiegazioni ancora plausibili e mantiene alto il valore informativo delle azioni successive.
 
-Il `+3,5 pp` osservato non può essere trattato come deterioramento operativo puro.
+Per il sotto-problema iOS la stop rule è diversa. Se il costo di rollback è materiale, la semplice associazione non basta: serve ricostruire esposizione, comparabilità ed eventualmente attivare un Causal Identification Brief o un confronto sperimentale. Il capstone, quindi, non termina tutte le domande allo stesso livello.
 
-### Stop rule
+### Evidence Ledger al momento della decisione
 
-La prima stop rule scatta:
+| Observed | Inferred | Still unknown |
+|---|---|---|
+| net sales -11,2% YoY | execution pesa più della domanda nel residuo | effetto causale della release iOS |
+| sessioni -2,1%, conversion -0,4 pp | network bulky plausibilmente contribuisce al deterioramento | quota causale precisa dei carrier |
+| policy reso 30→45 giorni in 2 mercati | sconto generalizzato è poco allineato ai driver | risposta di conversion a eventuale promo |
+| return-rate comparabile circa +1,4 pp | | |
+| bulky: lead time +1,7 giorni, damage returns in aumento | | |
 
-> **non attribuire il deterioramento alla release né alla logistica finché non abbiamo reso comparabili esposizione al reso, mix e finestre temporali.**
+La Decision Communication Pack può quindi usare una headline calibrata:
 
-Questo è un esempio di valore creato senza modello sofisticato: impedire una decisione anticipata.
+> **Il gap di net sales non è principalmente un calo generalizzato della domanda. Dopo aver corretto policy di reso e mix, il deterioramento residuo è concentrato negli ordini bulky e in una parte del rollout iOS. Non raccomandiamo sconti generalizzati; proponiamo interventi mirati su carrier, packaging e verifica del rollout.**
 
-## 5. Ipotesi concorrenti
+L'outcome review misura return rate bulky, damage-related returns, lead time, net sales per session, conversion iOS, complaints e contribution margin. Il team non costruisce churn model, MMM, forecast complesso o un modello causale globale delle vendite: nessuno di questi oggetti è necessario per chiudere la prima decisione.
 
-Dopo il controllo semantico restano cinque ipotesi:
+**Percorso minimo effettivo:** Analytical Brief → Data Readiness Review → EDA Evidence Map → Decision Record → Decision Communication Pack. Il Causal Identification Brief resta condizionale sul solo sotto-problema iOS.
 
-1. peggioramento dell'esperienza iOS;
-2. politica di reso più permissiva;
-3. mix verso categorie ad alto return rate;
-4. deterioramento logistico sugli articoli bulky;
-5. combinazione di più meccanismi.
-
-L'analista costruisce una **EDA Evidence Map** che registra, per ogni ipotesi:
-
-- evidenza a favore;
-- evidenza contro;
-- dati mancanti;
-- test discriminante successivo.
-
-Questo evita che il team selezioni soltanto i grafici compatibili con la spiegazione preferita.
-
-## 6. Separare composizione e performance
-
-Standardizzando il mix prodotto e confrontando finestre di reso omogenee, il deterioramento comparabile del return rate scende da `+3,5 pp` a circa `+1,4 pp`.
-
-La decomposizione del residuo mostra:
-
-- circa `0,8 pp` concentrati sugli ordini bulky;
-- circa `0,4 pp` associati agli utenti esposti alla nuova esperienza iOS;
-- una quota residua diffusa.
-
-Nel segmento bulky:
-
-- lead time medio `+1,7 giorni`;
-- resi per “prodotto danneggiato” in forte aumento;
-- tre carrier spiegano gran parte del deterioramento;
-- i mercati più colpiti coincidono con quelli in cui è cambiato il network di consegna.
-
-Ora l'evidenza diagnostica è molto più forte.
-
-Ma “associato alla release” non equivale ancora a “causato dalla release”.
-
-## 7. Quanto claim ci serve davvero?
-
-Per la decisione immediata non serve stimare con precisione l'effetto causale di ogni driver.
-
-Serve decidere se lanciare uno sconto generalizzato.
-
-L'evidenza disponibile è già sufficiente per dire:
-
-- la domanda aggregata non spiega la maggioranza del gap;
-- una quota importante del problema nasce dopo l'ordine;
-- il deterioramento è fortemente concentrato in specifici flussi operativi;
-- uno sconto generalizzato agirebbe poco sui driver dominanti e comprimerebbe ulteriormente il margine.
-
-Quindi il **claim gate** per la decisione commerciale può essere superato anche senza un'identificazione causale completa.
-
-Per il rollback iOS, invece, il claim richiesto è più forte. Qui serve una verifica specifica sull'esposizione al rollout e, se possibile, un confronto controllato.
-
-## 8. Decision Record
-
-Il Decision Record confronta:
-
-### A — Sconto generalizzato
-
-Upside: possibile recupero conversione.
-
-Downside: margine inferiore, scarso impatto sui resi bulky, rischio di mascherare il problema.
-
-### B — Nessuna azione
-
-Upside: nessun costo immediato.
-
-Downside: continuano danni, resi e deterioramento net sales.
-
-### C — Intervento mirato
-
-- audit carrier bulky nei tre mercati critici;
-- rollback controllato della componente iOS sospetta;
-- confronto con finestre di reso omogenee;
-- test packaging/carrier sugli SKU più danneggiati;
-- monitoraggio separato di gross sales, returns e net sales.
-
-La scelta è **C**.
-
-Il motivo non è che conosciamo perfettamente ogni causa. È che C è la scelta più robusta all'evidenza disponibile e mantiene alto il valore informativo delle azioni successive.
-
-## 9. Decision Communication Pack
-
-La headline executive non è:
-
-> “Le vendite sono -11,2%.”
-
-E neppure:
-
-> “La logistica ha causato il calo.”
-
-È:
-
-> **“Il gap di net sales non è principalmente un calo generalizzato della domanda: dopo aver reso comparabili policy e mix, il deterioramento residuo è concentrato negli ordini bulky e in una parte del rollout iOS. Non raccomandiamo sconti generalizzati; proponiamo interventi mirati su carrier, packaging e rollout.”**
-
-Sotto la headline compaiono:
-
-- il bridge gross-to-net;
-- il breakdown per categoria/mercato;
-- il principale caveat causale;
-- decisione richiesta;
-- metriche da monitorare.
-
-## 10. Outcome review
-
-Il piano misura:
-
-- return rate bulky;
-- damage-related return rate;
-- delivery lead time;
-- net sales per session;
-- conversion iOS;
-- customer complaints;
-- contribution margin.
-
-L'outcome review non chiederà soltanto se net sales sono risalite.
-
-Chiederà se il meccanismo su cui abbiamo agito si è mosso nella direzione prevista.
-
-## Cosa abbiamo scelto di non fare
-
-In questo caso non servono, almeno nella prima fase:
-
-- churn model;
-- forecast complesso;
-- MMM;
-- architettura streaming nuova;
-- modello causale globale di tutte le determinanti delle vendite.
-
-Questa rinuncia è parte della soluzione.
-
-La catena effettiva è:
-
-**Analytical Brief → Data Readiness Review → EDA Evidence Map → Decision Record → Decision Communication Pack**
-
-con un eventuale Causal Identification Brief solo sul sotto-problema iOS se il rollback ha un costo sufficientemente alto.
-
-> **Un capstone non dimostra maturità usando tutto. La dimostra scegliendo il minimo percorso di evidenza che rende difendibile la decisione.**
+> **Il valore del capstone non è arrivare alla causa più sofisticata. È sapere quando una diagnosi sufficientemente affidabile ha già eliminato l'azione sbagliata.**
