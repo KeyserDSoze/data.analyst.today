@@ -1,10 +1,6 @@
-## 14.1 Dal prompt alla specifica: dare all'AI il contesto che può usare e quello che non può inventare
+## 14.1 Dal prompt alla specifica: rendere esplicito ciò che il modello non deve indovinare
 
-Il prompting è utile, ma il termine rischia di portarci nella direzione sbagliata.
-
-Sembra suggerire che la qualità dipenda principalmente da **come formuliamo una frase**.
-
-Nel lavoro analitico dipende soprattutto da **quale specifica rendiamo disponibile al sistema**.
+Nel lavoro analitico la qualità di una richiesta AI dipende meno dall'eleganza della frase e più dalla qualità della **specifica**. "Analizza le vendite" delega al modello troppe decisioni invisibili: quale revenue, quale periodo, quale perimetro, quale data economica, quale popolazione, quale baseline, quale livello di claim. Una richiesta professionale riduce proprio questo spazio di improvvisazione.
 
 Confrontiamo:
 
@@ -12,50 +8,38 @@ Confrontiamo:
 
 con:
 
-> Confronta il net revenue delle ultime 8 settimane con le 8 precedenti, a perimetro negozi comparabile. Usa `payment_captured_at` come data economica, escludi ordini cancellati e refund completi, separa volume/prezzo/mix, segnala segmenti con contributo assoluto > €50k. Prima di interpretare verifica freshness e reconciliation con la misura certificata. Non formulare causal claim.
+> Confronta il net revenue delle ultime 8 settimane con le 8 precedenti, a perimetro negozi comparabile. Usa `payment_captured_at` come data economica, escludi ordini cancellati e refund completi, separa volume/prezzo/mix e segnala segmenti con contributo assoluto > €50k. Prima di interpretare verifica freshness e reconciliation con la misura certificata. Non formulare causal claim.
 
-La seconda richiesta non è migliore perché è “più dettagliata”.
+La seconda richiesta non è migliore perché è più lunga. È migliore perché esplicita decisioni che cambiano il significato del risultato.
 
-È migliore perché esplicita **decisioni che altrimenti il modello dovrebbe indovinare**.
+### Il prompt come work order sopra contratti già esistenti
 
-### Il prompt è una view dei contratti precedenti
-
-Non dovremmo riscrivere nel prompt tutto il libro.
-
-Se esistono già:
-
-- Analytical Brief;
-- Data Readiness Review;
-- metric definitions;
-- Analytical Data Contract;
-- Data Flow Architecture Map;
-
-l'AI dovrebbe ricevere o poter recuperare le parti pertinenti.
-
-Il prompt diventa allora una **work order** sopra contesto governato.
+Non dobbiamo riscrivere nel prompt tutto ciò che abbiamo costruito nei capitoli precedenti. Se esistono Analytical Brief, Data Readiness Review, metric definitions, Analytical Data Contract o Data Flow Architecture Map, il sistema dovrebbe ricevere o recuperare la parte rilevante di quei contratti. Il prompt diventa una **work order** sopra contesto governato:
 
 ```text
 Task
-+ relevant certified context
++ certified context
 + allowed assumptions
 + constraints
-+ expected evidence
++ required evidence
 + output contract
 ```
 
-Questo è molto più robusto di una raccolta di “prompt perfetti” copiati da un documento.
+Microsoft segue oggi una logica analoga in Power BI: AI data schemas, AI instructions, descrizioni e verified answers servono a trasferire nel semantic model terminologia, business context e risposte validate invece di lasciare tutto alla formulazione della domanda.
 
-## 14.1.1 Il Context Pack
+Fonti:
 
-Per task non banali usiamo un **Context Pack**.
+- https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai
+- https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai-instructions
 
-Può includere:
+### Context Pack
+
+Per un task non banale usiamo un **Context Pack**. Non deve essere necessariamente compilato a mano: può essere costruito da metadata, semantic layer, catalogo e documentazione versionata.
 
 ```text
 Decision:
 Question:
-Population:
-Grain:
+Population / grain:
 Metric definitions:
 Time semantics:
 Certified sources:
@@ -66,104 +50,27 @@ Expected output:
 Required checks:
 ```
 
-Non tutti i campi devono essere scritti a mano ogni volta.
+Prendiamo un SaaS con logo churn passato da `3,8%` a `4,6%`. Chiedere "perché il churn è aumentato?" invita il sistema a produrre spiegazioni plausibili — pricing, onboarding, supporto, competitor — prima che esista evidenza. Un Context Pack più maturo dichiara invece che la decisione è capire dove investire capacità di retention investigation, definisce numeratore e base del logo churn, impone il confronto Q2 vs Q1, richiede slice per cohort, plan, country, tenure e activation status, obbliga a verificare prima eventuali cambi di tracking/definizione e specifica che `association ≠ cause`. L'output deve separare contribution-to-delta, fatti osservati, ipotesi e next evidence.
 
-Possono provenire da metadata, semantic layer, catalogo o documentazione versionata.
+Il sistema non riceve soltanto una domanda. Riceve **i confini epistemici del lavoro**.
 
-### Caso simulato/composito — “perché il churn è salito?”
+### Known, Unknown, Must Ask
 
-Un SaaS osserva logo churn da 3,8% a 4,6%.
+Una delle capacità più importanti di un workflow maturo è non trasformare l'ambiguità in una scelta arbitraria. Per questo classifichiamo ciò che il sistema incontra:
 
-Richiesta debole:
+- **Known**: informazione presente nel contesto autorizzato;
+- **Unknown**: informazione assente ma non bloccante;
+- **Must Ask / Must Escalate**: ambiguità che cambia materialmente risultato o rischio.
 
-> Analizza perché il churn è aumentato.
+Se la richiesta è "calcola ARPU per mercato" e il contesto contiene `gross_revenue`, `net_revenue` e tre definizioni di active user, scegliere la combinazione più plausibile è un errore. L'output corretto è segnalare che ARPU non è univoco e chiedere definizione di revenue e denominator policy.
 
-Un sistema generativo può proporre:
+> **Chiedere chiarimento può essere un risultato corretto.**
 
-- pricing;
-- onboarding;
-- supporto;
-- competizione.
+Questa regola diventa ancora più importante nei workflow agentici: un'assunzione implicita presa allo step 1 può propagarsi per dieci step e diventare sempre più difficile da vedere.
 
-Sono spiegazioni plausibili.
+### Assumption budget
 
-Non sono ancora evidenze.
-
-Un Context Pack migliore stabilisce:
-
-```text
-Decision:
-capire dove investire capacità di retention investigation
-
-Metric:
-logo churn mensile
-numeratore = account che terminano la relazione nel mese
-base = account attivi a inizio mese
-
-Comparison:
-Q2 vs Q1
-
-Required slices:
-cohort, plan, country, tenure, activation status
-
-Pre-check:
-verificare cambi di tracking/definizione
-
-Claim rule:
-association ≠ cause
-
-Output:
-contribution-to-delta table
-observed facts
-candidate hypotheses
-next evidence needed
-```
-
-Ora il sistema non riceve solo una domanda.
-
-Riceve **i confini epistemici del lavoro**.
-
-## 14.1.2 Known / Unknown / Must Ask
-
-Un pattern utile è obbligare il workflow a classificare ciò che incontra.
-
-**Known**
-
-Informazione presente nel contesto autorizzato.
-
-**Unknown**
-
-Informazione non disponibile ma non bloccante.
-
-**Must Ask / Must Escalate**
-
-Ambiguità che cambia materialmente il risultato.
-
-Esempio:
-
-> “Calcola ARPU per mercato.”
-
-Il sistema trova `gross_revenue`, `net_revenue` e tre possibili definizioni di active user.
-
-La risposta matura non è scegliere quella che sembra più probabile.
-
-È:
-
-```text
-MUST ASK:
-ARPU non è univoco nel contesto disponibile.
-Servono definizione revenue e denominator policy.
-```
-
-> **Chiedere chiarimento può essere un output corretto.**
-
-Questa regola diventa ancora più importante nei workflow agentici, perché un'assunzione implicita può propagarsi per dieci step.
-
-## 14.1.3 Assumption budget
-
-Possiamo dichiarare anche un **assumption budget**.
-
-Per esempio:
+Non tutte le inferenze hanno lo stesso rischio. Possiamo quindi dichiarare un **assumption budget**:
 
 ```text
 May infer:
@@ -178,77 +85,35 @@ Must not infer:
 - privacy classification
 ```
 
-L'obiettivo non è impedire ogni inferenza.
+L'obiettivo non è eliminare ogni inferenza, ma separare convenzioni innocue da assunzioni che cambiano semantica, rischio o autorizzazione.
 
-È distinguere **convenzioni innocue** da assunzioni che cambiano il significato o il rischio.
+### Piano prima dell'esecuzione
 
-## 14.1.4 Piano prima dell'esecuzione quando il costo di errore è alto
-
-Per task complessi può essere utile separare:
+Quando il costo di un errore è alto, conviene separare pianificazione ed esecuzione:
 
 ```text
-1. plan
-2. review
-3. execute
-4. verify
-5. interpret
+plan
+→ review
+→ execute
+→ verify
+→ interpret
 ```
 
-Esempio:
+Possiamo chiedere prima: "Proponi il piano di investigazione. Non eseguire query e non formulare conclusioni." Dopo la review umana autorizziamo solo gli step necessari e aggiungiamo stop condition, per esempio: se una cardinalità non corrisponde alle attese, fermati. Questo crea un **commit point** prima che il sistema consumi risorse o propaghi una specifica sbagliata.
 
-> Proponi il piano di investigazione. Non eseguire query e non formulare conclusioni.
+### L'output contract deve preservare i livelli di evidenza
 
-Dopo la review umana:
-
-> Esegui soltanto gli step 1–3 usando le fonti certificate indicate. Se una cardinalità non corrisponde alle attese, fermati.
-
-Questo introduce un **commit point** prima che il sistema consumi risorse o propaghi decisioni sbagliate.
-
-## 14.1.5 Fatti, inferenze, ipotesi e raccomandazioni
-
-La forma dell'output deve separare livelli diversi.
+Un testo fluente tende a trasformare osservazioni, ipotesi e raccomandazioni in una storia unica. Per evitarlo, l'output deve tenere separati i livelli:
 
 | Livello | Esempio |
 |---|---|
-| Osservazione | mobile conversion 4,2% → 3,5% |
+| Osservazione | mobile conversion `4,2% → 3,5%` |
 | Localizzazione | 74% del delta è su Android 14 |
 | Ipotesi | possibile problema nel payment flow |
 | Evidenza mancante | error code / release telemetry |
 | Causal claim | non consentito con i dati correnti |
 | Recommendation | investigare build X prima di modificare pricing |
 
-Un testo fluente tende a comprimere queste categorie in una storia unica.
-
-Un output contract le mantiene separate.
-
-## 14.1.6 Caso reale documentato — preparare la semantica per l'AI
-
-Microsoft ha introdotto in Power BI strumenti specifici per preparare un semantic model all'uso AI: AI data schemas, AI instructions e verified answers.[^ms-prep-ai]
-
-La documentazione sulle AI instructions descrive esplicitamente la possibilità di fornire business context, terminology e analytical guidance sul modello e raccomanda di testare le risposte prima della pubblicazione.[^ms-ai-instructions]
-
-La lezione generale è importante:
-
-> **il contesto utile all'AI dovrebbe diventare un asset governato del sistema, non un segreto custodito nella memoria di chi scrive il prompt migliore.**
-
-## 14.1.7 Campo della AI Analysis Control Sheet
-
-```text
-Task:
-Decision:
-Context Pack version:
-Certified sources:
-Known ambiguities:
-Allowed assumptions:
-Must-ask conditions:
-Forbidden inference:
-Expected output schema:
-Required checks before interpretation:
-```
-
-### Regola operativa
+Il Context Pack entra quindi nella AI Analysis Control Sheet con versione, fonti certificate, ambiguità note, assumption budget, must-ask conditions e controlli richiesti prima dell'interpretazione.
 
 > **Un buon prompt non rende intelligente una richiesta vaga. Una buona specifica rende visibili le decisioni che non vogliamo lasciare all'improvvisazione del modello.**
-
-[^ms-prep-ai]: Microsoft Learn, *Prepare your data for AI to improve Copilot results*, https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai
-[^ms-ai-instructions]: Microsoft Learn, *Prepare your data for AI - AI instructions*, https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai-instructions
