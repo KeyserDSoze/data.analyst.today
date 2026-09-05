@@ -1,96 +1,39 @@
-## 9.1 Unità di randomizzazione, exposure e analisi: quattro livelli da non confondere
+## 9.1 Randomization, exposure e analysis unit: costruire due mondi coerenti
 
-Nel Capitolo 8 abbiamo visto perché la randomizzazione può rendere credibile il controfattuale.
+La randomizzazione è utile solo se l'unità che assegniamo riesce a vivere in una variante abbastanza coerente da rendere interpretabile il confronto. Per questo “50/50” non descrive ancora il design.
 
-Qui la domanda è operativa:
+Dobbiamo distinguere almeno quattro livelli. L'**unità di decisione** è chi subirà la policy se il test vince; l'**unità di randomizzazione** è ciò che assegniamo stabilmente ad A o B; l'**unità di exposure** è ciò che può realmente ricevere il trattamento; l'**unità di analisi** è il livello a cui definiamo outcome e incertezza. Possono coincidere, ma non dobbiamo assumerlo.
 
-> **che cosa stiamo realmente assegnando, che cosa viene realmente esposto e su quale unità calcoliamo l'outcome?**
+### QuickPay: quando la sessione è troppo piccola
 
-Sono domande diverse.
-
-### Quattro unità utili
-
-**Unità di decisione**
-
-Chi o che cosa subirà la policy se il test vince?
-
-**Unità di randomizzazione**
-
-L'entità a cui assegniamo stabilmente A o B.
-
-**Unità di exposure**
-
-L'entità che può effettivamente ricevere il trattamento.
-
-**Unità di analisi**
-
-Il livello a cui definiamo outcome e incertezza.
-
-Possono coincidere. Non devono farlo necessariamente.
-
-### Caso simulato/composito — QuickPay randomizzato per sessione
-
-Il team implementa QuickPay per sessione perché è tecnicamente semplice.
-
-Dopo tre giorni:
+Supponiamo che QuickPay venga randomizzato per sessione perché l'implementazione è semplice. Dopo tre giorni osserviamo:
 
 | Variante | Sessioni | Conversion rate |
 |---|---:|---:|
 | A | 512.420 | 3,89% |
 | B | 510.976 | 4,11% |
 
-Il risultato sembra favorevole.
+Il delta sembra favorevole. Poi controlliamo l'identità: il 27% degli utenti ha più di una sessione, il 14% ha visto entrambe le esperienze e una quota utilizza sia app sia web. Lo stesso cliente può vedere il checkout standard su web, tornare da app, incontrare QuickPay e portare apprendimento dalla prima esperienza alla seconda.
 
-Poi l'analista controlla l'identità:
+Se la policy finale riguarda l'esperienza del **cliente**, la sessione è una randomization unit troppo piccola. Il test non ha creato due mondi stabili a livello decisionale.
 
-- 27% degli utenti ha avuto più di una sessione;
-- 14% ha visto entrambe le esperienze;
-- una quota usa sia app sia web.
+### La stabilità dell'identità è parte della randomizzazione
 
-Lo stesso cliente può quindi:
-
-1. vedere il checkout standard su web;
-2. tornare da app;
-3. vedere QuickPay;
-4. portare apprendimento dalla prima esperienza alla seconda.
-
-Il trattamento non è stabile a livello utente.
-
-Se la decisione riguarda l'esperienza del cliente, randomizzare la sessione può essere il livello sbagliato.
-
-### Persistent bucketing
-
-Una randomizzazione utile deve essere **stabile** per la durata in cui la stabilità è parte del trattamento.
-
-Esempio concettuale:
+Un meccanismo concettuale come
 
 ```text
 hash(stable_user_id, experiment_id) -> bucket A/B
 ```
 
-I problemi iniziano quando lo `stable_user_id` non è davvero stabile:
+è utile solo se `stable_user_id` è davvero stabile. Cookie cancellati, device multipli, login tardivo, account merge, utenti anonimi che diventano autenticati o ID rigenerati dopo un update possono spostare la stessa persona tra varianti senza che l'algoritmo di hashing abbia alcun bug.
 
-- cookie cancellati;
-- device diversi;
-- login tardivo;
-- account merge;
-- utenti anonimi che diventano autenticati;
-- ID rigenerati dopo update.
+Questo è il punto in cui il Capitolo 3 sull'identità entra direttamente nell'experimentation: il codice di randomizzazione può essere corretto mentre la semantica dell'identità è sbagliata.
 
-Il codice di randomizzazione può essere corretto e la semantica dell'identità sbagliata.
+### Assignment non è exposure
 
-### Assignment non significa exposure
+Anche con un bucket stabile, essere assegnati a B non significa aver ricevuto B. Un utente può non arrivare al checkout, non essere realmente eleggibile, usare un client troppo vecchio, subire un crash prima del rendering o non caricare il componente.
 
-Un utente può essere assegnato a B ma non vedere mai la feature perché:
-
-- non raggiunge il checkout;
-- non è realmente eleggibile;
-- la feature flag fallisce;
-- il client è troppo vecchio;
-- un crash avviene prima della visualizzazione;
-- il componente non carica.
-
-Quindi dobbiamo distinguere almeno:
+Per questo è utile separare eventi come:
 
 ```text
 assigned_B
@@ -99,75 +42,29 @@ exposed_B
 successfully_rendered_B
 ```
 
-Analizzare soltanto gli `exposed_B` può però introdurre selection bias se l'exposure è influenzata dal trattamento.
+Questa distinzione non autorizza però a confrontare automaticamente `exposed_B` con `exposed_A`. Se il trattamento stesso influenza la probabilità di exposure o di restare osservabile, filtrare sui soli exposed può introdurre selection bias. L'Experiment Contract deve quindi dichiarare quale estimand vogliamo — spesso intent-to-treat sull'assignment — e usare exposure soprattutto come diagnostica della delivery del trattamento.
 
-L'Experiment Contract deve dichiarare in anticipo quale popolazione definisce l'estimand e come verranno gestiti assignment ed exposure.
+### Quando l'unità deve diventare più grande
 
-### Account e tenant nei prodotti B2B
+Nei prodotti collaborativi B2B, randomizzare singoli utenti dello stesso tenant può creare un'esperienza incoerente e spillover interni. Se metà team vede una nuova permission model e metà no, le azioni di un utente modificano il lavoro degli altri. In questi casi può essere necessario randomizzare a livello **tenant/account**.
 
-In un SaaS collaborativo, randomizzare singoli utenti dello stesso account può essere impossibile o indesiderabile.
+Microsoft Research documenta proprio la difficoltà dei tenant-randomized experiments: l'esperienza resta coerente dentro l'organizzazione, ma il numero di unità sperimentali si riduce e i tenant possono avere dimensioni molto diverse, con conseguenze su sensibilità e weighting.[^ms-tenant]
 
-Se metà del team vede una nuova permission model e metà no:
+La stessa logica vale per cluster fisici. Se una procedura di picking viene condivisa tra i dipendenti dello stesso supermercato, possiamo avere 180 store randomizzati, 4.000 picker e 2 milioni di ordini. Il numero di righe non diventa il numero di unità indipendenti di trattamento. Il clustering entra direttamente nell'effective sample size e nell'incertezza.
 
-- l'esperienza può diventare incoerente;
-- gli utenti si influenzano;
-- le azioni di uno cambiano gli outcome degli altri.
+### Randomization unit e metric unit devono parlarsi
 
-Per questo nei prodotti enterprise può essere necessario randomizzare a livello **tenant/account**.
+Se randomizziamo utenti e misuriamo `revenue per user`, la coerenza è immediata. Se randomizziamo account ma trattiamo ogni singola azione come indipendente, i tenant più grandi possono dominare l'analisi e l'incertezza può essere sottostimata.
 
-Microsoft Research discute esplicitamente le difficoltà dei tenant-randomized experiments: l'unità sperimentale è il tenant, i tenant possono differire enormemente per dimensione e metriche aggregate, e la sensibilità statistica può peggiorare rispetto alla randomizzazione individuale.[^ms-tenant]
+La domanda corretta è quindi:
 
-### Cluster randomization: il numero di righe non è il numero di unità
+> **qual è il peso decisionale corretto di ciascuna unità randomizzata e quale livello di analisi conserva la dipendenza introdotta dal design?**
 
-Una catena di 180 supermercati testa una procedura di picking.
-
-La procedura viene condivisa tra i dipendenti dello stesso store, quindi randomizza negozi interi.
-
-Potremmo avere:
-
-- 180 store randomizzati;
-- 4.000 picker;
-- 2 milioni di ordini.
-
-Ma non abbiamo 2 milioni di unità indipendenti di trattamento.
-
-Il design deve rispettare il clustering introdotto dall'assignment.
-
-Questo influenza:
-
-- effective sample size;
-- precisione;
-- durata;
-- analisi.
-
-### Randomization unit diversa dalla metric unit
-
-Supponiamo di randomizzare utenti ma misurare `revenue per user`.
-
-Coerente.
-
-Supponiamo invece di randomizzare account e calcolare una media su tutte le singole azioni come se fossero indipendenti.
-
-Rischiamo di dare peso enorme ai tenant grandi e sottostimare l'incertezza.
-
-Prima del test bisogna decidere:
-
-> **qual è il peso decisionale corretto di ogni unità randomizzata?**
-
-### Cross-device e identity resolution
-
-Un test mobile/web può essere particolarmente fragile.
-
-Domande operative:
-
-- il bucket viene definito da account ID quando disponibile?
-- cosa succede prima del login?
-- un utente anonimo randomizzato ad A e poi autenticato su un account B cambia variante?
-- come vengono deduplicati gli outcome cross-device?
-
-Questo è il punto in cui il Capitolo 3 sull'identità incontra direttamente l'experimentation.
+Nei test cross-device questa domanda va accompagnata da un'altra: che cosa succede prima del login, come vengono riconciliati bucket anonimi e account autenticati, e come deduplichiamo gli outcome che appartengono alla stessa persona?
 
 ### Randomization card
+
+Questa è una delle strutture che merita di restare scansionabile, perché deve essere compilata prima del lancio:
 
 ```text
 Decision unit:
@@ -183,6 +80,6 @@ Assignment vs exposure policy:
 Effective number of randomized units:
 ```
 
-> **La randomizzazione non è soltanto una percentuale 50/50. È una scelta su quale entità deve vivere in un mondo sperimentale coerente.**
+> **La randomizzazione non è una percentuale. È una scelta su quale entità deve vivere in un mondo sperimentale sufficientemente coerente da rappresentare la policy che vogliamo valutare.**
 
 [^ms-tenant]: Microsoft Research, *Why Tenant-Randomized A/B Test is Challenging and Tenant-Pairing May Not Work*: https://www.microsoft.com/en-us/research/articles/why-tenant-randomized-a-b-test-is-challenging-and-tenant-pairing-may-not-work/
