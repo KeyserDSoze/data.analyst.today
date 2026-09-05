@@ -1,254 +1,86 @@
-## 14.11 Valutare i sistemi AI: dall'impressione di qualità a un claim supportato da evidenza
+## 14.11 Valutare i sistemi AI: dall'impressione di qualità a un claim supportato
 
-Quando un workflow incorpora l'AI, la frase:
+Quando un workflow incorpora l'AI, la frase "nelle prove sembra funzionare bene" non è un criterio di release. Un eval deve sostenere un **claim operativo specifico**. Per esempio:
 
-> “nelle prove sembra funzionare bene”
+> Su domande revenue nel perimetro Finance, il sistema usa la metrica certificata, rispetta la data economica, non oltrepassa i permessi e chiede escalation quando la richiesta è ambigua.
 
-non è un criterio di release.
+Questo claim è molto più utile di "il nostro agente SQL è accurato al 94%" perché indica quali failure mode renderebbero il sistema non idoneo.
 
-Un eval serve a sostenere un **claim operativo specifico**.
-
-Per esempio:
-
-> “Su domande revenue nel perimetro Finance, il sistema usa la metrica certificata, rispetta la data economica, non oltrepassa i permessi e chiede escalation quando la richiesta è ambigua.”
-
-Questa frase è molto più testabile di:
-
-> “il nostro agente SQL è accurato al 94%.”
-
-### Claim → failure modes → eval suite
-
-Il design parte dal claim, non dalla metrica disponibile.
+La sequenza di design è:
 
 ```text
 claim
-→ quali failure mode lo invaliderebbero?
-→ quali casi li rappresentano?
-→ quale ground truth serve?
-→ quale scoring è appropriato?
-→ quale soglia autorizza il rollout?
+→ failure modes
+→ cases
+→ ground truth
+→ scoring
+→ threshold / release decision
 ```
 
-Esempio per un agente analitico:
+Per un agente analitico la suite può includere casi con due metriche Revenue di cui una legacy, `order_created_at` vs `payment_captured_at`, join many-to-many, feed D+1 immaturo, confronto osservazionale che invita a causal language, richiesta su tabella HR fuori scope e schema ambiguo che dovrebbe produrre `MUST ASK` o `STOP`.
 
-| Failure mode | Caso di eval |
-|---|---|
-| metrica sbagliata | due misure `Revenue`, una certificata e una legacy |
-| data errata | `order_created_at` vs `payment_captured_at` |
-| join esplosivo | relazione many-to-many con promotion |
-| dato immaturo | feed D+1 ancora incompleto |
-| linguaggio causale improprio | confronto osservazionale tra trattati e non trattati |
-| accesso non autorizzato | richiesta su tabella HR fuori scope |
-| falsa sicurezza | schema ambiguo che dovrebbe produrre domanda/STOP |
+### Preferire controlli deterministici quando possibile
 
-### Prima i test deterministici
+Non tutto deve essere giudicato da un altro LLM. Se possiamo verificare deterministicamente che la tabella è autorizzata, la metric id è certificata, la query non contiene azioni distruttive, il grain non viola un'invariante e il risultato riconcilia entro tolleranza, usiamo quei controlli.
 
-Non tutto deve essere valutato da un altro LLM.
-
-Se possiamo verificare deterministicamente che:
-
-- la tabella usata è autorizzata;
-- la metrica id è quella certificata;
-- la query non contiene un `DELETE`;
-- il row count non viola un'invariante;
-- l'output riconcilia entro tolleranza;
-
-preferiamo un controllo deterministico.
-
-Una gerarchia sana è:
+Una gerarchia sana può essere:
 
 ```text
 1. deterministic checks
-2. reference/ground-truth comparisons
+2. reference / ground-truth comparisons
 3. statistical metrics
 4. model-based judge per aspetti qualitativi
 5. human review
 ```
 
-Non perché il livello 5 sia sempre “migliore”, ma perché diversi errori richiedono diversi tipi di evidenza.
+I livelli non sono una classifica di prestigio: servono a errori diversi.
 
-### Caso reale documentato — quando il benchmark è il problema
+### Anche il benchmark può essere rotto
 
-Nel luglio 2026 OpenAI ha pubblicato un audit di SWE-Bench Pro.
+Nel luglio 2026 OpenAI ha pubblicato un audit di SWE-Bench Pro. La pipeline automatizzata ha segnalato il `27,4%` dei task come problematici, mentre la campagna di annotazione umana ne ha identificati il `34,1%`; la stima complessiva è circa il `30%` di task rotti. Tra i problemi documentati: test troppo rigidi, prompt sottospecificati, coverage insufficiente e prompt fuorvianti o in conflitto con l'aspettativa del test.
 
-L'analisi automatizzata ha segnalato il 27,4% dei task come problematici; una campagna di annotazione umana ne ha identificati il 34,1%. OpenAI ha quindi stimato che circa il 30% dei task fosse rotto.
+Fonte: https://openai.com/index/separating-signal-from-noise-coding-evaluations/
 
-Tra i problemi documentati:
+La lezione per l'analytics è generale: **se il gold standard è sbagliato, un punteggio perfettamente calcolato può aumentare la fiducia in una misura invalida**.
 
-- test troppo rigidi che imponevano dettagli non richiesti;
-- prompt sottospecificati rispetto agli hidden test;
-- test con coverage insufficiente;
-- prompt fuorvianti o in conflitto con il comportamento atteso.
+Per questo validiamo anche l'eval: il task rappresenta il lavoro reale? La distribuzione riflette frequenza o rischio? Il ground truth è affidabile? La rubric premia il comportamento desiderato? Esistono shortcut o leakage? L'ambiente di test assomiglia abbastanza al deployment? Abbiamo ispezionato manualmente sia pass sia fail?
 
-Fonte: OpenAI, *Separating signal from noise in coding evaluations*: https://openai.com/index/separating-signal-from-noise-coding-evaluations/
+### Il sistema testato è più del modello
 
-La lezione per un Data Analyst va ben oltre il coding:
+Nel 2026 OpenAI ha proposto un playbook per valutazioni di terze parti che insiste su due elementi: il **claim** che l'eval vuole sostenere e l'evidenza che il risultato sia valido. Per sistemi agentici vanno descritti almeno modello, reasoning setting, tool access, harness, safeguards e budget di turn, token, tentativi, tempo e costo; vanno inoltre cercati failure come shortcut, contamination, broken problems o comportamenti che distorcono il risultato.
 
-> **se il gold standard è sbagliato, un punteggio perfettamente calcolato può aumentare la nostra fiducia in una misura invalida.**
+Fonte: https://openai.com/index/trustworthy-third-party-evaluations-foundations/
 
-### Validare anche l'eval
+Questo è essenziale per il nostro capitolo: **model + tools + harness + budget + safeguards** è il sistema effettivamente valutato.
 
-Prima di usare una suite come release gate chiediamo:
+### LLM-as-a-judge è uno strumento, non il ground truth
 
-- il task rappresenta il lavoro reale?
-- la distribuzione dei casi riflette frequenza o rischio?
-- il ground truth è affidabile?
-- la rubric premia davvero il comportamento desiderato?
-- esistono shortcut o leakage?
-- il sistema può capire di essere sotto eval e comportarsi diversamente?
-- il test environment assomiglia abbastanza al deployment environment?
-- abbiamo ispezionato manualmente successi e fallimenti?
+Un judge model può scalare valutazioni qualitative su chiarezza, rispetto di una rubric o confronto pairwise. Ma anche il judge deve essere calibrato. Google Cloud documenta approcci che confrontano autorater con human-preference data e misurano l'allineamento con valutazioni umane.
 
-Un eval è un modello del rischio reale. Anche lui ha assunzioni.
+Fonte: https://cloud.google.com/blog/products/ai-machine-learning/evaluating-large-language-models-in-business
 
-### Caso reale documentato — dichiarare cosa un'evaluation supporta
-
-Nel 2026 OpenAI ha proposto un playbook per valutazioni affidabili di terze parti. Tra gli elementi richiesti per interpretare correttamente un'evaluation compaiono:
-
-- il **claim** che si vuole sostenere;
-- il contenuto e la distribuzione dei task;
-- il sistema testato, inclusi modello, reasoning setting, tool access, harness e safeguards;
-- il budget di turn, token, tentativi, tempo e costo;
-- i metodi di elicitation;
-- i validity check contro comportamenti che possono distorcere il risultato.
-
-Fonte: OpenAI, *A shared playbook for trustworthy third party evaluations*: https://openai.com/index/trustworthy-third-party-evaluations-foundations/
-
-Questo è particolarmente importante per gli agenti: **modello + tool + harness + budget** è il sistema effettivamente valutato.
-
-### LLM-as-a-judge: utile, ma è un altro modello da validare
-
-Un judge model può scalare valutazioni qualitative, per esempio:
-
-- chiarezza;
-- aderenza a una rubric;
-- qualità della spiegazione;
-- confronto pairwise tra due output.
-
-Ma non dovrebbe diventare automaticamente il ground truth.
-
-Google Cloud, nella documentazione per valutare un judge model, propone di preparare dataset con **human ratings come ground truth** e confrontare i punteggi del judge con quelle valutazioni.
-
-Fonte: https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/evaluate-judge-model
-
-Per il nostro workflow:
+Un pattern pratico è:
 
 ```text
-human-labeled sample
+human-rated sample
 → calibrate judge
 → use judge at scale
 → periodic human audit
 → recalibrate after meaningful changes
 ```
 
-### Eval set stratificato per rischio
+### Media alta, failure critico
 
-Un accuracy medio può nascondere errori rari ma inaccettabili.
+Un'accuracy globale può nascondere casi rari ma inaccettabili. Se 990 task ordinari sono corretti al 98% e 10 task sensibili sono corretti al 50%, la media resta alta ma il sistema fallisce metà dei casi che contano di più. La suite deve quindi stratificare almeno per frequenza, severità, detectability e reversibilità, con tolleranze molto più basse per accessi non autorizzati o azioni critiche.
 
-Supponiamo:
+Dobbiamo inoltre misurare **escalation e rifiuto**, non soltanto risposta: quando il sistema chiede chiarimento, dichiara dato insufficiente, produce `PROVISIONAL`, rifiuta una richiesta fuori scope o esegue `STOP`. In alcuni task non procedere è la risposta corretta.
 
-```text
-990 task normali: 98% corretti
-10 task sensibili: 50% corretti
-```
+### Regression eval e produzione
 
-L'accuracy globale è molto alta.
+Cambiare prompt, modello, tool, permessi, semantic model, retrieval corpus o orchestration può modificare il comportamento. Ogni cambiamento materiale dovrebbe attivare almeno smoke eval, critical regression suite, confronto con produzione e inspection dei failure cambiati prima del release.
 
-Ma il sistema fallisce metà delle richieste che non dovrebbe sbagliare.
+Dopo il deploy continuiamo a misurare correction rate umano, escalation, false escalation, semantic error, authorization violations, costo per task riuscito, latency, tool call, failure severity e drift delle richieste. Gli incidenti reali diventano nuovi casi della regression suite.
 
-La suite dovrebbe quindi distinguere:
+Una **Eval Card** può registrare claim, release candidate, sistema testato, permission boundary, dataset/versione, risk strata, ground truth, deterministic checks, judge/calibration, human audit, critical failure tolerance, blind spot e release decision.
 
-- frequenza;
-- severità;
-- detectability;
-- reversibilità.
-
-Possiamo usare una matrice come:
-
-| Classe | Esempio | Release tolerance |
-|---|---|---|
-| S0 | formattazione | alta |
-| S1 | query esplorativa correggibile | moderata |
-| S2 | KPI management | bassa |
-| S3 | accesso non autorizzato / azione critica | prossima a zero |
-
-### Misurare escalation e rifiuto, non solo risposta
-
-Un buon sistema non deve sempre rispondere.
-
-Dobbiamo valutare anche:
-
-- quando chiede chiarimento;
-- quando dichiara dato insufficiente;
-- quando rifiuta una richiesta fuori scope;
-- quando produce `PROVISIONAL`;
-- quando esegue `STOP / ESCALATE`.
-
-Per alcuni casi, **non procedere è la risposta corretta**.
-
-### Regression eval dopo ogni cambiamento materiale
-
-Cambiare:
-
-- prompt;
-- modello;
-- tool;
-- permessi;
-- semantic model;
-- retrieval corpus;
-- orchestration logic;
-
-può modificare il comportamento.
-
-Ogni cambiamento materiale dovrebbe attivare almeno:
-
-```text
-smoke eval
-→ critical regression suite
-→ comparison vs current production
-→ manual inspection of changed failures
-→ release / rollback decision
-```
-
-### Production eval: il test non finisce al deploy
-
-In produzione misuriamo anche:
-
-- tasso di correzione umana;
-- escalation rate;
-- false escalation;
-- semantic error rate;
-- authorization violations;
-- cost per successful task;
-- latency;
-- numero di tool call;
-- failure severity;
-- incidenti sfuggiti agli eval;
-- drift nella distribuzione delle richieste.
-
-Gli errori reali diventano nuovi casi della regression suite.
-
-### Un esempio di Eval Card
-
-```text
-claim:
-release candidate:
-tested system:
-tool/data permissions:
-eval dataset version:
-risk strata:
-ground truth source:
-deterministic checks:
-judge model + calibration:
-human audit sample:
-critical failure tolerance:
-results by severity:
-known blind spots:
-release decision:
-```
-
-Questa **Eval Card** entra nella AI Analysis Control Sheet per workflow riusabili o produttivi.
-
-### Regola operativa
-
-> **Non chiedere “quanto è bravo il modello?”. Chiedi “quale claim sul sistema vogliamo autorizzare, quale evidenza lo sostiene e quali errori non siamo ancora in grado di vedere?”.**
+> **Non chiedere quanto è bravo il modello. Chiedi quale claim sul sistema vuoi autorizzare, quale evidenza lo sostiene e quali errori non sei ancora in grado di vedere.**
