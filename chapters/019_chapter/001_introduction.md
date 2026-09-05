@@ -2,153 +2,36 @@
 
 ## 19.0 Il futuro non è un tool: è un portafoglio di responsabilità
 
-Ogni volta che una nuova tecnologia entra nel lavoro analitico, riemerge la stessa domanda:
+Ogni volta che una nuova tecnologia entra nel lavoro analitico ritorna la stessa domanda: se una macchina sa fare una parte crescente del mio lavoro, che cosa resta del mestiere?
 
-> “Se una macchina sa fare una parte del mio lavoro, allora il mio lavoro sparirà?”
+La domanda diventa molto più utile quando separiamo **task** e **responsabilità**. Una professione non è una collezione immutabile di gesti manuali. È l'insieme di problemi per cui siamo chiamati a rispondere, delle decisioni che sappiamo migliorare e dei failure mode che siamo in grado di riconoscere prima che diventino costosi.
 
-La domanda è comprensibile.
+Per anni una quota importante del valore di un Data Analyst è stata inseparabile dal costo dell'esecuzione: trovare i dati, scrivere query, correggere formule, costruire grafici, aggiornare report, cercare documentazione, preparare una prima analisi. Una parte crescente di questa superficie può oggi essere assistita o automatizzata. Questo non dimostra che il ruolo sparirà. Dimostra qualcosa di più concreto: **quando cambia ciò che è scarso, cambia dove si concentra il valore professionale**.
 
-Ma confonde **task** e **professione**.
+Se produrre SQL, codice, grafici e prime sintesi costa meno, diventano relativamente più importanti attività che non possono essere giudicate soltanto dalla forma dell'output: definire il problema, stabilire che cosa significa una metrica, scegliere quale evidenza serve, riconoscere un confronto invalido, progettare una verifica, decidere quando altra informazione vale il costo dell'attesa, calibrare un claim e collegare l'evidenza a una decisione reale. La tecnica non scompare dentro questo spostamento. Cambia funzione: serve non soltanto a produrre, ma a capire che cosa stiamo delegando e a verificare quando l'automazione è plausibile ma sbagliata.
 
-Una professione non è una lista immutabile di attività manuali.
-
-È un insieme di responsabilità, capacità e relazioni che cambia quando cambiano il costo dell'esecuzione, la velocità dei sistemi e le aspettative dell'organizzazione.
-
-Il Data Analyst degli anni passati poteva spendere una parte importante del proprio tempo in:
-
-- raccogliere dati da sistemi diversi;
-- scrivere query ripetitive;
-- correggere formule;
-- costruire grafici;
-- aggiornare report;
-- preparare prime bozze di analisi;
-- cercare documentazione;
-- trasformare richieste vaghe in estrazioni ad hoc.
-
-Una quota crescente di questi task è già assistibile o automatizzabile.
-
-Questo non ci dice ancora che cosa accadrà alla professione.
-
-Ci dice però qualcosa di molto utile:
-
-> **il valore si sposta quando cambia ciò che è scarso.**
-
-Se produrre SQL, codice, grafici e sintesi costa meno, diventano relativamente più scarse capacità come:
-
-- definire il problema;
-- stabilire il significato corretto;
-- scegliere quale evidenza serve;
-- riconoscere un failure mode;
-- valutare assunzioni;
-- progettare verifiche;
-- decidere quale rischio accettare;
-- collegare l'evidenza a un'azione;
-- assumersi responsabilità sull'outcome.
-
-Questo capitolo non prova quindi a prevedere quale software vincerà nel 2035.
-
-Prova a costruire un **career operating model** che resti utile anche se quella previsione fosse completamente sbagliata.
-
-## Partire dall'esposizione dei task, non dalla paura per il titolo
-
-L'International Labour Organization, nel suo aggiornamento 2025 su Generative AI e lavoro, stima che circa **un lavoratore su quattro** nel mondo si trovi in un'occupazione con qualche grado di esposizione alla GenAI. La stessa analisi sottolinea però che, poiché molti task continuano a richiedere input umano, per la maggior parte delle occupazioni l'esito più probabile è **trasformazione del lavoro**, non completa ridondanza del ruolo.
+I segnali disponibili nel 2025–2026 sono coerenti con una trasformazione di questo tipo, senza autorizzare profezie. L'International Labour Organization stima che circa **un lavoratore su quattro** nel mondo sia in un'occupazione con qualche grado di esposizione alla GenAI e sottolinea che, per la maggior parte dei lavori, la trasformazione è più plausibile della completa ridondanza perché le occupazioni contengono mix differenti di task e continuano a richiedere input umano.
 
 Fonte pubblica: https://www.ilo.org/publications/generative-ai-and-jobs-2025-update
 
-Questa distinzione è fondamentale.
-
-Un lavoro può cambiare molto anche senza scomparire.
-
-E può diventare più difficile da svolgere bene proprio mentre alcuni dei suoi task diventano più facili.
-
-## I segnali sul mercato delle competenze
-
-Il World Economic Forum, nel *Future of Jobs Report 2025*, stima che quasi il 40% delle skill richieste sul lavoro cambierà entro il 2030.
-
-AI e big data sono tra le competenze in maggiore crescita, ma **analytical thinking** resta la core skill più citata dagli employer; continuano inoltre a contare creative thinking, resilienza, leadership, collaborazione, curiosità e lifelong learning.
+Il *Future of Jobs Report 2025* del World Economic Forum stima al **39%** la quota media delle skill esistenti che gli employer si aspettano venga trasformata o diventi obsoleta tra il 2025 e il 2030. AI e big data sono tra le competenze in più rapida crescita, mentre analytical thinking resta una delle core skill centrali. Il segnale non è che la tecnica perda importanza: è che tecnica, ragionamento, adattabilità e contesto devono convivere nello stesso profilo.
 
 Fonte pubblica: https://www.weforum.org/publications/the-future-of-jobs-report-2025/digest/
 
-Il messaggio non è:
-
-> “la tecnica non conta più”.
-
-È quasi l'opposto.
-
-Serve una combinazione di:
-
-**tecnica + ragionamento + contesto + capacità di dirigere sistemi più potenti**.
-
-## Dal 2025 al 2026: da agent boss a human agency
-
-Nel Work Trend Index 2025 Microsoft ha reso popolare l'idea di **agent boss**: persone che costruiscono, delegano e gestiscono agenti.
-
-Nell'edizione 2026 il framing si sposta ulteriormente verso la **human agency**: man mano che agenti e AI assorbono una parte dell'esecuzione, le persone possono avere più spazio per dirigere il lavoro, prendere decisioni e possedere gli outcome.
-
-Microsoft riporta inoltre che, in una propria analisi privacy-preserving di oltre 100.000 conversazioni Microsoft 365 Copilot, il 49% dei goal classificati supportava lavoro cognitivo come analisi, problem solving, valutazione e pensiero creativo.
+Microsoft offre un altro segnale, da leggere per ciò che è: ricerca sul proprio ecosistema, non una legge universale del lavoro. Nel *Work Trend Index 2026* il framing si sposta verso la **human agency** e una propria analisi privacy-preserving di oltre 100.000 chat Microsoft 365 Copilot attribuisce il 49% dei goal classificati a lavoro cognitivo come analisi, problem solving, valutazione e pensiero creativo. È interessante non perché predica il Data Analyst del 2035, ma perché mostra che l'AI può entrare direttamente anche nel lavoro cognitivo che un tempo consideravamo il cuore meno automatizzabile del mestiere.
 
 Fonte pubblica: https://www.microsoft.com/en-us/worklab/work-trend-index/agents-human-agency-and-the-opportunity-for-every-organization
 
-Non è una prova che tutte le aziende lavoreranno così.
+Questo rende ancora meno sensato cercare una lista di task “al sicuro”. La frontiera continuerà a muoversi. Il problema professionale è costruire un profilo che sappia salire di livello insieme all'automazione.
 
-È un segnale utile: il cambiamento non riguarda soltanto **quali task può svolgere l'AI**, ma **come viene ridisegnato il lavoro quando quella capacità diventa disponibile**.
+Non tutte le organizzazioni si muoveranno alla stessa velocità. Nel 2030 un analyst potrebbe dirigere agenti con accesso governato a metriche certificate e data product osservabili; in un'altra azienda potrebbe ancora dover riconciliare CSV inviati via email. Regolazione, qualità dei dati, semantic layer, infrastruttura, cultura decisionale e tolleranza al rischio produrranno futuri diversi e spesso contemporanei. Una carriera robusta non può quindi dipendere da una sola previsione sull'automazione. Deve avere **optionalità**.
 
-## Non tutto si muoverà alla stessa velocità
+Il resto del capitolo costruisce questa optionalità partendo da tre domande collegate. Prima: quali attività stanno diventando economiche e quali responsabilità acquistano valore quando accade? Poi: quanta esecuzione possiamo delegare senza perdere la capacità di verificarla, indirizzarla e fermarla? Infine: come investire in fondamenta, metodi, dominio, sistemi e relazioni in modo che il capitale professionale sopravviva a più generazioni di strumenti?
 
-Parlare del “Data Analyst del 2035” come se esistesse una traiettoria unica sarebbe ingenuo.
+Queste domande confluiranno nel **Personal Career Operating Plan**. Non sarà una lista dei software da imparare e nemmeno un piano quinquennale rigido. Sarà un modo per rendere visibili target responsibility, capability portfolio, delegation boundary, verification reserve, domain leverage, decision span e career optionality.
 
-Le aziende differiscono per:
+La domanda guida del capitolo, quindi, non è “come faccio a non essere sostituito?”. È più concreta e più impegnativa:
 
-- settore;
-- regolamentazione;
-- maturità dei dati;
-- qualità del semantic layer;
-- cultura decisionale;
-- infrastruttura;
-- accesso all'AI;
-- tolleranza al rischio;
-- capacità di change management.
+> **Quale responsabilità voglio essere capace di possedere quando produrre l'output diventerà molto più economico?**
 
-Nel 2030 un analyst potrebbe dirigere agenti con accesso governato a metriche certificate.
-
-In un'altra organizzazione potrebbe ancora ricevere CSV via email.
-
-Le due realtà possono coesistere a lungo.
-
-Questo significa che una carriera robusta non può dipendere da una sola previsione sul livello di automazione futuro.
-
-Deve avere **optionalità**.
-
-## Il Career Operating Model
-
-Nel resto del capitolo useremo una domanda più utile di:
-
-> “Quale tool devo imparare?”
-
-Costruiremo invece un modello personale con nove componenti:
-
-1. **task exposure** — quali attività stanno diventando economiche;
-2. **responsibility moat** — quali responsabilità restano difficili da delegare interamente;
-3. **delegation boundary** — cosa delegare e con quale profondità di verifica;
-4. **skill portfolio** — fondamenta lente, metodi, dominio, sistemi e AI;
-5. **domain leverage** — quale conoscenza del business rende migliori le ipotesi;
-6. **decision ownership** — quali decisioni sappiamo migliorare;
-7. **learning loop** — come impariamo senza inseguire ogni novità;
-8. **deskilling safeguards** — quali competenze devono restare vive per poter verificare;
-9. **career optionality** — quanto facilmente possiamo cambiare tool, dominio o livello di responsabilità.
-
-Alla fine del capitolo questi elementi confluiranno in un **Personal Career Operating Plan**.
-
-## La domanda guida
-
-Invece di chiedere:
-
-> “Come faccio a non essere sostituito?”
-
-useremo una domanda più professionale:
-
-> **“Quale responsabilità voglio essere capace di possedere quando produrre l'output diventerà molto più economico?”**
-
-È una domanda meno rassicurante.
-
-Ma è molto più utile.
+Il futuro del mestiere non si difende conservando l'attrito di ieri. Si costruisce imparando a governare la capacità che quell'attrito non limita più.
