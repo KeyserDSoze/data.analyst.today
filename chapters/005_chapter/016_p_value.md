@@ -1,132 +1,70 @@
-## 5.15 Il p-value: un numero utile che risponde a una domanda molto più stretta di quanto sembri
+## 5.15 Il p-value: una domanda stretta che non va trasformata in una sentenza
 
-Il p-value è uno dei numeri più usati e più fraintesi dell'analisi quantitativa.
+Il p-value è utile proprio perché risponde a una domanda ben delimitata. Diventa pericoloso quando gli attribuiamo significati che non contiene.
 
-Una formulazione operativa corretta è:
+In termini operativi:
 
 > **assumendo il modello statistico specificato, incluso lo scenario di `H0`, qual è la probabilità di ottenere una statistica almeno altrettanto estrema di quella osservata?**
 
-Questa definizione contiene già un avvertimento: il p-value è **condizionato al modello**. Non è una probabilità generale sulla verità del mondo.
+Il p-value è quindi **condizionato al modello**. Non è la probabilità che il mondo funzioni in un certo modo, né la probabilità che l'ipotesi nulla sia vera.
 
-L'American Statistical Association ha pubblicato una dichiarazione specifica proprio perché l'uso meccanico del p-value aveva generato interpretazioni scorrette in molti campi.[^asa-p]
+L'American Statistical Association ha pubblicato una dichiarazione specifica sul tema proprio perché soglie e interpretazioni meccaniche avevano trasformato questo numero in qualcosa che la teoria non promette.[^asa-p]
 
-### Quattro frasi da non dire
+## Quattro traduzioni che sembrano intuitive e sono sbagliate
 
-#### 1. “`p = 0,03`, quindi c'è il 97% di probabilità che l'ipotesi alternativa sia vera”
+Se leggiamo `p = 0,03`, non possiamo dire che esista il 97% di probabilità che l'ipotesi alternativa sia vera. Il p-value non è `P(H1 | dati)` e non è il complemento di `P(H0 | dati)`.
 
-No.
+Non possiamo nemmeno dire che “c'è solo il 3% di probabilità che il risultato sia dovuto al caso”. Il test non divide il mondo in “caso” e “causa reale”: valuta quanto i dati siano estremi sotto un particolare modello nullo.
 
-Il p-value non è `P(H1 | dati)` e non è `1 - P(H0 | dati)`.
+Allo stesso modo, `p = 0,18` non dimostra che l'effetto sia assente. Un risultato non piccolo può emergere perché l'effetto è realmente modesto, perché il campione contiene poca informazione, perché la variabilità è alta o perché il disegno è inefficiente.
 
-Per ottenere probabilità sulle ipotesi servirebbe un'impostazione diversa, per esempio bayesiana, con prior e modello espliciti.
+Infine, `p < 0,05` non contiene alcuna istruzione del tipo “implementa”. Il p-value non conosce costo, margine, dimensione dell'effetto, guardrail o reversibilità. Il software statistico non ha accesso al business case.
 
-#### 2. “`p = 0,03`, quindi c'è solo il 3% di probabilità che il risultato sia dovuto al caso”
+Questi quattro errori hanno una radice comune: **si chiede al p-value di rispondere a domande che appartengono ad altri pezzi dell'evidenza**.
 
-Anche questa frase è sbagliata.
+## `p = 0,03` e un progetto che distrugge valore
 
-Il p-value non divide il mondo in “caso” e “causa reale”. Quantifica quanto il risultato sia estremo **sotto uno specifico modello nullo**.
+Un retailer testa un nuovo sistema di raccomandazione su circa 1,4 milioni di sessioni. L'AOV passa da 63,84 € a 63,97 €, quindi il delta è **+0,13 €**. Il confronto produce `p = 0,03`.
 
-#### 3. “`p = 0,18`, quindi non c'è effetto”
+La frase “il nuovo algoritmo migliora significativamente l'AOV” è formalmente compatibile con il test, ma insufficiente per decidere.
 
-No.
+L'implementazione costa 2 milioni di euro l'anno tra infrastruttura, licenze e manutenzione. Dopo resi, costi di serving e margine, il beneficio economico atteso è circa 480.000 €. Il segnale può essere statisticamente incompatibile con un effetto esattamente nullo e, contemporaneamente, essere un pessimo investimento.
 
-Un p-value non piccolo può derivare da:
+La statistica ha risposto a una domanda sull'evidenza. L'economia deve ancora rispondere alla domanda sulla decisione.
 
-- effetto piccolo;
-- campione insufficiente;
-- rumore elevato;
-- disegno inefficiente;
-- dati compatibili con un intervallo molto ampio di effetti.
+## `0,049` e `0,051` non sono due universi opposti
 
-“Non abbiamo evidenza sufficiente per distinguere l'effetto dal rumore alle condizioni del test” è una frase molto diversa da “abbiamo dimostrato che l'effetto è zero”.
+La soglia `0,05` può essere parte di un piano di analisi predefinito, ma non è un confine naturale tra vero e falso. Due risultati con `p = 0,049` e `p = 0,051` sono quasi indistinguibili nella forza del segnale e non dovrebbero generare due storie epistemiche opposte.
 
-#### 4. “`p < 0,05`, quindi dobbiamo implementare”
+L'ASA afferma esplicitamente che conclusioni scientifiche, di policy o di business non dovrebbero dipendere soltanto dal superamento di una soglia convenzionale.[^asa-p] Il punto non è abolire ogni criterio predefinito; è impedire la trasformazione automatica:
 
-No.
+**numero continuo → etichetta vero/falso → decisione**.
 
-Il p-value non contiene:
+## La numerosità può rendere “significativo” ciò che non conta
 
-- costo di implementazione;
-- dimensione dell'effetto;
-- margine;
-- rischio operativo;
-- guardrail;
-- reversibilità della decisione.
-
-Il software statistico non conosce il business case.
-
-### Caso simulato/composito — `p = 0,03` e un progetto che distrugge valore
-
-Un retailer testa un nuovo sistema di raccomandazione su circa 1,4 milioni di sessioni.
-
-L'AOV passa:
-
-- controllo: 63,84 €;
-- nuovo sistema: 63,97 €;
-- differenza: **+0,13 €**.
-
-Il p-value sul confronto è `0,03`.
-
-La prima slide dice:
-
-> **“Il nuovo algoritmo migliora significativamente l'AOV.”**
-
-La frase è incompleta.
-
-L'implementazione costa 2 milioni di euro l'anno tra infrastruttura, licenze e manutenzione. Dopo resi, costi di serving e margine, il beneficio economico atteso è circa 480.000 €.
-
-Il risultato può essere statisticamente incompatibile con un effetto esattamente nullo e contemporaneamente essere una pessima decisione economica.
-
-### `0,05` non è un confine naturale tra vero e falso
-
-Un risultato con:
-
-- `p = 0,049`;
-- `p = 0,051`;
-
-non rappresenta due universi epistemici opposti.
-
-L'ASA afferma esplicitamente che decisioni scientifiche, di policy o di business non dovrebbero essere basate soltanto sul superamento di una soglia convenzionale.[^asa-p]
-
-La soglia può essere parte di un piano di analisi predefinito. Non deve diventare una trasformazione automatica:
-
-**numero continuo → etichetta vero/falso**.
-
-### La sample size modifica il p-value
-
-Con campioni enormi possiamo ottenere p-value molto piccoli per differenze minuscole.
-
-Con campioni piccoli possiamo osservare effetti materialmente grandi e non avere abbastanza informazione per distinguerli con precisione.
-
-Consideriamo due confronti ipotetici sul churn:
+Il p-value dipende anche da quanta informazione possediamo. Consideriamo due confronti ipotetici sul churn:
 
 | Confronto | n | Controllo | Variante | Delta assoluto |
 |---|---:|---:|---:|---:|
 | A | 2.000.000 | 8,000% | 7,950% | -0,05 pp |
 | B | 1.200 | 8,0% | 6,4% | -1,6 pp |
 
-Il confronto A può avere un p-value più piccolo del B pur mostrando un effetto molto meno interessante.
+Il confronto A può produrre un p-value più piccolo del B pur mostrando un effetto molto meno interessante per il business. Con milioni di osservazioni possiamo distinguere dallo zero differenze minuscole; con pochi casi possiamo osservare effetti grandi senza stimarli ancora con precisione.
 
-Per questo p-value e **effect size** devono essere letti insieme.
+Per questo **p-value, effect size e confidence interval devono viaggiare insieme**.
 
-### Le sei idee dell'ASA tradotte per un Data Analyst
-
-La dichiarazione ASA può essere condensata in sei regole operative:[^asa-p]
+La dichiarazione ASA del 2016 può essere conservata come una checklist concettuale perché i suoi sei principi rispondono esattamente ai fraintendimenti più comuni:[^asa-p]
 
 1. il p-value può indicare quanto i dati siano incompatibili con un modello statistico specificato;
 2. non misura la probabilità che l'ipotesi studiata sia vera;
 3. una decisione non dovrebbe dipendere soltanto da una soglia;
-4. analisi e reporting devono essere trasparenti;
+4. inferenza e reporting richiedono trasparenza;
 5. il p-value non misura dimensione o importanza dell'effetto;
 6. da solo non è una misura completa dell'evidenza.
 
-Per il nostro libro queste sei regole confluiscono in una sola:
+Nel 2021 una task force dell'ASA ha ribadito un principio complementare: diverse misure di incertezza possono completarsi e nessuna singola misura serve a tutti gli scopi.[^asa-taskforce]
 
-> **Il p-value è una coordinata dell'evidenza, non la destinazione.**
-
-### Cosa presentare invece di un p-value isolato
-
-Un risultato inferenziale dovrebbe mostrare almeno:
+Un risultato inferenziale dovrebbe quindi assomigliare più a questo:
 
 > **Effetto stimato:** +0,24 punti percentuali  
 > **CI 95%:** +0,07 / +0,41 pp  
@@ -135,13 +73,15 @@ Un risultato inferenziale dovrebbe mostrare almeno:
 > **Soglia business rilevante:** +0,18 pp  
 > **Principali caveat:** ...
 
-Questa struttura consente al lettore di capire:
+che a una cella verde con scritto **SIGNIFICANT**.
 
-- quanto è grande il segnale;
-- quanto è preciso;
-- come si confronta con ciò che conta economicamente;
-- quale parte dell'incertezza non è rappresentata dal test.
+La prima struttura permette di vedere dimensione del segnale, precisione, soglia economica e limiti non rappresentati dal test. Il p-value resta presente, ma torna alla dimensione corretta.
 
-È molto più informativa di una cella verde con scritto **SIGNIFICANT**.
+> **Il p-value è una coordinata dell'evidenza, non la destinazione.**
 
-[^asa-p]: American Statistical Association, *Statement on Statistical Significance and P-Values*: https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf
+---
+
+### Fonti
+
+[^asa-p]: American Statistical Association, *Statement on Statistical Significance and P-Values*. https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf
+[^asa-taskforce]: ASA President's Task Force, *Statement on Statistical Significance and Replicability*. https://magazine.amstat.org/blog/2021/08/01/task-force-statement-p-value/
