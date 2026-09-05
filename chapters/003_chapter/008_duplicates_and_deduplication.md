@@ -1,53 +1,29 @@
-## 3.7 Duplicati: quando una riga in più cambia il risultato economico
+## 3.7 Duplicati: quando una rappresentazione in più diventa un fatto economico in più
 
-Un duplicato non è necessariamente una riga identica a un'altra.
+Un duplicato non è necessariamente una riga identica a un'altra. I casi più pericolosi sono spesso **duplicati semantici**: record differenti che rappresentano lo stesso evento economico o la stessa entità.
 
-I casi più pericolosi sono spesso duplicati **semantici**: record diversi che rappresentano lo stesso evento economico o la stessa entità.
-
-Prima di deduplicare dobbiamo quindi sapere che cosa dovrebbe essere unico al grain corrente.
+Per questo la deduplicazione viene dopo grain e identità. Prima dobbiamo sapere che cosa dovrebbe essere unico; soltanto allora possiamo giudicare se due rappresentazioni descrivono lo stesso fatto oppure eventi legittimamente distinti.
 
 ### Caso simulato/composito — Il fatturato cresciuto durante la notte
 
-**Nordline Retail** vende arredamento online in quattro Paesi europei.
+Nordline Retail vende arredamento online in quattro Paesi europei. Il lunedì mattina la dashboard mostra che il fatturato del weekend è cresciuto del **7,2%** rispetto al weekend precedente. La campagna lanciata venerdì sembra funzionare.
 
-Il lunedì mattina la dashboard segnala che il fatturato del weekend è cresciuto del **7,2%** rispetto al weekend precedente. La campagna promozionale lanciata venerdì sera sembra aver funzionato.
-
-Un'analista, però, esegue il controllo che precede qualsiasi interpretazione: confronta il numero di righe con il numero di ordini distinti.
+Prima di interpretare il risultato, un'analista confronta il numero di righe con il numero di ordini distinti:
 
 ```text
 righe nella tabella orders:       184.223
 order_id distinti:                171.906
 ```
 
-La differenza non è compatibile con il grain dichiarato: una riga per ordine.
+La differenza contraddice il grain dichiarato, una riga per ordine. L'indagine mostra che durante una migrazione una finestra di circa tre ore è stata caricata due volte. Le righe non sono copie byte-per-byte perché `load_timestamp` differisce; un `SELECT DISTINCT *` non le eliminerebbe. Dal punto di vista economico, però, rappresentano lo stesso ordine.
 
-Indagando, il team scopre che durante una migrazione il caricamento di una finestra di circa tre ore è stato eseguito due volte.
+Dopo la correzione, la crescita passa dal **7,2% all'1,1%**. Non abbiamo “ripulito” un dataset: abbiamo corretto una storia di business che sembrava plausibile proprio perché il duplicato non aveva generato alcun errore tecnico.
 
-I record non sono copie perfette perché `load_timestamp` è diverso. Un ingenuo `SELECT DISTINCT *` non li eliminerebbe.
+## La stessa chiave ripetuta può raccontare storie diverse
 
-Il fatto economico, però, è lo stesso: stesso `order_id`, stesso importo, stesso ordine reale.
+Tre righe con lo stesso `order_id` possono essere copie accidentali, versioni successive dello stesso record, eventi di stato, pagamenti parziali oppure rettifiche. La frequenza della chiave segnala un'incompatibilità con l'assunzione iniziale, ma non decide da sola che cosa eliminare.
 
-Dopo la correzione, la crescita del fatturato passa dal **7,2% all'1,1%**.
-
-La storia raccontata dalla dashboard cambia completamente.
-
-### Duplicato tecnico, versione o evento legittimo?
-
-Trovare la stessa chiave più volte non basta per decidere che cosa fare.
-
-Tre righe con lo stesso `order_id` potrebbero essere:
-
-- tre copie accidentali dello stesso ordine;
-- tre versioni successive dello stesso record;
-- tre eventi di stato associati all'ordine;
-- tre pagamenti parziali;
-- un ordine e due rettifiche.
-
-La deduplicazione è corretta soltanto dopo aver identificato quale di queste storie descrive il processo reale.
-
-### La regola di deduplica deve essere dimostrabile
-
-Una strategia comune consiste nel mantenere la versione più recente:
+Anche una regola apparentemente robusta come:
 
 ```sql
 ROW_NUMBER() OVER (
@@ -56,51 +32,18 @@ ROW_NUMBER() OVER (
 )
 ```
 
-Ma questa regola è valida solo se:
+ha senso soltanto se `order_id` identifica davvero l'entità da deduplicare, `updated_at` ordina correttamente le versioni e la versione più recente sostituisce le precedenti. Se invece le righe sono eventi storici con significato proprio, la stessa query cancella informazione reale.
 
-- `order_id` identifica davvero l'entità da deduplicare;
-- `updated_at` ordina correttamente le versioni;
-- la versione più recente sostituisce le precedenti;
-- non stiamo cancellando eventi storici che hanno significato proprio.
+Il codice quindi applica una regola di deduplica; non può giustificarla.
 
-Il codice non può decidere queste assunzioni al posto nostro.
+## Deduplicare entità è ancora più delicato
 
-### Duplicati di entità: ancora più difficili
+Con i clienti il problema si sposta dall'evento all'identità. Due record con email diverse possono appartenere alla stessa persona; due record con la stessa email possono rappresentare persone differenti. Un account può essere condiviso e un indirizzo può cambiare.
 
-Per i clienti la situazione può essere più complessa.
+Una regola come `stessa email = stesso cliente` riduce la complessità, ma può introdurre false merge. Una regola troppo prudente produce invece false split. Entrambi gli errori alterano clienti unici, repeat purchase, retention e lifetime value.
 
-Due record con email differenti possono essere la stessa persona. Due record con la stessa email possono essere persone diverse. Un indirizzo può cambiare. Un account può essere condiviso.
+Per questo il controllo minimo su una tabella critica deve osservare non soltanto il numero di duplicati perfetti, ma la cardinalità della chiave attesa, la distribuzione delle righe per chiave, l'evoluzione temporale delle ripetizioni e gli attributi che differiscono tra record con la stessa identità presunta.
 
-Questo è il motivo per cui la deduplicazione di identità non dovrebbe essere ridotta a una singola regola del tipo:
+Se una tabella “una riga per ordine” passa improvvisamente al 6% di `order_id` ripetuti dopo una release, il dato sta raccontando un cambiamento del processo. La domanda non è ancora quali righe cancellare, ma **che cosa ha reso possibile una seconda rappresentazione dello stesso identificatore**.
 
-```text
-stessa email = stesso cliente
-```
-
-Una regola troppo aggressiva produce **false merge**. Una regola troppo prudente produce **false split**.
-
-Entrambi possono distorcere metriche come clienti unici, retention e lifetime value.
-
-### Un controllo minimo
-
-Per ogni tabella critica confrontiamo almeno:
-
-- numero totale di righe;
-- cardinalità della chiave attesa;
-- distribuzione del numero di righe per chiave;
-- andamento temporale dei duplicati;
-- attributi che differiscono tra record con la stessa chiave.
-
-Se una tabella dichiarata "una riga per ordine" mostra improvvisamente il 6% di `order_id` ripetuti dopo una release, abbiamo un segnale molto più informativo di un generico controllo sui duplicati perfetti.
-
-### Regola operativa
-
-Non chiederti soltanto:
-
-> "Ci sono righe duplicate?"
-
-Chiediti:
-
-> **"Esistono più rappresentazioni dello stesso fatto o della stessa entità, e qual è la regola che stabilisce quale rappresentazione usare?"**
-
-Deduplicare non significa rendere il dataset più corto. Significa evitare che la stessa realtà venga contata più volte.
+> **Deduplicare non significa rendere il dataset più corto. Significa stabilire quando più record descrivono la stessa realtà e applicare una regola riproducibile che non cancelli eventi legittimi.**
