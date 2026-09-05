@@ -1,121 +1,48 @@
-## 5.16 Errori di tipo I, tipo II e power: progettare quanta evidenza ci serve
+## 5.16 Errori di tipo I, tipo II e power: decidere quanta evidenza comprare prima di agire
 
-Ogni procedura inferenziale può portare a una conclusione sbagliata.
+Un test di ipotesi può sbagliare in due direzioni. Nel linguaggio classico, commettiamo un **errore di tipo I** quando rifiutiamo `H0` mentre lo scenario nullo è vero; commettiamo un **errore di tipo II** quando non rifiutiamo `H0` pur essendo presente l'effetto specificato nell'alternativa.
 
-La statistica non elimina questo rischio. Lo rende esplicito e, almeno in parte, progettuale.
+Queste definizioni diventano davvero utili quando smettiamo di trattarle come caselle di una tabella scolastica e le traduciamo in **costi decisionali**.
 
-Nel linguaggio classico del testing:
+## Un rollout da 4 milioni e due modi diversi di sbagliare
 
-- **errore di tipo I:** rifiutiamo `H0` quando lo scenario nullo è vero;
-- **errore di tipo II:** non rifiutiamo `H0` quando esiste l'effetto considerato nell'alternativa.
+Una rete logistica valuta un nuovo processo di picking che richiede scanner, formazione e modifiche operative per circa **4 milioni di euro**.
 
-Nel lavoro dell'analista questi errori diventano più comprensibili se li traduciamo in decisioni.
+Un falso positivo significa concludere che il nuovo processo produce il beneficio richiesto quando il segnale osservato era compatibile con il rumore sotto il modello: investiamo milioni senza ottenere il miglioramento atteso.
 
-### Caso simulato/composito — Un nuovo processo di picking
+Un falso negativo significa invece non avere evidenza sufficiente quando il nuovo processo riduce davvero gli errori abbastanza da creare valore: perdiamo un'opportunità reale.
 
-Una rete logistica valuta un nuovo sistema di picking che promette di ridurre gli errori di preparazione.
+I due errori non hanno necessariamente lo stesso costo. Per questo `α = 0,05` e `power = 80%` non dovrebbero essere numeri rituali scelti perché “si usa così”. NIST definisce `α` come probabilità di errore di tipo I sotto `H0` e il power come probabilità di rifiutare `H0` quando l'alternativa specificata è vera; ricorda inoltre che l'errore di tipo II dipende dalla dimensione della discrepanza reale e aumenta, a parità di altre condizioni, quando rendiamo più severo `α`.[^nist-tests][^nist-type2]
 
-Il rollout nazionale richiede:
+La domanda progettuale diventa quindi:
 
-- nuovi scanner;
-- formazione;
-- modifica dei processi;
-- circa 4 milioni di euro di investimento.
+> **Quanto costerebbe un falso positivo, quanto costerebbe un falso negativo e quale quantità di evidenza rende questi rischi accettabili?**
 
-**Falso positivo / tipo I:** concludiamo che il nuovo processo produce un beneficio quando il segnale osservato era compatibile con il rumore. Investiamo milioni senza ottenere il miglioramento atteso.
+## Power rispetto a quale effetto?
 
-**Falso negativo / tipo II:** concludiamo che non c'è evidenza sufficiente di beneficio quando il processo riduce davvero gli errori abbastanza da generare valore. Rinunciamo a un'opportunità reale.
+La potenza statistica non è un'etichetta generica del tipo “questo esperimento ha power 80%”. Il power ha senso **rispetto a un effetto specificato**, oltre che a numerosità, variabilità, livello `α` e struttura del disegno.
 
-I due costi non sono necessariamente uguali.
+Più piccolo è l'effetto che vogliamo distinguere, più informazione serve in genere. Questo è il motivo per cui la power analysis dovrebbe partire dal **Minimum Effect of Interest**: il più piccolo effetto che cambierebbe davvero la decisione.
 
-Per questo `α = 0,05` e `power = 80%` non dovrebbero essere trattati come numeri rituali scollegati dal contesto.
+Immaginiamo un prodotto digitale con conversione baseline del 3,0%. Il business considera interessante almeno **+0,15 punti percentuali**, fino a 3,15%. Dopo pochi giorni osserva 3,01% nel controllo e 3,19% nella variante, con 8.000 utenti per gruppo. Il risultato non supera il criterio inferenziale predefinito e il product manager conclude che “la variante non funziona”.
 
-### Alpha controlla un rischio sotto il modello, non il costo economico
+Questa conclusione sarebbe eccessiva se il test fosse stato avviato senza pianificazione della potenza e 8.000 utenti per gruppo fossero insufficienti per distinguere con affidabilità un delta dell'ordine di +0,15 pp.
 
-Nel quadro frequentista, `α` è il tasso di errore di tipo I che il procedimento è progettato a controllare sotto determinate assunzioni.
+La frase corretta è:
 
-Ridurre `α` rende più difficile dichiarare evidenza contro `H0`, ma può anche aumentare il rischio di non rilevare effetti reali se non aumentiamo l'informazione disponibile.
+> **Il test corrente non contiene abbastanza informazione per discriminare bene l'effetto business-rilevante che avevamo in mente.**
 
-NIST sottolinea proprio il trade-off tra errori di tipo I e II: non possiamo spingerli entrambi arbitrariamente verso zero senza modificare campione, disegno o altre proprietà del test.[^nist-errors]
+“Non abbiamo rilevato” e “abbiamo dimostrato l'assenza” sono due stati epistemici diversi.
 
-Quindi la domanda non è:
+## Il Minimum Effect of Interest viene prima della sample size
 
-> “Perché usiamo il 5%?”
+Se il business non implementerebbe mai per un miglioramento inferiore a +0,5 pp, progettare un test enorme per trovare con precisione +0,05 pp può essere uno spreco di traffico e tempo. Se invece un delta di +0,05 pp vale milioni su una base enorme e i costi marginali sono bassi, lo stesso effetto può meritare un disegno molto più sensibile.
 
-ma:
+Il Capitolo 9 userà questa logica per MDE, durata, unità di randomizzazione, guardrail e stopping rules. Qui il punto è più generale: **la forza del test deve essere progettata rispetto alla decisione, non rispetto a una convenzione astratta**.
 
-> **“Quanto costerebbe un falso positivo in questa decisione, e quanta evidenza vogliamo pretendere prima di agire?”**
+## Un risultato non significativo può raccontare storie diverse
 
-### Power: probabilità di rilevare un effetto specifico
-
-La **potenza statistica** non è una proprietà generica del test del tipo “questo esperimento ha power 80%”.
-
-È la probabilità, sotto un effetto specificato e le altre assunzioni del disegno, che la procedura produca il risultato decisionale previsto contro `H0`.
-
-Dipende da:
-
-- dimensione dell'effetto;
-- numerosità effettiva;
-- variabilità;
-- livello `α`;
-- struttura del test e del disegno.
-
-Più piccolo è l'effetto che vogliamo rilevare, più informazione serve in genere.
-
-### Caso simulato/composito — “Il test non ha funzionato”
-
-Un prodotto digitale parte da conversione 3,0%. Il business considera interessante un miglioramento di almeno **+0,15 punti percentuali**, fino a 3,15%.
-
-Dopo pochi giorni osserva:
-
-- controllo: 3,01%;
-- variante: 3,19%;
-- 8.000 utenti per gruppo.
-
-Il risultato non supera la soglia inferenziale predefinita.
-
-Il product manager conclude:
-
-> “La variante non funziona.”
-
-Ma l'esperimento era stato avviato senza una vera pianificazione della potenza e il campione era molto più piccolo di quello necessario per distinguere con affidabilità un delta dell'ordine di +0,15 pp.
-
-Il risultato corretto è:
-
-> **“Il test corrente non ha abbastanza informazione per discriminare bene l'effetto business-rilevante che avevamo in mente.”**
-
-Non è la stessa cosa di dimostrare effetto zero.
-
-### Minimum Effect of Interest prima della sample size
-
-La power analysis parte da una domanda business:
-
-> **Qual è il più piccolo effetto che cambierebbe davvero la nostra decisione?**
-
-Solo dopo ha senso chiedere quanti casi servono.
-
-Se il business non implementerebbe mai per un miglioramento inferiore a +0,5 pp, progettare il test per trovare con grande precisione +0,05 pp può essere uno spreco di traffico e tempo.
-
-Il Capitolo 9 userà questa idea nella progettazione degli A/B test, con MDE, durata, unità di randomizzazione, guardrail e stopping rules.
-
-### “Non significativo” può voler dire cose diverse
-
-Un risultato non significativo può essere compatibile con:
-
-- effetto realmente vicino a zero;
-- effetto positivo ma piccolo;
-- effetto materialmente interessante ma stima troppo rumorosa;
-- effetto eterogeneo che si cancella nell'aggregato;
-- disegno poco efficiente.
-
-Per distinguerli servono soprattutto:
-
-- effect size;
-- confidence interval;
-- power rispetto agli effetti che contano;
-- contesto del disegno.
-
-### Una matrice decisionale più utile di `significant / not significant`
+La combinazione di effect size e precisione è spesso più informativa dell'etichetta `significant / not significant`.
 
 | Evidenza | Effetto business-rilevante plausibile? | Lettura |
 |---|---|---|
@@ -124,8 +51,13 @@ Per distinguerli servono soprattutto:
 | Precisa e materialmente positivo | Sì | Evidenza forte da portare alla decisione |
 | Imprecisa ma molto positivo | Sì | Segnale interessante, ancora incerto |
 
-La statistica diventa più utile quando smette di produrre una sola etichetta.
+Questa matrice merita di restare strutturata perché impedisce una semplificazione frequente: trattare ogni `p > 0,05` come la stessa conclusione. Un intervallo stretto attorno a zero e un intervallo larghissimo che include effetti molto interessanti non hanno lo stesso significato decisionale.
 
 > **Power non serve a garantire che troveremo un risultato significativo. Serve a evitare di fare una domanda importante con uno strumento troppo debole per risponderle.**
 
-[^nist-errors]: NIST, *Comparing Instruments*, Technical Note 2106: https://nvlpubs.nist.gov/nistpubs/TechnicalNotes/NIST.TN.2106.pdf
+---
+
+### Fonti
+
+[^nist-tests]: NIST/SEMATECH, *Quantitative Techniques — Hypothesis Tests*. https://itl.nist.gov/div898/handbook/eda/section3/eda35.htm
+[^nist-type2]: NIST/SEMATECH, *What are statistical tests?*. https://www.itl.nist.gov/div898/handbook/prc/section1/prc13.htm
