@@ -1,34 +1,20 @@
-## 9.15 Experiment Health Gate: prima di stimare l'effetto, certifica che il test sia interpretabile
+## 9.15 Experiment Health Gate: certificare il confronto prima di stimare l'effetto
 
-A questo punto del capitolo abbiamo già incontrato quasi tutti i modi in cui un esperimento può rompersi: unità di randomizzazione sbagliata, identity instabile, Sample Ratio Mismatch, exposure incompleta, logging asimmetrico, contaminazione, peeking, metriche fragili e interferenza.
+A questo punto abbiamo già incontrato quasi tutti i modi in cui un esperimento può smettere di rappresentare il design: identity instabile, randomization unit sbagliata, SRM, exposure asimmetrica, logging differenziale, contamination, filtri post-treatment, metriche cambiate o incidenti operativi.
 
-Serve quindi un passaggio esplicito tra **raccolta dei dati** e **interpretazione dell'effetto**.
+Serve quindi un passaggio esplicito tra raccolta dati e interpretazione causale. Lo chiameremo **Experiment Health Gate**.
 
-Lo chiameremo **Experiment Health Gate**.
+La sua domanda non è “B sta vincendo?”, ma:
 
-La domanda del gate non è:
-
-> la variante B sta vincendo?
-
-È:
-
-> **questo esperimento ha prodotto un confronto abbastanza affidabile da meritare un'interpretazione causale?**
+> **questo run ha prodotto un confronto abbastanza affidabile da meritare una lettura dell'effetto?**
 
 Finché la risposta non è sì, effect size, confidence interval e p-value sono secondari.
 
 ### Caso simulato/composito — RideFlow
 
-RideFlow, piattaforma di mobilità urbana, testa un nuovo algoritmo per suggerire punti di pickup più efficienti.
+RideFlow testa un algoritmo per suggerire punti di pickup più efficienti. La dashboard mostra tempo medio di attesa -6,4%, cancellazioni -2,1% e un intervallo interamente favorevole sulla primary.
 
-La dashboard mostra:
-
-- tempo medio di attesa: -6,4%;
-- cancellazioni: -2,1%;
-- intervallo sulla metrica primaria interamente favorevole al trattamento.
-
-Il risultato sembra pronto per il rollout.
-
-L'analista esegue però l'Experiment Health Gate e trova:
+Il gate trova però:
 
 | Controllo | Esito |
 |---|---|
@@ -39,97 +25,49 @@ L'analista esegue però l'Experiment Health Gate e trova:
 | distribuzione OS pre-treatment | sbilanciata tra gruppi osservati |
 | concurrent experiments | nessun conflitto noto |
 
-La versione Android che riceve meno spesso il trattamento ha storicamente tempi di attesa peggiori. La variante B contiene quindi una composizione diversa proprio su una variabile legata all'outcome.
-
-Il risultato business non viene classificato come "positivo" o "negativo".
-
-Viene classificato come:
+La versione Android che riceve meno spesso il trattamento ha storicamente tempi di attesa peggiori. La composizione osservata di B è quindi diversa proprio su una caratteristica legata all'outcome. Il risultato non viene classificato “positivo” o “negativo”, ma:
 
 **INVALIDO PER DECISIONE — correggere exposure/telemetria e ripetere.**
 
-Questa è una conclusione migliore di un numero preciso ottenuto da un confronto compromesso.
+È una conclusione più forte di un intervallo stretto costruito su un confronto compromesso.
 
-### I controlli del gate
+### Le famiglie del gate
 
-L'Experiment Health Gate dovrebbe coprire almeno otto famiglie.
+Il gate deve coprire l'intera catena, non soltanto l'SRM. Per renderlo scansionabile conviene mantenerlo come artefatto operativo:
 
-**1. Assignment integrity**  
-L'unità prevista è stata assegnata una sola volta, con rapporto coerente con il design e senza meccanismi di auto-selezione?
+| Area | Domanda |
+|---|---|
+| Assignment integrity | l'unità prevista è stata assegnata una volta, con rapporto coerente e senza auto-selezione? |
+| Identity stability | la stessa unità resta nella stessa variante attraverso sessioni, device e periodi rilevanti? |
+| Exposure integrity | assignment e trattamento ricevuto sono compatibili con l'estimand? |
+| Telemetry completeness | eventi, filtri e join sono simmetrici tra arm? |
+| Population integrity | eligibility e filtri rappresentano ancora la popolazione predefinita? |
+| Metric integrity | numeratore, denominatore, timestamp, join e maturity sono quelli congelati? |
+| Interference / concurrent changes | altri test, campagne o shared resources modificano il confronto? |
+| Operational incidents | outage, migrazioni o capacity constraints rendono il run non rappresentativo? |
 
-**2. Identity stability**  
-La stessa unità rimane nella stessa variante attraverso sessioni, device e periodi rilevanti?
+Il valore della tabella non è trasformare la review in una checklist cieca. È impedire che un risultato business molto favorevole faccia dimenticare le condizioni che lo rendono interpretabile.
 
-**3. Exposure integrity**  
-Assignment e trattamento ricevuto coincidono abbastanza da sostenere l'estimand dichiarato? Esistono versioni, mercati o superfici in cui l'utente è assegnato ma non può ricevere davvero la feature?
+### Pre-treatment balance: usare il pattern per diagnosticare il processo
 
-**4. Telemetry completeness**  
-Gli eventi necessari alla metrica vengono prodotti e filtrati simmetricamente nei gruppi? Crash, redirect o bot filtering possono far sparire osservazioni in modo treatment-dependent?
+Con randomizzazione corretta qualche squilibrio pre-treatment emergerà per caso, soprattutto se guardiamo molte covariate. Per questo “una covariata ha `p < 0,05`” non deve diventare automaticamente prova di test rotto.
 
-**5. Population integrity**  
-Eligibility, triggering e filtri analitici definiscono ancora la popolazione prevista dall'Experiment Contract, oppure stiamo condizionando su comportamenti avvenuti dopo il trattamento?
+Sono più informativi differenze materialmente grandi, pattern sistematici, squilibri concentrati su platform/version o deviazioni coerenti con un problema già osservato in assignment o exposure. Il balance check deve aiutare a capire **come sono stati prodotti i gruppi osservati**, non creare un nuovo torneo di p-value.
 
-**6. Metric integrity**  
-Numeratore, denominatore, timestamp, currency, join e finestre di maturazione sono quelli congelati prima del test?
+### Tre verdetti, non una spunta generica
 
-**7. Interference e concurrent changes**  
-Altri esperimenti, campagne, release o shared resources possono aver cambiato il trattamento o contaminato il controllo?
+**VALIDO** significa che non emergono problemi materialmente rilevanti e l'effetto può essere interpretato secondo il piano.
 
-**8. Operational incidents**  
-Ci sono stati outage, migrazioni, errori di pagamento, capacity constraints o anomalie di sistema abbastanza grandi da rendere il periodo non rappresentativo?
+**VALIDO CON CAVEAT** significa che esiste una deviazione compresa e circoscritta che non distrugge il confronto ma restringe lo scope. Una versione legacy pari all'1,5% della popolazione, esclusa simmetricamente dall'estimand dichiarato, può essere un esempio.
 
-### Pre-treatment balance: diagnostica, non rituale
+**INVALIDO PER DECISIONE** significa che esiste un problema capace di alterare gruppi, outcome o telemetria in modo selettivo e non siamo in grado di quantificarne credibilmente l'impatto. In quel caso non si “aggiusta finché torna il risultato”: si ripara e, quando necessario, si ripete.
 
-Con randomizzazione corretta alcune differenze pre-treatment emergeranno comunque per caso, soprattutto se osserviamo molte covariate.
+Microsoft ExP ha documentato ripetutamente che la trustworthiness dipende dall'intera catena assignment → execution → telemetry → metric computation e che modifiche infrastrutturali apparentemente locali possono produrre regressioni visibili soltanto quando si osservano metriche di prodotto più ampie.[^ms-infra]
 
-Perciò il balance check non dovrebbe diventare:
+L'ordine operativo resta quindi:
 
-> troviamo una covariata con `p < 0,05`, quindi il test è rotto.
-
-È più utile cercare:
-
-- pattern sistematici;
-- differenze materialmente grandi;
-- squilibri coerenti con un problema di assignment/exposure;
-- concentrazione su device, geografie, versioni o canali specifici.
-
-La diagnostica deve aiutare a capire il processo che ha generato i dati, non creare un nuovo torneo di p-value.
-
-### Tre possibili verdetti
-
-Per rendere il gate operativo conviene non usare una semplice checkbox "pass/fail".
-
-#### VALIDO
-
-Non emergono problemi materialmente rilevanti. L'effetto può essere interpretato secondo il piano previsto.
-
-#### VALIDO CON CAVEAT
-
-Esiste una deviazione compresa e circoscritta che non distrugge il confronto ma restringe lo scope della conclusione.
-
-Esempio: una versione legacy dell'app, pari all'1,5% della popolazione, non riceve il trattamento ed è esclusa in modo simmetrico dall'estimand dichiarato.
-
-#### INVALIDO PER DECISIONE
-
-Esiste un problema che può produrre differenze tra gruppi o alterare selettivamente outcome/telemetria e non possiamo quantificarne in modo credibile l'impatto.
-
-In questo caso il test non deve essere "aggiustato finché torna il risultato che piace". Va riparato e, quando necessario, ripetuto.
-
-### Caso reale documentato — Microsoft Experimentation Platform
-
-Microsoft ha documentato più volte che la validità di un esperimento dipende dall'intera catena assignment → execution → telemetry → metric computation. Nei test su modifiche infrastrutturali, il team ha trovato regressioni e problemi che metriche tecniche locali non avrebbero necessariamente mostrato, usando quindi metriche di prodotto e controlli di qualità più ampi prima di approvare il cambiamento.
-
-Questo è coerente con la lezione SRM vista nella sezione 9.3: **prima di fidarsi dell'effetto bisogna fidarsi del processo che ha prodotto il confronto**.
-
-### Il gate precede la statistica finale
-
-L'ordine operativo è:
-
-**Experiment Contract → test in esecuzione → Experiment Health Gate → stima dell'effetto → decisione → rollout.**
-
-Invertire gli ultimi passaggi crea un bias organizzativo potente: se il team vede prima un risultato molto favorevole, diventa psicologicamente più difficile invalidare il test quando emerge un problema di qualità.
+**Experiment Contract → run → Experiment Health Gate → stima dell'effetto → decisione → rollout.**
 
 > **Un esperimento non è affidabile perché produce un intervallo stretto. È affidabile quando possiamo spiegare perché treatment e control rappresentano ancora il confronto che avevamo deciso di costruire.**
 
-### Fonte pubblica
-
-- Microsoft Experimentation Platform, *A/B Testing Infrastructure Changes at Microsoft ExP*: https://www.microsoft.com/en-us/research/articles/a-b-testing-infrastructure-changes-at-microsoft-exp/
+[^ms-infra]: Microsoft Research, *A/B Testing Infrastructure Changes at Microsoft ExP*: https://www.microsoft.com/en-us/research/articles/a-b-testing-infrastructure-changes-at-microsoft-exp/
