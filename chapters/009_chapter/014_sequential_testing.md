@@ -1,135 +1,51 @@
-## 9.13 Sequential testing: progettare una decisione che può arrivare prima
+## 9.13 Sequential testing: quando più decision point fanno parte del design
 
-La sezione 9.6 ha fissato il problema del peeking in un fixed-horizon test.
+La sezione 9.6 ha separato monitoring operativo e decisione di efficacia in un fixed-horizon test. Qui affrontiamo il caso diverso: **vogliamo intenzionalmente poter concludere a più checkpoint intermedi**.
 
-Qui affrontiamo il caso diverso:
+In questo scenario non dobbiamo fingere di avere una sola analisi finale. Dobbiamo scegliere una procedura in cui il modo di guardare i dati appartenga alla matematica e alla governance dell'esperimento.
 
-> **vogliamo intenzionalmente poter prendere una decisione a più checkpoint intermedi.**
+Il principio è semplice: prima del lancio definiamo quando possiamo valutare l'evidenza, quali soglie valgono ai diversi look, come controlliamo il rischio di falso positivo e quali regole consentono successo, futility o stop per danno.
 
-In questo caso non dobbiamo fingere di avere una singola analisi finale.
+Esistono famiglie diverse — group sequential designs, alpha-spending, confidence sequences/evidence processes, approcci bayesiani con decision threshold espliciti. Johari, Pekelis e Walsh hanno mostrato come p-value e intervalli “always valid” possano rendere l'inferenza coerente con optional stopping e continuous monitoring.[^johari] Il punto per il Data Analyst non è scegliere il metodo più sofisticato, ma far corrispondere **frequenza delle decisioni e procedura inferenziale**.
 
-Dobbiamo progettare un **sequential experiment**.
+### Caso simulato/composito — StreamNow
 
-### Il principio
+StreamNow testa una nuova pricing page. Ogni settimana di test ha un costo opportunità elevato, quindi il business vuole la possibilità di concludere prima dei 14 giorni.
 
-Una procedura sequenziale definisce prima:
-
-- quando possiamo valutare i dati;
-- quali soglie valgono a ogni look;
-- come viene controllato il rischio di falso positivo;
-- quali regole consentono successo, futility o stop per danno.
-
-Non esiste una sola metodologia sequenziale.
-
-Possiamo incontrare, tra le altre:
-
-- group sequential designs;
-- alpha-spending approaches;
-- sempre-validi confidence sequences / evidence processes;
-- metodi bayesiani con decision threshold espliciti.
-
-Per il Data Analyst il punto non è scegliere un metodo per moda.
-
-È garantire coerenza tra **frequenza delle decisioni e inferenza**.
-
-### Caso simulato/composito — Pricing page ad alto traffico
-
-StreamNow testa una nuova pricing page.
-
-Il business vorrebbe una decisione il prima possibile perché ogni settimana di test ha costo opportunità elevato.
-
-Piano fixed-horizon precedente:
+Il vecchio piano era:
 
 ```text
 14 giorni
 1 final read
 ```
 
-Nuovo piano sequenziale:
+Il nuovo piano è:
 
 ```text
 checkpoint: D4, D7, D10, D14
 success boundary: definita dal metodo scelto
-futility: possibile solo dai checkpoint previsti
+futility: possibile solo ai checkpoint previsti
 safety: continuo e separato
 max duration: 14 giorni
 ```
 
-Il team non dice più:
+Ora un risultato al D4 non è una sbirciata fortunata: è un decision point previsto, interpretato con la boundary prevista.
 
-> “Abbiamo guardato al D4 e per fortuna era significativo.”
+### Più frequente non significa più utile
 
-Dice:
+Controllare ogni minuto aumenta complessità e incentiva reazioni premature senza necessariamente comprare informazione. Se l'outcome richiede sette giorni di maturity, un checkpoint orario è semanticamente vuoto anche se statisticamente implementabile.
 
-> “D4 era un decision point previsto e la soglia usata è quella compatibile con il sequential design.”
+Efficacy, futility e safety restano inoltre ragioni di stop diverse. **Efficacy** significa che l'evidenza ha superato la soglia positiva prevista. **Futility** significa che, secondo la regola progettata, continuare difficilmente produrrà l'informazione decisionale cercata. **Safety/harm** protegge il sistema e può operare con soglie più rapide e conservative.
 
-### Sequential non significa decisione continua su ogni evento
+La flessibilità è utile soltanto se è dichiarata. Non possiamo decidere dopo il fatto se il run era fixed horizon, sequential o “abbiamo aspettato finché sembrava stabile”.
 
-Più frequente non significa necessariamente migliore.
+### Anche un sequential design ha un orizzonte massimo
 
-Controllare ogni minuto può:
+Servono maximum sample, maximum duration e una regola per il caso in cui nessuna boundary venga attraversata. **Inconclusive** è un esito legittimo.
 
-- aumentare complessità;
-- rendere governance poco trasparente;
-- incoraggiare decisioni troppo reattive;
-- avere scarso valore se l'outcome matura lentamente.
+Inoltre una boundary raggiunta presto non elimina novelty, learning, weekend mix o outcome a lungo termine. Possiamo avere abbastanza evidenza per una conclusione sul short-term effect e non ancora abbastanza osservazione per una decisione di ship. Il piano inferenziale e quello decisionale devono essere compatibili.
 
-Se una metrica richiede sette giorni di maturity, un checkpoint ogni ora è semanticamente inutile.
-
-### Efficacy, futility e safety
-
-È utile distinguere tre ragioni di stop.
-
-**Efficacy**
-
-L'evidenza ha superato la soglia prevista per una decisione positiva.
-
-**Futility**
-
-Il design conclude che continuare difficilmente produrrà l'informazione decisionale desiderata secondo la regola stabilita.
-
-**Safety / harm**
-
-Un guardrail grave richiede intervento operativo.
-
-Safety può avere logica diversa e molto più rapida rispetto all'inferenza sulla primary.
-
-### Optional stopping deve essere parte del design
-
-La flessibilità è utile solo se documentata.
-
-Un team non dovrebbe scegliere dopo il fatto se interpretare il test come:
-
-- fixed horizon;
-- sequential;
-- “abbiamo aspettato finché l'effetto si è stabilizzato”.
-
-L'Experiment Contract deve fissare il regime prima del lancio.
-
-### Durata massima resta importante
-
-Anche un sequential design deve avere una domanda su:
-
-- maximum sample;
-- maximum duration;
-- practical stopping point.
-
-Se non raggiungiamo nessuna boundary entro la fine, il risultato può essere **inconclusive**.
-
-“Inconclusivo” è un esito legittimo.
-
-### Sequential e novelty
-
-Raggiungere una success boundary molto presto non risolve automaticamente i problemi di:
-
-- novelty;
-- learning;
-- weekend mix;
-- long-term outcome.
-
-Possiamo avere una regola statistica che autorizza una conclusione sul **short-term effect**, ma una decisione di ship può richiedere comunque una minimum exposure age o guardrail maturi.
-
-Il piano statistico e il piano decisionale devono essere compatibili.
+Microsoft, discutendo event-based A/B test, sottolinea proprio che continuous monitoring con statistiche fixed-horizon inflaziona il rischio di false positive e che, quando la decisione richiede monitoraggio ripetuto, servono procedure sequential adatte.[^ms-event]
 
 ### Sequential contract
 
@@ -147,4 +63,7 @@ What happens if no boundary is crossed?
 Who authorizes the decision?
 ```
 
-> **Sequential testing non è guardare più spesso. È progettare in anticipo una procedura in cui guardare più volte è parte della matematica e della governance.**
+> **Sequential testing non significa guardare più spesso. Significa progettare un esperimento in cui più momenti di decisione sono parte esplicita del metodo, invece di emergere dalla curiosità della dashboard.**
+
+[^johari]: Johari, R., Pekelis, L. & Walsh, D.J., *Always Valid Inference: Bringing Sequential Analysis to A/B Testing*: https://arxiv.org/abs/1512.04922
+[^ms-event]: Microsoft Research, *For Event-based A/B tests: why they are special*: https://www.microsoft.com/en-us/research/articles/for-event-based-a-b-tests-why-they-are-special/
