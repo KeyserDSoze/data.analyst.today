@@ -1,19 +1,12 @@
-## 9.5 Novelty, learning e durata: abbastanza utenti non significa abbastanza tempo
+## 9.5 Durata, novelty e learning: abbastanza utenti non significa abbastanza comportamento
 
-Un test può raggiungere la numerosità pianificata molto prima di aver osservato il comportamento che ci interessa.
+Un test può raggiungere la numerosità pianificata molto prima di aver osservato il fenomeno che deve informare la decisione. Nei prodotti ad alto traffico è normale arrivare al sample requirement in poche ore; questo non rende mature metriche che richiedono giorni, returning exposure o cicli settimanali.
 
-Questo accade soprattutto nei prodotti ad alto traffico.
+Il sample size risponde soprattutto a **quanta informazione** raccogliamo. La durata risponde anche a **quale fase del comportamento** abbiamo osservato.
 
-La durata sperimentale deve coprire non solo il **sample requirement**, ma anche il tempo necessario perché:
+### Caso simulato/composito — La homepage che vince perché è nuova
 
-- gli utenti vedano il trattamento più volte;
-- novelty e learning si stabilizzino;
-- maturino outcome ritardati;
-- entrino cicli weekday/weekend o business cycle rilevanti.
-
-### Caso simulato/composito — La homepage che vince soltanto perché è nuova
-
-Una media company testa una homepage più dinamica.
+Una media company testa una homepage più dinamica:
 
 | Exposure age | Delta pagine/sessione B vs A |
 |---|---:|
@@ -21,69 +14,15 @@ Una media company testa una homepage più dinamica.
 | giorni 4–7 | +2,2% |
 | giorni 8–14 | +0,4% |
 
-Se guardassimo soltanto il calendario del test, potremmo dire che “l'effetto decade”.
+Leggendo soltanto il calendario del test diremmo che “l'effetto decade”. Ma un utente arrivato al giorno 12 può essere alla prima exposure, mentre un returning user può avere già visto B dieci volte. Per capire se stiamo osservando novelty o adattamento dobbiamo distinguere **experiment age** da **exposure age**.
 
-Ma una domanda migliore è:
+Una novità può generare temporaneamente curiosità, esplorazione o attenzione. Un nuovo flusso complesso può invece partire peggio e migliorare con l'apprendimento. In un software B2B, per esempio, una nuova interfaccia di reporting può mostrare nella prima settimana task completion -5,8%, tempo task +13% ed errori +19%, per poi arrivare alla quarta settimana a task completion +4,1%, tempo task -11% ed errori -7%.
 
-> **quanta esperienza ha ciascun utente con la variante?**
+Il test breve e quello lungo non stanno necessariamente contraddicendosi: possono misurare due fasi diverse della stessa transizione. La decisione deve stabilire se interessa l'effetto immediato del rollout, lo steady state o entrambi.
 
-Un utente arrivato al giorno 12 del test può essere alla sua prima exposure. Un returning user può essere alla decima.
+### Duration floor: il tempo minimo nasce dal processo
 
-Per questo è utile distinguere **experiment age** ed **exposure age**.
-
-### Novelty effect
-
-Un cambiamento può generare temporaneamente:
-
-- curiosità;
-- più esplorazione;
-- click aggiuntivi;
-- attenzione superiore;
-- comportamento meno routinario.
-
-Il movimento iniziale può diminuire quando la feature diventa normale.
-
-Questo non significa che ogni effetto decrescente sia novelty. Può essere anche:
-
-- cambio nel mix degli utenti esposti;
-- campagna temporanea;
-- bug risolto;
-- weekday mix;
-- regressione verso la media.
-
-Serve segmentare per tenure di exposure e contesto.
-
-### Learning effect
-
-Il movimento può andare nella direzione opposta.
-
-Un software B2B introduce una nuova interfaccia di reporting.
-
-Prima settimana:
-
-- task completion: -5,8%;
-- tempo task: +13%;
-- errori: +19%.
-
-Quarta settimana:
-
-- task completion: +4,1%;
-- tempo task: -11%;
-- errori: -7%.
-
-Un test troppo breve avrebbe misurato soprattutto il **costo di apprendimento**, non l'effetto steady-state.
-
-La domanda decisionale deve quindi chiarire:
-
-> vogliamo conoscere l'effetto immediato del rollout o quello dopo che gli utenti hanno imparato?
-
-Entrambi possono essere importanti.
-
-### Duration floor: il minimo temporale indipendente dal sample size
-
-Supponiamo che QuickPay raggiunga il sample size in 36 ore.
-
-Potremmo comunque imporre:
+Supponiamo che QuickPay raggiunga il sample size in 36 ore. Possiamo comunque definire:
 
 ```text
 sample requirement: raggiunto
@@ -91,64 +30,15 @@ minimum calendar duration: 14 giorni
 reason: due cicli weekday/weekend + returning exposure
 ```
 
-Questa non è superstizione del tipo “ogni test deve durare due settimane”.
+Non perché “ogni A/B test deve durare due settimane”, ma perché quel prodotto ha un mix weekday/weekend, utenti che tornano e outcome che devono maturare. In altri sistemi il floor può dipendere da payday, rinnovi, frequenza di acquisto, business cycle o learning atteso.
 
-La durata minima deve derivare dal processo:
+La data di fine enrollment e quella di fine observation possono inoltre essere differenti. Per QuickPay un ordine nasce a `t0`, una cancellazione può arrivare entro 24 ore, un chargeback molto più tardi e un reso dopo giorni o settimane. Se la primary o un guardrail richiedono una finestra di maturazione, l'ultimo cohort di utenti deve completarla prima del final read.
 
-- weekend vs feriali;
-- payroll/payday;
-- ciclo di rinnovo;
-- frequenza di riacquisto;
-- latency dell'outcome;
-- learning atteso.
+### Il calendario limita anche la generalizzazione
 
-### Outcome maturity
+La randomizzazione protegge A e B da molti shock contemporanei comuni, perché entrambi attraversano la stessa settimana. Ma un test interamente eseguito durante Black Friday può stimare bene l'effetto **in quel contesto** e generalizzare male a un mese normale.
 
-Alcune metriche non sono mature al momento dell'azione iniziale.
-
-Esempio QuickPay:
-
-```text
-ordine creato: t0
-cancellazione possibile: entro 24h
-chargeback: può emergere molto dopo
-reso: giorni/settimane
-```
-
-Se la decisione usa `valid_order_after_24h`, l'ultimo giorno di traffico richiede almeno 24 ore di maturazione prima dell'analisi finale.
-
-La data di fine enrollment e la data di fine observation non sono necessariamente la stessa.
-
-### New vs returning users
-
-Separare:
-
-- first exposure;
-- repeated exposure;
-- nuovi utenti;
-- utenti abituati alla vecchia esperienza;
-
-può chiarire se stiamo misurando:
-
-- valore strutturale;
-- surprise;
-- migration cost;
-- learning.
-
-Non tutte le segmentazioni devono guidare una causal claim separata; possono essere diagnostics pre-specificati del comportamento nel tempo.
-
-### Stagionalità dell'esperimento
-
-Il Capitolo 7 ci ha insegnato che il martedì non è necessariamente intercambiabile con il sabato.
-
-Un esperimento deve quindi chiedersi:
-
-- il traffico copre il normale mix settimanale?
-- coincide con Black Friday o saldi?
-- una campagna marketing crea popolazione insolita?
-- il test attraversa un release event?
-
-Un test randomizzato protegge da molti shock comuni contemporanei perché A e B li attraversano insieme. Ma la **generalizzazione** del risultato può essere limitata se il periodo è eccezionale.
+Per questo duration e calendar coverage devono chiedere se il traffico osservato rappresenta il regime a cui vogliamo applicare la policy. Separare first exposure, repeated exposure, nuovi e returning users può aiutare a distinguere valore strutturale, surprise e migration cost, purché queste slice vengano trattate come diagnostics o segmenti pre-specificati e non come una ricerca post-hoc di vittorie.
 
 ### Duration card
 
@@ -166,4 +56,4 @@ Exceptional calendar events:
 Analysis date after maturity:
 ```
 
-> **Il sample size risponde a “quanta informazione?”. La durata risponde anche a “quale fase del comportamento abbiamo osservato?”.**
+> **Un test è completo quando ha raccolto abbastanza unità e abbastanza storia comportamentale per la decisione che deve supportare. Le due condizioni non coincidono necessariamente.**
