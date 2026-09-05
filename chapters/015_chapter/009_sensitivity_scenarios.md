@@ -1,45 +1,14 @@
-## 15.8 Sensitivity e scenario analysis: quanto è robusto il ranking delle alternative?
+## 15.8 Sensitivity e scenario analysis: il ranking regge in futuri plausibili?
 
-Una raccomandazione può sembrare forte soltanto perché abbiamo fissato molte assunzioni su un singolo valore.
+Una recommendation può sembrare robusta soltanto perché molte assunzioni sono state fissate su un singolo valore. La sensitivity analysis pone una domanda più utile:
 
-La sensitivity analysis pone una domanda più professionale:
+> **Se alcune assunzioni fossero diverse ma ancora plausibili, sceglieremmo la stessa alternativa?**
 
-> **se le nostre assunzioni fossero diverse ma ancora plausibili, sceglieremmo la stessa alternativa?**
+Il suo oggetto non è soltanto il business case, ma il **ranking delle opzioni**.
 
-Il suo oggetto non è soltanto il business case.
+Per iniziare non cambiamo tutto a caso. Cerchiamo le variabili che combinano incertezza elevata, forte impatto, vicinanza a uno switching value o una base di judgment debole. In un progetto possono essere uplift, adoption, CAC, unit margin, implementation cost, churn o failure probability. Se la scelta è governata da tre variabili, variarene cinquanta aggiunge rumore più che informazione.
 
-È il **ranking delle opzioni**.
-
-### Sensitivity non significa cambiare tutto a caso
-
-Partiamo dalle variabili che:
-
-- hanno maggiore incertezza;
-- hanno maggiore impatto;
-- sono vicine a uno switching value;
-- derivano da judgment debole;
-- potrebbero cambiare insieme.
-
-Esempi:
-
-```text
-uplift
-adoption
-CAC
-unit margin
-implementation cost
-volume growth
-churn
-failure probability
-```
-
-Non serve variare cinquanta parametri se la decisione è governata da tre.
-
-### One-way sensitivity: isolare il driver
-
-Cambiamo una variabile alla volta mantenendo le altre al caso base.
-
-Esempio:
+Una one-way sensitivity isola un driver alla volta:
 
 | Assunzione | Base | Low | High | Switching value |
 |---|---:|---:|---:|---:|
@@ -47,209 +16,49 @@ Esempio:
 | project cost | €400k | €300k | €650k | €590k |
 | margin/order | €48 | €35 | €55 | €29 |
 
-Il risultato utile non è soltanto un range di valore.
+Il risultato utile non è soltanto un range finale: è capire **quale assunzione si trova più vicina al punto in cui cambieremmo decisione**. Quella variabile merita più attenzione, oppure più informazione prima del commitment.
 
-È capire:
+### Gli scenari devono essere mondi coerenti, non colonne ±20%
 
-> **quale assunzione ha la distanza minore dal punto in cui cambieremmo decisione?**
+Le variabili reali spesso si muovono insieme. Se la domanda rallenta possono peggiorare contemporaneamente volume, pricing power, CAC, churn e working capital. Per questo uno scenario non è “tutti i parametri -20%”, ma una storia coerente del sistema.
 
-Quella merita più attenzione analitica.
+Un competitor aggressivo, per esempio, può implicare CAC +30%, win rate -20%, sales cycle +25%, ARPA stabile e churn leggermente peggiore. Un caso di strong product-market fit può invece combinare CAC vicino al base, win rate +20%, più referral, migliore retention e maggiore difficoltà di hiring. La coerenza causale/operativa dello scenario conta più dell'etichetta ottimistico o pessimistico.
 
-### Scenario analysis: cambiare insieme assunzioni coerenti
+### Aster Logistics: massimo upside e robustezza non sono la stessa cosa
 
-Le variabili del mondo reale non cambiano sempre indipendentemente.
-
-Se la domanda rallenta, possono muoversi insieme:
-
-- volumi;
-- pricing power;
-- CAC;
-- churn;
-- working capital.
-
-Per questo uno scenario non dovrebbe essere:
-
-```text
-tutti i parametri -20%
-```
-
-se quella combinazione non rappresenta un mondo credibile.
-
-Uno scenario è una **storia coerente del sistema**.
-
-Esempio espansione commerciale:
-
-**Scenario: competitor enters aggressively**
-
-- CAC +30%;
-- win rate -20%;
-- sales cycle +25%;
-- ARPA stabile;
-- churn leggermente peggiore.
-
-**Scenario: strong product-market fit**
-
-- CAC vicino al base;
-- win rate +20%;
-- referral maggiore;
-- retention migliore;
-- hiring più difficile per crescita rapida.
-
-La coerenza conta più dell'etichetta “pessimistico/ottimistico”.
-
-### Caso simulato/composito — Aster Logistics e il nuovo hub
-
-> **Nota:** caso didattico simulato/composito.
-
-Aster Logistics valuta un hub per servire il Centro Italia.
-
-Caso centrale:
+Aster Logistics valuta un nuovo hub per il Centro Italia. Il caso centrale prevede:
 
 - capex: €4,8M;
 - risparmio annuo trasporti: €1,45M;
 - delivery time: -0,7 giorni;
 - crescita volume: +8% annuo.
 
-Il progetto sembra interessante.
-
-Ma le alternative sono:
+Le alternative sono:
 
 ```text
 A — business as usual
 B — nuovo hub completo
-C — hub più piccolo/modulare
+C — hub più piccolo / modulare
 D — capacità in outsourcing per 24 mesi
 ```
 
-Il team costruisce scenari coerenti.
+Nel caso di **domanda debole**, la crescita è +1%, il saving del full hub scende a €0,85M, il capex sale a €5,5M e l'outsourcing diventa relativamente più attraente. Nel caso **base** restano crescita +8%, saving €1,45M e capex €4,8M. Nello scenario **domanda forte + fuel inflation**, la crescita arriva al 12%, il saving del full hub a €1,9M e la capacità del piccolo hub diventa un vincolo.
 
-### Scenario 1 — domanda debole
+Il punto non è indovinare quale scenario accadrà. È osservare come cambia il ranking: B domina soltanto in base/upside? C mantiene valore in tutti e tre? D costa di più nel caso centrale ma compra 24 mesi di informazione?
 
-- crescita volume: +1%;
-- fuel cost stabile;
-- saving hub: €0,85M;
-- capex completo: €5,5M;
-- outsourcing relativamente più attraente.
+L'opzione con massimo valore nel caso centrale non è necessariamente la più robusta. Il full hub ha più upside se la crescita è forte, ma è fragile in domanda debole; un hub modulare può avere meno upside e più option value perché espandibile e con downside inferiore.
 
-### Scenario 2 — base
+### Dominance e correlated uncertainty riducono falsa complessità
 
-- crescita: +8%;
-- saving: €1,45M;
-- capex: €4,8M.
+Se un'opzione costa di più, arriva nello stesso tempo, offre la stessa capacità ed è meno reversibile senza alcun vantaggio compensativo, è dominata e può uscire dalla shortlist. Non serve un modello sofisticato per continuare a confrontarla.
 
-### Scenario 3 — domanda forte + fuel inflation
+Dobbiamo invece fare attenzione a rischi apparentemente diversi che dipendono dallo stesso mondo. Un business case con volume alto, margine alto e CAC basso può sembrare robusto se analizziamo ogni variabile separatamente, ma essere estremamente fragile se tutte dipendono dallo stesso scenario competitivo. La one-way sensitivity può nascondere questa correlazione; lo scenario analysis la rende visibile.
 
-- crescita: +12%;
-- fuel più caro;
-- saving hub: €1,9M;
-- capacità del piccolo hub diventa un vincolo.
+Per decisioni ad alto impatto aggiungiamo anche uno **stress scenario**: non per dichiararlo probabile, ma per capire se il sistema sopravvive, quale exposure massima accettiamo, quale guardrail viene superato e se esiste rollback. Domanda -30%, fornitore critico indisponibile, ticket support raddoppiati o costi cloud 3× possono distinguere una normale downside uncertainty da un ruin risk.
 
-Il punto non è scegliere quale scenario “succederà”.
+### Usare la storia dell'organizzazione contro l'optimism bias
 
-È vedere:
-
-- B domina soltanto in base/upside?
-- C mantiene valore in tutti e tre?
-- D costa di più nel base ma compra 24 mesi di informazione?
-
-Questa è una decisione molto più ricca del solo payback centrale.
-
-### Robust choice vs optimal choice
-
-L'opzione con valore massimo nello scenario centrale non è sempre quella più robusta.
-
-Una **robust choice** può:
-
-- non essere la migliore in nessun singolo scenario;
-- ma evitare outcome molto cattivi in molti scenari;
-- preservare possibilità di adattamento.
-
-Esempio:
-
-```text
-Full hub:
-ottimo se crescita forte
-fragile se domanda debole
-
-Modular hub:
-meno upside
-ma espandibile e downside minore
-```
-
-Se l'incertezza è alta e l'impegno irreversibile, la seconda opzione può essere preferibile.
-
-### Dominance: alcune opzioni non meritano altra analisi
-
-Un'opzione è **dominata** quando un'altra è almeno altrettanto buona sulle dimensioni importanti e migliore su almeno una, senza un compensating advantage credibile.
-
-Esempio:
-
-```text
-Option A:
-costo maggiore
-stesso time-to-value
-stessa capacità
-meno reversibile
-
-Option B:
-costo minore
-stessa performance
-più reversibile
-```
-
-Non serve un modello sofisticato per continuare a confrontarle.
-
-Eliminare opzioni dominate riduce la complessità della decisione.
-
-### Correlated uncertainty: non sommare comfort indipendenti che indipendenti non sono
-
-Supponiamo che un business case assuma:
-
-- volume alto;
-- margine alto;
-- CAC basso.
-
-Se tutti e tre dipendono dallo stesso scenario macro/competitivo, trattarli come rischi indipendenti sottostima il downside.
-
-La sensitivity one-way può non mostrarlo.
-
-Lo scenario analysis sì.
-
-### Stress scenario: cosa succede fuori dal range “comodo”?
-
-Per decisioni ad alto impatto aggiungiamo un caso di stress.
-
-Non perché sia lo scenario più probabile.
-
-Ma per capire:
-
-- sopravvive l'organizzazione?
-- esiste rollback?
-- quale exposure massima accettiamo?
-- quale guardrail viene superato?
-
-Esempi:
-
-- domanda -30%;
-- fornitore critico indisponibile;
-- rollout che raddoppia ticket support;
-- costi cloud 3×;
-- regime normativo più restrittivo.
-
-Lo stress test aiuta a distinguere **upside uncertainty** da **ruin risk**.
-
-### Optimism bias: usare la storia dell'organizzazione come dato
-
-HM Treasury mantiene guidance specifica sull'**optimism bias**: costi e tempi possono essere sottostimati e benefici sovrastimati nelle stime iniziali.
-
-Riferimenti:
-
-- Green Book 2026: https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2026
-- supplementary guidance: https://www.gov.uk/government/publications/green-book-supplementary-guidance-optimism-bias
-
-Un team analytics può applicare lo stesso principio in modo empirico.
-
-Costruiamo una tabella storica:
+Il *Green Book 2026* richiede aggiustamenti per **optimism bias**, cioè la tendenza sistematica a sottostimare costi e tempi e sovrastimare benefici.[^green-book-sensitivity] Un team analytics può trasformare questo principio in evidenza interna costruendo una base storica:
 
 ```text
 project
@@ -261,25 +70,11 @@ forecast benefit
 observed benefit
 ```
 
-Poi chiediamo:
+Se scopriamo che una certa classe di progetti supera sistematicamente tempi e costi, l'adjustment futuro non è più una frase generica tipo “siamo sempre troppo ottimisti”: diventa un prior empirico.
 
-- tendiamo sistematicamente a sottostimare delivery time?
-- quali categorie di progetto hanno maggiore overrun?
-- quale adjustment empirico è ragionevole?
+NASA chiede che la recommendation riporti anche la **robustezza del ranking**, in particolare se una riduzione plausibile dell'incertezza potrebbe cambiare l'ordine delle alternative.[^nasa-robustness] È esattamente ciò che sensitivity e scenario analysis devono consegnare al Decision Record.
 
-Questo trasforma “siamo sempre troppo ottimisti” in un dato analizzabile.
-
-### Caso pubblico documentato — NASA e robustness del ranking
-
-La guida NASA sulla Decision Analysis raccomanda di valutare alternative rispetto a criteri e incertezze e di riportare al decision-maker la **robustezza del ranking**, inclusa la domanda se ridurre l'incertezza potrebbe credibilmente cambiare l'ordine delle alternative.
-
-Fonte: https://www.nasa.gov/reference/6-8-decision-analysis/
-
-È esattamente il ruolo della sensitivity analysis nel Decision Record:
-
-> non soltanto “quanto può variare il risultato?”, ma “questa variazione può cambiare la scelta?”
-
-### Campo del Decision Record
+Il blocco operativo è:
 
 ```text
 critical assumptions:
@@ -293,16 +88,7 @@ ranking robust?: yes/no/partly
 which new information could change ranking?:
 ```
 
-### Regola operativa
+> **Una decisione robusta non è quella che massimizza il caso centrale. È quella di cui comprendiamo le condizioni di successo, le condizioni di fallimento e la distanza dal punto in cui dovremmo scegliere diversamente.**
 
-Prima di dichiarare robusta una raccomandazione:
-
-1. identifica le 3–5 assunzioni che governano la scelta;
-2. trova gli switching values;
-3. costruisci scenari coerenti, non semplici percentuali uniformi;
-4. cerca rischi correlati;
-5. elimina opzioni dominate;
-6. stressa il downside rilevante;
-7. chiedi se nuova informazione plausibile potrebbe cambiare il ranking.
-
-> **Una decisione robusta non è quella che massimizza il caso centrale. È quella di cui comprendiamo chiaramente le condizioni di successo, le condizioni di fallimento e la distanza dal punto in cui dovremmo scegliere diversamente.**
+[^green-book-sensitivity]: HM Treasury, *The Green Book 2026*, https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2026
+[^nasa-robustness]: NASA, *6.8 Decision Analysis*, https://www.nasa.gov/reference/6-8-decision-analysis/
