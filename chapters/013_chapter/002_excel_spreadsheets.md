@@ -1,165 +1,50 @@
 ## 13.1 Spreadsheet: eccellenti per pensare, pericolosi come infrastruttura invisibile
 
-Un foglio di calcolo è uno degli strumenti più potenti dell'analista perché combina in un'unica superficie:
+Un foglio di calcolo combina dati, formule, scenari, controlli manuali, pivot, grafici e annotazioni nella stessa superficie. È difficile da battere quando il lavoro richiede interazione immediata con stakeholder e modifica rapida delle ipotesi. La stessa flessibilità, però, permette a un workbook di attraversare senza rumore un confine importante: da strumento per capire un problema a **sistema operativo critico che nessuno ha progettato come sistema**.
 
-- dati;
-- formule;
-- scenari;
-- controlli manuali;
-- tabelle pivot;
-- grafici;
-- annotazioni;
-- interazione immediata con stakeholder.
+La domanda quindi non è “Excel sì o no?”. È: **quale responsabilità stiamo affidando al foglio e per quanto tempo quella responsabilità resta proporzionata?**
 
-Questa stessa flessibilità è anche il suo rischio.
+Immaginiamo una catena retail che, prima di un incontro con procurement, deve decidere in 90 minuti se modificare il prezzo di **240 SKU**. Esiste già un dataset curato con prezzo, costo, volume, margine, elasticità stimata e prezzo competitor. Il lavoro consiste nel confrontare tre scenari e discuterne le assunzioni con persone business. Un workbook controllato, con celle input separate, formule protette e reconciliation sul margine totale, è una soluzione trasparente e veloce. Costruire una pipeline produttiva prima del meeting non aumenterebbe il rigore: aumenterebbe soltanto il tempo prima dell'apprendimento.
 
-Un workbook può passare gradualmente da:
+Il limite tecnico non è il criterio principale. Microsoft documenta ancora un massimo di **1.048.576 righe e 16.384 colonne** per worksheet.[^excel-limits] Ma molti processi diventano inadatti al foglio molto prima. Il segnale non è “abbiamo finito le righe”: è che compaiono copie non controllate, formule sovrascritte, copy-paste ricorrenti, macro note a una sola persona, dati sensibili locali, più sorgenti collegate con logica fragile, KPI ufficiali e consumer downstream che trattano il file come un servizio.
 
-> strumento per capire un problema
+### Quando un tool locale diventa infrastruttura
 
-ad
+Il caso Public Health England del 2020 è utile proprio perché evita la morale semplicistica “Excel è pericoloso”. PHE comunicò ufficialmente che un problema tecnico nel processo di caricamento aveva escluso **15.841 casi positivi COVID-19** dalle statistiche giornaliere e ne aveva ritardato il trasferimento al contact tracing.[^phe-statement] Il reporting dell'epoca collegò il failure mode all'uso di file/template Excel e ai limiti del formato impiegato.[^guardian-phe-excel]
 
-> sistema operativo critico che nessuno ha progettato come sistema.
+La lezione è più generale: **un componente può essere perfettamente adeguato in una fase e diventare un single point of failure quando scala, frequenza e impatto aumentano senza una nuova design review**.
 
-La domanda non è quindi “Excel sì o no?”.
+Power Query può spostare questo confine perché rende acquisizione e trasformazioni più ripetibili rispetto al copy-paste. Anche Python in Excel, oggi disponibile nell'ecosistema Microsoft 365, amplia enormemente ciò che un workbook può eseguire.[^python-excel] Ma queste capacità non cambiano la domanda fondamentale. Un file con Python può restare un prototipo fragile; un foglio semplice può invece essere ben controllato e perfettamente proporzionato a una decisione una tantum. **Il nome del tool dice meno della responsabilità che gli abbiamo assegnato.**
 
-È:
+### Una scala di rischio, non di prestigio
 
-> **Quale responsabilità stiamo affidando al foglio?**
+Per rendere visibile il passaggio di responsabilità possiamo usare una piccola ladder:
 
-### Dove un foglio è difficile da battere
+| Livello | Ruolo del workbook | Obblighi crescenti |
+|---|---|---|
+| 1 — scratchpad | esplorazione temporanea | nessun consumer downstream |
+| 2 — decision workbook | scenario condiviso | input controllati, reconciliation, owner |
+| 3 — recurring analytical process | refresh ricorrente | QA, automazione, tracciabilità |
+| 4 — hidden production system | altri processi dipendono dal file | design review, recovery, ownership esplicita |
 
-È particolarmente efficace quando il lavoro è:
+Questa non è una scala in cui il livello 4 sia “migliore”. È una scala che indica quanto il costo di failure e di coordinamento sta crescendo. Un workbook dovrebbe poter restare al livello 2 per anni se il problema resta davvero quello. Il rischio nasce quando siamo al livello 4 e continuiamo a gestirlo mentalmente come se fosse ancora uno scratchpad.
 
-- esplorativo;
-- piccolo o moderato per scala;
-- fortemente interattivo;
-- dominato da scenari e assunzioni;
-- facilmente verificabile visivamente;
-- destinato a stakeholder che devono modificare input;
-- temporaneo o prototipale.
-
-### Caso simulato/composito — pricing in 90 minuti
-
-Una catena retail deve decidere se aumentare il prezzo di 240 SKU prima di un incontro con procurement.
-
-Ha già un dataset curato con:
-
-- prezzo;
-- costo;
-- volume;
-- margine;
-- elasticità stimata;
-- prezzo competitor.
-
-Il problema è confrontare rapidamente tre scenari e discutere le ipotesi con persone business.
-
-Un foglio controllato, con celle input separate, formule protette e reconciliation sul margine totale, può essere la scelta più trasparente.
-
-Costruire una pipeline produttiva prima del meeting non aumenterebbe il rigore della decisione. Ritarderebbe soltanto l'apprendimento.
-
-### Il problema non è il limite di righe: è non sapere di avere superato il contesto ideale
-
-Ogni strumento ha limiti tecnici e operativi.
-
-Microsoft documenta per un worksheet Excel un massimo di **1.048.576 righe e 16.384 colonne**.[^excel-limits]
-
-Ma un processo può diventare inadeguato molto prima di arrivare al limite tecnico.
-
-Segnali più importanti sono:
-
-- copie del file non controllate;
-- formule sovrascritte manualmente;
-- passaggi copy-paste ricorrenti;
-- macro conosciute da una sola persona;
-- dati sensibili locali;
-- più fonti collegate con logica fragile;
-- impossibilità di rieseguire il processo da zero;
-- KPI ufficiali che dipendono dal workbook;
-- utenti downstream che trattano l'output come servizio.
-
-### Caso reale documentato — Public Health England, 2020
-
-Nell'ottobre 2020 Public Health England comunicò che un problema tecnico nel processo di caricamento aveva escluso **15.841 casi positivi COVID-19** dalle statistiche giornaliere e ritardato il loro trasferimento al contact tracing.[^phe-statement]
-
-La dichiarazione ufficiale parla di un problema tecnico nel data-load process. La stampa tecnica e generalista dell'epoca ricondusse il failure mode all'uso di template Excel e ai limiti del formato impiegato.[^guardian-phe-excel]
-
-Il punto didattico non è “Excel è pericoloso”.
-
-È l'opposto:
-
-> **un componente adatto a un certo volume e a un certo rischio può diventare un single point of failure quando il processo cresce senza una nuova design review.**
-
-Il problema professionale è riconoscere il momento in cui una soluzione locale è diventata infrastruttura.
-
-### Power Query sposta il confine, non lo elimina
-
-Power Query rende trasformazioni e connessioni più ripetibili rispetto al copy-paste.
-
-Può essere ottimo per:
-
-- acquisire file ricorrenti;
-- applicare trasformazioni leggibili;
-- ridurre passaggi manuali;
-- aggiornare scenari e reporting leggero.
-
-Ma se la stessa logica deve alimentare 30 report e viene considerata una definizione aziendale, il problema non è più soltanto aggiornare bene il workbook.
-
-Probabilmente quella logica merita un layer condiviso.
-
-### Python in Excel: le categorie si stanno fondendo
-
-Microsoft supporta oggi l'esecuzione di Python in Excel e l'uso di librerie analitiche nell'ambiente del workbook.[^python-excel]
-
-Questa convergenza è utile perché mostra una cosa importante:
-
-**il nome del tool dice sempre meno sul livello di maturità del processo.**
-
-Un workbook può usare Python e restare un prototipo fragile.
-
-Un semplice foglio può invece essere ben controllato, documentato e proporzionato a una decisione una tantum.
-
-### Spreadsheet risk ladder
-
-Possiamo pensare a quattro livelli.
-
-**Livello 1 — scratchpad**  
-Calcoli temporanei, esplorazione, nessun consumer downstream.
-
-**Livello 2 — decision workbook**  
-Scenario o analisi condivisa, input controllati, reconciliation e owner chiaro.
-
-**Livello 3 — recurring analytical process**  
-Refresh ricorrente, più fonti, output distribuito. Servono automazione, QA e maggiore tracciabilità.
-
-**Livello 4 — hidden production system**  
-Altri processi dipendono dal file, impatto economico elevato, failure operativi. A questo punto serve una design review esplicita.
-
-### Campo del Tooling Decision Record
-
-Se scegliamo uno spreadsheet, il TDR dovrebbe dichiarare:
+Nel Tooling Decision Record, quindi, uno spreadsheet dovrebbe avere almeno una **exit condition**. Per esempio:
 
 ```text
-purpose:
-source data:
-expected max scale:
-manual steps:
-critical formulas / controls:
-owners:
-consumers:
-versioning / storage:
-sensitive data policy:
-reconciliation:
+purpose: scenario pricing mensile
+source data: dataset certificato
+owners: Finance + Pricing
+reconciliation: margine totale vs source
 exit condition:
+- refresh diventa settimanale
+- sorgenti > 3
+- output alimenta automaticamente altri processi
 ```
 
-Esempio di exit condition:
+A quel punto non abbiamo decretato che “Excel non va più bene”. Abbiamo dichiarato in anticipo **quale cambio di responsabilità ci obbliga a riesaminare la soluzione**.
 
-> Migrare la trasformazione in SQL quando il report diventa settimanale, supera tre sorgenti o viene utilizzato come input automatico da altri processi.
-
-### Regola operativa
-
-> **Un foglio di calcolo è eccellente come superficie di ragionamento. Quando diventa un'infrastruttura, deve essere gestito come tale oppure sostituito da qualcosa progettato per quella responsabilità.**
+> **Un foglio di calcolo è eccellente come superficie di ragionamento. Quando diventa infrastruttura, deve essere gestito come tale oppure sostituito da qualcosa progettato per quella responsabilità.**
 
 [^excel-limits]: Microsoft Support, *Excel specifications and limits*, https://support.microsoft.com/en-us/excel/excel-specifications-and-limits
 [^phe-statement]: Public Health England, *PHE statement on delayed reporting of COVID-19 cases*, https://www.gov.uk/government/news/phe-statement-on-delayed-reporting-of-covid-19-cases
