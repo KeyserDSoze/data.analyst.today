@@ -1,118 +1,43 @@
-## 15.10 Decision quality, execution quality e outcome quality: tre cose diverse
+## 15.10 Decision quality, execution quality e outcome quality: non imparare la lezione sbagliata
 
-Uno degli errori più costosi nell'apprendimento organizzativo è giudicare una decisione soltanto dal risultato finale.
+Uno degli errori più costosi nell'apprendimento organizzativo è giudicare una decisione soltanto dal risultato finale. Se l'esito è buono diciamo “avevamo ragione”; se è cattivo diciamo “la decisione era sbagliata”. In un mondo incerto questa equivalenza non regge.
 
-Se il risultato è buono:
+Dobbiamo separare tre oggetti.
 
-> “Avevamo ragione.”
+**Decision quality** riguarda la scelta ex ante: obiettivo, alternative, evidenza, assunzioni, incertezza, trade-off, downside, switching threshold, reversibilità e criteri di review erano ragionevoli dato ciò che sapevamo?
 
-Se il risultato è cattivo:
+**Execution quality** riguarda ciò che abbiamo fatto davvero: rollout, target population, budget, training, implementazione tecnica e guardrail hanno rispettato la decisione approvata?
 
-> “La decisione era sbagliata.”
+**Outcome quality** riguarda ciò che è successo nel mondo: effetto dell'azione, variabilità, competitor, macroeconomia, shock e altri eventi esterni.
 
-Ma in un mondo incerto questa equivalenza non regge.
-
-Dobbiamo distinguere almeno tre oggetti.
-
-### 1. Decision quality
-
-La scelta era ragionevole **date le informazioni disponibili al momento**?
-
-Guardiamo:
-
-- obiettivo;
-- alternative;
-- evidenza;
-- assunzioni;
-- uncertainty;
-- trade-off;
-- downside;
-- switching thresholds;
-- reversibilità;
-- criteri di review.
-
-### 2. Execution quality
-
-Abbiamo implementato davvero la decisione prevista?
-
-Esempi:
-
-- rollout corretto?
-- target population corretta?
-- budget allocato come deciso?
-- training completato?
-- guardrail osservati?
-- sistema tecnico funzionante?
-
-Una buona decisione può fallire perché l'esecuzione è diversa dal piano.
-
-### 3. Outcome quality
-
-Che cosa è successo nel mondo?
-
-Questo include:
-
-- effetto della decisione;
-- casualità/variabilità;
-- shock esterni;
-- comportamento di competitor;
-- cambi macro;
-- eventi non previsti.
-
-L'outcome è reale.
-
-Non è però una misura pura della qualità della decisione.
-
-### La matrice 2×2
+L'outcome è reale, ma non è una misura pura della qualità della decisione.
 
 | Decision process | Outcome | Lettura |
 |---|---|---|
-| forte | buono | scelta plausibilmente buona + esito favorevole |
-| forte | cattivo | possibile bad luck, execution issue o rischio già contemplato |
-| debole | buono | fortuna / outcome positivo non valida il processo |
-| debole | cattivo | risultato negativo e processo da correggere |
+| forte | buono | processo solido + esito favorevole |
+| forte | cattivo | possibile bad luck, execution issue o downside già contemplato |
+| debole | buono | fortuna; il risultato positivo non valida il processo |
+| debole | cattivo | outcome negativo e processo da correggere |
 
-La casella più pericolosa culturalmente è:
+La casella culturalmente più pericolosa è **processo debole + outcome buono**: tende a essere premiata e quindi replicata.
 
-> **processo debole + outcome buono**
+### La campagna che “ha funzionato”
 
-perché tende a essere premiata e replicata.
-
-### Caso simulato/composito — la campagna “che ha funzionato”
-
-Un e-commerce investe €600k in una campagna.
-
-La decisione nasce da un'analisi osservazionale:
+Un e-commerce investe €600k in una campagna. La decisione nasce da un'analisi osservazionale:
 
 ```text
 clienti esposti acquistano +35%
 ```
 
-Non vengono considerati:
+Non vengono considerati selection bias, business as usual, holdout, incrementalità o alternative. Dopo il lancio il sistema di attribuzione riporta €900k di revenue e l'iniziativa viene dichiarata un successo.
 
-- selection bias;
-- business as usual;
-- holdout;
-- incrementalità;
-- alternative.
+Tre mesi dopo un test controllato su una campagna simile mostra che gran parte di quella revenue sarebbe avvenuta comunque. Il primo progetto può perfino avere avuto un risultato netto positivo. Ma il **processo decisionale** era fragile perché confondeva attribuzione e incrementalità.
 
-Dopo il lancio il sistema di attribuzione riporta €900k di revenue.
+Se premiamo soltanto il risultato, insegniamo all'organizzazione a ripetere la fragilità.
 
-Outcome superficiale:
+### Una buona decisione può produrre un outcome negativo
 
-> “successo.”
-
-Tre mesi dopo un test controllato su una campagna simile mostra che gran parte di quella revenue sarebbe avvenuta comunque.
-
-Il primo progetto può perfino aver avuto un risultato netto positivo.
-
-Ma il **processo decisionale** era fragile: confondeva attribuzione e incrementalità.
-
-Se premiamo soltanto l'outcome, insegniamo all'organizzazione a ripetere la fragilità.
-
-### Una buona decisione può produrre un esito negativo
-
-Supponiamo due alternative:
+Consideriamo:
 
 ```text
 A:
@@ -123,107 +48,35 @@ B:
 100% → +€100k
 ```
 
-Se:
+Se l'organizzazione può assorbire il downside, le probabilità hanno una base difendibile e A è coerente con gli obiettivi, scegliere A può essere una buona decisione. Se poi si realizza il 20% negativo, abbiamo osservato un outcome che il Decision Record aveva già riconosciuto come possibile.
 
-- l'organizzazione può assorbire il downside;
-- le probabilità hanno una base ragionevole;
-- A è coerente con gli obiettivi;
+Dire “avremmo dovuto scegliere B” soltanto dopo aver visto l'esito è hindsight bias.
 
-scegliere A può essere una buona decisione.
+### Tornare al timestamp epistemico
 
-Se poi si realizza il 20% negativo, abbiamo osservato un outcome previsto come possibile.
+Per valutare decision quality dobbiamo recuperare il punto di vista ex ante: cosa sapevamo, quali range avevamo dichiarato, quali alternative erano davvero disponibili, quali rischi avevamo previsto e quale informazione era realisticamente ottenibile prima della deadline.
 
-Non possiamo dire automaticamente:
+NASA descrive la Decision Analysis come caratterizzazione delle alternative rispetto alle priorità del decision-maker **dato lo stato di conoscenza disponibile**, includendo assunzioni, limitazioni, incertezza e robustezza del ranking.[^nasa-quality] Questo è il criterio corretto anche per una review aziendale.
 
-> “Avremmo dovuto scegliere B.”
+Tuttavia “non potevamo saperlo” non deve diventare una scusa universale. Dobbiamo distinguere ciò che era davvero imprevedibile da ciò che non abbiamo investigato, abbiamo ignorato o abbiamo scelto di non vedere. Se un team non segmenta renewal risk, ignora customer research disponibile, salta un pilot e non definisce churn guardrail, una parte dell'incertezza non era inevitabile: era gestibile.
 
-Quello sarebbe hindsight bias.
+### Prima di giudicare l'outcome, ricostruire la catena
 
-### Ex ante evaluation: congelare il punto di vista
-
-Per valutare decision quality dobbiamo tornare al **timestamp epistemico** del Decision Record.
-
-Domande:
-
-- cosa sapevamo allora?
-- quale range avevamo dichiarato?
-- quali alternative erano realmente disponibili?
-- quali rischi avevamo previsto?
-- quale informazione non era realisticamente ottenibile?
-- quale switching condition avevamo fissato?
-
-Non possiamo usare informazioni emerse dopo per fingere che fossero ovvie prima.
-
-### Ma “non potevamo saperlo” non deve diventare una scusa universale
-
-Dobbiamo distinguere:
-
-**Unknowable / genuinely unforeseeable**
-
-da
-
-**Not investigated / ignored / inconvenient**.
-
-Esempio:
-
-> “Non potevamo prevedere che il cliente non avrebbe accettato il nuovo prezzo.”
-
-Forse.
-
-Ma se:
-
-- non abbiamo segmentato renewal risk;
-- ignorato survey esistenti;
-- saltato un pilot;
-- non definito churn guardrail;
-
-allora una parte dell'incertezza era gestibile.
-
-### NASA: decisione data lo stato di conoscenza
-
-NASA definisce la decision analysis come un framework per caratterizzare alternative rispetto alle priorità del decision-maker **dato lo stato di conoscenza disponibile**, documentando assunzioni, limitazioni, incertezza e robustezza.
-
-Fonte: https://www.nasa.gov/reference/6-8-decision-analysis/
-
-Questo rende esplicito il criterio corretto:
-
-> la qualità del processo si valuta rispetto all'informazione e all'incertezza che esistevano al momento della scelta.
-
-### Outcome review: attribuzione prima del giudizio
-
-Anche quando il risultato è cattivo, chiediamo:
+Quando il risultato sorprende, chiediamo:
 
 ```text
-1. decision process issue?
-2. execution issue?
-3. external/context shock?
-4. expected downside realized?
-5. measurement issue?
+decision process issue?
+execution issue?
+external/context shock?
+expected downside realized?
+measurement issue?
 ```
 
-Esempio:
+Un A/B test può supportare un rollout e la revenue totale dell'azienda può comunque scendere nel mese successivo per stagionalità, competitor shock, traffico aggregato in calo o un'implementazione differente da quella testata. Serve ricostruire il nesso tra decisione e outcome prima di attribuire successo o fallimento.
 
-un A/B test supporta rollout.
+### Misurare la calibrazione dell'organizzazione nel tempo
 
-Poi revenue totale scende.
-
-Non significa che il trattamento abbia fallito.
-
-Potrebbe esserci:
-
-- stagionalità;
-- competitor shock;
-- traffico totale in calo;
-- implementazione diversa dall'esperimento;
-- outcome aggregato che nasconde uplift relativo.
-
-Serve ricostruire il nesso tra decisione e outcome.
-
-### Forecast calibration dell'organizzazione
-
-Nel tempo possiamo misurare la qualità delle nostre aspettative.
-
-Per Decision Record comparabili registriamo:
+I Decision Record creano una base per valutare anche la qualità delle aspettative. Per decisioni comparabili registriamo:
 
 ```text
 expected range
@@ -232,32 +85,9 @@ which scenario occurred
 which assumption missed
 ```
 
-Dopo molti casi possiamo chiedere:
+Dopo molti casi possiamo chiedere se i range contengono abbastanza spesso gli esiti, se sottostimiamo sistematicamente i tempi, se siamo troppo ottimisti sul downside commerciale o se alcune categorie di decisione sono meglio calibrate di altre.
 
-- i nostri range contengono abbastanza spesso gli esiti?
-- siamo sistematicamente ottimisti sui tempi?
-- sottostimiamo downside commerciali?
-- quali team hanno forecast meglio calibrati?
-
-La decision quality diventa una capacità misurabile nel tempo.
-
-### Non premiare la certezza retrospettiva
-
-Una cultura sana non premia chi dice:
-
-> “Lo sapevo.”
-
-senza evidenza che quella previsione fosse stata registrata prima.
-
-Il Decision Record rende più facile distinguere:
-
-- forecast reale;
-- caveat reale;
-- opinione ex post.
-
-### Decision review scorecard
-
-Dopo l'esito possiamo valutare separatamente:
+La review può usare una scorecard senza ridurla a un singolo voto:
 
 | Dimensione | Valutazione |
 |---|---|
@@ -272,19 +102,8 @@ Dopo l'esito possiamo valutare separatamente:
 | outcome | |
 | learning captured | |
 
-Non comprimiamo necessariamente tutto in un voto unico.
-
-La tabella serve a capire **dove migliorare**.
-
-### Regola operativa
-
-Quando un outcome sorprende:
-
-1. recupera il Decision Record originale;
-2. non aggiornare retroattivamente le assunzioni;
-3. separa processo, execution e outcome;
-4. identifica ciò che era prevedibile allora;
-5. aggiorna prior, range, processi e guardrail per decisioni future;
-6. non confondere bad luck con bad process né good luck con good process.
+La funzione della tabella è diagnosticare **dove migliorare il sistema decisionale**, non premiare chi ha avuto fortuna.
 
 > **Una decisione di qualità non garantisce un buon risultato. Garantisce che abbiamo scelto in modo difendibile dato ciò che potevamo sapere, e che l'esito — favorevole o no — diventa informazione per decidere meglio la volta successiva.**
+
+[^nasa-quality]: NASA, *6.8 Decision Analysis*, https://www.nasa.gov/reference/6-8-decision-analysis/
