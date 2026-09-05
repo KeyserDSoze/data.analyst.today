@@ -1,30 +1,26 @@
 ## 15.11 Decision Quality Gate: siamo pronti a scegliere?
 
-Il Decision Record contiene il ragionamento completo.
+Il Decision Record conserva il ragionamento completo. Prima della scelta finale serve però un artefatto più rapido che risponda a una domanda semplice:
 
-Prima della scelta finale serve però un gate più rapido:
+> **Abbiamo abbastanza struttura per decidere senza nascondere un buco essenziale dietro un numero preciso?**
 
-> **abbiamo abbastanza struttura per prendere questa decisione senza nascondere un buco essenziale dietro un numero preciso?**
-
-Il **Decision Quality Gate** non certifica che l'esito sarà buono.
-
-Certifica che il processo ha affrontato le domande necessarie per il livello di rischio della scelta.
+Il **Decision Quality Gate** non certifica che l'esito sarà buono. Verifica che il processo abbia affrontato, con profondità proporzionata al rischio, le condizioni necessarie per assumere consapevolmente il trade-off.
 
 ### 1. Decisione e ownership
 
-- La scelta richiesta è formulata come confronto tra alternative?
+- La scelta è formulata come confronto tra alternative?
 - Esiste un decision owner nominato?
 - La deadline è chiara?
-- Abbiamo distinto recommendation dell'analista da decisione del business owner?
+- Recommendation dell'analista e decisione del business owner sono distinte?
 
-Se non sappiamo **chi sceglie cosa entro quando**, il lavoro non è ancora un problema decisionale ben formato.
+Se non sappiamo **chi sceglie cosa entro quando**, il problema non è ancora decisionale.
 
-### 2. Obiettivo e vincoli
+### 2. Obiettivo, vincoli e guardrail
 
 - Qual è l'obiettivo primario?
 - Quali obiettivi secondari contano?
 - Quali vincoli sono non negoziabili?
-- Abbiamo definito guardrail che non vogliamo sacrificare per migliorare il KPI principale?
+- Quali guardrail non vogliamo sacrificare per migliorare il KPI principale?
 
 Un'opzione che viola un vincolo fondamentale non deve sopravvivere grazie a un expected value elevato.
 
@@ -33,27 +29,27 @@ Un'opzione che viola un vincolo fondamentale non deve sopravvivere grazie a un e
 - `Business as usual / do nothing` è esplicito?
 - Esistono almeno due opzioni realmente differenti?
 - Abbiamo considerato una soluzione più piccola o reversibile?
-- Le opzioni escluse hanno una motivazione documentata?
-- Esistono alternative dominate che possiamo eliminare?
+- Le opzioni escluse hanno una motivazione?
+- Esistono opzioni dominate che possiamo eliminare?
 
 Se abbiamo analizzato soltanto la soluzione preferita, non abbiamo ancora fatto option appraisal.
 
 ### 4. Evidenza
 
 - Quali finding sono materialmente rilevanti?
-- Qual è il claim level di ciascuna evidenza critica?
-- Le metriche e popolazioni sono affidabili?
-- Quale deliverable precedente supporta il claim: Uncertainty Brief, Causal Identification Brief, Predictive Decision Card, ecc.?
+- Qual è il claim level dell'evidenza critica?
+- Metriche, popolazioni e timestamp sono affidabili?
+- Quale deliverable precedente qualifica il claim: Uncertainty Brief, Causal Identification Brief, Predictive Decision Card, AI Analysis Control Sheet, ecc.?
 - Abbiamo cercato evidenza contraria o spiegazioni alternative?
 
-### 5. Incertezza
+### 5. Incertezza e informazione
 
 - Quale incertezza domina il ranking?
 - È riducibile entro la deadline?
 - Quale informazione potrebbe cambiare scelta?
 - Quanto costa ottenerla?
 - Quanto costa aspettare?
-- Stiamo usando una probabilità difendibile o un decimale decorativo?
+- Le probabilità hanno una base difendibile o sono decimali decorativi?
 
 ### 6. Value e downside
 
@@ -67,9 +63,9 @@ Se abbiamo analizzato soltanto la soluzione preferita, non abbiamo ancora fatto 
 ### 7. Reversibilità e optionality
 
 - Quanto è difficile tornare indietro?
-- Possiamo fare pilot, tranche o rollout graduale?
+- Possiamo usare pilot, tranche o rollout graduale?
 - Una alternativa preserva più opzioni future?
-- Abbiamo un rollback realistico?
+- Esiste un rollback realistico?
 - Qual è il blast radius della scelta sbagliata?
 
 ### 8. Sensitivity e switching
@@ -77,33 +73,31 @@ Se abbiamo analizzato soltanto la soluzione preferita, non abbiamo ancora fatto 
 - Quali 3–5 assunzioni governano la scelta?
 - Conosciamo i principali switching values?
 - Quanto siamo lontani dal punto di indifferenza?
-- Gli scenari sono coerenti o soltanto “±20%”?
+- Gli scenari rappresentano mondi coerenti o soltanto “±20%”?
 - Rischi correlati potrebbero muoversi insieme?
 - Il ranking resta robusto in futuri plausibili?
 
 ### 9. Pre-mortem
 
 - Se tra sei mesi la decisione fosse un fallimento, quali sarebbero le cause plausibili?
-- Quali sono rilevabili presto?
-- Quali guardrail o leading indicator aggiungiamo?
+- Quali possiamo rilevare presto?
+- Quali leading indicator o guardrail aggiungiamo?
 - Chi ha costruito il miglior caso contro l'opzione preferita?
 
 ### 10. Recommendation
 
-La recommendation deve poter completare questa frase:
+La recommendation deve completare entrambe le frasi:
 
-> **“Preferiamo X a Y, Z e business as usual perché…”**
+> **Preferiamo X a Y, Z e business as usual perché...**
 
-E anche questa:
+> **Cambieremmo idea se...**
 
-> **“Cambieremmo idea se…”**
-
-Se la seconda frase manca, spesso le assunzioni critiche sono ancora implicite.
+Se la seconda manca, le assunzioni decisive sono probabilmente ancora implicite.
 
 ### 11. Execution
 
 - Qual è il primo passo concreto?
-- Quali condizioni di stop/escalation esistono?
+- Quali condizioni di stop, rollback o escalation esistono?
 - Chi può modificare il piano?
 - Come sapremo se l'esecuzione diverge dalla decisione approvata?
 
@@ -111,53 +105,27 @@ Se la seconda frase manca, spesso le assunzioni critiche sono ancora implicite.
 
 - Quale outcome misuriamo?
 - Qual è la baseline?
-- Quale range/scenario avevamo previsto?
+- Quale range o scenario avevamo previsto?
 - Quando avviene la review?
 - Quali informazioni dobbiamo registrare per distinguere decision, execution e outcome quality?
 
-### Quattro stati del gate
+## I quattro esiti del gate
 
-Possiamo usare una classificazione semplice.
+Il gate deve poter produrre esiti diversi da “go”.
 
-**DECIDE**
+**DECIDE** — le alternative sono abbastanza caratterizzate e l'incertezza residua è compatibile con rischio e reversibilità.
 
-Le alternative sono abbastanza caratterizzate e l'incertezza residua è compatibile con il rischio.
+**PILOT / STAGE** — l'opzione è promettente, ma il valore dell'informazione e la possibilità di limitare il commitment rendono preferibile un impegno parziale.
 
-**PILOT / STAGE**
+**WAIT FOR X** — una informazione specifica, ottenibile entro il tempo utile, potrebbe cambiare materialmente il ranking. Il record deve indicare `X`, soglia e review date.
 
-L'opzione sembra promettente ma il valore dell'informazione e la reversibilità rendono preferibile un impegno parziale.
+**NO ACTION / ABANDON** — business as usual domina oppure nessuna opzione supera costi, rischi e opportunity cost.
 
-**WAIT FOR X**
+La formalità deve essere proporzionata. Una modifica reversibile da €2.000 non richiede la stessa profondità di pricing globale, acquisizione aziendale, capex pluriennale o policy con impatto su persone. Le domande fondamentali, però, restano le stesse.
 
-Una informazione specifica, ottenibile entro il tempo utile, potrebbe cambiare materialmente il ranking.
+Prima della decisione chiediamo infine:
 
-Il record deve indicare `X`, soglia e review date.
-
-**NO ACTION / ABANDON**
-
-Business as usual domina oppure nessuna opzione supera costi, rischi e opportunity cost.
-
-Questi quattro esiti impediscono alla checklist di diventare una macchina che produce sempre “go”.
-
-### Il gate deve essere proporzionato
-
-Una modifica reversibile da €2.000 non richiede lo stesso livello di formalità di:
-
-- acquisizione aziendale;
-- pricing globale;
-- chiusura di un mercato;
-- policy su persone;
-- capex pluriennale.
-
-Ma le domande fondamentali restano le stesse.
-
-Cambia la profondità con cui le documentiamo.
-
-### La domanda finale
-
-Prima di premere “send” chiediamoci:
-
-> **Se il decision owner seguisse esattamente questa raccomandazione e l'esito fosse negativo, potremmo comunque difendere il processo usando l'evidenza, le alternative e i trade-off disponibili oggi?**
+> **Se il decision owner seguisse esattamente questa recommendation e l'esito fosse negativo, potremmo comunque difendere il processo usando l'evidenza, le alternative e i trade-off disponibili oggi?**
 
 Se la risposta è no, manca ancora qualcosa nel Decision Record.
 
