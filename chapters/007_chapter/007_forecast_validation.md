@@ -1,158 +1,43 @@
 ## 7.6 Validare un forecast: ricostruire ciò che avremmo saputo davvero
 
-Un forecast va valutato su **previsioni genuine**, non sulla capacità del modello di spiegare dati che ha già visto.
+Una previsione va valutata su **forecast genuini**, non sulla capacità del modello di spiegare dati che ha già visto. In una serie temporale questo requisito è più severo del semplice “train prima, test dopo”: per ogni origine di forecast dobbiamo ricostruire quali informazioni sarebbero state realmente conoscibili in quel momento.
 
-Hyndman e Athanasopoulos sottolineano che l'accuracy deve essere misurata su dati non usati per il fitting e descrivono la time-series cross-validation come una sequenza di origini di forecast che avanzano nel tempo.[^fpp-tscv]
+Hyndman e Athanasopoulos descrivono la time-series cross-validation proprio come una sequenza di origini che avanzano nel tempo, usando ogni volta soltanto osservazioni precedenti al punto previsto.[^fpp-tscv] Questa logica è il cuore del backtest professionale.
 
-La regola è semplice:
-
-> **in ogni backtest il modello può usare soltanto informazioni che sarebbero state disponibili al forecast origin.**
-
-Questa è una condizione più forte del semplice “train prima, test dopo”.
-
-### Split temporale minimo
-
-Un primo schema può essere:
-
-```text
-train: gennaio 2023 – dicembre 2025
-test: gennaio 2026 – giugno 2026
-```
-
-È già migliore di uno split casuale, perché il futuro non entra nel training.
-
-Ma un solo periodo di test può essere fortunato o sfortunato.
-
-### Rolling-origin evaluation
-
-Un backtest più informativo può simulare molte previsioni storiche:
-
-```text
-origine 1: train fino a gennaio → forecast febbraio
-origine 2: train fino a febbraio → forecast marzo
-origine 3: train fino a marzo → forecast aprile
-...
-```
-
-Se la decisione richiede un orizzonte di quattro settimane, ogni origine dovrebbe produrre e valutare anche quel vero orizzonte, non soltanto `h=1`.
-
-Hyndman e Athanasopoulos mostrano esplicitamente che la cross-validation temporale può essere costruita per forecast multi-step e che l'errore tende a cambiare con l'orizzonte.[^fpp-tscv]
+Uno split minimo può separare, per esempio, gennaio 2023–dicembre 2025 per il training e gennaio–giugno 2026 per il test. È già migliore di uno split casuale, perché impedisce al futuro di entrare direttamente nel training. Ma un singolo periodo può essere eccezionalmente facile o difficile. Per questo una **rolling-origin evaluation** simula molte decisioni storiche: train fino a gennaio e forecast febbraio, poi train fino a febbraio e forecast marzo, e così via. Se la decisione reale richiede quattro settimane di anticipo, ogni origine deve valutare davvero `h=4`, non soltanto il passo successivo.
 
 ### Caso simulato/composito — Il forecast perfetto che conosceva la promozione finale
 
-Un retailer vuole prevedere le vendite giornaliere.
+Un retailer prevede le vendite giornaliere usando anche `promotion_discount`. Nel dataset storico quella colonna contiene lo sconto **effettivamente applicato** in ogni giornata. Il backtest è eccellente; in produzione la performance crolla.
 
-Tra le feature compare `promotion_discount`.
+Il problema non è l'algoritmo. Quando il forecast settimanale veniva emesso, molte promozioni erano ancora modificabili e lo sconto finale non era noto. Il test storico aveva fornito al modello una versione dell'informazione che apparteneva al futuro.
 
-Nel dataset storico il valore rappresenta lo sconto **effettivamente applicato** in ogni giornata. Il modello ottiene un MAE eccezionale.
+Questo porta al concetto operativo più importante della sezione: **as-of data**. Per una previsione emessa il 10 marzo alle 8:00 dobbiamo sapere quale versione di prezzi, promozioni, stock, meteo, budget media, pipeline commerciale, ordini e dati finanziari fosse effettivamente disponibile il 10 marzo alle 8:00.
 
-Quando viene messo in produzione, la performance crolla.
+La data nominale di una colonna non basta. Possiamo introdurre leakage con aggregazioni che includono finestre future, normalizzazione calcolata sull'intero dataset, target encoding costruito con periodi successivi, stock finale della giornata usato in un forecast mattutino, status di consegna successivi al momento previsto o calendari promozionali “finali” che allora erano ancora incompleti.
 
-Il motivo emerge ricostruendo il processo reale: al momento in cui il forecast settimanale veniva emesso, molte promozioni erano ancora modificabili e il valore finale dello sconto non era noto.
+### Il passato può essere revisionato
 
-Il backtest aveva utilizzato una versione dell'informazione che apparteneva al futuro.
+Alcune metriche cambiano dopo la prima pubblicazione. Revenue e resi possono essere ricostruiti per giorni; attribution marketing può essere aggiornata a posteriori; indicatori macro vengono revisionati; un ordine inizialmente valido può essere cancellato più tardi. Se il modello operativo vedeva la prima versione ma il backtest usa il dato finale corretto, la validazione diventa troppo ottimista.
 
-### Il concetto chiave: “as-of data”
+Quando la differenza è materiale, dobbiamo conservare o ricostruire i **data vintages**. Il backtest non deve riprodurre il passato come lo conosciamo oggi; deve riprodurlo come avremmo potuto conoscerlo allora.
 
-Per una previsione emessa il 10 marzo alle 8:00, chiediamo:
+### Testare condizioni diverse, non soltanto la media
 
-> quale versione di ogni informazione era realmente conoscibile il 10 marzo alle 8:00?
+Un backtest credibile dovrebbe attraversare settimane normali, festività, promozioni, picchi, cali, crescita, vincoli di capacità ed eventuali cambi di regime. Non perché il passato possa contenere ogni futuro possibile, ma perché un modello validato solo nelle finestre facili non merita l'etichetta di robusto.
 
-Questo vale per:
-
-- prezzi;
-- promozioni;
-- disponibilità stock;
-- meteo;
-- budget media;
-- pipeline commerciale;
-- ordini non ancora finalizzati;
-- dati finanziari successivamente revisionati.
-
-Un dataset storico “finale” può contenere correzioni che il modello operativo non avrebbe posseduto in tempo reale.
-
-### Leakage temporale oltre le feature ovvie
-
-Fonti frequenti:
-
-- aggregazioni calcolate usando finestre che includono il futuro;
-- normalizzazione con media/deviazione standard dell'intero dataset;
-- target encoding costruito con periodi successivi;
-- `order_status = delivered` usato per prevedere qualcosa avvenuto prima della consegna;
-- stock finale della giornata usato in un forecast emesso al mattino;
-- dati revisionati retroattivamente;
-- calendario promozionale effettivo invece di quello pianificato disponibile all'epoca.
-
-La domanda “questa colonna ha data precedente al target?” non è sufficiente. Conta **quando il valore era conoscibile**.
-
-### Vintage data e revisioni
-
-Alcune metriche cambiano dopo la prima pubblicazione.
-
-Esempi:
-
-- revenue con resi registrati dopo giorni;
-- PIL e indicatori macro revisionati;
-- attribution marketing ricostruita a posteriori;
-- ordini cancellati dopo la chiusura giornaliera.
-
-Se il modello in produzione vede la prima versione ma il backtest usa la versione finale corretta, la validazione può essere troppo ottimista.
-
-Quando il problema è materialmente importante, serve conservare o ricostruire i **data vintages**.
-
-### Backtest rappresentativo della realtà operativa
-
-Un buon backtest dovrebbe attraversare condizioni diverse:
-
-- settimane normali;
-- festività;
-- promozioni;
-- picchi;
-- cali;
-- periodi di crescita;
-- periodi di capacità limitata;
-- eventuali cambi di regime rilevanti.
-
-Non per garantire che il passato contenga ogni futuro possibile, ma per evitare di dichiarare robusto un modello testato soltanto nella zona più facile della storia.
-
-### Performance media e worst-case
-
-Due modelli:
+Consideriamo due modelli:
 
 | Modello | MAE medio | Peggior settimana |
 | --- | ---: | ---: |
 | A | 6,2% | 11,4% |
 | B | 6,0% | 28,7% |
 
-B vince di poco in media e perde drasticamente nel worst-case.
+B vince leggermente in media e fallisce molto peggio nel worst-case. Se il forecast governa capacità critica, A può essere la scelta migliore. La validazione deve quindi guardare anche quantili dell'errore, bias, horizon, segmenti materiali e periodi in cui sbagliare costa di più.
 
-Se la previsione governa capacità critica, A potrebbe essere preferibile.
+La baseline deve essere valutata **sugli stessi forecast origin e sugli stessi futuri** del modello. Non ha senso confrontare un modello su un periodo recente difficile con una regola semplice su un altro pezzo di storia. La domanda corretta è: *nelle medesime condizioni e con la stessa informazione disponibile, la soluzione complessa avrebbe prodotto una decisione migliore?*
 
-Una validazione decisionale guarda quindi anche:
-
-- quantili dell'errore;
-- periodi critici;
-- bias;
-- segmento;
-- horizon;
-- costo degli errori estremi.
-
-### Il backtest deve includere la baseline
-
-Ogni origine temporale dovrebbe valutare **modello e baseline sullo stesso futuro**.
-
-Non ha senso confrontare:
-
-- modello su un periodo recente difficile;
-- baseline su un periodo storico diverso.
-
-La domanda è:
-
-> in quelle stesse condizioni, con la stessa informazione disponibile, il modello avrebbe prodotto una decisione migliore della regola semplice?
-
-### Scheda di validazione
-
-Nel Temporal Decision Brief registriamo:
+Nel Temporal Decision Brief la scheda di validazione resta un artefatto utile:
 
 ```text
 Forecast origin simulati:
@@ -170,5 +55,7 @@ Stabilità per segmento e horizon:
 ```
 
 > **Un backtest credibile non ricostruisce il passato come lo conosciamo oggi. Ricostruisce il passato come avremmo potuto conoscerlo allora.**
+
+Una volta ottenuti errori realmente fuori campione possiamo finalmente discutere di “accuracy”. Ma anche lì rimane una domanda: **quale tipo di errore conta davvero per il business?**
 
 [^fpp-tscv]: Hyndman, R.J. & Athanasopoulos, G., *Forecasting: Principles and Practice*, 3rd ed., “Time series cross-validation”, https://otexts.com/fpp3/tscv.html
