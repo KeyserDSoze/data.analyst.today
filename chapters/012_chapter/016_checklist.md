@@ -1,18 +1,8 @@
 ## 12.15 Data Flow Architecture Map: leggere il percorso del dato end-to-end
 
-Il deliverable di questo capitolo è una **Data Flow Architecture Map**.
+Il deliverable del capitolo è la **Data Flow Architecture Map**. Non deve descrivere ogni servizio cloud, subnet o dettaglio infrastrutturale. Deve permettere a una persona che non ha costruito la pipeline di capire abbastanza bene il percorso del dato da sapere quale asset interrogare, quale freshness aspettarsi, dove cercare un failure, chi è owner e come il sistema si comporta durante cambiamenti e incidenti.
 
-Non deve contenere ogni servizio cloud, subnet o dettaglio infrastrutturale.
-
-Deve permettere a un Data Analyst di capire abbastanza bene il percorso del dato da sapere:
-
-- dove cercare un failure;
-- quale freshness aspettarsi;
-- quale layer interrogare;
-- chi è owner;
-- cosa succede quando qualcosa cambia o si rompe.
-
-### La struttura base
+La struttura base rimane:
 
 ```text
 SOURCE
@@ -30,114 +20,9 @@ SERVE
 CONSUME
 ```
 
-Per ogni nodo o passaggio annotiamo le proprietà seguenti.
+### 1. Decisione e consumer
 
-### 1. Source
-
-```text
-system/entity:
-system of record:
-operational or analytical workload:
-history available:
-source owner:
-sensitivity:
-```
-
-Domande:
-
-- dove nasce il fenomeno?
-- il source viene aggiornato o sovrascritto?
-- possiamo interrogare direttamente senza impattare operations?
-
-### 2. Capture
-
-```text
-mode: full / incremental / CDC / event
-capture frequency:
-initial snapshot:
-insert/update/delete support:
-source-side failure behavior:
-```
-
-Domande:
-
-- come sappiamo che qualcosa è cambiato?
-- catturiamo delete?
-- esiste un bootstrap iniziale?
-
-### 3. Transport
-
-```text
-batch / file / queue / stream:
-expected lag:
-ordering guarantee:
-delivery semantics:
-retry/replay:
-retention:
-```
-
-Domande:
-
-- gli eventi possono duplicarsi?
-- possono arrivare fuori ordine?
-- quanto a lungo possiamo rigiocarli?
-
-### 4. Storage
-
-```text
-raw/source-aligned location:
-curated location:
-retention:
-partitioning/layout:
-schema evolution policy:
-last known good state:
-```
-
-Domande:
-
-- quale livello preserva la sorgente?
-- possiamo ricostruire i layer downstream?
-- qual è lo stato del dato in ciascun layer?
-
-### 5. Transform
-
-Qui richiamiamo l'**Analytical Data Contract** del Capitolo 11.
-
-```text
-model:
-input/output grain:
-key transformations:
-quality gates:
-update semantics:
-version:
-owner:
-```
-
-Il Capitolo 12 aggiunge soprattutto:
-
-- quando la trasformazione può partire;
-- da quali dependency dipende;
-- cosa succede se fallisce;
-- come viene riprocessata.
-
-### 6. Serve
-
-```text
-serving interface:
-warehouse/mart/semantic/API:
-certification state:
-refresh/freshness:
-availability expectation:
-degraded behavior:
-```
-
-Domande:
-
-- qual è il punto consigliato per il consumer?
-- cosa vede se il refresh odierno fallisce?
-- può distinguere READY da STALE?
-
-### 7. Consume
+La mappa dovrebbe partire dal fondo, non dalla tecnologia.
 
 ```text
 consumer:
@@ -148,79 +33,118 @@ required completeness:
 downstream action:
 ```
 
-Questo è il punto da cui dovrebbero derivare gli SLO.
+Sono queste proprietà a giustificare SLO, latenza e recovery del percorso.
 
-L'architettura esiste per servire un consumer reale, non il contrario.
-
-### 8. Contract boundary
-
-Per ogni producer-consumer interface:
+### 2. Source e capture
 
 ```text
-schema/version:
-semantic expectations:
+system/entity:
+system of record:
+workload type:
+history available:
+source owner:
+
+capture mode: full / incremental / CDC / event
+capture frequency:
+initial snapshot:
+insert/update/delete support:
+```
+
+Domande chiave: dove nasce il fenomeno, come sappiamo che è cambiato, quale storia esiste e quanto carico analitico può sostenere il source?
+
+### 3. Transport e storage
+
+```text
+transport: batch / file / queue / stream
+expected lag:
+ordering guarantee:
+delivery/retry semantics:
+replay retention:
+
+raw/source-aligned location:
+curated location:
+retention:
+schema evolution policy:
+last known good state:
+```
+
+Qui dobbiamo sapere se gli eventi possono duplicarsi o arrivare fuori ordine, quanto a lungo possiamo rigiocarli e da quale stato possiamo ricostruire il downstream.
+
+### 4. Transform
+
+La semantica dettagliata rimane nell'**Analytical Data Contract** del Capitolo 11. La mappa aggiunge la dimensione operativa:
+
+```text
+model:
+input/output grain:
+quality gates:
+update semantics:
+version:
+upstream readiness:
+retry/backfill:
+publish boundary:
+owner:
+```
+
+### 5. Serve
+
+```text
+serving interface:
+warehouse / mart / semantic model / API:
+certification state:
+refresh/freshness:
+availability expectation:
+degraded behavior:
+```
+
+Il consumer deve sapere non soltanto dove leggere, ma anche che cosa vedrà quando il refresh odierno fallisce: `READY`, `DEGRADED`, `STALE`, `INCOMPLETE` o `FAILED`.
+
+### 6. Contract e lineage
+
+```text
+producer contract/version:
 compatibility policy:
 breaking-change process:
-```
 
-Distinguere sempre producer data contract e Analytical Data Contract.
-
-### 9. Reliability
-
-```text
-SLI:
-SLO:
-quality readiness gate:
-alert:
-error/degradation policy:
-```
-
-Non monitorare solo task success.
-
-Misurare ciò che il consumer percepisce:
-
-- freshness;
-- completeness;
-- availability;
-- reconciliation quando appropriata.
-
-### 10. Recovery
-
-```text
-last known good:
-retry policy:
-idempotency:
-checkpoint:
-replay source:
-backfill:
-RPO/RTO:
-recovery validation:
-```
-
-La recovery termina quando il dato è di nuovo affidabile, non quando il processo è semplicemente ripartito.
-
-### 11. Lineage
-
-```text
 upstream dependencies:
 downstream consumers:
 change history:
 impact-analysis capability:
 ```
 
-Prendi un KPI critico e verifica di poter attraversare la mappa in entrambe le direzioni.
+Prendi un KPI critico e verifica di poter attraversare la mappa in entrambe le direzioni: dal numero alle sorgenti e dal producer ai consumer impattati.
 
-### 12. Economics
+### 7. Reliability e recovery
+
+```text
+SLI:
+SLO:
+quality readiness gate:
+alert:
+degraded policy:
+
+last known good:
+idempotency:
+checkpoint:
+replay/backfill source:
+RPO/RTO:
+recovery validation:
+```
+
+La recovery termina quando il dato è nuovamente completo, fresco e riconciliato quanto richiesto, non quando il job è semplicemente tornato verde.
+
+### 8. Economics
 
 ```text
 major cost driver:
-refresh/latency cost:
+latency/reliability bought:
 utilization:
 complexity introduced:
+failure cost mitigated:
 scale trigger:
 ```
 
-La soluzione deve essere proporzionata al valore e al rischio della decisione.
+Ogni componente importante dovrebbe poter spiegare quale requisito soddisfa e quale segnale ci dirà che va semplificato o potenziato.
 
 ### Esempio compatto
 
@@ -267,20 +191,16 @@ Data Platform / Logistics Analytics
 
 ### Il test dei cinque minuti
 
-Dopo aver costruito la mappa, una persona nuova nel team dovrebbe riuscire in pochi minuti a rispondere a:
+Una persona nuova nel team dovrebbe riuscire rapidamente a rispondere a queste domande:
 
 1. da dove nasce il dato?
-2. quanto dovrebbe essere fresco?
+2. quanto dovrebbe essere fresco e completo?
 3. quale asset deve interrogare?
-4. quali upstream failure lo possono rendere inaffidabile?
-5. chi contattare quando succede?
+4. quali failure upstream possono renderlo inaffidabile?
+5. chi è owner?
 6. possiamo rigiocare o ricostruire la storia?
 7. quale consumer viene impattato da una modifica?
 
-Se queste risposte richiedono giorni di archeologia, la mappa non è ancora sufficiente.
+Se servono giorni di archeologia, la mappa non è ancora sufficiente.
 
-### La domanda finale
-
-> **Per questa decisione, sappiamo descrivere l'intero percorso del dato, le garanzie attese in ogni boundary e il comportamento del sistema quando una di quelle garanzie smette di essere vera?**
-
-> **Il Data Analyst non deve saper amministrare ogni componente della piattaforma. Deve saper leggere abbastanza bene il sistema da non confondere un numero disponibile con un numero pronto per essere creduto.**
+> **Il Data Analyst non deve amministrare ogni componente della piattaforma. Deve saper leggere abbastanza bene il sistema da non confondere un numero disponibile con un numero pronto per essere creduto.**
