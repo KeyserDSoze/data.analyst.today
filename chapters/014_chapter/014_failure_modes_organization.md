@@ -1,248 +1,77 @@
-## 14.13 Failure mode organizzativi: quando dieci workflow veloci condividono lo stesso errore
+## 14.13 Failure mode organizzativi: quando la velocità diventa dipendenza condivisa
 
-Il Capitolo 0 ha già fissato il principio di responsabilità: dire “l'ha fatto l'AI” non è una difesa professionale.
+Finché l'AI entra in una singola analisi, il failure sembra locale. Quando entra in decine di workflow, cambia la scala del problema: owner, metriche, semantic layer, modelli, permission boundary e policy diventano **dipendenze condivise**. Un errore non si replica soltanto più velocemente; può essere confermato da sistemi diversi che in realtà dipendono dalla stessa fonte.
 
-Qui allarghiamo il problema.
+La domanda quindi non è più soltanto "questo agente funziona?". È:
 
-Quando l'AI entra in molti processi, il rischio non è più soltanto il singolo output sbagliato.
+> **quale infrastruttura organizzativa stiamo creando mentre automatizziamo?**
 
-Diventano importanti i **failure mode organizzativi**:
+Possiamo leggere i principali failure mode come una stessa progressione:
 
-- ownership assente;
-- agenti non inventariati;
-- review simboliche;
-- dipendenze invisibili;
-- metriche locali ottimizzate contro l'obiettivo globale;
-- feedback loop;
-- deskilling;
-- failure correlati tra sistemi che usano lo stesso modello, corpus o semantic layer.
+| Failure mode | Che cosa diventa invisibile | Controllo necessario |
+|---|---|---|
+| agente orfano | ownership, credenziali, eval, stop policy | named owner + retirement path |
+| approval theater | review umana solo nominale | review capacity + evidence interface + override log |
+| failure correlato | dipendenza comune tra output apparentemente indipendenti | dependency map + independent evidence |
+| claim promotion | un downstream agent aumenta la certezza | claim metadata + gate tra step |
+| local metric optimization | KPI locale separato dal valore reale | objective + guardrails + downstream outcome |
+| feedback loop | dati futuri influenzati dalla policy | decision/exposure logging |
+| deskilling selettivo | perdita delle capacità di supervisione | skill fallback + review practice |
+| shadow AI | dati, output e incidenti fuori governance | approved path + inventory |
+| assenza di stop policy | loop di ricerca senza valore marginale | step/cost/information stop conditions |
+| nessun inventario | impossibilità di governare scala e dipendenze | Agent Registry |
 
-### Failure mode 1 — l'agente orfano
+### Ownership: un workflow che gira non è un workflow posseduto
 
-Un analyst costruisce un agente per produrre il weekly forecast.
+Un analyst può costruire un agente per il weekly forecast e cambiare team sei mesi dopo. Il workflow continua a funzionare, ma nessuno sa chi può cambiare le istruzioni, quale semantic model usa, quali credenziali possiede, chi riceve gli alert o quale eval autorizza una nuova versione. Tecnicamente non è rotto; operativamente è **orfano**.
 
-Dopo sei mesi cambia team.
+Per un workflow ricorrente l'owner non è metadata decorativo. È la persona o funzione che può fermarlo, approvare cambiamenti e accettarne la responsabilità.
 
-Il workflow continua a girare.
+### Human-in-the-loop può diventare approval theater
 
-Nessuno sa con certezza:
+Se un agente produce 80 raccomandazioni al giorno e una persona deve cliccare "Approve", dopo qualche settimana la review può ridursi a pochi secondi. Il controllo esiste formalmente ma non sostanzialmente. Un checkpoint umano funziona solo se il volume consente una review reale, l'interfaccia mostra evidenza e caveat, il reviewer sa cosa verificare e il sistema misura override e disagreement.
 
-- chi può cambiare le istruzioni;
-- quale semantic model usa;
-- quali credenziali possiede;
-- chi riceve gli alert;
-- quale eval autorizza una nuova versione;
-- come fermarlo.
+### Tre agenti non sono tre fonti indipendenti
 
-Il sistema non è necessariamente rotto.
+Finance report, anomaly agent ed executive summary possono sembrare percorsi separati, ma se tutti leggono la stessa misura `Revenue_Current`, una modifica semantica errata può propagarsi a tutti. La triangolazione diventa falsa. Ogni confronto tra output deve quindi considerare **l'indipendenza dei percorsi che li hanno prodotti**.
 
-È **senza owner**.
-
-Un workflow senza owner nominato dovrebbe essere considerato un rischio operativo, non un'automazione gratuita.
-
-Microsoft include l'accountability e la presenza di un owner tra i principi pratici per gli agenti responsabili.
-
-Fonte: https://learn.microsoft.com/en-us/agents/center-of-excellence/responsible-ai
-
-### Failure mode 2 — approval theater
-
-Un agente prepara 80 raccomandazioni al giorno e una persona deve cliccare “Approve”.
-
-Dopo alcune settimane la review media dura quattro secondi.
-
-Formalmente esiste human-in-the-loop.
-
-Sostanzialmente no.
-
-Un checkpoint umano è utile soltanto se:
-
-- il volume è compatibile con una review reale;
-- l'interfaccia mostra evidenza e caveat;
-- il reviewer sa cosa controllare;
-- esistono motivi pratici per rifiutare;
-- il sistema misura override e disagreement.
-
-Se l'umano non ha tempo, informazioni o autorità, il controllo è decorativo.
-
-### Failure mode 3 — failure correlato
-
-Tre agenti diversi producono:
-
-- report Finance;
-- anomaly detection;
-- executive summary.
-
-Sembrano tre fonti indipendenti.
-
-In realtà tutti interrogano la stessa misura `Revenue_Current` del semantic layer.
-
-Una modifica errata alla metrica entra in produzione.
-
-Tutti e tre confermano lo stesso numero sbagliato.
-
-La “triangolazione” è falsa perché le fonti condividono una dipendenza comune.
-
-Quando confrontiamo output dobbiamo quindi chiedere:
-
-> **quanto sono indipendenti i percorsi che li hanno prodotti?**
-
-### Failure mode 4 — l'agente downstream promuove la certezza
-
-Un anomaly agent scrive:
-
-> “pattern compatibile con possibile problema di pricing.”
-
-Un executive-summary agent lo trasforma in:
-
-> “Il calo è causato dal pricing.”
-
-Nessuno dei due ha inventato un numero.
-
-La failure avviene nella **trasformazione del livello di claim**.
-
-Per questo gli artefatti intermedi devono trasportare anche metadata come:
+Questo vale anche per il claim. Un anomaly agent può scrivere "pattern compatibile con possibile problema di pricing" e un executive-summary agent trasformarlo in "il pricing ha causato il calo". Il failure non avviene nel dato, ma nella promozione del livello di certezza. Gli artefatti intermedi devono quindi trasportare almeno metadata come:
 
 ```text
 claim_level: L2
+status: PROVISIONAL
+causal_identification: NO
 uncertainty: medium
-causal_identification: no
-status: provisional
 ```
 
-Il sistema downstream non può promuovere automaticamente quei campi.
+Il downstream non può aumentarli senza un nuovo gate.
 
-### Failure mode 5 — local metric optimization
+### Ottimizzare il KPI sbagliato
 
-Un agente Marketing viene valutato su ROAS.
+Un agente Marketing valutato soltanto sul ROAS può concentrare budget sui clienti già vicini all'acquisto. Il ROAS migliora mentre l'incremental revenue resta piatta. Lo stesso pattern compare quando premiamo "ticket chiusi", "automation rate" o "forecast error medio" senza guardrail. L'agente può fare esattamente ciò che gli abbiamo chiesto e produrre un risultato globalmente peggiore.
 
-Impara a concentrare budget sui clienti già vicinissimi all'acquisto.
+Per questo ogni objective deve essere legato a outcome downstream e guardrail. La funzione obiettivo è parte del contract, non un dettaglio di monitoring.
 
-Il ROAS sale.
+### Feedback loop: il modello cambia il dato che userà domani
 
-L'incremental revenue può restare piatta o scendere.
+Se uno score determina quali clienti ricevono un intervento, gli outcome futuri incorporano la policy del modello precedente. Retrainare senza registrare decisione ed exposure può confondere comportamento naturale, effetto dell'intervento e selection policy. L'AI può accelerare questo loop perché automatizza score, azione e aggiornamento. Il logging di **chi è stato esposto a quale policy e quando** diventa quindi parte della qualità del dato futuro.
 
-L'agente sta facendo esattamente ciò che gli abbiamo chiesto.
+### Preservare le competenze che servono per supervisionare
 
-Il problema è la funzione obiettivo.
+Non è necessario che ogni analyst continui a scrivere ogni join a memoria. Ma l'organizzazione deve conservare le capacità necessarie a riconoscere i failure che l'automazione può nascondere: grain e cardinalità, semantica temporale, statistical e causal reasoning, baseline, reconciliation, lettura di query e trace, capacità di riconoscere output fuori dominio.
 
-Questo pattern appare in molte forme:
+Il rischio non è "usare troppo AI". È perdere proprio la competenza necessaria per dire **quando non fidarsi**.
 
-```text
-reduce tickets → chiudi ticket troppo presto
-increase conversion → targetta solo utenti già propensi
-reduce forecast error → ignora SKU difficili ma strategici
-increase automation rate → evita escalation quando sarebbe necessaria
-```
+### Shadow AI e percorso approvato
 
-Ogni KPI per un agente deve quindi avere **guardrail e outcome downstream**.
+Se il percorso ufficiale è troppo lento o poco utile, i team possono incollare customer list, ticket o contratti in strumenti non approvati. L'organizzazione perde visibilità su dati esposti, retention, decisioni e incidenti. La risposta non può essere soltanto il divieto: serve un percorso approvato abbastanza utile da ridurre l'incentivo allo shadow workflow.
 
-### Failure mode 6 — feedback loop invisibile
+### Agent Registry e control plane minimo
 
-Un modello assegna risk score.
-
-Gli operatori intervengono soprattutto sui clienti ad alto rischio.
-
-I loro outcome cambiano proprio a causa dell'intervento.
-
-Il dataset futuro incorpora la policy del modello precedente.
-
-Se retrainiamo senza comprenderlo, il sistema può confondere:
-
-- comportamento naturale;
-- effetto dell'intervento;
-- selection policy.
-
-L'AI può rendere il loop molto più veloce perché automatizza score, azione e retraining.
-
-Per questo logging di **decisione ed exposure** è parte della qualità del dato futuro.
-
-### Failure mode 7 — deskilling selettivo
-
-Non è necessario che ogni analyst continui a scrivere ogni join a memoria.
-
-Ma il team deve mantenere la capacità di diagnosticare i failure mode che l'AI può nascondere.
-
-Competenze da preservare intenzionalmente:
-
-- grain e cardinalità;
-- semantica temporale;
-- statistical reasoning;
-- causal reasoning;
-- baseline construction;
-- data reconciliation;
-- leggere query e trace;
-- riconoscere quando un output è fuori dominio.
-
-Il rischio non è “usare troppo AI”.
-
-È **perdere proprio la competenza necessaria per supervisionarla**.
-
-### Failure mode 8 — shadow AI
-
-Un team usa un assistente non approvato per:
-
-- incollare customer list;
-- analizzare contratti;
-- riassumere ticket;
-- generare report.
-
-Il processo nasce perché è rapido e non richiede procurement.
-
-Ma l'organizzazione perde visibilità su:
-
-- dati esposti;
-- retention;
-- accessi;
-- output usati nelle decisioni;
-- incidenti.
-
-La soluzione non è soltanto vietare strumenti.
-
-È creare un percorso approvato abbastanza utile da ridurre l'incentivo allo shadow workflow.
-
-### Failure mode 9 — nessuna stop policy
-
-Un agente continua a:
-
-- generare nuove segmentazioni;
-- modificare ipotesi;
-- eseguire query;
-- consultare altri agenti.
-
-Ogni iterazione sembra costare poco.
-
-Mille iterazioni costano tempo, denaro e attenzione.
-
-Servono stop condition come:
+Quando i workflow diventano numerosi, un inventario minimo è necessario:
 
 ```text
-decision threshold raggiunta
-marginal information value troppo basso
-budget esaurito
-numero massimo di step
-conflitto non risolto → human escalation
-data not ready → stop
-```
-
-L'autonomia senza criterio di arresto non è intelligenza. È un loop.
-
-### Failure mode 10 — nessun inventario degli agenti
-
-Se l'organizzazione non sa quanti agenti esistono, non può governare:
-
-- owner;
-- permessi;
-- rischio;
-- dipendenze;
-- modello/versione;
-- costi;
-- incidenti;
-- data scope.
-
-Per workflow riusabili può essere utile un **Agent Registry**.
-
-```text
-agent/workflow name:
+agent/workflow:
 owner:
 business purpose:
 risk tier:
@@ -256,9 +85,7 @@ incident contact:
 retirement condition:
 ```
 
-### Un control plane organizzativo minimo
-
-Quando gli agenti diventano numerosi, servono capacità comuni:
+Da qui emerge un control plane organizzativo essenziale:
 
 ```text
 inventory
@@ -271,36 +98,8 @@ inventory
 → retirement
 ```
 
-Non ogni prototipo richiede una piattaforma enterprise.
-
-Ma ogni sistema che influenza decisioni ricorrenti deve avere almeno una risposta a queste domande.
-
-### Caso reale documentato — responsabilità che resta al deployer
-
-Microsoft, nel proprio *AI agent shared responsibility model*, distingue esplicitamente i nuovi livelli introdotti dagli agenti: memory/state, tools/actions e orchestration. Tra le responsabilità che il deployer mantiene figurano dati, identity e least privilege, autorizzazione delle azioni, human oversight e acceptable-use governance.
+Microsoft, nel proprio *AI agent shared responsibility model*, rende esplicito che il deployer conserva responsabilità su dati, identità, least privilege, autorizzazione delle azioni, human oversight e governance d'uso anche quando usa piattaforme gestite.
 
 Fonte: https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility-ai-agent
-
-Questo formalizza un principio centrale del libro:
-
-> usare una piattaforma gestita può trasferire parte dell'infrastruttura; **non trasferisce la responsabilità di definire ciò che il nostro agente è autorizzato a fare nel nostro contesto**.
-
-### Campo della AI Analysis Control Sheet
-
-Per workflow produttivi aggiungiamo:
-
-```text
-named owner:
-risk tier:
-autonomy level:
-shared dependencies:
-review capacity:
-objective + guardrails:
-feedback-loop risk:
-skill fallback:
-registry entry:
-incident/runbook:
-retirement trigger:
-```
 
 > **La scala dell'AI non moltiplica soltanto il lavoro prodotto. Moltiplica anche le dipendenze. Governare agenti significa rendere visibili owner, confini, obiettivi e failure correlati prima che la velocità li trasformi in infrastruttura invisibile.**
