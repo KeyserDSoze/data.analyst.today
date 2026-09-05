@@ -1,166 +1,51 @@
 ## 12.5 Batch, micro-batch e streaming: progettare per time-to-decision
 
-Molte discussioni architetturali partono da una domanda sbagliata:
-
-> Possiamo avere il dato in real time?
-
-La domanda professionale è:
+Dopo aver deciso dove il dato viene catturato, preservato e curato, resta una domanda che spesso viene trasformata troppo presto in una scelta tecnologica:
 
 > **Quanto ritardo possiamo tollerare prima che una decisione perda valore?**
 
-Questa è una business requirement, non una preferenza tecnologica.
-
-### Un continuum, non due scatole
-
-Possiamo immaginare:
-
-```text
-mensile
-→ giornaliero
-→ orario
-→ micro-batch 15 min
-→ pochi minuti
-→ secondi
-→ sub-second
-```
-
-Ogni riduzione di latenza può aumentare:
-
-- complessità;
-- costo;
-- stato da gestire;
-- observability necessaria;
-- difficoltà di recovery.
-
-Per questo la frequenza deve essere giustificata dalla decisione.
+“Real time” non è un obiettivo in sé. È una risposta possibile a un requisito di time-to-decision. Tra un report mensile e uno stream sub-second esiste un continuum di frequenze, e ogni riduzione di latenza può aumentare costo, stato da gestire, observability e complessità di recovery.
 
 ### Caso simulato/composito — CasaNova e il real time senza un utente real time
 
-CasaNova vuole una dashboard vendite “real time”.
+CasaNova chiede una dashboard vendite “real time”. Il discovery mostra però che i regional manager intervengono sullo staffing una volta al giorno, il pricing cambia settimanalmente, il replenishment gira alle 22:00 e il board guarda i dati ogni settimana.
 
-Il discovery mostra però che:
+Un refresh ogni 15 minuti è già più fresco di qualsiasi processo decisionale downstream. Portarlo a due secondi non cambia alcuna azione: compra soltanto complessità.
 
-- i regional manager intervengono sullo staffing una volta al giorno;
-- il pricing cambia settimanalmente;
-- replenishment gira alle 22:00;
-- il board guarda i dati settimanalmente.
-
-Un refresh ogni 15 minuti è già molto più fresco di qualsiasi processo decisionale downstream.
-
-Ridurre la latenza da 15 minuti a 2 secondi non cambia nessuna azione.
-
-Aumenta soltanto il costo del sistema.
-
-### Quando la latenza ha valore immediato
-
-In fraud detection la situazione può essere opposta.
-
-Se una carta compromessa continua a effettuare transazioni, trenta minuti di attesa possono significare molte altre perdite.
-
-Qui il requisito può essere:
+In fraud detection può valere il contrario. Se una carta compromessa continua a effettuare transazioni, trenta minuti di latenza possono generare altre perdite. In quel caso il percorso:
 
 ```text
-evento disponibile
+evento
 → scoring
 → decisione
 → blocco/review
 ```
 
-entro pochi secondi.
+può dover chiudersi in pochi secondi.
 
-La freshness non è un badge di modernità. È parte della funzione economica del sistema.
+### Event time, processing time e late data
 
-### Event time e processing time
+La bassa latenza introduce una difficoltà ulteriore: l'ordine in cui gli eventi arrivano non coincide necessariamente con l'ordine in cui sono accaduti. Dobbiamo distinguere **event time**, quando il fenomeno è avvenuto, da **processing time**, quando la pipeline lo elabora.
 
-In streaming dobbiamo distinguere:
+Google Dataflow usa il watermark per rappresentare una soglia oltre la quale il sistema si aspetta che i dati di una finestra siano arrivati; un evento che arriva dopo che il watermark ha superato la finestra è late data. La documentazione corrente ricorda anche che gli eventi non sono garantiti in ordine e che trigger e watermark determinano quando emettere risultati.
 
-**event time**
+Fonti:
+- https://docs.cloud.google.com/dataflow/docs/concepts/streaming-pipelines
+- https://docs.cloud.google.com/dataflow/docs/guides/develop-and-test-pipelines
 
-Quando il fenomeno è avvenuto nel mondo reale.
+Questo trasforma “quando pubblichiamo?” in un trade-off esplicito. Aspettare di più può aumentare completezza ma ritarda l'azione; pubblicare prima può richiedere correzioni successive.
 
-**processing time**
-
-Quando la pipeline lo elabora.
-
-Esempio:
+Per questo un sistema può servire più stati della stessa evidenza:
 
 ```text
-event_time:      10:01:12
-processing_time: 10:08:43
-```
-
-Se la metrica è “transazioni tra 10:00 e 10:05”, usare processing time può attribuire l'evento alla finestra sbagliata.
-
-Google Dataflow definisce la **data freshness** come la differenza tra il momento in cui un elemento viene elaborato e il timestamp dell'evento.[^dataflow-freshness]
-
-### Watermark: quando crediamo che una finestra sia sufficientemente completa
-
-I dati streaming non arrivano necessariamente in ordine.
-
-Google Dataflow descrive il **watermark** come una soglia che indica quando il sistema si aspetta che i dati di una finestra siano arrivati. Se il watermark ha superato la fine della finestra e arriva un nuovo elemento con timestamp interno a quella finestra, quell'elemento è considerato late data.[^dataflow-streaming]
-
-Questo introduce una decisione che non esiste nello stesso modo nei batch finiti:
-
-> quanto aspettiamo prima di pubblicare un risultato?
-
-Più aspettiamo:
-
-- maggiore completezza potenziale;
-- maggiore latenza.
-
-Meno aspettiamo:
-
-- risultato più tempestivo;
-- più correzioni tardive.
-
-### Early result vs final result
-
-Un sistema operativo può accettare una metrica preliminare:
-
-```text
-10:05 → stima quasi real time
+10:05 → risultato provisional
 10:20 → aggiornamento con late events
-T+1   → riconciliazione finale
+T+1   → risultato finale riconciliato
 ```
 
-Questa struttura può essere più utile di fingere che esista un solo numero istantaneamente “definitivo”.
+Streaming e batch possono quindi convivere senza essere ridondanti: uno può alimentare alert operativi, l'altro la riconciliazione certificata. Il rischio nasce quando due percorsi producono due “verità” senza una regola su quale stato sia preliminare e quale definitivo.
 
-La Data Flow Architecture Map deve distinguere:
-
-- provisional serving;
-- final/reconciled serving.
-
-### Caso reale documentato — testare la non-deterministicità dell'arrivo
-
-Google raccomanda che i test delle pipeline streaming simulino dati early, on-time e late, perché le assunzioni sulla tempestività influenzano direttamente la correttezza. Dataflow e Apache Beam forniscono `TestStream` proprio per verificare il comportamento rispetto a watermark e lateness.[^dataflow-teststream]
-
-È una lezione generale:
-
-> **se la correttezza dipende dall'ordine o dalla tempestività degli eventi, devi testare anche eventi fuori ordine e in ritardo.**
-
-### Batch e streaming possono convivere
-
-Un sistema può usare:
-
-```text
-streaming → alert operativo
-batch     → riconciliazione finanziaria
-```
-
-oppure:
-
-```text
-micro-batch → dashboard operations
-nightly     → storico certificato
-```
-
-Non è duplicazione inutile se le due strade hanno contratti differenti e una riconciliazione esplicita.
-
-Diventa pericoloso quando producono due “verità” senza sapere quale prevale.
-
-### Campo della Data Flow Architecture Map
-
-Per ogni flusso temporale annotiamo:
+Nella Data Flow Architecture Map annotiamo:
 
 ```text
 decision deadline:
@@ -174,20 +59,4 @@ provisional or final output:
 reconciliation path:
 ```
 
-### Regola operativa
-
-Prima di chiedere real time:
-
-1. chi agisce sul dato?
-2. quanto spesso può agire davvero?
-3. quale latenza modifica la decisione?
-4. gli eventi possono arrivare fuori ordine?
-5. quando consideriamo una finestra abbastanza completa?
-6. accettiamo revisioni tardive?
-7. esiste un risultato finale riconciliato?
-
-> **Una buona architettura non minimizza la latenza. Minimizza il tempo tra un cambiamento rilevante e una decisione affidabile che può ancora fare la differenza.**
-
-[^dataflow-freshness]: Google Cloud Documentation, *Dataflow job metrics*, https://docs.cloud.google.com/dataflow/docs/guides/using-monitoring-intf
-[^dataflow-streaming]: Google Cloud Documentation, *Streaming pipelines*, https://docs.cloud.google.com/dataflow/docs/concepts/streaming-pipelines
-[^dataflow-teststream]: Google Cloud Documentation, *Develop and test Dataflow pipelines*, https://docs.cloud.google.com/dataflow/docs/guides/develop-and-test-pipelines
+> **Una buona architettura non minimizza la latenza in assoluto. Minimizza il tempo tra un cambiamento rilevante e una decisione affidabile che può ancora fare la differenza.**
