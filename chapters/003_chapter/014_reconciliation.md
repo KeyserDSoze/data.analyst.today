@@ -1,16 +1,8 @@
 ## 3.13 Riconciliazione: spiegare la differenza prima di scegliere il numero
 
-Una delle situazioni più comuni nel lavoro reale è questa:
+Nel lavoro reale capita spesso che due sistemi mostrino valori diversi per una metrica che porta lo stesso nome. La reazione più pericolosa è scegliere subito quale dashboard “ha ragione”, perché la divergenza può nascere prima del codice: definizione, popolazione, tempo, grain, stati e unità possono essere diversi pur lasciando invariato il nome della metrica.
 
-> due sistemi mostrano valori diversi per una metrica che porta lo stesso nome.
-
-La reazione sbagliata è decidere immediatamente quale dashboard "ha ragione".
-
-La domanda corretta è:
-
-> **Quali regole fanno sì che i due sistemi producano numeri diversi?**
-
-La **riconciliazione** serve a costruire quella spiegazione.
+La **riconciliazione** serve a trasformare quella differenza in una spiegazione verificabile.
 
 ### Caso simulato/composito — Il fatturato che non coincide
 
@@ -22,26 +14,15 @@ Dashboard Sales:      €1.917.480
 Differenza:              €75.170
 ```
 
-Circa il **4,1%**.
+Il delta è circa il **4,1%**. Invece di partire dalle query, l'analista confronta le definizioni.
 
-L'analista confronta prima le definizioni, non il codice.
+Finance riconosce il ricavo alla data di spedizione, mentre Sales lo attribuisce alla data dell'ordine. Finance esclude gli ordini annullati prima della spedizione; Sales li rimuove quando riceve l'aggiornamento di stato. Sales include un contributo di spedizione che Finance classifica separatamente, e alcune note di credito del mese precedente vengono registrate contabilmente nel mese corrente.
 
-Emergono differenze precise:
+A questo punto il problema cambia natura. I due numeri non sono semplicemente due implementazioni concorrenti della stessa metrica: rappresentano **due viste differenti del fenomeno**.
 
-- Finance riconosce il ricavo alla data di spedizione;
-- Sales lo attribuisce alla data dell'ordine;
-- Finance esclude ordini annullati prima della spedizione;
-- Sales li rimuove quando riceve l'aggiornamento di stato;
-- Sales include un contributo di spedizione che Finance classifica separatamente;
-- alcune note di credito del mese precedente vengono registrate contabilmente nel mese corrente.
+## La reconciliation bridge rende il delta intelligibile
 
-I due numeri non sono semplicemente due implementazioni concorrenti della stessa metrica.
-
-Rappresentano **due viste differenti del fenomeno**.
-
-### La reconciliation bridge
-
-Un modo efficace di lavorare è partire da un totale e costruire un ponte verso l'altro.
+Un modo efficace di lavorare consiste nel partire da un totale e spiegare, voce per voce, come arrivare all'altro:
 
 | Voce | Impatto |
 |---|---:|
@@ -52,61 +33,28 @@ Un modo efficace di lavorare è partire da un totale e costruire un ponte verso 
 | Note di credito / resi | -€15.300 |
 | Totale Finance | €1.842.310 |
 
-La tabella trasforma una discussione generica — "i dati non tornano" — in un insieme di differenze verificabili.
+La tabella non elimina la differenza: la **spiega**. In casi reali le componenti possono interagire e il ponte può richiedere una ricostruzione record per record, ma il principio resta lo stesso.
 
-Nella pratica le componenti possono interagire e il ponte deve essere costruito record per record o con regole più precise. Il principio resta lo stesso: **spiegare il delta**.
+Quando due metriche non coincidono, l'ordine di investigazione dovrebbe seguire la semantica prima dell'implementazione. Prima verifichiamo se significano la stessa cosa; poi se includono la stessa popolazione, usano lo stesso timestamp, aggregano allo stesso grain, trattano allo stesso modo cancellazioni e rettifiche, condividono unità e valuta, fotografano lo stesso momento e applicano trasformazioni comparabili.
 
-### Otto livelli da controllare
+Questo ordine evita di passare ore su una query quando la divergenza è già spiegata da una regola di riconoscimento diversa.
 
-Quando due numeri non coincidono, procedi in quest'ordine:
+## Riconciliare non significa imporre un solo numero
 
-1. **Definizione** — le metriche significano davvero la stessa cosa?
-2. **Popolazione** — includono gli stessi record?
-3. **Tempo** — usano lo stesso timestamp e la stessa finestra?
-4. **Grain** — aggregano allo stesso livello?
-5. **Stati** — cancellazioni, resi e rettifiche sono trattati allo stesso modo?
-6. **Unità** — valuta, tasse, scala e unità di misura coincidono?
-7. **Freshness** — i sistemi fotografano lo stesso momento?
-8. **Trasformazioni** — filtri, join o mapping modificano la popolazione?
+La riconciliazione può concludere che le metriche debbano restare diverse. `ordered_revenue` può essere corretta per il monitoraggio commerciale mentre `recognized_revenue` è quella appropriata per la contabilità. Forzare entrambe dentro un'unica definizione renderebbe meno utile ciascun processo.
 
-Questo ordine evita di passare ore su una query quando la differenza nasce da una definizione.
+L'obiettivo è impedire che due numeri con significati diversi vengano presentati come se misurassero la stessa cosa.
 
-### Riconciliare non significa obbligare i sistemi a coincidere
+Anche la materialità conta. Una discrepanza dello 0,02% dovuta ad arrotondamenti può essere irrilevante per una decisione strategica e inaccettabile in un processo regolato. Per questo la riconciliazione dovrebbe dichiarare quale fonte è autorevole per quale uso, quale tolleranza è accettabile, quali differenze sono attese e quali richiedono escalation.
 
-A volte il risultato corretto della riconciliazione è mantenere **due metriche diverse**, purché siano nominate e usate correttamente.
-
-Per esempio:
-
-- `ordered_revenue` per il monitoraggio commerciale;
-- `recognized_revenue` per la contabilità.
-
-Forzare un'unica definizione può peggiorare entrambi gli usi.
-
-L'obiettivo non è l'uniformità a tutti i costi. È evitare che numeri diversi vengano presentati come se misurassero la stessa cosa.
-
-### Tolleranza e materialità
-
-Non ogni differenza richiede la stessa investigazione.
-
-Una discrepanza di 0,02% dovuta a arrotondamenti può essere irrilevante per un'analisi strategica. La stessa discrepanza può essere importante in un processo regolato o in una riconciliazione contabile.
-
-Per questo dovremmo definire:
-
-- quale fonte è autorevole per quale uso;
-- quale tolleranza è accettabile;
-- quali differenze richiedono escalation;
-- quali differenze sono attese e documentate.
-
-### Un buon output della riconciliazione
-
-Alla fine dovremmo poter scrivere una frase come:
+Un buon output finale non dice soltanto “i dati tornano”. Dice, per esempio:
 
 > La dashboard Sales supera Finance di €75.170. La differenza è interamente spiegata da timing di riconoscimento, shipping fees, cancellazioni e note di credito; non emerge una perdita di record non spiegata.
 
 oppure:
 
-> Rimangono €18.400 non riconciliati, concentrati su ordini del canale marketplace. Finché il delta non viene spiegato, il dato non è pronto per il consuntivo.
+> Rimangono €18.400 non riconciliati, concentrati sugli ordini marketplace. Finché il delta non viene spiegato, il dato non è pronto per il consuntivo.
 
-Queste sono conclusioni operative.
+La riconciliazione chiude così il circuito fra semantica, lineage e readiness.
 
-> **Se due sistemi mostrano numeri diversi, la prima responsabilità dell'analista non è scegliere un vincitore. È rendere la differenza intelligibile.**
+> **Se due sistemi mostrano numeri diversi, la prima responsabilità dell'analista non è scegliere un vincitore. È rendere la differenza intelligibile e stabilire quale numero è autorevole per quale decisione.**
