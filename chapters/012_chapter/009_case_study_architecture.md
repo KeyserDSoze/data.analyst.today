@@ -1,184 +1,70 @@
 ## 12.8 Caso reale documentato: Virgin Media O2 e la semplificazione di un data estate complesso
 
-I casi architetturali diventano facilmente racconti astratti pieni di scatole e frecce.
+I casi architetturali diventano facilmente diagrammi astratti. Il percorso di **Virgin Media O2 (VMO2)** è utile perché mostra un problema più concreto: dopo una fusione e anni di crescita, l'organizzazione non eredita soltanto più dati, ma anche più piattaforme, skill specialistiche, percorsi di ingestion, silos e failure boundary.
 
-Il percorso di **Virgin Media O2 (VMO2)** è utile perché mostra un problema più concreto: quando un'organizzazione cresce, si fonde e accumula piattaforme, il costo non è soltanto infrastrutturale. Aumentano anche silos, dipendenze, tempi di delivery e difficoltà nel rendere il dato disponibile in modo coerente.
+Google Cloud documenta che, dopo la fusione tra Virgin Media e O2, VMO2 avviò un programma pluriennale per consolidare un data estate composto da più data warehouse, Hadoop platform e stack legacy. Il legacy on-premises viene descritto come poco agile, costoso e causa di data silo e time-to-market più lento.
 
-Google Cloud documenta il percorso di VMO2 dopo la fusione tra Virgin Media e O2: l'organizzazione si trovò a gestire molteplici data warehouse, data lake e piattaforme legacy, con problemi di scalabilità, performance, costi e accessibilità del dato.
+Fonte principale: https://cloud.google.com/customers/virgin-media-o2-data-platform-migration
 
-Fonte principale:
-https://cloud.google.com/customers/virgin-media-o2-data-platform-migration
+### La vera difficoltà: convivere con più stati dell'architettura
 
-### Il punto di partenza: molti sistemi, molti failure boundary
+Il programma non è una migrazione “big bang”. Il caso cita più transizioni che coinvolgono Hadoop/Hortonworks, Netezza, Teradata, pipeline della rete mobile e altri workload legacy.
 
-Prima della modernizzazione, il data estate comprendeva diversi stack costruiti in anni differenti.
+Questa è una lezione importante per l'analista: **target architecture e current architecture possono convivere per anni**. Nello stesso periodo, due KPI possono attraversare percorsi con latency, qualità e recovery differenti. Sapere che “l'azienda usa BigQuery” non basta; dobbiamo sapere quale flusso alimenta la decisione che stiamo osservando.
 
-Il problema architetturale può essere letto così:
+Una lettura semplificata è:
 
 ```text
 multiple operational systems
         ↓
-multiple legacy integration stacks
+multiple legacy integration paths
         ↓
-separate warehouses / Hadoop platforms
+legacy warehouses / Hadoop platforms
         ↓
 different analytical consumers
+
+                TRANSITION
+                    ↓
+more consolidated capture / storage / processing
+                    ↓
+shared analytical products and serving
 ```
 
-Ogni piattaforma aggiungeva:
+### Consolidare riduce percorsi, non sostituisce la semantica
 
-- capacità da gestire;
-- competenze specialistiche;
-- contratti e licenze;
-- percorsi di ingestion differenti;
-- silos;
-- failure boundary separati.
+VMO2 descrive BigQuery come nucleo di un ambiente più integrato. Portare raw data in un punto più uniforme e usarlo per capacità di lake e warehouse riduce il numero di percorsi infrastrutturali incompatibili da mantenere.
 
-VMO2 descrive esplicitamente il legacy on-premises come poco agile e costoso, con impatto sul time-to-market e sulla presenza di data silo.
+Nel percorso relativo ai dati della rete mobile, Google riporta che la migrazione verso **BigQuery e Dataflow** ha aumentato la capacità dati del **400%** e ridotto il **TCO del 30%** rispetto alla piattaforma precedente. Sono risultati dichiarati nel caso pubblico, non benchmark universali.
 
-### Non una migrazione unica, ma più transizioni
+La lezione quindi non è “usa BigQuery e risparmierai il 30%”. È che eliminare infrastruttura duplicata e consolidare workload può migliorare contemporaneamente capacità, costi e velocità di delivery quando il contesto lo consente.
 
-Il caso documenta un programma pluriennale con più migrazioni importanti.
-
-Tra le piattaforme coinvolte compaiono:
-
-- Hadoop/Hortonworks;
-- Netezza;
-- Teradata;
-- pipeline mobile network;
-- altri workload legacy.
-
-Questa è una lezione importante per l'analista:
-
-> **le architetture aziendali reali raramente passano in un weekend da “vecchio” a “nuovo”. Per anni possono esistere percorsi paralleli con garanzie e latenze differenti.**
-
-Durante una transizione dobbiamo sapere quale percorso alimenta ogni decisione.
-
-### Il raw data come punto di semplificazione
-
-VMO2 descrive un'evoluzione verso BigQuery come nucleo del nuovo ambiente, con l'obiettivo di integrare i dati e ridurre i silos.
-
-Nel caso study viene riportato:
-
-> portare i raw data in BigQuery e usarli per costruire capacità sia di data lake sia di data warehouse ha semplificato significativamente l'architettura.
-
-Per il nostro framework, questo significa creare un punto più uniforme tra:
+La piattaforma unificata non risolve però automaticamente identity resolution, metric definition, classificazioni storiche, ownership o access policy. In altre parole:
 
 ```text
-capture
-→ durable storage
-→ processing
-→ analytical products
+unify where/how data flows
+≠
+unify what business concepts mean
 ```
 
-Non perché un solo prodotto risolva automaticamente ogni semantica, ma perché riduce il numero di percorsi infrastrutturali incompatibili da governare.
+Per questo il Capitolo 11 resta indispensabile.
 
-### Capacità e costo: risultati documentati
+### Real time soltanto dove cambia l'azione
 
-Google Cloud riporta che la migrazione di pipeline relative ai dati della rete mobile verso BigQuery e Dataflow ha aumentato la capacità dati del **400%** e ridotto il **TCO del 30%** rispetto alla piattaforma precedente per quel percorso di modernizzazione.
+VMO2 cita BigQuery e Dataflow per insight granulari e real-time su network performance, compliance, customer experience e trend emergenti. Questo rafforza il principio del capitolo: un segnale operativo di rete e un close finanziario possono vivere nella stessa piattaforma con SLO diversi.
 
-Il case study riporta inoltre una riduzione del TCO di circa il 30% per piattaforme on-premises equivalenti nel percorso complessivo.
+### Dalla piattaforma ai contratti
 
-Questi numeri sono risultati dichiarati nel caso pubblico, non valori simulati.
+Nel dicembre 2025 VMO2 e Google Cloud hanno documentato anche l'uso di **data contracts** machine-readable come quality and assurance layer per i data product e gli use case AI.
 
-Ma la lezione del libro non è:
+Fonte: https://cloud.google.com/blog/products/data-analytics/vmo2-uses-data-contracts-to-build-scalable-ai-and-data-products/
 
-> “usa BigQuery e risparmierai il 30%”.
-
-La lezione è:
-
-> **consolidare workload e ridurre infrastruttura duplicata può cambiare contemporaneamente capacità, costi e velocità di delivery, ma il risultato dipende dal contesto specifico.**
-
-### Real time dove crea valore
-
-VMO2 cita BigQuery e Dataflow per analisi granulari e insight in tempo reale utili, tra le altre cose, a:
-
-- performance di rete;
-- compliance;
-- customer experience;
-- trend emergenti.
-
-Questo è coerente con la regola della sezione precedente: non serve rendere ogni dato real time. La bassa latenza ha senso dove modifica un processo operativo.
-
-Un close finanziario e un segnale di network performance possono quindi vivere nella stessa piattaforma ma avere SLO differenti.
-
-### Unificazione infrastrutturale non significa una sola semantica
-
-Anche dopo aver consolidato storage e compute, restano problemi analitici come:
-
-- identity resolution;
-- metric definitions;
-- historical classification;
-- data ownership;
-- access policy.
-
-Il Capitolo 11 continua quindi a essere necessario.
-
-Un data platform unificato risolve soprattutto:
+L'evoluzione è significativa:
 
 ```text
-where/how data flows
+ridurre i percorsi infrastrutturali
+→ rendere esplicite le interfacce producer-consumer
 ```
 
-non automaticamente:
+Il caso mostra quindi che la modernizzazione non termina con il target state. Deve continuare con ownership, contract, SLO e recovery dei prodotti che viaggiano sulla piattaforma.
 
-```text
-what every business concept means
-```
-
-### Il secondo caso VMO2: data contracts
-
-Nel 2025 VMO2 e Google Cloud hanno documentato anche un approccio ai **data contracts** per data products e AI: contratti machine-readable usati come quality and assurance layer affinché i dataset pubblicati siano documentati, affidabili e pronti al consumo.
-
-Fonte:
-https://cloud.google.com/blog/products/data-analytics/vmo2-uses-data-contracts-to-build-scalable-ai-and-data-products
-
-Riprenderemo questo punto nella sezione 12.12.
-
-È interessante perché mostra l'evoluzione naturale:
-
-```text
-consolidare la piattaforma
-→ rendere esplicite le interfacce tra producer e consumer
-```
-
-### Costruire la Data Flow Architecture Map del caso
-
-Una versione semplificata del percorso VMO2 può essere letta così:
-
-```text
-SOURCES
-legacy platforms / network / business systems
-        ↓
-CAPTURE & MIGRATION
-multiple migration and ingestion paths
-        ↓
-STORAGE / COMPUTE
-consolidation around Google Cloud / BigQuery
-        ↓
-PROCESSING
-BigQuery / Dataflow / related managed services
-        ↓
-DATA PRODUCTS & SERVING
-shared analytical products / data sharing
-        ↓
-CONSUMERS
-analytics / operational insights / AI / business teams
-```
-
-Per ogni nodo rimangono domande operative:
-
-- chi è owner?
-- quale workload è già migrato?
-- quale percorso legacy è ancora attivo?
-- quale freshness promette?
-- come vengono versionate le interfacce?
-- cosa succede durante una failure o una migrazione?
-
-### La lezione del caso
-
-L'architettura non è soltanto un diagramma “target state”.
-
-È anche la capacità di governare la transizione tra stati diversi senza perdere affidabilità.
-
-> **Una piattaforma moderna crea valore quando riduce il numero di percorsi fragili tra sorgente e decisione, rende più semplice ricostruire la provenienza e permette a workload diversi di ottenere il livello di capacità e latenza di cui hanno realmente bisogno.**
+> **Una piattaforma moderna crea valore quando riduce il numero di percorsi fragili tra sorgente e decisione e rende più semplice capire quale percorso, quale garanzia e quale stato stanno alimentando ogni consumer durante la transizione.**
