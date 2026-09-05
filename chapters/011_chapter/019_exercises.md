@@ -1,14 +1,10 @@
 ## 11.18 Esercizi: SQL e data modeling come preservazione del significato
 
-Gli esercizi di questo capitolo non chiedono soltanto di scrivere query.
-
-Chiedono di decidere **quali proprietà la query deve preservare** e di trasformarle in un Analytical Data Contract verificabile.
+Gli esercizi restano volutamente strutturati: qui la forma operativa è parte dell’apprendimento. L’obiettivo non è soltanto scrivere query, ma dichiarare **quali proprietà devono restare vere** e trasformarle in un Analytical Data Contract verificabile.
 
 ### Esercizio 1 — Revenue duplicata
 
-Una tabella `orders` contiene una riga per ordine. `payments` può contenere più transazioni per ordine.
-
-Dopo un join diretto, la revenue cresce del 12%.
+Una tabella `orders` contiene una riga per ordine. `payments` può contenere più transazioni per ordine. Dopo un join diretto, la revenue cresce del 12%.
 
 Costruisci una diagnosi che includa:
 
@@ -19,35 +15,17 @@ Costruisci una diagnosi che includa:
 5. modello intermedio necessario;
 6. invariant di riconciliazione prima/dopo il join.
 
-Poi scrivi il blocco `keys/relationships` dell'Analytical Data Contract.
+Poi scrivi il blocco `keys/relationships` dell’Analytical Data Contract.
 
 ### Esercizio 2 — Il paese storico
 
-Un cliente vive in Italia nel 2024 e in Francia nel 2025.
-
-La dimensione cliente contiene solo il paese corrente.
-
-Il management chiede:
+Un cliente vive in Italia nel 2024 e in Francia nel 2025. La dimensione cliente contiene solo il paese corrente. Il management chiede:
 
 > Quanto revenue abbiamo generato in Italia nel 2024?
 
-Definisci due possibili domande business:
-
-- attribuzione secondo il paese storico;
-- riclassificazione secondo il paese corrente.
-
-Per ciascuna indica:
-
-- time semantics;
-- dimension semantics;
-- join corretto;
-- conseguenza sul reporting.
-
-Spiega perché non esiste una singola query “giusta” finché la domanda non specifica quale storia vuole raccontare.
+Definisci due domande diverse: attribuzione secondo il paese storico e riclassificazione secondo il paese corrente. Per ciascuna specifica time semantics, dimension semantics, join e conseguenza sul reporting. Spiega perché non esiste una singola query “giusta” finché non sappiamo quale storia vogliamo raccontare.
 
 ### Esercizio 3 — Deduplicazione o distruzione di eventi?
-
-La tabella raw contiene:
 
 ```text
 customer_id | event_id | status | updated_at | ingestion_at
@@ -56,27 +34,15 @@ C1          | E1       | active | 12:00      | 12:01
 C1          | E1       | active | 12:00      | 12:04
 ```
 
-Definisci almeno tre output possibili:
-
-- stato corrente cliente;
-- storia delle versioni;
-- event log deduplicato per evento/versione.
-
-Per ciascuno specifica:
-
-- grain;
-- business/event key;
-- winner rule o policy di conservazione;
-- tie-break;
-- invariant finale.
+Definisci tre output possibili: stato corrente, storia delle versioni, event log deduplicato per evento/versione. Per ciascuno indica grain, key, winner/conservation rule, tie-break e invariant.
 
 ### Esercizio 4 — Conversion rate
 
-Definizione richiesta:
+La definizione richiesta è:
 
 > quota di sessioni web eligible che generano almeno un ordine valido.
 
-Prima di scrivere SQL, completa:
+Prima di scrivere SQL completa:
 
 ```text
 output grain:
@@ -103,27 +69,13 @@ FROM fact_events
 LIMIT 1000;
 ```
 
-La tabella è enorme e non clusterizzata.
-
-Rispondi:
-
-1. perché `LIMIT 1000` può non ridurre il costo della scansione in BigQuery?
-2. come esploreresti i dati senza una scansione completa?
-3. quali colonne servono davvero?
-4. quale filtro temporale è coerente con il task?
-5. quale `maximum bytes billed` o guardrail equivalente imposteresti?
-6. quando materializzeresti un modello più piccolo?
+La tabella è enorme e non clusterizzata. Spiega perché `LIMIT 1000` può non ridurre il costo della scansione in BigQuery, come esploreresti i dati con meno lavoro, quali colonne e filtri servono davvero, quale guardrail sui byte imposteresti e quando materializzeresti un modello più piccolo.
 
 ### Esercizio 6 — Modello incrementale e late changes
 
-Gli ordini vengono creati oggi, ma:
+Gli ordini vengono creati oggi, ma il 70% dei refund arriva entro 7 giorni, il 95% entro 30 giorni, alcuni chargeback dopo 90 giorni e alcuni delete amministrativi arrivano dal source system.
 
-- 70% dei refund entro 7 giorni;
-- 95% entro 30 giorni;
-- alcuni chargeback dopo 90 giorni;
-- alcuni delete amministrativi arrivano dal source system.
-
-Progetta `update semantics` dichiarando:
+Progetta:
 
 ```text
 change detection:
@@ -136,33 +88,17 @@ full refresh:
 reconciliation:
 ```
 
-Spiega quale rischio rimane dopo la lookback scelta.
+Dichiara anche quale rischio rimane fuori dalla lookback scelta.
 
 ### Esercizio 7 — AI-generated SQL
 
-Un assistente genera una query che calcola churn per piano tariffario.
+Un assistente genera una query che calcola churn per piano tariffario. La query compila e restituisce numeri plausibili.
 
-La query compila e restituisce numeri plausibili.
-
-Costruisci prima il contract minimo:
-
-- account vs subscription grain;
-- definizione churn;
-- eligibility;
-- cancellazioni e riattivazioni;
-- data di churn;
-- piano corrente vs piano al momento dell'evento;
-- clienti censurati;
-- denominator;
-- join semantics.
-
-Poi scrivi un prompt di review per un secondo agente AI che debba confrontare query e contract senza modificare dati.
+Costruisci prima il contract minimo: account vs subscription grain, definizione churn, eligibility, cancellazioni e riattivazioni, data di churn, piano corrente vs piano all’evento, censura, denominator e join semantics. Poi scrivi un prompt di review per un secondo agente AI che confronti query e contract senza modificare dati.
 
 ### Esercizio 8 — Many-to-many con due bridge
 
-Un ordine può usare tre coupon e avere due campagne marketing associate.
-
-Un join diretto produce fino a sei combinazioni per ordine.
+Un ordine può usare tre coupon e avere due campagne marketing associate. Un join diretto produce fino a sei combinazioni per ordine.
 
 Devi supportare tre domande:
 
@@ -170,30 +106,18 @@ Devi supportare tre domande:
 2. quanta revenue viene allocata alle campagne?
 3. qual è la revenue totale senza duplicazioni?
 
-Progetta:
-
-- fact principale;
-- bridge coupon;
-- bridge campaign;
-- eventuali allocation weights;
-- invarianti di conservazione dei totali.
-
-Spiega perché coupon e campagne potrebbero richiedere policy diverse.
+Progetta fact principale, bridge coupon, bridge campaign, eventuali allocation weights e invarianti di conservazione. Spiega perché coupon e campagne potrebbero richiedere policy differenti.
 
 ### Esercizio 9 — Il dashboard che migliora troppo
 
-Da un giorno all'altro:
+Da un giorno all’altro:
 
 - conversion rate: 4,1% → 5,3%;
 - ordini: quasi invariati;
 - sessioni: -23%;
 - revenue: +1%.
 
-Costruisci una sequenza di controlli organizzata per:
-
-**population → instrumentation → grain → join → denominator → time → reconciliation**.
-
-Poi assegna a ogni controllo una severity `BLOCK`, `WARN` o `MONITOR`.
+Costruisci i controlli nell’ordine **population → instrumentation → grain → join → denominator → time → reconciliation** e assegna a ciascuno severity `BLOCK`, `WARN` o `MONITOR`.
 
 ### Esercizio 10 — Contribution margin per categoria
 
@@ -208,83 +132,27 @@ net revenue
 - outbound shipping
 ```
 
-Hai:
+Hai `order_lines` a line grain, più refund per line, più payment per order, più shipment per order, una bridge shipment-line, `dim_product` SCD Type 2 e più valute.
 
-- `order_lines`: line grain;
-- `refunds`: più righe per line;
-- `payments`: più righe per order;
-- `shipments`: più righe per order;
-- `shipment_lines`: bridge shipment-line;
-- `dim_product`: SCD Type 2;
-- più valute.
-
-Completa un Analytical Data Contract includendo almeno:
-
-- grain;
-- allocation policies;
-- point-in-time product category;
-- FX semantics;
-- refund lateness;
-- incremental strategy;
-- reconciliation tests;
-- service envelope.
+Completa un Analytical Data Contract includendo grain, allocation policies, point-in-time product category, FX semantics, refund lateness, incremental strategy, reconciliation e service envelope.
 
 ### Esercizio 11 — Il contract cambia
 
-Il Finance team decide che `net_revenue` da domani deve escludere una nuova categoria di fee che prima era inclusa.
-
-Elenca:
-
-1. quali campi del contract cambiano;
-2. quali modelli downstream possono essere impattati;
-3. quali test devono cambiare;
-4. se il passato va ricalcolato;
-5. come distingueresti una modifica backward-compatible da una breaking semantic change.
-
-Questo tema tornerà nei Capitoli 12 e 18.
+Finance decide che `net_revenue` deve escludere una nuova categoria di fee prima inclusa. Elenca quali campi del contract cambiano, quali consumer possono essere impattati, quali test devono evolvere, se il passato va ricalcolato e come distingueresti una modifica backward-compatible da una breaking semantic change.
 
 ### Esercizio 12 — Leadership review
 
-Il COO vuole cambiare fornitore logistico perché `on_time_delivery_rate` è sceso di 4 punti.
+Il COO vuole cambiare fornitore logistico perché `on_time_delivery_rate` è sceso di 4 punti. Hai 24 ore.
 
-Hai 24 ore.
-
-Non scrivere subito la query.
-
-Produci un contract preliminare con:
-
-- decisione;
-- shipment vs order grain;
-- promise date;
-- delivered date;
-- split shipment;
-- timezone;
-- carrier eligibility;
-- product/geography mix;
-- promise-policy changes;
-- quality invariants;
-- reconciliation con il sistema operativo;
-- output finale richiesto.
-
-Indica quali campi non puoi ancora compilare senza parlare con Operations.
+Non partire dalla query. Produci un contract preliminare con decisione, shipment vs order grain, promise/delivered date, split shipment, timezone, carrier eligibility, product/geography mix, cambi di promise policy, quality invariants, reconciliation con il sistema operativo e output finale. Indica esplicitamente quali campi non puoi completare senza Operations.
 
 ### Autovalutazione
 
-Alla fine del capitolo dovresti saper spiegare perché:
+Alla fine del capitolo dovresti riuscire a spiegare, senza rifugiarti nella sintassi, perché un join cambia il peso delle osservazioni, una ratio richiede un denominatore esplicito, una window function aggiunge contesto senza collassare il grain, una dimensione corrente può riscrivere il passato, `DISTINCT` non definisce una policy di dedup, una many-to-many può richiedere allocazione e un modello incrementale deve osservare modifiche tardive.
 
-- un join cambia il significato, non solo le righe;
-- una percentuale richiede popolazione e denominatore;
-- una window function mantiene il grain ma aggiunge contesto;
-- una CTE può rendere auditabile una trasformazione;
-- uno star schema separa fatti e contesto;
-- una dimensione corrente può riscrivere il passato;
-- `DISTINCT` non definisce la deduplicazione;
-- una many-to-many può richiedere allocazione;
-- un modello incrementale deve osservare modifiche tardive;
-- costo e freshness sono proprietà del prodotto analitico;
-- AI-generated SQL deve implementare un contract, non inventarlo.
+Dovresti anche saper collegare queste scelte a test, freshness, costo, lineage e AI-assisted SQL.
 
-Il cuore del capitolo è questa trasformazione mentale:
+Il passaggio mentale del capitolo è:
 
 ```text
 non:
@@ -296,6 +164,6 @@ quali proprietà deve preservare
 e come dimostro che le preserva?"
 ```
 
-Quando il contract è chiaro, spesso la query finale diventa più semplice.
+Quando il contract è chiaro, spesso la query finale diventa più semplice. Quando il contract è assente, anche SQL sofisticato può produrre una risposta molto convincente a una domanda mai davvero definita.
 
-Quando il contract è assente, anche SQL sofisticato può produrre una risposta estremamente convincente a una domanda che nessuno aveva davvero definito.
+Il Capitolo 12 allargherà ora l’inquadratura. Una trasformazione semanticamente corretta non appare dal nulla: il dato deve nascere, essere catturato, trasportato, memorizzato e servito. Dopo aver definito **che cosa** il dataset deve significare, dovremo capire **quale percorso architetturale rende quella promessa disponibile con la freshness, il recovery e il costo necessari alla decisione**.
