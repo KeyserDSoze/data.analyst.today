@@ -1,15 +1,6 @@
 ## 7.12 Esercizi: ragionare nel tempo senza trasformare il forecast in certezza
 
-Gli esercizi di questo capitolo allenano soprattutto la **sequenza del ragionamento**.
-
-Per ogni problema prova a distinguere:
-
-1. baseline;
-2. struttura temporale;
-3. anomalia;
-4. previsione;
-5. incertezza;
-6. decisione.
+Gli esercizi restano volutamente strutturati perché qui la sequenza è parte dell'allenamento. Per ogni problema prova a seguire lo stesso movimento del capitolo: **scegli la baseline, ricostruisci la struttura temporale, verifica se lo scostamento è reale, valuta il forecast soltanto con informazione `as-of`, quantifica l'incertezza e infine collega l'errore alla decisione**.
 
 ### Esercizio 1 — Il lunedì peggiore dell'anno
 
@@ -34,8 +25,6 @@ Costruisci la baseline corretta e scrivi una conclusione in massimo 100 parole.
 
 Un marketplace mostra GMV -31% tra le 10:00 e le 11:00.
 
-Hai queste metriche:
-
 | Metrica | Scostamento vs baseline |
 | --- | ---: |
 | Sessioni | +2% |
@@ -46,14 +35,7 @@ Hai queste metriche:
 | Payment gateway errors | +1% |
 | Event ingestion delay | +280% |
 
-Classifica l'evento nella gerarchia:
-
-- data anomaly;
-- contextual anomaly;
-- business anomaly;
-- structural break.
-
-Poi elenca le prime cinque verifiche che faresti prima di avvisare il management.
+Classifica l'evento come data anomaly, contextual anomaly, business anomaly o structural break. Poi indica le prime cinque verifiche che faresti prima di avvisare il management.
 
 ### Esercizio 3 — Seasonal naïve contro modello ML
 
@@ -65,11 +47,9 @@ Un contact center confronta due forecast.
 | 7 giorni | 610 | 590 |
 | 28 giorni | 1.040 | 1.180 |
 
-La pianificazione del personale viene chiusa tre settimane prima.
+La pianificazione del personale viene chiusa tre settimane prima. Quale risultato conta di più? Quali metriche o segmentazioni aggiuntive chiederesti prima di scegliere il modello?
 
-Quale risultato conta di più? Quali altre metriche o segmentazioni chiederesti prima di scegliere il modello?
-
-### Esercizio 4 — Leakage “as-of”
+### Esercizio 4 — Leakage `as-of`
 
 Un retailer prevede vendite a 30 giorni. Nel dataset storico sono disponibili:
 
@@ -81,19 +61,11 @@ Un retailer prevede vendite a 30 giorni. Nel dataset storico sono disponibili:
 - categoria prodotto;
 - vendite dei 90 giorni precedenti.
 
-Per ciascuna feature indica:
-
-- se può essere usata in un forecast a 30 giorni;
-- quale versione `as-of` dovrebbe essere conservata;
-- quale rischio di leakage esiste.
+Per ciascuna feature indica se può essere usata nel forecast a 30 giorni, quale versione `as-of` dovrebbe essere conservata e quale rischio di leakage esiste.
 
 ### Esercizio 5 — MAPE perfetto, decisione pessima
 
-Un distributore ha 5.000 SKU.
-
-Il modello B riduce il MAPE medio dal 14% al 10% rispetto al modello A.
-
-Ma:
+Un distributore ha 5.000 SKU. Il modello B riduce il MAPE medio dal 14% al 10% rispetto al modello A, ma:
 
 - sui 100 SKU critici A ha MAE 18, B ha MAE 31;
 - uno stock-out critico costa mediamente 1.900 €;
@@ -110,20 +82,11 @@ Tre serie hanno scale molto diverse:
 - SKU B: domanda media 120 unità;
 - SKU C: domanda intermittente, molti giorni a zero.
 
-Vuoi confrontare la qualità del forecast tra le tre serie.
-
-Spiega:
-
-1. perché MAE non è direttamente comparabile;
-2. perché MAPE è problematico per C;
-3. come una metrica scalata rispetto a naïve/seasonal-naïve può aiutare;
-4. perché anche MASE non sostituisce il costo economico dell'errore.
+Spiega perché MAE non è direttamente comparabile, perché MAPE è problematico per C, come una metrica scalata rispetto a naïve/seasonal-naïve può aiutare e perché anche MASE non sostituisce il costo economico dell'errore.
 
 ### Esercizio 7 — Intervallo nominale 80%, coverage 54%
 
-Un modello produce prediction interval all'80%.
-
-Nel backtest su 500 forecast:
+Un modello produce prediction interval all'80%. Nel backtest su 500 forecast:
 
 - solo il 54% dei valori reali cade dentro l'intervallo;
 - la coverage a 1 giorno è 78%;
@@ -142,11 +105,11 @@ Forecast domanda:
 - costo medio di under-capacity: 95.000 €;
 - costo di capacità aggiuntiva preventiva: 18.000 €.
 
-Prepara una raccomandazione breve. Il compito non è scegliere automaticamente il point forecast: devi collegare distribuzione e costo della decisione.
+Prepara una raccomandazione breve che colleghi distribuzione e costo della decisione invece di usare automaticamente il point forecast.
 
 ### Esercizio 9 — Caso reale: Google Flu Trends
 
-Nel caso Google Flu Trends, il sistema sovrastimò il livello dell'influenza in 100 settimane su 108 nella finestra documentata da Lazer e colleghi, e gli errori mostrarono autocorrelazione e stagionalità.
+Nel caso Google Flu Trends il sistema sovrastimò il livello dell'influenza in 100 settimane su 108 nella finestra documentata da Lazer e colleghi, e gli errori mostrarono autocorrelazione e stagionalità.
 
 Rispondi:
 
@@ -160,24 +123,13 @@ Riferimento: Lazer et al., *Science* 2014, https://pubmed.ncbi.nlm.nih.gov/24626
 
 ### Esercizio 10 — Override umano
 
-Un forecast industriale prevede 50.000 pezzi per il mese prossimo.
+Un forecast industriale prevede 50.000 pezzi per il mese prossimo. Il direttore commerciale sa che un cliente che pesa normalmente per il 30% della domanda ha appena firmato un contratto con un concorrente e che l'informazione non è ancora nei dati.
 
-Il direttore commerciale sa che un cliente che pesa normalmente per il 30% della domanda ha appena firmato un contratto con un concorrente. L'informazione non è ancora nei dati.
-
-Progetta un processo di override che specifichi:
-
-- forecast statistico originale;
-- informazione nuova;
-- impatto atteso;
-- chi approva l'override;
-- forecast finale;
-- come misurerai ex post se l'override ha migliorato la decisione.
+Progetta un processo di override che specifichi forecast statistico originale, informazione nuova, impatto atteso, approvatore, forecast finale e metodo di valutazione ex post dell'override.
 
 ### Esercizio finale — Temporal Decision Brief
 
-Sei Data Analyst di una piattaforma di delivery.
-
-Il board chiede un forecast degli ordini per le prossime otto settimane.
+Sei Data Analyst di una piattaforma di delivery. Il board chiede un forecast degli ordini per le prossime otto settimane.
 
 Sai che:
 
@@ -211,22 +163,12 @@ Compila un **Temporal Decision Brief**:
 | Monitoring |  |
 | Raccomandazione |  |
 
-Chiudi con un executive summary di massimo 180 parole.
-
-La risposta migliore non deve fingere che otto settimane siano prevedibili con la stessa affidabilità della prossima settimana. Deve mostrare **dove il modello aggiunge valore, dove smette di battere la baseline e come il cambio di fee modifica le condizioni di validità**.
+Chiudi con un executive summary di massimo 180 parole. La risposta migliore non deve fingere che otto settimane siano prevedibili con la stessa affidabilità della prossima settimana: deve mostrare **dove il modello aggiunge valore, dove smette di battere la baseline e come il cambio di fee modifica le condizioni di validità**.
 
 ### Autovalutazione
 
-A fine capitolo dovresti saper spiegare senza software:
+A fine capitolo dovresti riuscire a spiegare, senza dipendere dal software, perché ogni variazione temporale richiede una baseline, perché autocorrelazione e ordine cambiano l'analisi, come distinguere anomalia del dato, contestuale, di business e structural break, perché un modello deve battere un benchmark credibile e perché la validazione deve essere `as-of`.
 
-- perché una variazione temporale ha bisogno di una baseline;
-- perché autocorrelazione e ordine temporale cambiano l'analisi;
-- differenza tra anomalia del dato, contestuale, di business e structural break;
-- perché un modello deve battere una baseline credibile;
-- perché la validazione deve essere `as-of`;
-- differenza concettuale tra MAE, RMSE, MAPE e MASE;
-- perché accuracy e business loss non coincidono;
-- che cosa significa coverage di un prediction interval;
-- perché un regime change può rendere obsoleto un buon modello;
-- quando un override umano può essere rigoroso;
-- perché forecasting e causalità sono domande diverse.
+Dovresti anche saper collegare MAE, RMSE, MAPE e MASE a tipi diversi di errore; distinguere accuracy da business loss; interpretare la coverage di un prediction interval; riconoscere quando un regime change rende obsoleto un buon modello e quando un override umano può essere rigoroso.
+
+Il confine finale è il più importante: **forecasting e causalità non sono la stessa domanda**. Un modello può prevedere molto bene che la domanda scenderà dopo un aumento di fee senza dimostrare quanto di quella discesa sarà causato dall'aumento stesso. Il Capitolo 8 parte esattamente da questa distanza: dalla previsione di ciò che probabilmente accadrà alla domanda controfattuale **“che cosa cambierebbe se intervenissimo?”**.
