@@ -10,18 +10,9 @@
 
 **data.analyst.today** è un progetto editoriale tecnico di Alessandro Rapiti dedicato al lavoro del Data Analyst nell'era dell'AI. Il repository è pubblicato attraverso l'account GitHub **KeyserDSoze**.
 
-Il libro nasce con un obiettivo preciso: descrivere la professione attraverso il suo sistema di responsabilità, non attraverso una lista temporanea di software.
+Il libro nasce con un obiettivo preciso: descrivere la professione attraverso il suo sistema di responsabilità, non attraverso una lista temporanea di software. SQL, fogli di calcolo, BI, Python, piattaforme dati e sistemi generativi restano strumenti importanti, ma cambiano più rapidamente delle domande che determinano la qualità del lavoro.
 
-SQL, fogli di calcolo, BI, Python, piattaforme dati e sistemi generativi sono strumenti importanti. Cambiano rapidamente. Più lentamente cambiano le domande che determinano la qualità del lavoro:
-
-- abbiamo formulato correttamente il problema?
-- il dato rappresenta ciò che pensiamo rappresenti?
-- il confronto sostiene davvero il claim?
-- l'incertezza può cambiare la decisione?
-- l'output è verificabile?
-- chi è responsabile quando l'analisi entra in un processo operativo?
-
-Il filo conduttore dell'edizione è quindi la capacità di trasformare ambiguità e dati imperfetti in evidenza utilizzabile senza nascondere i limiti del processo.
+Il filo conduttore dell'edizione è il percorso che porta da una richiesta ambigua a una decisione difendibile: capire se il dato rappresenta davvero il fenomeno, quale confronto può sostenere il claim necessario, quanta incertezza conta per la scelta, quali failure mode devono essere verificati e chi resta responsabile quando l'analisi entra in un processo operativo. L'obiettivo è trasformare dati imperfetti in evidenza utilizzabile senza nascondere i limiti del percorso.
 
 ## Sul metodo editoriale
 
@@ -36,7 +27,7 @@ La release editoriale include:
 - verifica della build multiformato;
 - proofread e layout QA prima della release candidata.
 
-Le fonti online possono cambiare nel tempo. Per i riferimenti sensibili alla data, la validità va letta rispetto all'edizione indicata.
+Questa struttura di controllo non implica che ogni riferimento online resti immutabile. Le fonti possono cambiare, essere aggiornate o spostate; per i claim sensibili alla data, la validità va letta rispetto all'edizione indicata.
 
 ## Licenza e diritti
 
