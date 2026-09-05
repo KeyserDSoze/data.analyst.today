@@ -1,59 +1,24 @@
-## 3.14 Data contract: quando un controllo deve diventare un'aspettativa condivisa
+## 3.14 Data contract: quando una scoperta deve diventare un'aspettativa condivisa
 
-Finora abbiamo lavorato soprattutto dal punto di vista del consumatore del dato: riceviamo un dataset, ne comprendiamo grain, chiavi, tempo e qualità, poi decidiamo se è utilizzabile.
+Finora abbiamo guardato il dato soprattutto dal punto di vista di chi lo consuma: riceviamo una fonte, ne ricostruiamo grain, identità, tempo e qualità e decidiamo se può sostenere l'analisi. Ma alcuni problemi, una volta scoperti, non dovrebbero essere investigati di nuovo da zero ogni volta.
 
-Ma alcuni problemi non dovrebbero essere riscoperti a ogni analisi.
+Se una chiave deve essere unica, se un evento ha una definizione precisa, se un campo critico non può cambiare unità o se una semantica richiede un review prima di essere modificata, quella conoscenza può diventare un **data contract**.
 
-Se un campo critico cambia significato, se una chiave deve essere unica o se un evento non può essere rinominato senza conseguenze, queste aspettative devono progressivamente diventare **esplicite a monte**.
+Il valore del contract non dipende dal formato tecnico. Dal punto di vista dell'analista, il principio è questo:
 
-Qui entra il concetto di **data contract**.
+> **Chi produce un dato e chi lo usa condividono una definizione verificabile delle proprietà che non possono cambiare silenziosamente.**
 
-### Che cosa interessa all'analista
-
-Un data contract può assumere forme tecniche diverse. Per il Data Analyst il punto centrale è più semplice:
-
-> **chi produce un dato e chi lo usa condividono una definizione verificabile delle proprietà che non possono cambiare silenziosamente.**
-
-Tra queste proprietà possono esserci:
-
-- significato del dataset o dell'evento;
-- grain;
-- chiavi;
-- campi obbligatori;
-- tipi e unità;
-- valori ammessi;
-- nullability;
-- frequenza e latenza attese;
-- owner;
-- regole per modifiche incompatibili.
-
-La progettazione e governance dei contract verranno riprese nei Capitoli 12 e 18. Qui ci interessa capire **quando l'analista dovrebbe chiedere che una conoscenza scoperta durante l'indagine diventi un vincolo permanente**.
+Queste proprietà possono riguardare significato del dataset, grain, chiavi, campi obbligatori, tipi, unità, domini, nullability, frequenza, latenza, owner e gestione delle modifiche incompatibili. La progettazione e la governance più ampia arriveranno nei Capitoli 12 e 18; qui ci interessa il momento in cui una conoscenza emersa dall'indagine merita di smettere di essere locale.
 
 ### Caso simulato/composito — Il conversion rate che crolla senza che le vendite cambino
 
-Un marketplace monitora quotidianamente il checkout conversion rate.
+Un marketplace monitora il checkout conversion rate. Un lunedì il KPI passa dal **3,8% al 2,9%**, mentre le vendite assolute restano quasi stabili.
 
-Lunedì il valore passa dal **3,8% al 2,9%**.
+Il primo controllo cade sul denominatore: gli eventi `checkout_started` sono aumentati del **31%**. Il team frontend spiega che una release ha cambiato il punto in cui l'evento viene emesso. Prima scattava quando l'utente entrava esplicitamente nel primo step del checkout; dopo la release viene emesso già all'apertura automatica del drawer del carrello.
 
-Le vendite assolute sono quasi stabili.
+Il nome dell'evento non è cambiato. La pipeline non è fallita. Il campo è valido. È cambiato il **fenomeno misurato**.
 
-L'analista controlla il denominatore: il numero di `checkout_started` è aumentato del 31%.
-
-La causa emerge dopo il confronto con il team frontend.
-
-Prima della release, l'evento veniva emesso quando l'utente entrava esplicitamente nel primo step di checkout. Dopo la release viene emesso già all'apertura automatica del drawer del carrello.
-
-Il nome dell'evento non è cambiato.
-
-La pipeline non è fallita.
-
-Il campo è ancora valido.
-
-È cambiato il **fenomeno misurato**.
-
-### Dal problema al contratto
-
-La conoscenza emersa dall'incidente potrebbe essere formalizzata così:
+Il problema non dovrebbe essere risolto soltanto correggendo la dashboard. La nuova conoscenza deve diventare una protezione per il futuro:
 
 ```text
 Event: checkout_started
@@ -64,30 +29,16 @@ Owner: Checkout Product Team
 Semantic changes: analytics review required before production
 ```
 
-Il valore del contratto non sta nel formato del documento. Sta nel rendere il cambiamento **visibile prima** che diventi una falsa storia nei KPI.
+Il contratto rende visibile la dipendenza prima che una modifica di prodotto diventi una falsa storia nei KPI.
 
-### Non tutto merita lo stesso livello di formalizzazione
+## Formalizzare in proporzione al rischio
 
-Un campo esplorativo usato da un solo analista una volta all'anno non richiede necessariamente lo stesso processo di una metrica che alimenta:
+Non tutto richiede lo stesso livello di governance. Un campo esplorativo usato una volta da un singolo analista non merita necessariamente il processo di una metrica che alimenta board reporting, pricing, campagne automatiche o modelli in produzione.
 
-- board reporting;
-- pricing;
-- campagne automatizzate;
-- decisioni operative quotidiane;
-- modelli predittivi in produzione.
+La formalizzazione dovrebbe crescere con la criticità e con il numero di consumatori. Il criterio utile è chiedersi se la proprietà verificata dovrebbe rimanere vera nel tempo, chi può modificarla a monte e quale impatto avrebbe un cambiamento silenzioso sui processi che dipendono da essa.
 
-La formalizzazione dovrebbe essere proporzionata alla criticità.
+Quando la risposta è rilevante, abbiamo superato il confine tra **fix dell'analisi** e **miglioramento del sistema dati**.
 
-### Dalla scoperta locale alla prevenzione sistemica
+La Data Readiness Review diventa così una sorgente di requisiti a monte: i controlli che oggi richiedono investigazione manuale possono trasformarsi in contratti, validazioni o alert. L'organizzazione impara dal problema invece di diventare soltanto più brava a scoprirlo.
 
-Durante una Data Readiness Review, chiediamoci:
-
-- questo problema può ripetersi?
-- la proprietà che abbiamo verificato dovrebbe essere sempre vera?
-- chi può modificarla a monte?
-- come può sapere che esistono consumatori dipendenti da quella proprietà?
-- possiamo trasformare il controllo manuale in una regola condivisa?
-
-Se la risposta è sì, abbiamo superato il confine tra "fix dell'analisi" e **miglioramento del sistema dati**.
-
-> **La maturità non consiste nel diventare bravissimi a scoprire ogni volta lo stesso problema. Consiste nel trasformare le scoperte importanti in aspettative che il sistema non possa violare silenziosamente.**
+> **La maturità non consiste nel riconoscere ogni volta lo stesso difetto. Consiste nel trasformare le scoperte importanti in aspettative condivise che il sistema non possa violare silenziosamente.**
