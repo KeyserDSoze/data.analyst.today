@@ -1,28 +1,16 @@
 ## 8.14 Prediction vs causal targeting: chi è a rischio non è necessariamente chi possiamo aiutare
 
-Il Capitolo 6 ha già separato tre domande:
-
-1. chi probabilmente farà churn?
-2. perché il churn è più frequente in certi gruppi?
-3. quale intervento modifica realmente il churn?
-
-Qui aggiungiamo il passaggio causale che serve alla decisione di targeting.
-
-### Risk score e treatment effect hanno target diversi
+Il lifecycle analysis ha già separato tre domande: chi probabilmente farà churn, quali condizioni sono associate al churn e quale intervento modifica davvero il churn. La causal inference aggiunge una conseguenza operativa: **il cliente con il rischio più alto non è necessariamente quello su cui la nostra azione produce l'effetto maggiore**.
 
 Un modello predittivo stima qualcosa come:
 
 `P(churn | informazioni disponibili)`
 
-Una policy causale vuole invece conoscere qualcosa come:
+Una policy causale vuole invece conoscere un contrasto del tipo:
 
 `P(churn | intervento) - P(churn | nessun intervento)`
 
-Il primo ordina il **rischio**.
-
-Il secondo ordina la **sensibilità all'intervento**.
-
-Sono quantità diverse.
+Il primo ordina il **rischio**. Il secondo ordina la **sensibilità a una specifica azione**.
 
 ### Caso simulato/composito — Tre segmenti
 
@@ -32,75 +20,25 @@ Sono quantità diverse.
 | B | 30% | 18% | -12 pp |
 | C | 12% | 9% | -3 pp |
 
-Un modello di rischio mette A al primo posto.
+Un risk model mette A al primo posto perché ha il churn naturale più alto. Se la decisione è **chi chiamare**, B produce però un effetto incrementale molto più grande. Il cliente più facile da prevedere può essere il più difficile da salvare.
 
-Se la decisione è **chi chiamare**, B può creare molto più valore incrementale.
+Questo spiega anche un apparente paradosso frequente. Un SaaS costruisce un churn model con **AUC 0,89** usando login recenti, ticket, riduzione feature usage, failed payment e utenti attivi. Customer Success contatta gli account con score più alto e, dopo due mesi, i contattati churnano molto più degli altri. Il dato non dimostra che la chiamata sia inefficace: il trattamento è stato assegnato **in base al rischio**. Confrontare trattati e non trattati incorpora il processo di targeting che ha creato i gruppi.
 
-Il cliente più facile da prevedere può essere il più difficile da salvare.
+Per misurare l'effetto della chiamata serve quindi un design causale compatibile con quella policy, non un confronto successivo tra chi è stato contattato e chi no.
 
-### Caso simulato/composito — Il modello con AUC alta
+### Predittore, leva e trattamento sono tre cose diverse
 
-Un SaaS costruisce un churn model con AUC 0,89.
+Una feature può prevedere bene un outcome e non essere modificabile: tenure, country, industry, storico acquisti o dimensione aziendale. Altre variabili sono più vicine a una leva — tempo di risposta, frizione al pagamento, errori di onboarding, disponibilità di un'integrazione, time-to-value — ma nemmeno una variabile modificabile diventa automaticamente una causa. Dobbiamo ancora definire **quale intervento** la modifica e stimarne l'effetto.
 
-Tra le feature più importanti:
+Uplift modeling, causal forests e metodi per heterogeneous treatment effects cercano proprio di stimare dove cambia l'effetto di un'azione. Sono utili quando esiste un design che permette causal identification credibile, spesso dati sperimentali o quasi-sperimentali ben costruiti. Non riparano automaticamente confounding non osservato, treatment leakage, overlap scarso, interference o cambi di policy.
 
-- login recenti;
-- ticket;
-- riduzione feature usage;
-- failed payment;
-- utenti attivi.
+La regola da conservare è quindi:
 
-Il Customer Success contatta gli account con rischio più alto. Dopo due mesi i contattati churnano molto più degli altri.
+> **Non usare una probabilità di evento come se fosse una probabilità di successo dell'intervento.**
 
-Non possiamo concludere che la chiamata sia inefficace: il trattamento è stato assegnato **in base al risk score**.
+### Dall'uplift alla policy
 
-Il confronto trattati/non trattati incorpora quindi il processo di targeting.
-
-Per valutare l'effetto della chiamata serve un design causale compatibile con quella policy.
-
-### Feature predittiva ≠ leva
-
-Una feature può essere fortemente predittiva ma impossibile o insensata da modificare:
-
-- tenure;
-- country;
-- industry;
-- storico acquisti;
-- dimensione aziendale.
-
-Altre variabili possono essere meno predittive ma più vicine a una leva:
-
-- tempo di risposta;
-- errore onboarding;
-- frizione al pagamento;
-- disponibilità di una integrazione;
-- time-to-value.
-
-Anche una variabile modificabile, però, non diventa automaticamente una leva causale. Deve ancora essere identificato l'effetto dell'intervento che la modifica.
-
-### Uplift e causal ML
-
-Uplift modeling e metodi per heterogeneous treatment effects cercano di stimare **dove l'effetto di una specifica azione cambia**.
-
-Sono utili quando abbiamo un design che consente identificazione causale credibile, spesso dati sperimentali o quasi-sperimentali ben costruiti.
-
-Non riparano automaticamente:
-
-- confounding non osservato;
-- treatment leakage;
-- overlap scarso;
-- interference;
-- cambi di policy.
-
-Il Capitolo 10 approfondirà predictive modeling. Qui ci interessa una sola regola:
-
-> **non usare una probabilità di evento come se fosse una probabilità di successo dell'intervento.**
-
-### Targeting economico
-
-Anche treatment effect e uplift non sono ancora la decisione completa.
-
-Per prioritizzare potremmo voler combinare:
+Anche il treatment effect non è la decisione completa. Se la capacità è limitata dobbiamo combinare effetto incrementale, valore economico dell'outcome evitato, costo dell'intervento e opportunity cost della capacità:
 
 ```text
 effetto incrementale
@@ -109,11 +47,9 @@ effetto incrementale
 - costo/opportunity cost della capacità
 ```
 
-Un intervento con effetto causale alto può non valere il costo. Un effetto più piccolo su account ad alto valore può essere prioritario.
+Un intervento con effetto causale alto può non valere il costo; un effetto più piccolo su account di grande valore può essere prioritario. Il Capitolo 15 svilupperà questa parte economica, ma già qui è importante non far coincidere “miglior modello causale” con “migliore policy”.
 
-Questo ponte verso decision economics sarà sviluppato nel Capitolo 15.
-
-### Policy targeting card
+La **Policy targeting card** mantiene separati i pezzi:
 
 ```text
 Risk model: quale evento predice?
@@ -129,3 +65,5 @@ Come misureremo la policy dopo il rollout?
 ```
 
 > **Prediction localizza dove l'evento è probabile. Causal targeting localizza dove la nostra azione può cambiare il risultato.**
+
+Ora possiamo mettere insieme tutto il capitolo in un caso realistico: più interventi, assignment mechanism diversi e livelli di causal claim che non devono essere trattati come equivalenti.
