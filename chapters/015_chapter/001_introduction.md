@@ -2,138 +2,37 @@
 
 ## 15.0 Un numero interessante non è ancora una decisione
 
-Molte analisi finiscono nel momento sbagliato.
+Molte analisi finiscono nel momento sbagliato. Il team trova un pattern, costruisce un grafico e scrive che la conversion mobile è diminuita del 7%. Il numero può essere corretto, ma nessuna scelta è ancora avvenuta.
 
-Il team trova un pattern, costruisce un grafico e scrive:
-
-> “La conversion mobile è diminuita del 7%.”
-
-Il numero può essere corretto.
-
-Ma nessuna scelta è ancora avvenuta.
-
-Una decisione esiste quando qualcuno deve scegliere **tra almeno due corsi d'azione**, incluso continuare come oggi.
+Una decisione esiste quando qualcuno deve scegliere tra almeno due corsi d'azione, incluso continuare come oggi. È questo il passaggio che ci interessa:
 
 ```text
 finding
 → decision context
 → alternatives
 → evidence
-→ uncertainty/risk
+→ uncertainty / risk
 → trade-offs
 → choice
 → action
 → outcome review
 ```
 
-Questo capitolo riguarda il passaggio più importante e più sottovalutato dell'analytics:
+Il Capitolo 14 ha chiuso la catena di verifica chiedendo quale claim abbiamo il diritto di sostenere. Qui facciamo il passo successivo: **come trasformiamo quel claim, inevitabilmente incompleto, in una scelta esplicita senza fingere di possedere più certezza di quella disponibile?**
 
-> **trasformare evidenza incompleta in una scelta esplicita senza fingere di avere più certezza di quella disponibile.**
+Un *finding* descrive ciò che osserviamo: il churn è salito dal 4,2% al 5,1%. Un *insight* cambia la rappresentazione del problema: quasi tutto il deterioramento è concentrato nei primi 90 giorni e negli account con activation incompleta. Una *recommendation* confronta alternative alla luce di evidenza, costi, rischi e vincoli: testare un intervento di activation sui nuovi account appare preferibile a una campagna di retention sull'intera base. La *decisione* è infine la scelta assunta da un owner: allocare €200k al pilot, partire sul 20% degli account eleggibili e rivalutare dopo sei settimane.
 
-### Finding, insight, recommendation e decisione
+Queste quattro cose sono collegate, ma non sono intercambiabili. In particolare, un insight utile non deve necessariamente spiegare il meccanismo causale definitivo. Se gli errori checkout aumentano del 40% e il 91% del delta è concentrato su un solo PSP, può essere razionale spostare temporaneamente traffico verso un provider alternativo prima di conoscere la root cause completa. Il livello di evidenza necessario dipende anche dal costo, dal blast radius e dalla reversibilità della decisione.
 
-Usiamo quattro parole con ruoli differenti.
+Per la stessa ragione, decidere non significa sempre “fare qualcosa”. Non intervenire, aspettare 24 ore, comprare una specifica informazione, lanciare un pilot, ridurre lo scope o interrompere un progetto sono tutte decisioni. L'analista non deve produrre azione per giustificare il proprio lavoro: deve migliorare la scelta.
 
-**Finding**
+### Un aggregato corretto può generare la decisione sbagliata
 
-Che cosa osserviamo?
+Consideriamo un caso simulato/composito. Una società subscription osserva il churn small business passare dal 5,6% al 7,2% su una popolazione di 180.000 account. La prima proposta del management è una campagna retention su tutto il segmento, con un costo stimato di circa €1,1M.
 
-> “Il churn è salito dal 4,2% al 5,1%.”
+L'analisi successiva cambia però la struttura del problema. Il deterioramento è quasi interamente nei primi 90 giorni; il 74% del delta proviene da account con onboarding incompleto; gli account pienamente attivati sono sostanzialmente stabili. Un intervento mirato sull'activation costa circa €190k e Customer Success non ha comunque capacità per contattare l'intera popolazione.
 
-**Insight**
-
-Quale parte del finding cambia la comprensione del problema?
-
-> “Quasi tutto il deterioramento è concentrato nei primi 90 giorni e negli account con activation incompleta.”
-
-**Recommendation**
-
-Quale alternativa appare preferibile date evidenza, costi, rischi e vincoli?
-
-> “Testare un intervento di activation sui nuovi account è preferibile a una campagna di retention sull'intera base.”
-
-**Decision**
-
-Quale alternativa viene effettivamente scelta, da chi e con quali condizioni?
-
-> “Allocare €200k al pilot, partire sul 20% degli account eleggibili e rivalutare dopo sei settimane.”
-
-Le quattro cose possono essere collegate, ma non sono intercambiabili.
-
-### Un insight non deve necessariamente “spiegare la causa”
-
-Un insight utile può cambiare una decisione anche senza identificare il meccanismo causale definitivo.
-
-Esempio:
-
-```text
-finding:
-errori checkout +40%
-
-insight:
-91% del delta è concentrato su un solo PSP
-
-decision implication:
-spostare temporaneamente traffico verso provider alternativo
-```
-
-Possiamo avere evidenza sufficiente per una mitigazione reversibile anche se la root cause tecnica non è ancora nota.
-
-Questo evita un errore frequente:
-
-> rimandare ogni decisione finché non possediamo una spiegazione perfetta.
-
-Il livello di evidenza necessario dipende dalla decisione.
-
-### Una decisione non è “fare qualcosa”
-
-Anche queste sono decisioni:
-
-- non intervenire;
-- aspettare 24 ore;
-- raccogliere un dato specifico;
-- fare un pilot;
-- ridurre lo scope;
-- scegliere un'opzione reversibile;
-- interrompere un progetto.
-
-L'analista non deve produrre azione per giustificare il proprio lavoro.
-
-Deve migliorare la scelta.
-
-### Caso simulato/composito — il churn small business
-
-> **Nota:** caso costruito a fini didattici.
-
-Una società subscription osserva:
-
-```text
-churn small business:
-5,6% → 7,2%
-
-population:
-180.000 account
-```
-
-La prima proposta del management è:
-
-> “Facciamo una campagna retention su tutti i clienti small business.”
-
-Costo stimato: circa €1,1M.
-
-L'analisi successiva mostra:
-
-- il deterioramento è quasi interamente nei primi 90 giorni;
-- il 74% del delta proviene da account con onboarding incompleto;
-- gli account pienamente attivati sono sostanzialmente stabili;
-- un intervento mirato sull'activation costa circa €190k;
-- il team Customer Success non ha capacità per contattare tutta la popolazione.
-
-Il finding iniziale era corretto.
-
-La prima raccomandazione era però costruita sull'aggregato sbagliato.
-
-Le alternative reali diventano:
+Il finding iniziale era corretto. Era la scelta implicita costruita sopra l'aggregato a essere fragile. Le alternative reali diventano allora:
 
 ```text
 A — campagna sull'intero segmento
@@ -142,50 +41,30 @@ C — pilot mirato prima di scalare
 D — business as usual / nessun intervento immediato
 ```
 
-Ora possiamo decidere.
+Ora possiamo confrontare una decisione, non soltanto commentare un KPI.
 
-### Il benchmark “do nothing”
+### Business as usual è un'alternativa, non il vuoto
 
-Ogni Decision Record importante dovrebbe includere esplicitamente:
+Ogni Decision Record importante dovrebbe includere esplicitamente **business as usual / do nothing**. Altrimenti confrontiamo soltanto varianti di intervento e dimentichiamo che anche l'intervento deve guadagnarsi il diritto di esistere.
 
-**business as usual / do nothing**.
+Il *Green Book 2026* di HM Treasury, pur nel diverso contesto dell'appraisal pubblico, porta il business as usual fino alla shortlist proprio come benchmark rispetto al quale confrontare le altre opzioni. Chiede inoltre di rendere visibili costi, benefici, rischi, incertezze e impatti che non possono essere monetizzati in modo sensato.[^green-book-15]
 
-Se non lo facciamo, rischiamo di confrontare soltanto varianti di intervento e dimenticare che l'intervento stesso deve guadagnarsi il diritto di esistere.
-
-Il Green Book 2026 di HM Treasury, guida ufficiale UK per l'appraisal di alternative, richiede di generare opzioni reali e porta il **business as usual** fino alla shortlist come benchmark di confronto. Richiede inoltre di considerare costi, benefici, rischi, incertezze e alternative non puramente monetarie.
-
-Fonte: https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2026
-
-Il contesto pubblico è diverso da quello di un team analytics aziendale, ma il principio è generale:
-
-> **una raccomandazione non è forte perché ha molti numeri; è forte quando ha battuto alternative credibili.**
-
-### Risk-informed decision making
-
-NASA distingue il risk management operativo dal **Risk-Informed Decision Making**, usato per informare scelte tra alternative con dati, obiettivi, rischi e incertezza.
-
-Fonte: https://www.nasa.gov/reference/6-4-technical-risk-management/
-
-Anche qui il settore è diverso, ma il pattern è utile:
+NASA formula lo stesso principio da un'altra prospettiva. La Decision Analysis serve a caratterizzare e confrontare alternative coerenti con le priorità del decision-maker **dato lo stato di conoscenza disponibile**, includendo costo, performance, schedule e incertezza.[^nasa-da-15] La qualità del lavoro non consiste quindi nel trovare il numero più convincente, ma nel rendere esplicito il passaggio:
 
 ```text
 objectives
 → alternatives
 → evidence
-→ uncertainty/risk
-→ trade-off
+→ uncertainty / risk
+→ trade-offs
 → selection
 ```
 
-È la stessa struttura che useremo nel Decision Record.
-
 ### Il deliverable del capitolo: Decision Record
 
-Il Decision Record non è soltanto una memoria di ciò che abbiamo deciso.
+Il **Decision Record** non è soltanto la memoria di ciò che abbiamo scelto. È il luogo in cui la scelta viene costruita prima che sia presa, quando le alternative e l'incertezza sono ancora visibili.
 
-È il posto in cui **la scelta viene costruita prima di essere presa**.
-
-Template iniziale:
+Una versione iniziale è:
 
 ```text
 decision:
@@ -216,19 +95,11 @@ review date:
 outcome metrics:
 ```
 
-Nelle sezioni successive lo costruiremo pezzo per pezzo.
+Nelle sezioni successive costruiremo questi campi come parti di un unico ragionamento. Finding, expected value, sensitivity, switching threshold e pre-mortem non saranno tecniche indipendenti: serviranno tutte a rispondere alla stessa domanda, **quanto è robusto il motivo per cui preferiamo un'alternativa alle altre?**
 
-### Il criterio fondamentale
-
-Una buona analisi non si misura dal numero di grafici, query o modelli prodotti.
-
-Si misura da quanto modifica la qualità della scelta:
-
-- quale alternativa scegliamo;
-- quanto investiamo;
-- chi trattiamo;
-- quanto aspettiamo;
-- quale rischio accettiamo;
-- quale informazione decidiamo di comprare prima di impegnarci.
+Una buona analisi, a questo punto del libro, non si misura dal numero di grafici, query o modelli prodotti. Si misura da quanto cambia la qualità della scelta: quale alternativa preferiamo, quanto investiamo, chi trattiamo, quanto aspettiamo, quale rischio accettiamo e quale informazione vale la pena comprare prima di impegnarci.
 
 > **Un insight è decision-relevant quando cambia una scelta, una soglia, uno scope, un timing o il livello di fiducia con cui siamo disposti ad agire.**
+
+[^green-book-15]: HM Treasury, *The Green Book 2026*, https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2026
+[^nasa-da-15]: NASA, *6.8 Decision Analysis*, https://www.nasa.gov/reference/6-8-decision-analysis/
