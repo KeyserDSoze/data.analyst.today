@@ -1,16 +1,12 @@
-## 7.3 Stazionarietà e decomposizione: rendere esplicita la struttura prima del forecast
+## 7.3 Stazionarietà e decomposizione: capire se stiamo ancora osservando lo stesso processo
 
-Molti metodi temporali funzionano meglio quando la struttura statistica che devono modellare non cambia continuamente.
+Lag e autocorrelazione ci dicono che il passato contiene memoria. Prima di trasferire quella memoria nel futuro dobbiamo però fare una domanda più profonda: **le proprietà del processo sono rimaste abbastanza stabili perché il passato e il presente siano ancora comparabili?**
 
-Una nozione centrale è la **stazionarietà**.
+La nozione di **stazionarietà** formalizza una parte di questo problema. In termini pratici, una serie è più facile da modellare quando livello, variabilità e struttura di dipendenza non cambiano continuamente; trend persistenti, stagionalità e cambi di scala possono violare questa stabilità.[^nist-stationarity] Non è necessario trasformare ogni progetto in un esercizio teorico. Serve riconoscere quando stiamo chiedendo al modello di imparare una relazione che cambia mentre la osserviamo.
 
-In termini pratici, una serie stazionaria presenta proprietà come livello, variabilità e dipendenza temporale sufficientemente stabili nel tempo. Trend persistenti, stagionalità o cambiamenti della scala possono violare questa idea.[^nist-stationarity]
+### Caso simulato/composito — La volatilità che cresce con il marketplace
 
-L'obiettivo non è trasformare ogni serie in un esercizio accademico di stazionarietà. È capire se stiamo chiedendo al modello di imparare una relazione che cambia mentre la osserviamo.
-
-### Caso simulato/composito — La volatilità che cresce insieme al marketplace
-
-Un marketplace passa da circa 20.000 a oltre 80.000 ordini giornalieri in quattro anni.
+Un marketplace passa da circa 20.000 a oltre 80.000 ordini giornalieri in quattro anni:
 
 | Anno | Ordini medi/giorno | Deviazione standard |
 | --- | ---: | ---: |
@@ -19,124 +15,35 @@ Un marketplace passa da circa 20.000 a oltre 80.000 ordini giornalieri in quattr
 | 2025 | 49.600 | 6.700 |
 | 2026 | 78.300 | 12.900 |
 
-La volatilità assoluta aumenta insieme alla scala del business.
+La volatilità assoluta cresce insieme alla scala. Un errore di 5.000 ordini aveva un peso enorme nel 2023 e molto diverso nel 2026. Guardando la serie su scala logaritmica e ragionando in variazioni relative, il comportamento appare più stabile in termini percentuali.
 
-Un errore di 5.000 ordini aveva un significato enorme nel 2023 e molto diverso nel 2026.
+La trasformazione non “migliora” i dati. Cambia l'oggetto che stiamo modellando: livello assoluto, variazione assoluta o variazione relativa. La scelta deve essere coerente con la decisione e con il costo dell'errore.
 
-L'analista prova una trasformazione logaritmica e osserva variazioni relative. Il processo diventa più stabile in termini percentuali.
+Lo stesso vale per la **differenziazione**. Se i clienti attivi passano da 102.000 a 105.500, poi 109.100 e 112.400, i livelli mostrano crescita continua mentre le differenze mensili — +3.500, +3.600, +3.300 — sono molto più stabili. Modellare il cambiamento può rendere più chiara la dinamica, ma comporta un costo: perdiamo la lettura diretta del livello e rischiamo di rimuovere struttura utile se differenziamo meccanicamente.
 
-La trasformazione non “migliora i dati”. Cambia la domanda modellata:
-
-- livello assoluto;
-- variazione assoluta;
-- variazione relativa.
-
-La scelta deve seguire il costo decisionale dell'errore.
-
-### Differenziare: modellare il cambiamento invece del livello
-
-Se una serie cresce persistentemente, può essere utile osservare:
-
-`differenza_t = valore_t - valore_(t-1)`
-
-Per esempio:
-
-| Mese | Clienti attivi | Differenza |
-| --- | ---: | ---: |
-| Gen | 102.000 | — |
-| Feb | 105.500 | +3.500 |
-| Mar | 109.100 | +3.600 |
-| Apr | 112.400 | +3.300 |
-
-I livelli crescono. Le variazioni mensili sono più stabili.
-
-Ma differenziare non è gratuito: perdiamo la lettura diretta del livello e possiamo rimuovere struttura utile se lo facciamo meccanicamente.
-
-### Decomposizione: trend, stagionalità e remainder
+### Decomporre per sapere che cosa resta
 
 Una rappresentazione concettuale utile è:
 
 `serie = trend + stagionalità + residuo`
 
-In altri processi la stagionalità cresce insieme al livello e una lettura moltiplicativa può essere più naturale.
+Quando l'ampiezza stagionale cresce con il livello può essere più naturale una struttura moltiplicativa. In entrambi i casi la decomposizione serve a separare domande diverse: qual è il movimento di fondo? quale parte si ripete con il calendario? che cosa rimane dopo aver rappresentato le componenti principali? Hyndman e Athanasopoulos insistono proprio sulla necessità di comprendere i pattern della serie prima del forecasting.[^fpp]
 
-La decomposizione serve a separare domande:
+Il **remainder** non va però chiamato troppo rapidamente “rumore”. Può contenere casualità, eventi speciali, problemi di dato, promozioni, cambi di mix, rotture strutturali o dipendenza che il modello non ha ancora catturato. Eliminare ciò che resta senza investigarlo può significare cancellare proprio il segnale che ci interessa.
 
-- qual è il movimento di fondo?
-- quale parte si ripete con il calendario?
-- che cosa rimane dopo aver rimosso le strutture principali?
+Una piattaforma travel, per esempio, osserva cancellazioni **+17% in aprile** e apre un incidente. La storia mostra però un aumento simile ogni primavera; il picco si sposta perché Pasqua cambia data. Una semplice stagionalità mensile non allinea bene l'evento. Quando il calendario festivo viene trattato esplicitamente, gran parte del +17% diventa coerente con la struttura nota e il residuo anomalo si riduce molto. Non abbiamo spiegato causalmente perché Pasqua aumenti le cancellazioni; abbiamo soltanto smesso di chiamare anomalia ciò che la baseline avrebbe dovuto aspettarsi.
 
-Hyndman e Athanasopoulos insistono sul fatto che una buona comprensione dei pattern della serie dovrebbe precedere la modellazione e il forecasting.[^fpp]
+### Quando cambia il regime
 
-### Il residuo non è “la causa sconosciuta”
+Il problema diventa più serio quando non cambia un singolo punto ma il processo stesso. Se un marketplace introduce consegna gratuita permanente, possono cambiare insieme livello medio degli ordini, sensibilità al weekend e varianza. Un modello addestrato sul vecchio regime può continuare per settimane a interpretare il nuovo come una sequenza di errori.
 
-Dopo la decomposizione, il remainder contiene ciò che il metodo non ha attribuito a trend o stagionalità.
+Test formali di stazionarietà e change-point possono aiutare, ma il contesto resta indispensabile. Una rottura statistica può coincidere con pricing, acquisizione, pandemia, tracking, nuova definizione del KPI o vera evoluzione del comportamento. Il test segnala che la serie appare diversa; l'analista deve capire **che tipo di differenza** sta osservando.
 
-Può includere:
+Nel Temporal Decision Brief questa parte dovrebbe riuscire a dichiarare:
 
-- rumore casuale;
-- eventi speciali;
-- cambi di mix;
-- problemi di dato;
-- effetti promozionali;
-- cambi strutturali;
-- struttura ancora non modellata.
+> **La serie presenta trend ______, stagionalità ______ e variabilità ______. Usiamo/non usiamo trasformazione o differenziazione perché ______. Dopo aver rappresentato la struttura nota, il residuo mostra ______; non lo interpretiamo causalmente senza ulteriore evidenza.**
 
-Chiamarlo “rumore” troppo presto può cancellare il segnale che vogliamo investigare.
-
-### Caso simulato/composito — Le cancellazioni hotel a Pasqua
-
-Una piattaforma travel osserva cancellazioni +17% in aprile e apre un incidente.
-
-La vista storica mostra un aumento simile ogni primavera, ma il picco si sposta perché Pasqua cambia data.
-
-Una semplice stagionalità mensile non allinea bene l'evento. Quando il calendario viene trattato esplicitamente, gran parte del +17% risulta coerente con il pattern festivo; il residuo anomalo è molto più piccolo.
-
-La conclusione cambia:
-
-> non abbiamo evidenza sufficiente per trattare l'intero aumento come incidente operativo; una quota consistente è spiegabile dal calendario noto.
-
-Non abbiamo dimostrato **perché** Pasqua aumenti le cancellazioni. Abbiamo costruito una baseline più corretta.
-
-### Structural break: quando la decomposizione storica non basta
-
-Immaginiamo che un marketplace introduca consegna gratuita permanente.
-
-Dopo il lancio:
-
-- il livello medio degli ordini cambia;
-- la sensibilità al weekend cambia;
-- la varianza cambia.
-
-Non abbiamo un'anomalia isolata. Potremmo avere un **cambio di regime**.
-
-Un modello addestrato su anni precedenti continuerà per un po' a interpretare il nuovo processo come una sequenza di errori.
-
-Questa distinzione sarà centrale quando parleremo dei forecast che smettono di funzionare.
-
-### Test statistico e giudizio analitico
-
-Esistono test formali di stazionarietà e change-point. Sono utili, ma non sostituiscono il contesto.
-
-Una rottura statistica può coincidere con:
-
-- migrazione di tracking;
-- nuova definizione del KPI;
-- pricing;
-- acquisizione;
-- pandemia;
-- cambio di canale;
-- vera evoluzione del comportamento.
-
-Il test segnala che il processo appare diverso. L'analista deve capire **che tipo di differenza** sta osservando.
-
-### La domanda operativa
-
-Nel Temporal Decision Brief questa parte dovrebbe dichiarare:
-
-> **La serie presenta trend ______, stagionalità ______ e variabilità ______. Per modellarla usiamo/non usiamo trasformazione o differenziazione perché ______. Il residuo mostra ______ e non viene interpretato causalmente senza ulteriore evidenza.**
-
-Decomporre significa rendere esplicita la struttura. Non significa aver spiegato il business.
+A questo punto abbiamo una baseline e un modello mentale del comportamento normale. Possiamo quindi affrontare la domanda operativa successiva: **quando uno scostamento merita davvero di essere chiamato anomalia?**
 
 [^nist-stationarity]: NIST/SEMATECH e-Handbook of Statistical Methods, “Stationarity”, https://www.itl.nist.gov/div898/handbook/pmc/section4/pmc442.htm
 [^fpp]: Hyndman, R.J. & Athanasopoulos, G., *Forecasting: Principles and Practice*, 3rd ed., https://otexts.com/fpp3/
