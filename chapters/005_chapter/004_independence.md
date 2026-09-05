@@ -1,114 +1,58 @@
-## 5.3 Indipendenza: quando conoscere B non cambia la probabilità di A
+## 5.3 Indipendenza: l'assunzione nascosta dietro molte formule
 
-Due eventi sono **indipendenti** quando conoscere il verificarsi di uno non cambia la probabilità dell'altro.
-
-Formalmente, se `A` e `B` sono indipendenti:
+Due eventi sono **indipendenti** quando sapere che uno si è verificato non modifica la probabilità dell'altro. In simboli, se `A` e `B` sono indipendenti:
 
 `P(A|B) = P(A)`
 
 ed equivalentemente:
 
-`P(A ∩ B) = P(A)P(B)`
+`P(A ∩ B) = P(A)P(B)`.
 
-È importante usare parole precise: indipendenza statistica non significa semplicemente che due eventi “non si causano”. È una proprietà della loro distribuzione congiunta.
+Queste formule sembrano innocue perché permettono calcoli semplici. Il rischio nasce quando trattiamo l'indipendenza come una proprietà matematica da applicare per comodità invece che come un'affermazione sul processo reale.
 
-Due eventi possono non avere un rapporto causale diretto e risultare comunque dipendenti perché condividono condizioni comuni.
+Indipendenza, inoltre, non significa “assenza di causalità diretta”. Due eventi possono non causarsi reciprocamente e risultare comunque dipendenti perché condividono condizioni comuni.
 
-### Caso simulato/composito — Il rischio di consegna sottostimato
+## Due ritardi che condividono lo stesso mondo
 
-Una piattaforma di food delivery vuole stimare la probabilità che un ordine subisca contemporaneamente:
+Una piattaforma di food delivery vuole stimare la probabilità che un ordine subisca contemporaneamente un ritardo del rider e un ritardo del ristorante. Nello storico osserva:
 
-- un ritardo del rider;
-- un ritardo del ristorante.
+`P(ritardo rider) = 8%`
 
-Dai dati storici:
+`P(ritardo ristorante) = 6%`.
 
-- `P(ritardo rider) = 8%`;
-- `P(ritardo ristorante) = 6%`.
-
-Assumendo indipendenza otterremmo:
+Se moltiplicassimo le due probabilità assumendo indipendenza otterremmo:
 
 `8% × 6% = 0,48%`.
 
-Ma nei dati la frequenza congiunta osservata è **1,9%**.
+Nei dati, però, la frequenza congiunta è **1,9%**, quasi quattro volte più alta. La formula non è stata eseguita male: era sbagliata l'assunzione che la rendeva applicabile.
 
-È quasi quattro volte più alta.
-
-Perché?
-
-Entrambi gli eventi sono più probabili quando si verificano condizioni come:
-
-- pioggia intensa;
-- picchi serali;
-- grandi eventi locali;
-- traffico critico;
-- ristoranti sovraccarichi;
-- zone con offerta di rider insufficiente.
-
-Le due probabilità condividono driver comuni. Non possiamo quindi moltiplicarle come se fossero indipendenti.
-
-### Un modo utile per diagnosticare la dipendenza
-
-L'analista segmenta gli ordini per condizioni meteo.
+Quando il team segmenta gli ordini per condizioni meteo, il meccanismo diventa visibile:
 
 | Condizione | Ritardo rider | Ritardo ristorante | Entrambi |
 |---|---:|---:|---:|
 | Normale | 5,1% | 4,3% | 0,5% |
 | Pioggia forte | 18,4% | 12,7% | 5,9% |
 
-Il tempo atmosferico cambia entrambe le probabilità.
+Pioggia intensa, picchi serali, grandi eventi locali, traffico critico e sovraccarico dei ristoranti possono aumentare contemporaneamente entrambi i rischi. I due eventi condividono il contesto e quindi la probabilità dell'uno contiene informazione sull'altro.
 
-Questo è un esempio semplice di **dipendenza indotta da un fattore comune**.
+Nel Capitolo 8 parleremo di queste strutture con un linguaggio causale più rigoroso. Qui serve fissare un principio precedente: **una probabilità congiunta eredita le dipendenze del processo che stiamo modellando**.
 
-Nel Capitolo 8 useremo un linguaggio causale più rigoroso per parlare di confondenti. Qui ci interessa una lezione precedente:
+## Correlazione zero non ci salva
 
-> **le assunzioni sulle relazioni tra eventi devono riflettere il processo reale, non la comodità della formula.**
+Il Capitolo 4 ha mostrato che una relazione non lineare può avere correlazione di Pearson vicina a zero. Per questo:
 
-### Correlazione zero non implica indipendenza
+> **correlazione zero non implica indipendenza**.
 
-Nel Capitolo 4 abbiamo visto che la correlazione lineare può essere vicina a zero anche quando esiste una relazione non lineare forte.
+L'indipendenza è una condizione più forte: se due variabili sono indipendenti e le quantità coinvolte sono ben definite, la covarianza è zero; l'inverso non vale in generale. “Non vedo correlazione lineare” non autorizza quindi a trattare due variabili come se non condividessero alcuna struttura.
 
-Di conseguenza:
+## Quante osservazioni sono davvero indipendenti?
 
-> **correlazione zero ≠ indipendenza**.
+L'indipendenza non compare soltanto quando moltiplichiamo due probabilità. Entra silenziosamente anche in molte formule inferenziali. Diecimila righe possono essere diecimila unità indipendenti oppure cento utenti che hanno generato cento eventi ciascuno. Nel secondo caso la numerosità fisica del file sovrastima la quantità di informazione indipendente.
 
-L'indipendenza è una condizione più forte. Se due variabili sono indipendenti, in condizioni regolari la loro covarianza è zero; l'inverso non vale in generale.
+Lo stesso problema compare con ordini raggruppati nello stesso store, dipendenti dello stesso team, clienti della stessa azienda, misure ripetute di un sensore o osservazioni consecutive nel tempo. Trattare ogni riga come indipendente può produrre intervalli artificialmente stretti e test eccessivamente sicuri.
 
-Questo è uno dei motivi per cui “non vedo correlazione” non dovrebbe diventare automaticamente “le variabili non hanno nulla a che fare l'una con l'altra”.
+Prima di usare una formula che presume indipendenza vale quindi la pena ricostruire la struttura del dato: le unità possono influenzarsi tra loro? condividono tempo, geografia, campagna o capacità operativa? la stessa persona genera più record? esistono cluster naturali? un evento modifica direttamente o indirettamente la probabilità dell'altro?
 
-### Quando l'assunzione di indipendenza entra nei modelli
+Queste non sono domande accessorie da porre dopo il calcolo. Sono ciò che decide se il calcolo rappresenta il fenomeno.
 
-L'indipendenza compare continuamente, spesso senza essere dichiarata.
-
-Per esempio quando stimiamo:
-
-- probabilità congiunte di più guasti;
-- sequenze di conversione;
-- failure rate di componenti;
-- errori standard;
-- probabilità binomiali;
-- risultati di osservazioni campionarie.
-
-In alcuni casi l'assunzione è ragionevole. In altri è un'approssimazione. In altri ancora è chiaramente falsa.
-
-Per questo, prima di moltiplicare probabilità o applicare una formula che presume osservazioni indipendenti, chiediamo:
-
-1. le unità possono influenzarsi tra loro?
-2. condividono tempo, geografia, campagna o capacità operativa?
-3. una stessa persona può generare più osservazioni?
-4. esistono cluster naturali, come store, aziende, famiglie o team?
-5. un evento rende più o meno probabile l'altro?
-
-Queste domande torneranno nei capitoli su inferenza, A/B test e modelli.
-
-### La domanda dell'analista
-
-Quando una probabilità combina più eventi, non chiediamo soltanto:
-
-> “La formula è corretta?”
-
-Chiediamo:
-
-> **“Quale assunzione di dipendenza o indipendenza rende corretta questa formula, e il processo reale la rende plausibile?”**
-
-La matematica viene dopo la struttura del fenomeno.
+> **Quando una formula richiede indipendenza, la domanda professionale non è soltanto “so applicarla?”, ma “quale struttura del processo rende plausibile l'assunzione che la formula sta usando?”.**
