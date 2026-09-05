@@ -1,232 +1,63 @@
-## 17.5 “Come possiamo avere più inventario e più stock-out?”
+## 17.5 Aster Components — “Come possiamo avere più inventario e più stock-out?”
 
-### Caso simulato/composito: Aster Components
+> **Caso simulato/composito**, con riferimenti a casi reali documentati dove indicato.
 
-Un produttore di componentistica, **Aster Components**, vede contemporaneamente:
+Aster Components vede contemporaneamente inventory value **+14% YoY**, stock-out in aumento, expedite cost in crescita e più capitale immobilizzato. Il COO chiede come possa succedere se l'azienda “ha più inventario”. La contraddizione esiste solo finché trattiamo lo stock come un unico blocco.
 
-- inventory value `+14% YoY`;
-- stock-out in aumento;
-- expedite cost in crescita;
-- più capitale immobilizzato.
+La decisione reale non è aumentare o ridurre l'inventario totale. È **dove allocare capitale, safety stock e attenzione supplier affinché il costo del rischio scenda senza immobilizzare capitale dove non serve**. Il failure cost viene da entrambe le direzioni: fermo linea e lost sales da una parte, working capital e obsolescenza dall'altra. Per questo la prima stop rule è già una decisione: **nessun +10% generalizzato ai target finché non sappiamo quali SKU generano davvero l'esposizione**.
 
-Il COO chiede:
+### La media inventariale nasconde due economie opposte
 
-> “Come possiamo avere più stock-out se abbiamo più inventario?”
+A livello SKU emerge che gli slow mover accumulano scorte mentre alcuni componenti critici hanno service level insufficiente. La variabilità dei lead time è aumentata, forecast error e bias cambiano fortemente per famiglia e pochi componenti possono bloccare linee molto più costose del loro valore inventariale.
 
-La domanda sembra contraddittoria soltanto se trattiamo l'inventario come un unico blocco.
+Prima di ottimizzare, il team deve quindi definire l'oggetto. L'Analytical Data Contract fissa grain **SKU × plant × giorno**, distingue on-hand da available-to-promise, open purchase order da committed stock, usa lead time osservato e non soltanto contrattuale e rende espliciti stock-out event, lost-sales estimate e production-stop attribution.
 
-La decisione reale non è “aumentare o ridurre stock”. È:
+Questa semantica permette di costruire una vista con inventory value, days of inventory, fill rate, stock-out rate, forecast bias/error, supplier lead-time variability, expedite cost e downtime exposure senza fingere che tutte le metriche abbiano lo stesso peso.
 
-> **dove allocare capitale e buffer per proteggere servizio e produzione al minor costo totale di rischio?**
+Quando gli SKU vengono classificati anche per variabilità, criticità produttiva, sostituibilità, lead time, concentrazione supplier e costo del fermo, emergono **37 componenti** che rappresentano una parte piccola del valore inventariale ma una quota molto più grande del rischio operativo.
 
-## Routing iniziale
+Questo è già un risultato decisionale forte: **un euro di buffer aggiuntivo non ha lo stesso valore su ogni SKU**.
 
-| Elemento | Scelta |
-|---|---|
-| Decisione | riallocare safety stock, reorder point e attenzione supplier |
-| Failure cost | fermo linea, lost sales, expedite cost oppure eccesso di working capital |
-| Claim necessario | diagnostico + scenario decisionale; non causalità perfetta |
-| Reversibilità | media: inventory policy può essere corretta, ma il capitale e i lead time reagiscono lentamente |
-| Incertezza critica | domanda, lead time e shortage supplier |
-| Stop rule | non aumentare stock totale finché non è chiaro quali SKU generano il rischio |
+### Il forecast non è la policy di inventario
 
-## 1. L'aggregato nasconde la distribuzione
+Aster scopre inoltre che il point forecast viene usato quasi direttamente come piano di riordino. Due componenti con domanda media di 1.000 unità al mese possono però richiedere buffer completamente diversi se uno è stabile e consegnato in tre giorni mentre l'altro è volatile, ha dodici settimane di lead time, un solo supplier e può fermare la produzione.
 
-L'inventario totale è aumentato.
+Qui il Temporal Decision Brief guadagna il diritto di esistere non perché “siamo in supply chain”, ma perché resta aperto un rischio specifico: **come combinare distribuzione della domanda, distribuzione del lead time e costo asimmetrico dell'errore**.
 
-Ma a livello SKU emerge che:
+Per i 37 componenti critici il team costruisce quindi scenari di lead time normale, shock moderato, shortage severa, domanda sopra forecast e supplier failure. Per ciascuno confronta stock disponibile, produzione a rischio, costo del fermo, costo del buffer e possibilità di sostituzione o riallocazione. Non cerca di eliminare l'incertezza; cerca una policy che sopravviva ai futuri più costosi.
 
-- articoli lenti accumulano scorte;
-- componenti critici hanno service level insufficiente;
-- la variabilità dei lead time è aumentata;
-- forecast error e bias differiscono fortemente per famiglia;
-- pochi componenti possono bloccare linee ad alto valore.
+AWS documenta un pattern simile nel caso **BMW Group** durante la semiconductor shortage: dati di produzione, mercato e input dei supplier furono integrati per aumentare la trasparenza sulla domanda e supportare la distribuzione delle parti tra mercati. Un approfondimento AWS sul digital supply management descrive inoltre l'uso congiunto di shortage data, bill of materials, volume plans, take rate, finance e market demand per confrontare scenari di allocazione.[^bmw][^bmw-dsm]
 
-La quantità totale di stock non rappresenta la disponibilità dello **stock giusto, nel posto giusto, nel momento giusto**.
+Anche **Coca-Cola Andina** offre un esempio documentato di come visibilità operativa più tempestiva possa cambiare il processo decisionale: AWS descrive l'applicazione interna Thanos, con aggiornamenti ogni **15 minuti** invece che una volta al giorno, usata per inventory, distribution e delivery analytics in quattro paesi.[^cca]
 
-## 2. Analytical Data Contract: quale unità stiamo gestendo?
+Questi casi non dimostrano che esista una formula universale di safety stock. Rafforzano il punto più importante: **la supply-chain decision vive nell'integrazione tra stato operativo, vincoli e allocazione, non nel possesso di un forecast isolato**.
 
-Il team definisce con precisione:
+### La prima decisione non deve aspettare un optimizer globale
 
-- grain SKU × plant × giorno;
-- inventory on hand vs available-to-promise;
-- open purchase orders;
-- committed stock;
-- lead time osservato, non soltanto contrattuale;
-- stock-out event;
-- lost-sales estimate;
-- production stop attribution.
+Il Decision Record mette a confronto tre strategie. Aumentare del 10% il target ovunque è semplice ma costoso e poco mirato. Ridurre stock per recuperare working capital migliora il capitale nel breve e può peggiorare proprio gli SKU che bloccano produzione. La policy preferita è differenziata: safety stock per variabilità/criticità, reorder point rivisti, supplier monitoring sui componenti critici, scenario gate per shock di lead time, riduzione degli slow mover e escalation quando l'esposizione economica supera soglia.
 
-Poi costruisce una scorecard con:
+La cosa più importante è ciò che il team **non** aspetta. Non costruisce prima un modello matematico dell'intera rete globale. I 37 componenti hanno già evidence sufficiente per un intervento mirato e reversibile; rimandarlo in attesa dell'ottimo globale aumenterebbe il costo dell'attesa senza chiudere un rischio decisionale più importante.
 
-- inventory value;
-- days of inventory;
-- fill rate;
-- stock-out rate;
-- order cycle time;
-- forecast bias;
-- forecast error;
-- supplier lead-time variability;
-- expedite cost;
-- downtime exposure.
+La policy verrà rivalutata quando cambia il regime dei lead time, un supplier critico perde affidabilità, cambia il costo del capitale, il demand mix si sposta, compaiono alternative di sourcing o cambia il costo di downtime. Reorder point e safety stock non diventano così numeri ereditati e immutabili.
 
-Questa fase è un **Analytical Data Contract** perché senza semantica coerente il confronto tra servizio e capitale non è affidabile.
+### Evidence Ledger
 
-## 3. Segmentare per valore, variabilità e criticità
+| Observed | Inferred | Still unknown |
+|---|---|---|
+| inventory value +14%, stock-out/expedite in aumento | problema dominante è allocazione, non quantità totale | distribuzione futura dei lead time |
+| 37 componenti concentrano forte downtime exposure | buffer aggiuntivo ha valore molto diverso per SKU | probabilità/severità dei prossimi supplier shock |
+| slow mover sovrastoccati e critici sotto-serviti | policy uniforme distrugge capitale o servizio | effetto completo di nuove fonti di sourcing |
 
-Gli SKU vengono classificati non soltanto con una ABC economica, ma anche per:
+La headline executive può quindi essere:
 
-- volume;
-- variabilità della domanda;
-- criticità produttiva;
-- sostituibilità;
-- lead time;
-- concentrazione supplier;
-- costo del fermo linea.
+> **Il problema non è la quantità totale di stock ma la sua allocazione: capitale eccessivo è concentrato su slow mover mentre 37 componenti critici restano esposti a variabilità di domanda e lead time. Proponiamo una policy differenziata, non un aumento generalizzato dell'inventario.**
 
-Emergono 37 componenti che rappresentano una piccola parte del valore inventariale ma possono bloccare processi molto più costosi.
+L'outcome review segue fill rate, stock-out, inventory value, working capital, expedite cost, downtime, forecast bias/error e supplier lead-time reliability. Nessuna singola metrica può rappresentare la qualità della policy.
 
-Questo cambia la funzione obiettivo.
+**Percorso effettivo:** Analytical Brief → Analytical Data Contract → Data Readiness Review → EDA Evidence Map → Temporal Decision Brief sui componenti critici → Decision Record → Decision Communication Pack.
 
-Un euro di stock in più non ha lo stesso valore su ogni SKU.
+> **La maturità qui consiste anche nel sapere che correggere 37 esposizioni evidenti è una decisione migliore che aspettare l'ottimizzazione perfetta di una rete che non abbiamo bisogno di ottimizzare oggi.**
 
-## 4. Forecast non equivale a inventory policy
-
-Il team scopre un errore organizzativo: il point forecast viene usato quasi direttamente come piano di riordino.
-
-Ma due SKU con domanda media di 1.000 unità al mese possono richiedere buffer molto diversi se:
-
-- uno è stabile e l'altro volatile;
-- uno arriva in tre giorni e l'altro in dodici settimane;
-- uno ha tre supplier e l'altro uno solo;
-- uno è facilmente sostituibile e l'altro ferma la produzione.
-
-Serve quindi un **Temporal Decision Brief** che colleghi distribuzione della domanda, lead-time uncertainty e costo dell'errore.
-
-## 5. Scenario decisionale
-
-Per i componenti critici il team costruisce scenari:
-
-- lead time normale;
-- shock moderato;
-- shortage severa;
-- domanda sopra forecast;
-- supplier failure.
-
-Per ogni scenario valuta:
-
-- probabilità/qualità dell'assunzione;
-- stock disponibile;
-- produzione a rischio;
-- valore economico del fermo;
-- costo del buffer aggiuntivo;
-- opzioni di sostituzione o riallocazione.
-
-La decisione non cerca di eliminare tutta l'incertezza.
-
-Cerca una policy robusta ai rischi più costosi.
-
-## Caso reale documentato: BMW Group e shortage di semiconduttori
-
-AWS documenta come **BMW Group**, durante la shortage globale di semiconduttori, abbia costruito con AWS Professional Services una piattaforma analitica basata su dati di produzione, mercato e input dei supplier per aumentare la trasparenza sulla domanda e supportare la distribuzione delle parti tra mercati.
-
-Fonte: https://aws.amazon.com/solutions/case-studies/bmw-reinvent-2023-analytics/
-
-Un ulteriore approfondimento AWS descrive una soluzione di digital supply management che integra dati di shortage, bill of materials, piani di volume, take rate, dati finanziari e market demand per valutare scenari di allocazione e supportare comitati decisionali cross-funzionali.
-
-Fonte: https://aws.amazon.com/blogs/industries/digital-supply-management-using-advanced-analytics-and-serverless-architecture-on-aws-2/
-
-La lezione è molto più importante della tecnologia usata:
-
-> **la supply chain decision non è un forecast isolato; è un problema di allocazione sotto vincoli, con impatti produttivi e finanziari differenti.**
-
-## Caso reale documentato: Coca-Cola Andina
-
-AWS documenta anche **Coca-Cola Andina**, che ha costruito l'applicazione interna Thanos su una data platform AWS per migliorare la visibilità su inventario, distribuzione e delivery in quattro paesi. Il case study descrive dati aggiornati ogni 15 minuti anziché una volta al giorno e l'uso di modelli per anticipare ordini che rischiano di non essere ricevuti dal cliente.
-
-Fonte: https://aws.amazon.com/solutions/case-studies/coca-cola-andina-analytics-case-study/
-
-Anche qui il valore analitico è l'integrazione tra stato operativo, inventario e azione, non il semplice possesso di più dati.
-
-## 6. Decision Record
-
-Aster Components confronta tre strategie:
-
-### A — Aumentare inventory target del 10% ovunque
-
-Semplice, ma costoso e poco mirato.
-
-### B — Ridurre inventory per recuperare working capital
-
-Migliora il capitale a breve, ma aumenta il rischio sui componenti critici.
-
-### C — Policy differenziata
-
-- safety stock per variabilità e criticità;
-- reorder point rivisti;
-- supplier monitoring sui componenti critici;
-- scenari per lead-time shock;
-- riduzione stock sugli slow mover;
-- forecast bias review per famiglia;
-- alert sui componenti che possono fermare produzione;
-- escalation specifica quando l'esposizione economica supera soglia.
-
-La scelta è C.
-
-## 7. Switching condition
-
-La policy viene rivalutata se:
-
-- lead-time distribution cambia regime;
-- un supplier critico perde affidabilità;
-- il costo del capitale cambia materialmente;
-- la domanda cambia mix;
-- compaiono alternative di sourcing;
-- il costo di downtime cambia.
-
-Questo evita che reorder point e safety stock diventino numeri “sacri” ereditati dal passato.
-
-## 8. Decision Communication Pack
-
-La headline non è:
-
-> “Inventory +14% e stock-out +X%.”
-
-È:
-
-> **“Il problema non è la quantità totale di stock ma la sua allocazione: capitale eccessivo è concentrato su slow mover mentre 37 componenti critici restano esposti a variabilità di domanda e lead time. Proponiamo una policy differenziata, non un aumento generalizzato dell'inventario.”**
-
-Le evidenze principali sono:
-
-1. inventory/service matrix;
-2. critical component exposure;
-3. lead-time distributions;
-4. scenario cost;
-5. working-capital trade-off.
-
-## 9. Outcome review
-
-Il successo viene valutato con:
-
-- fill rate;
-- stock-out rate;
-- inventory value;
-- working capital;
-- expedite cost;
-- production downtime;
-- forecast accuracy e bias;
-- supplier lead-time reliability.
-
-Una sola metrica non può rappresentare la qualità della policy.
-
-## Cosa abbiamo scelto di non fare
-
-Non serve ottimizzare matematicamente l'intera rete globale prima di correggere 37 esposizioni chiaramente critiche.
-
-Non serve nemmeno massimizzare forecast accuracy se l'errore dominante deriva da lead-time uncertainty o allocation constraints.
-
-La catena effettiva è:
-
-**Analytical Brief → Analytical Data Contract → Data Readiness Review → EDA Evidence Map → Temporal Decision Brief → Decision Record → Decision Communication Pack**
-
-> **La supply chain non si ottimizza massimizzando lo stock o minimizzandolo. Si governa allocando servizio, capitale e rischio dove il costo dell'errore è più alto.**
+[^bmw]: AWS, *BMW Group uses AWS to address semiconductor shortage with analytics*, https://aws.amazon.com/solutions/case-studies/bmw-reinvent-2023-analytics/
+[^bmw-dsm]: AWS Industries Blog, *Digital supply management using advanced analytics and serverless architecture on AWS*, https://aws.amazon.com/blogs/industries/digital-supply-management-using-advanced-analytics-and-serverless-architecture-on-aws-2/
+[^cca]: AWS, *Coca-Cola Andina improves inventory and distribution visibility with analytics*, https://aws.amazon.com/solutions/case-studies/coca-cola-andina-analytics-case-study/
