@@ -1,70 +1,26 @@
-## 10.15 Caso end-to-end: OrbitCom, dal buon modello offline al sistema decisionale che cambia il proprio futuro
+## 10.15 Caso simulato/composito — OrbitCom: dal buon modello offline al sistema che cambia il proprio futuro
 
-> **Caso simulato/composito.** Azienda, numeri e circostanze sono costruiti a fini didattici combinando failure mode comuni nei sistemi predittivi in produzione.
+OrbitCom è un operatore telecom con **3,8 milioni di clienti consumer**. Il management parte con una richiesta apparentemente semplice:
 
-OrbitCom è un operatore telecom con 3,8 milioni di clienti consumer.
+> **“Costruiamo un modello che preveda il churn.”**
 
-Il management parte con una richiesta apparentemente semplice:
+Il team non sceglie subito un algoritmo. Trasforma la richiesta in una prediction task: ogni lunedì alle 05:00 vuole ordinare i clienti consumer attivi per probabilità di cancellazione volontaria nei successivi 60 giorni, senza superare i **25.000 contatti/settimana** che il team retention può gestire con qualità. La baseline è la regola esistente basata su reclami recenti, payment issues e calo utilizzo.
 
-> **"Costruiamo un modello che preveda il churn."**
+Questa specifica cambia il progetto. Non serve il miglior classifier in astratto: serve un ranking utile nei primi 25.000 casi e una pipeline che possa riprodurre ogni lunedì la stessa frontiera informativa.
 
-La review analitica la trasforma in una prediction task precisa.
+### Prima del modello: che cosa esiste davvero alle 05:00?
 
-### Predictive specification
+Le feature candidate includono tenure, variazione di utilizzo dati, reclami aperti e chiusi prima del prediction time, payment failures storici, outage, variazione spesa, downgrade già avvenuti, app usage, device e piano tariffario.
 
-**Decisione**  
-Prioritizzare la capacità del team retention senza superare il volume che può essere gestito con qualità.
+`last_retention_offer_result` viene esclusa perché l'offerta viene spesso fatta dopo che il rischio è già stato identificato e troppo vicino al churn. `competitor_offer_declared` proviene da survey disponibili soltanto per una parte dei clienti e viene mantenuta come feature sperimentale con coverage monitorata.
 
-**Prediction unit**  
-Cliente consumer attivo.
+Già qui il progetto ha guadagnato più credibilità di quanta ne avrebbe ottenuta aggiungendo un algoritmo più complesso: ha stabilito che cosa il modello può sapere.
 
-**Prediction time**  
-Ogni lunedì alle 05:00.
+### La validation prova a ricostruire il futuro operativo
 
-**Target**  
-Cancellazione volontaria nei successivi 60 giorni.
+Pricing e acquisition mix sono cambiati nell'ultimo anno, quindi OrbitCom evita di affidarsi soltanto a random split. Usa periodi più vecchi per il training, un periodo successivo per validation, gli ultimi mesi maturi come test out-of-time e controlla separatamente nuovi clienti e tenure >12 mesi.
 
-**Action capacity**  
-Massimo 25.000 contatti/settimana.
-
-**Baseline**  
-Regola esistente basata su reclami recenti, payment issues e calo utilizzo.
-
-Questa specifica cambia il progetto: non ci serve il miglior classifier astratto. Ci serve un ranking utile nei primi 25.000 casi e una pipeline che resti valida ogni lunedì.
-
-### Feature availability review
-
-Le feature candidate includono:
-
-- tenure;
-- variazione utilizzo dati;
-- reclami chiusi e aperti prima del prediction time;
-- payment failures storici;
-- outage sperimentati;
-- variazione della spesa;
-- downgrade già avvenuti;
-- app usage;
-- device;
-- piano tariffario.
-
-Una feature iniziale, `last_retention_offer_result`, viene esclusa: in molti casi l'offerta viene fatta **dopo** che il rischio è già stato identificato e troppo vicino al churn event.
-
-Un'altra, `competitor_offer_declared`, proviene da survey compilate soltanto da una parte dei clienti ed è mantenuta come feature sperimentale con coverage monitorata.
-
-### Validation design
-
-OrbitCom ha cambiato pricing e acquisition mix durante l'ultimo anno.
-
-Il team evita quindi di affidarsi soltanto a random split.
-
-Usa:
-
-- train sui periodi più vecchi;
-- validation su periodo successivo;
-- test out-of-time sugli ultimi mesi maturi;
-- analisi separata su nuovi clienti e clienti con tenure > 12 mesi.
-
-Confronta tre sistemi:
+Il confronto è:
 
 | Modello | ROC-AUC test | PR-AUC | Precision@25k | Note |
 |---|---:|---:|---:|---|
@@ -72,69 +28,33 @@ Confronta tre sistemi:
 | logistic regression | 0,82 | 0,31 | 38% | interpretabile |
 | gradient boosting | 0,87 | 0,39 | 44% | modello candidato |
 
-Il boosting migliora davvero il punto operativo: nei 25.000 clienti che il team può gestire concentra più churn futuri della baseline.
+Il boosting guadagna il diritto alla complessità perché migliora proprio il punto operativo: nei 25.000 slot disponibili concentra più churn futuri della baseline e della logistica.
 
-### Leakage test
+### Il leakage review riduce lo score e aumenta la fiducia
 
-Il team esegue una review `as-of` delle feature.
+Una review `as-of` trova due problemi: uno snapshot CRM storico ricostruiva il passato usando `current account status`; una feature di ticket severity poteva essere aggiornata retroattivamente dopo la chiusura del ticket.
 
-Trova due problemi:
+Dopo la correzione la ROC-AUC scende da **0,90 a 0,87**. Il team non chiama questa variazione “regressione del modello”. La classifica precedente misurava un sistema impossibile da replicare in produzione. Il nuovo numero è il primo che può sostenere una decisione reale.
 
-1. uno snapshot CRM storico era ricostruito usando `current account status`;
-2. una feature di ticket severity poteva essere aggiornata retroattivamente dopo la chiusura del ticket.
+### Ranking, calibration e capacità diventano policy
 
-Dopo la ricostruzione corretta la ROC-AUC scende da 0,90 a 0,87.
+Il modello ordina bene ma sovrastima il rischio dei clienti più nuovi. OrbitCom mantiene il ranking globale, applica una calibration validata separatamente e controlla reliability per tenure.
 
-Il calo viene classificato come miglioramento della credibilità, non come regressione del progetto.
+La policy non usa `threshold = 0,5`. Seleziona i **top 25.000 account eleggibili per expected risk/value**, con guardrail business. La capacità non è quindi un'aggiunta operativa dopo il modeling: è parte della funzione decisionale che il modello deve servire.
 
-### Calibration e threshold
+### Predire il churn non significa sapere chi salvare
 
-Il modello ordina bene, ma tende a sovrastimare il rischio dei clienti più nuovi.
+A questo punto emerge il confine con i Capitoli 8 e 9. Un cliente può essere ad alto rischio ma irrecuperabile, a rischio medio e molto persuadibile, oppure destinato a non churnare anche senza intervento.
 
-Il team mantiene il ranking globale ma introduce una procedura di calibration validata separatamente e controlla reliability per tenure.
+Per questo OrbitCom crea, nella popolazione eleggibile alla retention policy e compatibilmente con i vincoli commerciali, un **holdout sperimentale**. Prediction misura chi è a rischio; experimentation misura l'incremental effect della policy.
 
-La policy non usa threshold 0,5.
+Senza questa separazione un modello accurato potrebbe essere confuso con un programma retention efficace.
 
-Usa:
+### Il primo mese sembra confermare la promessa
 
-> **top 25.000 account eleggibili per expected risk/value, con ulteriori guardrail business.**
+Nel primo mese la scoring pipeline è stabile, `precision@25k` è vicina al test, il contact rate è **91%**, la capacità è quasi pienamente utilizzata e la calibration resta nei range previsti. Il sistema è production-ready, non “finito”.
 
-La capacità operativa è quindi parte della policy fin dall'inizio.
-
-### Model score non significa treatment effect
-
-A questo punto il team potrebbe commettere l'errore centrale del Capitolo 8:
-
-> "Se il modello identifica bene chi churnerà, allora chiamare quei clienti salverà il churn."
-
-Non segue.
-
-Un cliente può essere:
-
-- ad alto rischio ma irrecuperabile;
-- a medio rischio e molto persuadibile;
-- ad alto valore ma poco sensibile all'intervento;
-- destinato a non churnare anche senza chiamata.
-
-OrbitCom crea quindi, tra gli account eleggibili alla retention policy, un **holdout sperimentale** compatibile con vincoli etici e commerciali per misurare l'incremental effect del programma.
-
-Prediction decide **chi è a rischio**. Experimentation misura **che cosa produce la policy**.
-
-### Primo mese di produzione
-
-Nel primo mese:
-
-- scoring pipeline stabile;
-- precision@25k vicina al test;
-- contact rate 91%;
-- capacity quasi pienamente utilizzata;
-- calibration nei range previsti.
-
-Il progetto viene classificato come production-ready, ma non "finito".
-
-### Tre mesi dopo: quattro problemi diversi
-
-Le metriche cambiano:
+Tre mesi dopo le metriche cambiano:
 
 | Metrica | Test offline | Mese 1 | Mese 3 |
 |---|---:|---:|---:|
@@ -143,27 +63,11 @@ Le metriche cambiano:
 | contact rate | — | 91% | 63% |
 | quota nuovi clienti nel top-K | 18% | 21% | 37% |
 
-Il team evita di dire semplicemente "il modello è peggiorato" e separa quattro diagnosi.
+Dire semplicemente “il modello è peggiorato” sarebbe troppo poco. L'indagine separa quattro fenomeni.
 
-#### 1. Population/data drift
+Una campagna ha portato molti clienti giovani, mensili e mobile-first poco rappresentati nel training: **population drift**. Un nuovo piano con roaming incluso ha cambiato il significato predittivo di `domestic_data_usage_drop`: ranking e calibration peggiorano, quindi c'è anche **concept/calibration drift**. Nel frattempo una riorganizzazione riduce il contact rate al 63%: **operational degradation**. Infine i clienti ad alto score vengono trattati e alcune label future incorporano l'effetto della retention policy: **feedback loop**.
 
-Una campagna acquisisce molti clienti giovani, mensili e mobile-first, poco rappresentati nel training.
-
-#### 2. Concept/calibration drift
-
-Un nuovo piano con roaming incluso cambia il significato di `domestic_data_usage_drop`. Il ranking si deteriora e le probabilità diventano troppo alte in alcuni segmenti.
-
-#### 3. Operational degradation
-
-Il team retention perde capacità durante una riorganizzazione. Il contact rate scende al 63% e molti clienti vengono raggiunti tardi.
-
-#### 4. Feedback loop
-
-I clienti ad alto score ricevono interventi. Se alcuni non churnano grazie alla policy, le label future riflettono anche l'effetto del sistema stesso.
-
-Senza tracciare assignment, exposure e treatment, retraining e performance monitoring diventano ambigui.
-
-### La dashboard viene divisa in quattro layer
+### La dashboard viene separata in quattro layer
 
 ```text
 DATA
@@ -179,47 +83,14 @@ OUTCOME
 churn · incremental effect vs holdout · value saved · cost · customer guardrails
 ```
 
-Questa separazione evita di attribuire al modello un problema del call center o, al contrario, di usare problemi operativi per nascondere un deterioramento predittivo.
+Questa separazione rende impossibile nascondere un problema del call center dentro “model performance” e, allo stesso tempo, evita di usare i problemi operativi per giustificare un ranking che si sta realmente deteriorando.
 
-### Retraining: non basta premere un pulsante
+### Retraining è una promozione, non un refresh automatico
 
-OrbitCom definisce:
+OrbitCom genera mensilmente un retraining candidate, ma lo promuove soltanto dopo champion/challenger evaluation su dati recenti out-of-time, gate su calibration e `precision@25k`, verifica di training-serving parity e confronto con la baseline concordata. Feature, modello e policy vengono versionati separatamente. L'holdout continua a misurare l'efficacia della retention policy indipendentemente dal risk model.
 
-- retraining candidate mensile;
-- champion/challenger evaluation su out-of-time recente;
-- gate su calibration e precision@25k;
-- verifica training-serving parity;
-- rollback se il challenger non supera la baseline concordata;
-- versionamento feature/model/policy;
-- holdout per valutare la retention policy separatamente dal risk model.
+La richiesta iniziale “chi farà churn?” è così diventata un sistema di domande coordinate: chi è a rischio, quanto è affidabile lo score oggi, chi entra nei 25.000 slot, chi viene realmente contattato, quale intervento salva churn incrementale, quanto valore netto produce e quando modello o policy devono essere fermati o ridisegnati.
 
-Un nuovo modello viene promosso solo se migliora la decisione prevista, non perché usa dati più recenti.
+Un failure può quindi essere di prediction, di dati/serving, di policy o di treatment. Chiamare tutto “model performance” rende la diagnosi peggiore.
 
-### La decisione finale cambia forma
-
-La domanda iniziale era:
-
-> "Chi farà churn?"
-
-Il sistema maturo deve rispondere invece a più domande coordinate:
-
-1. chi è a rischio entro 60 giorni?
-2. quanto è affidabile lo score nella popolazione corrente?
-3. chi entra nei 25.000 slot operativi?
-4. chi viene realmente contattato?
-5. quale intervento produce valore incrementale?
-6. il costo e la customer experience restano accettabili?
-7. quando modello o policy devono essere fermati, ricalibrati o ridisegnati?
-
-### La lezione del caso
-
-Un modello può fallire in almeno quattro modi differenti:
-
-- **prediction failure** — non ordina o stima più bene;
-- **data/serving failure** — le feature non rappresentano più ciò su cui è stato validato;
-- **policy failure** — threshold/ranking generano un'azione sbagliata o ingestibile;
-- **treatment failure** — l'azione non produce più abbastanza effetto incrementale.
-
-Chiamare tutto "model performance" rende la diagnosi peggiore.
-
-> **Il prodotto predittivo non è il file del modello. È la catena che trasforma dati disponibili oggi in una priorità, una decisione, un'azione e una misura del risultato futuro.**
+> **Il prodotto predittivo non è il file del modello. È la catena che trasforma informazione disponibile oggi in una priorità, una decisione, un'azione e una misura del risultato futuro — sapendo che l'azione stessa cambierà i dati che vedremo domani.**
