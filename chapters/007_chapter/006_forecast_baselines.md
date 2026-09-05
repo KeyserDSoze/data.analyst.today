@@ -1,115 +1,28 @@
 ## 7.5 Forecasting: definire target, orizzonte e baseline prima del modello
 
-Forecasting significa usare informazione disponibile **fino a un certo istante** per descrivere valori futuri plausibili.
+Dopo aver capito quale struttura del passato è informativa, possiamo provare a trasferirne una parte nel futuro. Ma “fare forecasting” resta una frase troppo vaga finché non dichiariamo **che cosa prevediamo, quando emettiamo la previsione e quanto avanti dobbiamo guardare**.
 
-La frase contiene tre elementi che devono essere espliciti:
+Target, forecast origin e horizon non sono dettagli di implementazione. Sono parte della domanda. La stessa serie di domanda può servire a pianificare lo staffing di domani, il replenishment tra due settimane, gli acquisti internazionali a novanta giorni o la capacità dell'anno successivo. Un modello eccellente a un giorno può essere inutile a otto settimane, e un forecast molto accurato al totale azienda può fallire proprio al grain `SKU × store` dove viene presa la decisione.
 
-- **target** — che cosa prevediamo;
-- **forecast origin** — quando la previsione viene emessa;
-- **horizon** — quanto avanti dobbiamo prevedere.
+Per questo il forecasting dovrebbe iniziare da una domanda operativa:
 
-Senza questi tre elementi, “il modello ha MAE 6%” è ancora una descrizione incompleta.
+> **Quale decisione deve essere presa, quanto prima deve essere presa e quale variabile dobbiamo conoscere in quel momento?**
 
-### Il forecast deve nascere da una decisione
+### La complessità deve battere una regola credibile
 
-La stessa serie può richiedere forecast diversi.
+Prima di discutere algoritmi costruiamo un benchmark. Hyndman e Athanasopoulos trattano metodi come mean, naïve, seasonal naïve e drift come baseline essenziali proprio perché mostrano se la complessità sta aggiungendo capacità predittiva reale.[^fpp-toolbox]
 
-Per un magazzino:
+Un forecast naïve usa l'ultimo valore osservato; un seasonal naïve usa l'ultimo periodo stagionalmente comparabile; una media mobile comprime una finestra recente; un drift semplice proietta una tendenza storica. Nessuna di queste regole è “da junior”. Sono il livello minimo che un modello più costoso deve riuscire a superare.
 
-- domani → staffing e picking;
-- 14 giorni → replenishment locale;
-- 90 giorni → acquisti internazionali;
-- 12 mesi → capacità e budget.
+Una catena di supermercati, per esempio, costruisce un modello giornaliero con temperatura, pioggia, promozioni, festività, traffico web, calendario scolastico, prezzo medio, lag e indicatori territoriali. Nel backtest il modello complesso ottiene **MAE 5.480 transazioni**; il seasonal naïve `t-7` ottiene **5.210**. Il risultato non dimostra che meteo e promozioni siano inutili. Dimostra che, con le feature e il disegno attuali, il modello non estrae abbastanza informazione aggiuntiva da superare la memoria settimanale.
 
-Un modello eccellente a 1 giorno non è automaticamente utile a 90 giorni.
+La baseline va comunque scelta in modo coerente con il processo. `Ultimo valore` può essere una pessima regola per una serie settimanale; un seasonal naïve può essere insufficiente in un business con crescita molto forte; “stesso giorno dell'anno scorso” può essere fuorviante quando festività mobili o promozioni non sono allineate. Il benchmark deve rappresentare **ciò che avremmo realmente potuto fare con una regola semplice e sensata**.
 
-Il forecasting dovrebbe quindi iniziare da:
+Dire “MAE 1.200” senza riferimento può essere difficile da interpretare. Dire “il modello riduce il MAE del 18% rispetto al seasonal naïve sullo stesso backtest” rende immediatamente visibile l'informazione aggiuntiva. Metriche scalate come il **MASE** formalizzano la stessa idea confrontando l'errore del modello con quello di una baseline naïve o seasonal-naïve sul training set.[^fpp-accuracy] In modo intuitivo, `MASE < 1` indica che il modello batte il benchmark usato per la scala; `MASE > 1` che fa peggio.
 
-> **Quale decisione deve essere presa, quanto prima deve essere presa e quale variabile serve conoscere in quel momento?**
+### L'horizon è parte della performance
 
-### Prima del modello: benchmark semplici
-
-Hyndman e Athanasopoulos trattano metodi semplici come mean, naïve, seasonal naïve e drift come benchmark fondamentali per capire se un metodo più complesso sta aggiungendo capacità predittiva reale.[^fpp-toolbox]
-
-Esempi:
-
-**Naïve**
-
-`forecast prossimo periodo = ultimo valore osservato`
-
-**Seasonal naïve**
-
-`forecast prossimo lunedì = valore dell'ultimo lunedì comparabile`
-
-**Media mobile**
-
-`forecast = media di una finestra recente`
-
-**Drift / trend semplice**
-
-proiezione della variazione media storica.
-
-La baseline non è un modello “da junior”. È il costo minimo di complessità che ogni soluzione successiva deve giustificare.
-
-### Caso simulato/composito — Il modello con 14 feature battuto dal martedì scorso
-
-Una catena di supermercati vuole prevedere le transazioni giornaliere per pianificare i turni.
-
-Il team costruisce un modello con:
-
-- temperatura;
-- pioggia;
-- promozioni;
-- festività;
-- traffico web;
-- calendario scolastico;
-- prezzo medio;
-- diversi lag;
-- indicatori territoriali.
-
-Nel backtest:
-
-- modello complesso: MAE 5.480 transazioni;
-- seasonal naïve `t-7`: MAE 5.210.
-
-Il modello sofisticato perde contro “lo stesso giorno della settimana precedente”.
-
-Non significa che meteo o promozioni siano irrilevanti. Significa che, con il disegno e le feature disponibili, il modello non estrae abbastanza informazione aggiuntiva da superare una struttura settimanale molto forte.
-
-La baseline ha evitato di confondere complessità con progresso.
-
-### Una baseline deve essere credibile per quel processo
-
-La baseline più semplice non è sempre `ultimo valore`.
-
-Se il processo è settimanale, seasonal naïve può essere molto più forte. Se il business cresce rapidamente, una baseline con drift può essere più corretta. Se esistono festività mobili, “stesso giorno dell'anno scorso” può richiedere un calendario comparabile.
-
-L'obiettivo è costruire un benchmark che rappresenti **ciò che avremmo potuto fare con una regola semplice e ragionevole**.
-
-### Accuracy relativa: “meglio di cosa?”
-
-Dire:
-
-> il MAE è 1.200
-
-può essere difficile da interpretare.
-
-Dire:
-
-> il modello riduce il MAE del 18% rispetto al seasonal naïve sullo stesso backtest
-
-fornisce un riferimento molto più operativo.
-
-Metriche scalate come il **MASE** formalizzano proprio questa idea: confrontano l'errore del modello con quello di una previsione naïve o seasonal-naïve calcolata sul training set.[^fpp-accuracy]
-
-In termini intuitivi:
-
-- MASE < 1 → meglio del benchmark naïve usato per la scala;
-- MASE > 1 → peggio del benchmark.
-
-### L'orizzonte deve essere valutato separatamente
-
-Supponiamo che un forecast produca:
+Un'unica accuracy media può nascondere il punto decisivo. Consideriamo:
 
 | Orizzonte | MAE |
 | --- | ---: |
@@ -118,46 +31,15 @@ Supponiamo che un forecast produca:
 | 30 giorni | 13,1% |
 | 90 giorni | 24,7% |
 
-Comprimere tutto in “MAE medio 8,7%” nasconde la domanda più importante: **a quale orizzonte prendiamo la decisione?**
+Riassumere tutto con “MAE medio 8,7%” elimina la domanda più importante: **a quale orizzonte viene presa la decisione?** Se procurement deve impegnarsi a novanta giorni, la qualità del forecast a un giorno non compensa l'errore a novanta.
 
-Per questo il Temporal Decision Brief deve specificare target e horizon prima della metrica.
+Lo stesso vale per il grain. Un retailer può prevedere bene la domanda nazionale e molto male `SKU × store × giorno`. Scendendo di granularità aumentano zeri, volatilità relativa e sparsità. Per questo “prevedere le vendite della settimana prossima” non è una specifica sufficiente: dobbiamo sapere se intendiamo azienda, regione, negozio, categoria o SKU-store.
 
-### Granularità: prevedere il totale può essere facile, prevedere ogni SKU no
+### Non tutto è forecastable nello stesso modo
 
-Un retailer può prevedere abbastanza bene la domanda nazionale totale e molto male la combinazione `SKU × store × giorno`.
+Alcune serie sono dominate da grandi eventi discrezionali, decisioni commerciali esterne o cambiamenti che la storia non contiene. Se pochi clienti generano ordini enormi e non ripetitivi, un modello univariato può non avere abbastanza segnale stabile. In quel caso la risposta professionale può essere: **la serie da sola non basta; servono informazione commerciale, scenari o un processo diverso**.
 
-Più scendiamo di granularità:
-
-- aumentano gli zeri;
-- cresce la volatilità relativa;
-- diminuisce il volume per serie;
-- diventano più importanti gerarchie e aggregazioni.
-
-La domanda di forecasting deve quindi includere anche il **grain**.
-
-Prevedere “vendite settimana prossima” non basta. Dobbiamo sapere se intendiamo:
-
-- totale azienda;
-- regione;
-- negozio;
-- categoria;
-- SKU-store.
-
-### Forecastability: non tutto merita un modello
-
-Alcune serie sono dominate da eventi non ripetitivi o da decisioni esterne non ancora rappresentate nei dati.
-
-Se il processo è quasi interamente guidato da grandi ordini discrezionali di pochi clienti, un forecast puramente univariato può avere poco valore.
-
-La risposta professionale può essere:
-
-> la storia della serie da sola non contiene abbastanza segnale stabile; serve informazione commerciale esterna o un approccio per scenari.
-
-Non costruire un modello è, a volte, la scelta analitica migliore.
-
-### La scheda iniziale del forecast
-
-Prima di modellare compiliamo:
+Prima di modellare compiliamo quindi una scheda minima:
 
 ```text
 Target:
@@ -171,7 +53,7 @@ Baseline semplice:
 Informazioni esterne disponibili al forecast origin:
 ```
 
-Solo dopo ha senso discutere di algoritmo.
+Questa specifica trasforma “facciamo un forecast” in un problema valutabile. Il passo successivo sarà verificare se il modello sarebbe riuscito davvero a produrre quelle previsioni nel passato **senza usare informazione che allora apparteneva ancora al futuro**.
 
 > **Un modello complesso deve guadagnarsi il diritto di esistere battendo una baseline credibile sulla decisione e sull'orizzonte che contano.**
 
