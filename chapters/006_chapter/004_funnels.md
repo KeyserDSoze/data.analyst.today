@@ -1,20 +1,16 @@
 ## 6.3 Funnel: localizzare dove si interrompe il percorso
 
-Se la coorte ci aiuta a capire **quando** nasce una differenza, il funnel ci aiuta a capire **dove** si manifesta lungo una sequenza di eventi.
+Se segmenti e coorti ci dicono **chi** sta divergendo e **da quando**, il funnel aggiunge la terza coordinata: **dove** il percorso verso il valore si interrompe.
 
-Un funnel rappresenta un percorso definito dall'analista: visita → prodotto → carrello → checkout → pagamento, oppure signup → setup → prima azione di valore → utilizzo ricorrente.
+Un funnel non esiste naturalmente nel database. È una rappresentazione costruita dall'analista: visita → prodotto → carrello → checkout → pagamento, oppure signup → setup → prima azione di valore → utilizzo ricorrente. Google Analytics descrive la funnel exploration come uno strumento per visualizzare i passaggi con cui gli utenti completano un'attività e vedere in quali punti il percorso riesce o si interrompe.[^ga-funnel]
 
-Google Analytics descrive la funnel exploration come un modo per visualizzare i passaggi che gli utenti compiono per completare un'attività e individuare i punti in cui il percorso riesce o si interrompe.[^ga-funnel]
+La parte importante è proprio questa natura progettata. Cambiare eventi, ordine, finestra temporale o unità di analisi significa cambiare il processo che stiamo misurando.
 
-La parola importante è **definito**. Il funnel non esiste naturalmente nel database. È una rappresentazione del processo che decidiamo di misurare.
+### QuickCart: il problema attribuito al marketing viveva nell'ultimo passaggio
 
-### Caso simulato/composito: QuickCart e il problema attribuito al marketing
+**QuickCart**, marketplace alimentare, vede il conversion rate finale scendere dal **6,2% al 5,1%** in due mesi mentre il traffico cresce. Il management sospetta che le nuove campagne stiano portando visitatori meno qualificati.
 
-**QuickCart** è un marketplace alimentare. Il conversion rate finale scende dal 6,2% al 5,1% in due mesi, mentre il traffico cresce.
-
-La prima ipotesi del management è che le nuove campagne stiano portando visitatori meno qualificati.
-
-L'analista ricostruisce il percorso:
+Il funnel racconta una storia diversa:
 
 | Step | Mese 1 | Mese 2 |
 | --- | ---: | ---: |
@@ -24,9 +20,7 @@ L'analista ricostruisce il percorso:
 | Inizia checkout | 18% | 18% |
 | Completa pagamento | 6,2% | 5,1% |
 
-I primi passaggi sono quasi invariati. La perdita si concentra nell'ultimo tratto.
-
-Guardando il completion rate tra checkout iniziato e pagamento completato per metodo:
+I passaggi iniziali sono quasi invariati. La perdita si concentra tra checkout e pagamento. Quando l'analista apre quel tratto per metodo di pagamento, il collo di bottiglia diventa ancora più preciso:
 
 | Metodo | Mese 1 | Mese 2 |
 | --- | ---: | ---: |
@@ -34,82 +28,28 @@ Guardando il completion rate tra checkout iniziato e pagamento completato per me
 | PayPal | 76% | 75% |
 | Wallet mobile | 74% | 52% |
 
-Il problema non appare più come “traffico peggiore”. È localizzato nel wallet mobile.
+La successiva indagine tecnica trova un errore di ritorno all'app dopo un nuovo flusso di autenticazione su alcune versioni Android. Il funnel non ha dimostrato da solo la causa, ma ha evitato che il team cercasse il problema nel marketing quando la rottura era molto più avanti nel percorso.
 
-La successiva indagine tecnica identifica un errore di ritorno all'app dopo un nuovo flusso di autenticazione su alcune versioni Android.
+### Ogni passaggio porta con sé un denominatore
 
-Il funnel non ha dimostrato da solo la causa. Ha evitato che il team cercasse la causa nel punto sbagliato del sistema.
+Su 1.000 sessioni, se 300 utenti iniziano il checkout e 210 completano il pagamento, la conversione complessiva sessione → acquisto è **21%**, mentre quella locale checkout → pagamento è **70%**. Le due percentuali sono entrambe corrette, ma descrivono fenomeni diversi.
 
-### Conversione globale e conversione locale
+Questa distinzione aiuta a separare un piccolo deterioramento distribuito su molti step da un collo di bottiglia concentrato. Per questo un funnel utile deve conservare sia la base iniziale sia il denominatore locale dei passaggi che stiamo interpretando.
 
-Ogni step ha due letture diverse.
+Anche le regole di ingresso cambiano il significato. Google Analytics distingue funnel **aperti**, nei quali un utente può entrare da qualsiasi passaggio, e funnel **chiusi**, nei quali deve entrare dal primo; richiede inoltre che gli step rispettino la sequenza definita e consente di impostare vincoli temporali.[^ga-funnel] Sono scelte analitiche, non cosmetiche. Un percorso signup → feature → acquisto cambia se l'acquisto deve avvenire entro sette giorni, se un passaggio può essere saltato o se misuriamo per sessione, utente o account.
 
-Se su 1.000 sessioni:
+Il problema diventa ancora più serio quando l'identità attraversa dispositivi e sessioni. Un utente può scoprire il prodotto da mobile, registrarsi da laptop e acquistare da tablet. Se l'identità non viene ricostruita correttamente, il funnel trasforma un percorso unico in tre persone diverse. È il motivo per cui il lavoro del Capitolo 3 su grain e identity rimane una precondizione dell'analisi lifecycle.
 
-- 300 utenti iniziano il checkout;
-- 210 completano il pagamento;
+### Non ogni percorso è un imbuto
 
-la conversione complessiva sessione → acquisto è 21%, mentre la conversione locale checkout → pagamento è 70%.
+Un SaaS enterprise può attraversare trial, demo, procurement, security review e setup in parallelo. Un marketplace può consentire acquisti senza carrello. Un prodotto collaborativo può produrre valore attraverso azioni distribuite fra più utenti dello stesso account. Forzare questi sistemi in una sequenza lineare rischia di rendere ordinato il grafico e sbagliato il modello del processo.
 
-Entrambe sono corrette. Rispondono a domande diverse.
+In questi casi il funnel può essere affiancato da path analysis, coorti per journey, segmentazione dei percorsi o time-to-event. Il criterio resta lo stesso: la rappresentazione deve aiutare a localizzare il punto in cui la traiettoria cambia, non costringere il comportamento dentro una forma comoda.
 
-Questo è essenziale perché un peggioramento finale può essere prodotto da:
+Una buona diagnosi di funnel deve permettere di completare questa frase:
 
-- una piccola perdita distribuita su molti step;
-- un singolo collo di bottiglia;
-- un cambiamento di mix tra percorsi differenti.
+> **Il risultato finale peggiora soprattutto perché la popolazione ______ perde utenti tra ______ e ______, nella finestra ______.**
 
-Una buona analisi mostra quindi sia il denominatore iniziale sia il denominatore locale.
+A quel punto sappiamo dove guardare. La domanda successiva diventa più profonda: **quale passaggio rappresenta davvero il primo valore del prodotto, e quanti utenti riescono a raggiungerlo?**
 
-### Funnel aperto, chiuso e ordine degli eventi
-
-La documentazione di Google Analytics distingue tra funnel **chiusi**, nei quali l'utente deve entrare dal primo step, e funnel **aperti**, nei quali può entrare da passaggi successivi. Permette inoltre di richiedere che uno step segua direttamente o indirettamente il precedente e di imporre una finestra temporale.[^ga-funnel]
-
-Queste non sono opzioni cosmetiche.
-
-Un funnel “signup → prova feature → acquisto” produce risultati diversi se:
-
-- l'acquisto deve avvenire entro sette giorni oppure in qualunque momento;
-- gli utenti possono saltare uno step;
-- un utente può completare lo stesso percorso più volte;
-- il percorso viene misurato per sessione, utente o account.
-
-### Il problema dell'identità
-
-Molti funnel digitali attraversano dispositivi e sessioni.
-
-Un utente può:
-
-1. scoprire il prodotto da mobile;
-2. registrarsi da laptop;
-3. ricevere una email;
-4. completare l'acquisto da tablet.
-
-Se l'identità non viene ricostruita correttamente, il percorso può sembrare composto da tre persone diverse.
-
-Questo collega il funnel direttamente al Capitolo 3: prima di interpretare il drop-off dobbiamo sapere se gli eventi appartengono davvero alla stessa unità analitica.
-
-### Il funnel può essere troppo semplice
-
-Non tutti i processi sono lineari.
-
-Un SaaS enterprise può avere percorsi con trial, demo, procurement, security review e setup paralleli. Un marketplace può consentire acquisti senza carrello. Un prodotto collaborativo può creare valore attraverso azioni di più utenti dello stesso account.
-
-Forzare tutto in una sequenza unica può cancellare proprio i comportamenti che contano.
-
-In questi casi è utile affiancare al funnel:
-
-- path analysis;
-- segmentazione dei percorsi;
-- time-to-event;
-- coorti per tipo di journey.
-
-### La domanda operativa
-
-Un funnel ben costruito deve permettere di completare questa frase:
-
-> Il risultato finale peggiora soprattutto perché la popolazione ______ perde utenti tra ______ e ______, nella finestra ______.
-
-Se non riusciamo a farlo, probabilmente abbiamo ancora soltanto una visualizzazione del funnel, non una diagnosi.
-
-[^ga-funnel]: Google Analytics Help, “Funnel exploration”, https://support.google.com/analytics/answer/9327974
+[^ga-funnel]: Google Analytics Help, *Funnel exploration*: https://support.google.com/analytics/answer/9327974
