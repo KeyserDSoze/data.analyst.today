@@ -1,18 +1,8 @@
-## 3.2 Granularità: a quale risoluzione il sistema ha osservato il fenomeno
+## 3.2 Granularità: la risoluzione con cui il sistema ha osservato il fenomeno
 
-La **granularità**, o *grain*, descrive che cosa rende distinta una riga.
+La **granularità**, o *grain*, descrive che cosa rende distinta una riga. È una proprietà strutturale, ma ha conseguenze direttamente analitiche: determina quali conteggi sono legittimi, quali misure possono essere sommate e quali join rischiano di moltiplicare informazioni già presenti.
 
-È uno dei concetti più importanti del lavoro analitico perché stabilisce quali aggregazioni hanno senso e quali invece possono creare doppio conteggio o perdita di informazione.
-
-Una generica "tabella vendite" potrebbe avere:
-
-- una riga per ordine;
-- una riga per prodotto nell'ordine;
-- una riga per prodotto e giorno;
-- una riga per negozio, prodotto e giorno;
-- una riga per cliente e mese.
-
-Il nome della tabella non basta. Dobbiamo riuscire a dichiararne il grain in una frase:
+Una generica “tabella vendite” può infatti contenere una riga per ordine, una per prodotto nell'ordine, una per prodotto e giorno, una per negozio-prodotto-giorno oppure una per cliente e mese. Il nome della tabella non basta a distinguere questi casi. Serve una dichiarazione esplicita, per esempio:
 
 > **Una riga rappresenta un prodotto presente in un singolo ordine.**
 
@@ -20,9 +10,9 @@ oppure:
 
 > **Una riga rappresenta lo stock di un prodotto in un magazzino alla fine di una giornata.**
 
-Microsoft, nella documentazione sul dimensional modeling per Microsoft Fabric, sottolinea lo stesso principio: una fact table registra misure a uno specifico livello di granularità insieme alle chiavi che ne descrivono il contesto.[^ms-grain]
+Microsoft descrive lo stesso principio nel dimensional modeling di Fabric: le chiavi dimensionali determinano la granularità dei fatti, cioè il livello atomico a cui vengono definiti. La documentazione distingue inoltre fact table transazionali e snapshot periodici proprio perché la struttura del fatto cambia il modo in cui le misure possono essere aggregate.[^ms-grain]
 
-### Una colonna può essere corretta ma non additiva al grain corrente
+## Additività: il numero può essere corretto e la somma sbagliata
 
 Consideriamo:
 
@@ -31,53 +21,32 @@ Consideriamo:
 | 1 | A | 40 | 100 |
 | 1 | B | 60 | 100 |
 
-La tabella è a livello di riga d'ordine.
+Il grain è la riga d'ordine. `line_amount` appartiene a quel livello e può essere sommato: `40 + 60 = 100`. `order_total`, invece, è una proprietà dell'ordine replicata su ogni linea. Anche la query `SUM(order_total)` è perfettamente valida dal punto di vista sintattico, ma produce `200`, un numero senza significato economico.
 
-`line_amount` è additivo a quel livello: `40 + 60 = 100`.
+Questo è uno degli errori più insidiosi dell'analytics: il database esegue correttamente un'operazione che il modello semantico non autorizza. Il grain decide quindi non soltanto *quali righe abbiamo*, ma anche *come possiamo usare le misure che contengono*.
 
-`order_total`, invece, è un attributo dell'ordine replicato su ogni linea. La somma `100 + 100 = 200` è sintatticamente possibile ma semanticamente priva di senso.
+## Le trasformazioni possono cambiare il grain
 
-Questo tipo di errore è insidioso perché non genera eccezioni. Produce un numero plausibile con una query perfettamente valida.
+Supponiamo di avere `customers`, una riga per cliente, e `orders`, molte righe per cliente. Dopo una join, gli attributi del cliente vengono replicati su ogni ordine. Il dataset risultante non è più a livello cliente, anche se alcune colonne continuano a “sembrare” anagrafiche.
 
-### Una join può cambiare il grain
+Da qui nasce un riflesso operativo importante:
 
-Supponiamo di partire da:
+> **Dopo ogni trasformazione che può moltiplicare o collassare righe, chiediti che cosa rappresenta adesso una riga.**
 
-- `customers`: una riga per cliente;
-- `orders`: molte righe per cliente.
+Non serve ancora conoscere tutte le tecniche di join, che affronteremo più avanti. Serve riconoscere che ogni cambio di cardinalità è anche un possibile cambio del significato dell'osservazione.
 
-Dopo aver collegato le due tabelle, ogni attributo del cliente può essere replicato su più ordini. Il dataset risultante non è più a livello cliente.
+## Il grain dichiarato deve essere verificato nei dati
 
-Il punto non è imparare qui tutte le tecniche di join — lo faremo nel Capitolo 11 — ma sviluppare un riflesso:
+La documentazione, inoltre, può essere incompleta o obsoleta. Se una tabella viene descritta come “una riga per ordine” ma `order_id` compare più volte, non possiamo concludere subito che esistano duplicati da eliminare. Potrebbero esserci versioni successive, rettifiche, eventi, una chiave composta o un processo di caricamento che ha creato copie accidentali.
 
-> **Dopo ogni trasformazione importante, chiediti se è cambiato ciò che rappresenta una riga.**
+Il compito iniziale è quindi confrontare **grain dichiarato** e **grain osservato**. Dobbiamo sapere quale combinazione di colonne dovrebbe rendere unica una riga, verificare se quel vincolo regge, distinguere misure additive da valori già aggregati e controllare se il grain è rimasto stabile nel tempo.
 
-### Grain dichiarato e grain osservato
+Questi controlli non sono una checklist separata dal ragionamento. Sono le verifiche con cui dimostriamo che la rappresentazione fisica del dataset coincide con quella che intendiamo usare nell'analisi.
 
-Anche la documentazione può essere sbagliata o superata.
+> **Comprendere la granularità significa capire a quale risoluzione il processo reale è diventato dato e quali operazioni quella risoluzione ci autorizza a fare.**
 
-Se ci viene detto che una tabella contiene una riga per ordine, dovremmo verificare almeno che la chiave attesa sia unica. Se troviamo più righe per `order_id`, le spiegazioni possibili sono diverse:
+---
 
-- la documentazione è sbagliata;
-- esistono versioni successive dell'ordine;
-- il caricamento ha duplicato record;
-- la chiave è composta anche da un'altra colonna;
-- il concetto di "ordine" nel sistema è diverso da quello che pensavamo.
+### Fonte
 
-Non basta quindi conoscere il grain dichiarato. Serve confrontarlo con il grain osservato.
-
-### Domande operative
-
-Prima di usare una tabella, rispondi a queste domande:
-
-- Che cosa rende unica una riga?
-- Quali colonne dovrebbero identificare il grain?
-- Quel vincolo è rispettato nei dati?
-- Quali misure sono additive a questo livello?
-- Quali valori sono già aggregati?
-- Una trasformazione o una join può moltiplicare righe?
-- Il grain è rimasto stabile nel tempo?
-
-Comprendere la granularità significa capire **la risoluzione con cui il processo reale è diventato dato**.
-
-[^ms-grain]: Microsoft Learn, *Dimensional modeling in Microsoft Fabric*. https://learn.microsoft.com/en-us/fabric/data-warehouse/dimensional-modeling-overview
+[^ms-grain]: Microsoft Learn, *Modeling Fact Tables in Warehouse — Microsoft Fabric*. https://learn.microsoft.com/en-us/fabric/data-warehouse/dimensional-modeling-fact-tables
