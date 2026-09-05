@@ -1,132 +1,39 @@
 ## 14.2 AI-generated SQL e Python: il codice è una proposta eseguibile, non una prova
 
-La generazione di codice è uno dei vantaggi più immediati dell'AI per un Data Analyst.
+Generare SQL, Python, R, formule o test è uno dei vantaggi più immediati dell'AI. Il guadagno di velocità è reale, ma cambia anche una vecchia euristica: oggi possiamo produrre molto codice **prima** di aver stabilito che quel codice rappresenta il problema giusto. Per questo l'artefatto generato non entra direttamente nell'interpretazione. Entra in un percorso di verifica.
 
-Possiamo ottenere rapidamente:
+Un modo utile per ragionare è distinguere quattro correttezze. La prima è **sintattica**: il codice compila o gira? La seconda è **computazionale**: implementa correttamente l'algoritmo o la formula dichiarata? La terza è **semantica**: popolazione, grain, date, metriche e business rule sono quelle corrette? La quarta è **decisionale**: l'output è adatto alla scelta e al livello di claim richiesto? Un sistema generativo può essere molto forte sul primo livello. Il lavoro professionale consiste nel non confonderlo con l'ultimo.
 
-- SQL;
-- Python/R;
-- formule;
-- test;
-- trasformazioni;
-- boilerplate;
-- documentazione tecnica.
+### Retention D30: codice elegante, specifica sbagliata
 
-Il guadagno è reale.
-
-Ma proprio perché il costo di scrittura si avvicina a zero, una vecchia euristica smette di funzionare:
-
-> “Se il codice è complesso e ci ha richiesto molto lavoro, probabilmente qualcuno lo ha pensato con attenzione.”
-
-Con AI possiamo produrre **molto codice prima di aver stabilito che il codice rappresenta il problema giusto**.
-
-Per questo il codice generato va trattato come:
-
-> **una proposta eseguibile che deve attraversare evidence gates.**
-
-## 14.2.1 Le quattro correttezze
-
-Prima di usare un artefatto generato distinguiamo quattro livelli.
-
-### Correttezza sintattica
-
-Il codice compila o gira?
-
-### Correttezza computazionale
-
-Implementa correttamente l'algoritmo o la formula dichiarata?
-
-### Correttezza semantica
-
-Popolazione, grain, date, metriche e business rules sono quelle corrette?
-
-### Correttezza decisionale
-
-L'output è adatto alla decisione e al livello di claim richiesto?
-
-Un sistema generativo è spesso molto forte sul primo livello.
-
-Il lavoro professionale consiste nel non confondere il primo gate con l'ultimo.
-
-## 14.2.2 Caso simulato/composito — retention D30 perfettamente sbagliata
-
-Un'app consumer chiede:
-
-> Calcola retention D30 per signup cohort.
-
-L'AI genera una query elegante che identifica utenti attivi esattamente 30 giorni dopo signup.
-
-La query è sintatticamente e computazionalmente corretta.
-
-Ma la definizione aziendale è:
+Un'app consumer chiede di calcolare retention D30 per signup cohort. L'AI genera una query che cerca utenti attivi esattamente 30 giorni dopo il signup. La query è sintatticamente e computazionalmente corretta, ma la definizione aziendale è diversa:
 
 ```text
 D30 retained = almeno un evento qualificante tra D27 e D33
 ```
 
-perché il prodotto ha uso prevalentemente settimanale.
+perché il prodotto ha uso prevalentemente settimanale. Inoltre gli utenti test devono essere esclusi, l'activation deve essere completata entro D2 per entrare nella cohort e le date di prodotto sono locali, non UTC. Non esiste un bug tradizionale. Il codice ha implementato una definizione plausibile che nessuno aveva autorizzato. Il **Context Pack** viene quindi prima della generazione.
 
-In più:
+### Verification Bundle
 
-- gli utenti test devono essere esclusi;
-- activation deve essere completata entro D2 per entrare nella cohort;
-- le date di prodotto sono locali, non UTC.
-
-Il codice non contiene un bug tradizionale.
-
-Ha implementato **una specifica che nessuno aveva realmente definito**.
-
-Questo è precisamente il motivo per cui il Context Pack viene prima della generazione.
-
-## 14.2.3 Il Verification Bundle
-
-Non chiediamo soltanto codice.
-
-Chiediamo un **Verification Bundle**.
-
-Per una query può includere:
+Per un artefatto importante non chiediamo soltanto il codice; chiediamo un **Verification Bundle**. Per una query può contenere:
 
 ```text
-1. expected output grain
-2. row-count invariants
-3. key uniqueness checks
-4. join cardinality checks
-5. reconciliation query
-6. edge cases
-7. small hand-computable fixture
-8. performance / scan estimate se rilevante
+expected output grain
+row-count invariants
+key uniqueness checks
+join cardinality checks
+reconciliation query
+edge cases
+small hand-computable fixture
+performance / scan estimate se rilevante
 ```
 
-Esempio:
+Una query di controllo può verificare, per esempio, che esista una sola riga per utente nella cohort finale o che un join non elimini una quota inattesa della popolazione. La verifica è più forte quando almeno una parte del percorso è indipendente dalla generazione: test deterministici, reconciliation verso metriche certificate, fixture note o peer review riducono il rischio che lo stesso errore di contesto venga ripetuto sia nella proposta sia nella critique.
 
-```sql
--- deve esistere una riga per user nella cohort finale
-SELECT user_id, COUNT(*) AS n
-FROM cohort_final
-GROUP BY user_id
-HAVING COUNT(*) > 1;
-```
+### Prima milioni di righe, poi cinque casi che possiamo capire
 
-Oppure:
-
-```sql
--- quale percentuale della popolazione viene persa dopo il join?
-SELECT
-    COUNT(DISTINCT b.user_id) AS before_join,
-    COUNT(DISTINCT j.user_id) AS after_join
-FROM base_population b
-LEFT JOIN joined_population j USING (user_id);
-```
-
-La query generata e i test non devono necessariamente provenire dallo stesso sistema.
-
-Quando il rischio è alto, **indipendenza del percorso di verifica** aumenta il valore del controllo.
-
-## 14.2.4 Test fixture: prima milioni di righe, cinque casi che possiamo capire
-
-Un metodo molto efficace è creare una piccola fixture con casi noti.
-
-Esempio retention:
+Una piccola fixture rende l'errore falsificabile prima della scala:
 
 | user | signup | activity | expected D30 |
 |---|---|---|---:|
@@ -136,98 +43,34 @@ Esempio retention:
 | D | 1 gen | nessuna | 0 |
 | E | test account | 31 gen | excluded |
 
-Prima di lanciare la query su centinaia di milioni di eventi possiamo verificare se produce il risultato atteso su cinque righe comprensibili.
+Se il codice non produce il risultato atteso su cinque casi comprensibili, non ha senso fidarsi perché "sembra giusto" su centinaia di milioni di eventi. Questo è particolarmente importante con codice AI-generated, che può amplificare il **plausibility bias**: l'output è ordinato, il runtime termina, i numeri hanno la scala attesa e quindi il reviewer abbassa la guardia.
 
-Questa pratica è particolarmente utile con codice AI-generated perché riduce il rischio di **plausibility bias**: fidarsi del risultato perché “sembra giusto” su una tabella enorme.
+### Gli invarianti del metodo restano validi
 
-## 14.2.5 Python: pipeline leakage e hidden preprocessing
-
-Consideriamo:
+La stessa disciplina vale per Python e modeling. Consideriamo:
 
 ```python
 X_filled = imputer.fit_transform(X)
 X_train, X_test, y_train, y_test = train_test_split(X_filled, y)
 ```
 
-Il codice gira.
+Il codice gira, ma l'imputer è stato fit prima dello split e quindi apprende anche dalla distribuzione del test set. Il Capitolo 10 ha già trattato leakage: qui la lezione è che il reviewer deve applicare gli invarianti del metodo al codice generato. Per un modello predittivo possono essere: fit solo sul training, feature disponibili `as-of` prediction time, split coerente con deployment, baseline, calibration/threshold separati e metriche per segmento e tempo.
 
-Ma il preprocessing è fit prima dello split e quindi impara anche dalla distribuzione del test set.
+### Quando generazione ed esecuzione si fondono
 
-La lezione non è “l'AI sbaglia sklearn”.
-
-Il Capitolo 10 ha già trattato leakage.
-
-Qui la lezione è:
-
-> **il reviewer deve applicare gli invarianti del dominio tecnico al codice generato, non limitarsi a chiedere al modello se il codice è corretto.**
-
-Per modeling, gli invarianti possono includere:
-
-- fit solo sul training;
-- feature disponibili `as-of` prediction time;
-- split coerente con deployment;
-- baseline;
-- calibration/threshold separati;
-- metriche per segmento e tempo.
-
-## 14.2.6 Read-only by default
-
-Se l'AI può usare tool, la generazione di codice si fonde con l'esecuzione.
-
-Questo cambia il rischio.
-
-Una proposta SQL che dobbiamo copiare manualmente è diversa da un agente con permesso di eseguire:
-
-```sql
-DELETE
-UPDATE
-MERGE
-CREATE OR REPLACE
-```
-
-Per analisi ordinarie una policy ragionevole è:
+Se un agente può eseguire ciò che genera, il rischio cambia. Una query proposta che dobbiamo copiare manualmente è diversa da un agente autorizzato a fare `DELETE`, `UPDATE`, `MERGE` o `CREATE OR REPLACE`. Per l'analisi ordinaria una policy sensata è:
 
 ```text
 read-only by default
-write only when the task requires it
-approval before destructive/irreversible action
+write only when required by the task
+approval before destructive or irreversible action
 ```
 
-Il principio vale anche fuori dal database:
+Lo stesso principio vale fuori dal database: preparare una bozza email non equivale a inviarla; creare un file non equivale a sovrascriverlo; proporre una modifica a un dashboard non equivale a pubblicarla. La **permission boundary** è parte della correttezza del sistema.
 
-- creare file è diverso da sovrascriverli;
-- preparare una bozza email è diverso da inviarla;
-- proporre un dashboard change è diverso da pubblicarlo.
+### Acceptance gate
 
-La **permission boundary** è parte della correttezza del workflow.
-
-## 14.2.7 AI come reviewer: utile, ma non indipendente per definizione
-
-Chiedere:
-
-> Trova cinque failure mode in questa query.
-
-può essere molto utile.
-
-Ma “AI genera” + “stessa AI approva” non equivale automaticamente a review indipendente.
-
-Possiamo migliorare la separazione usando:
-
-- test deterministici;
-- query di reconciliation;
-- fixture note;
-- regole statiche;
-- peer review umana;
-- secondo modello/configurazione quando appropriato;
-- confronto con asset certificati.
-
-L'obiettivo non è moltiplicare revisori.
-
-È evitare che **lo stesso errore di contesto** venga ripetuto in generation e critique.
-
-## 14.2.8 Acceptance gate per codice generato
-
-Per un artefatto importante definiamo prima:
+Un artefatto AI-generated entra nella catena analitica soltanto quando supera un gate dichiarato, per esempio:
 
 ```text
 must compile/run
@@ -236,27 +79,9 @@ must preserve expected grain
 must reconcile within tolerance
 must respect permission policy
 must satisfy cost/runtime limit
-must produce no unresolved critical warning
+must have no unresolved critical warning
 ```
 
-Solo dopo può diventare input dell'interpretazione.
-
-### Campo della AI Analysis Control Sheet
-
-```text
-Generated artifact:
-Execution environment:
-Permission mode:
-Expected invariants:
-Fixture / golden cases:
-Tests generated:
-Independent checks:
-Reconciliation target:
-Performance/cost limit:
-Reviewer:
-Acceptance result:
-```
-
-### Regola operativa
+La AI Analysis Control Sheet registra artefatto, ambiente di esecuzione, permission mode, invarianti, fixture, controlli indipendenti, target di reconciliation, limiti di costo/runtime, reviewer e risultato dell'acceptance gate.
 
 > **L'AI abbassa il costo di scrivere codice. Il processo analitico deve abbassare anche il costo di falsificarlo: piccoli test, invarianti e reconciliation devono diventare parte standard dell'artefatto.**
