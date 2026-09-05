@@ -1,31 +1,10 @@
 ## 7.1 Baseline temporale, trend e stagionalità: prima di dire “su” o “giù”
 
-Una variazione temporale ha significato solo rispetto a una **baseline**.
+Una variazione temporale non ha significato da sola. Dire che le vendite sono scese del 12% è soltanto metà della frase: manca il riferimento rispetto al quale quel movimento viene giudicato. Ieri, la settimana precedente, lo stesso giorno della settimana, lo stesso periodo dell'anno precedente, il budget e un forecast stagionale possono produrre letture molto diverse dello stesso valore.
 
-Dire che le vendite sono scese del 12% è incompleto finché non sappiamo rispetto a cosa:
+Il primo lavoro dell'analista temporale non è quindi scegliere un modello. È costruire una **baseline comparabile**: un riferimento che rappresenti in modo credibile ciò che ci saremmo aspettati date le condizioni del processo.
 
-- ieri;
-- la stessa settimana precedente;
-- lo stesso giorno della settimana;
-- lo stesso periodo dell'anno precedente;
-- il budget;
-- un forecast che incorpora calendario e stagionalità.
-
-Il primo lavoro dell'analista temporale non è quindi scegliere un modello. È costruire un confronto che rappresenti ragionevolmente ciò che sarebbe stato atteso.
-
-### Trend, stagionalità, ciclo ed eventi speciali
-
-È utile distinguere quattro strutture.
-
-**Trend** — movimento persistente di fondo nel medio-lungo periodo.
-
-**Stagionalità** — pattern che tende a ripetersi con periodicità relativamente stabile: ora del giorno, giorno della settimana, mese, trimestre.
-
-**Ciclo** — espansioni e contrazioni che possono durare molto, ma non hanno necessariamente una periodicità fissa.
-
-**Calendar/event effect** — festività mobili, promozioni, payday, eventi sportivi, chiusure, scioperi o altri eventi con calendario noto ma non necessariamente regolare.
-
-NIST descrive la stagionalità come una fluttuazione periodica e suggerisce strumenti come run sequence plot, seasonal subseries plot, box plot per periodo e autocorrelazione per renderla visibile.[^nist-seasonality]
+Dentro questa baseline convivono strutture diverse. Un **trend** è un movimento persistente di fondo; la **stagionalità** è un pattern che tende a ripetersi a periodicità relativamente stabile; un **ciclo** può durare a lungo senza avere un calendario fisso; festività mobili, payday, promozioni, scioperi o grandi eventi introducono invece effetti di calendario noti ma non necessariamente regolari. NIST tratta proprio stagionalità, run sequence, seasonal subseries e autocorrelazione come strumenti per rendere visibili queste strutture.[^nist-seasonality]
 
 ### Caso simulato/composito — L'e-commerce che “cresce del 31%”
 
@@ -38,13 +17,9 @@ A gennaio un e-commerce di elettronica presenta:
 | Dicembre | 16,2 M€ |
 | Gennaio | 16,3 M€ |
 
-Da ottobre a gennaio: circa +31%.
+Da ottobre a gennaio la crescita è circa **+31%**. Il CEO collega il miglioramento al nuovo motore di raccomandazione lanciato in ottobre. La sequenza è plausibile, ma il calendario racconta una storia più prudente: nei tre anni precedenti novembre e dicembre avevano sempre mostrato picchi legati a Black Friday e Natale, mentre gennaio rimaneva sostenuto dai saldi.
 
-Il CEO collega il miglioramento al nuovo motore di raccomandazione lanciato in ottobre.
-
-L'analista recupera tre anni di dati. Novembre e dicembre hanno sempre picchi legati a Black Friday e Natale; gennaio rimane sostenuto dai saldi.
-
-Il confronto tra gennaio comparabili è:
+Quando l'analista confronta gennaio con gennaio, ottiene:
 
 | Gennaio | Ricavi |
 | --- | ---: |
@@ -52,46 +27,19 @@ Il confronto tra gennaio comparabili è:
 | 2025 | 15,5 M€ |
 | 2026 | 16,3 M€ |
 
-La crescita anno su anno è circa +5,2%.
+La crescita anno su anno è circa **+5,2%**. Nessuno dei due numeri è aritmeticamente falso. Il +31% descrive un movimento dentro una finestra fortemente stagionale; il +5,2% prova almeno a confrontare periodi più simili. Nemmeno quest'ultimo numero, però, dimostra l'effetto causale del motore di raccomandazione: prezzi, traffico, assortimento, campagne e mix possono essere cambiati insieme.
 
-Nessuno dei due numeri è aritmeticamente falso. Ma solo uno dei due confronti prova a controllare la stagionalità annuale.
+Questo è il punto: una baseline migliore riduce una fonte di confusione, non trasforma automaticamente il confronto in causalità.
 
-E nemmeno +5,2% dimostra l'effetto del motore di raccomandazione: prodotto, prezzi, traffico, assortimento e campagne possono essere cambiati nello stesso periodo.
+### Quando anche lo year-over-year inganna
 
-### Year-over-year non è sempre la risposta
+Lo stesso periodo dell'anno precedente è spesso un buon riferimento, ma non una legge. Pasqua può cadere in una settimana diversa, Black Friday può spostarsi dentro il mese, il numero di giorni lavorativi può cambiare, un leap year può aggiungere un giorno e una promozione eccezionale può esistere in un solo anno. Se il business è cresciuto molto, inoltre, lo stesso valore assoluto può avere un significato completamente diverso.
 
-Il confronto con lo stesso periodo dell'anno precedente è spesso utile, ma può fallire quando:
+Un'azienda B2B, per esempio, vede le fatture di maggio scendere del 4% anno su anno e interpreta il movimento come pipeline commerciale più debole. Dopo aver normalizzato per i giorni lavorativi, le fatture per giorno risultano invece **+1,8%**. Il totale mensile resta rilevante per capacità e cassa; il rate giornaliero è più informativo se la domanda è confrontare il ritmo commerciale. La baseline dipende dalla decisione.
 
-- Pasqua cambia settimana;
-- Black Friday cade in una diversa parte del mese;
-- cambia il numero di giorni lavorativi;
-- un leap year aggiunge un giorno;
-- il business è cresciuto o contratto strutturalmente;
-- una promozione eccezionale esiste in un solo anno.
+Anche la scala può cambiare il modo in cui leggiamo la stagionalità. Se un e-commerce raddoppia di dimensione, un picco natalizio può passare da +200.000 € a +400.000 € pur restando quasi identico in termini percentuali. In processi di questo tipo una scala logaritmica o una struttura moltiplicativa può rappresentare meglio ciò che resta stabile.
 
-Una baseline deve quindi rispettare **calendario e processo**, non solo la distanza temporale.
-
-### Caso breve — Il mese con un giorno lavorativo in meno
-
-Un'azienda B2B vede le fatture emesse a maggio scendere del 4% anno su anno.
-
-La conclusione iniziale è “pipeline commerciale più debole”.
-
-Dopo aver normalizzato per giorni lavorativi, le fatture per giorno risultano invece +1,8%.
-
-Il totale mensile e il rate giornaliero rispondono a due domande diverse. Per la capacità operativa il totale conta; per confrontare il ritmo commerciale il dato normalizzato può essere più informativo.
-
-### Stagionalità moltiplicativa
-
-In alcuni business l'ampiezza della stagionalità cresce con il livello della serie.
-
-Se un e-commerce raddoppia di dimensione, il picco di Natale può passare da +200.000 € a +400.000 € pur restando simile in termini percentuali.
-
-In questi casi ragionare solo in differenze assolute può far sembrare che la stagionalità stia “peggiorando”. Una scala logaritmica o un modello moltiplicativo può descrivere meglio il fenomeno.
-
-### Baseline multiple per decisioni diverse
-
-Una dashboard temporale robusta può mostrare più di una baseline:
+Per questo una dashboard robusta può avere più riferimenti, purché il loro ruolo sia chiaro:
 
 | Baseline | Domanda |
 | --- | --- |
@@ -100,14 +48,10 @@ Una dashboard temporale robusta può mostrare più di una baseline:
 | budget/target | stiamo rispettando il piano? |
 | forecast | il dato è insolito rispetto a ciò che il modello attendeva? |
 
-Non serve mostrarle tutte in ogni grafico. Serve sapere quale domanda stiamo facendo.
-
-### La regola operativa
-
-Prima di descrivere una variazione temporale completa:
+Non serve mostrare tutto contemporaneamente. Serve poter completare una frase difendibile:
 
 > **La metrica ______ è cambiata di ______ rispetto alla baseline ______, scelta perché ______. Il confronto tiene conto di ______ e non controlla ancora per ______.**
 
-Questa frase impedisce che “+12%” o “-8%” diventino storie senza calendario.
+Una volta stabilito rispetto a quale passato il presente è davvero diverso, possiamo fare la domanda successiva: **quanto il processo conserva memoria da un periodo all'altro?**
 
 [^nist-seasonality]: NIST/SEMATECH e-Handbook of Statistical Methods, “Seasonality”, https://www.itl.nist.gov/div898/handbook/pmc/section4/pmc443.htm
