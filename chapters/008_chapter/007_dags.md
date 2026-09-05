@@ -1,27 +1,12 @@
 ## 8.6 DAG: disegnare le assunzioni prima di scrivere la regressione
 
-Un **Directed Acyclic Graph (DAG)** è un modo compatto per rappresentare ipotesi causali tra variabili.
+Un **Directed Acyclic Graph (DAG)** non serve principalmente a rendere elegante una presentazione. Serve a rendere visibili le ipotesi causali che altrimenti resterebbero nascoste dentro una selezione di feature o una formula di regressione.
 
-Per un Data Analyst il suo valore principale non è grafico.
-
-È epistemico:
-
-> **obbliga a dichiarare quali relazioni crediamo esistano prima che il modello le nasconda dentro un set di feature.**
+Harvard CAUSALab usa una formulazione efficace già nel titolo di uno dei suoi materiali didattici: **“Draw Your Assumptions Before Your Conclusions”**.[^causalab-dag] È esattamente il ruolo che il DAG ha per un Data Analyst: costringerci a dire quali relazioni riteniamo plausibili prima che il modello produca un coefficiente.
 
 ### Caso simulato/composito — Campagna di reactivation
 
-Una subscription app vuole stimare l'effetto di una campagna email sul ritorno degli utenti inattivi.
-
-Variabili:
-
-- engagement pre-campagna;
-- eleggibilità alla campagna;
-- email ricevuta;
-- apertura;
-- ritorno nell'app;
-- churn successivo.
-
-Un DAG plausibile:
+Una subscription app vuole stimare l'effetto di una campagna email sul ritorno degli utenti inattivi. Tra le variabili disponibili ci sono engagement pre-campagna, eleggibilità, email ricevuta, apertura, ritorno nell'app e churn successivo. Un modello causale plausibile è:
 
 ```text
 engagement_pre -> email
@@ -30,139 +15,49 @@ email -> apertura -> ritorno -> churn
 email -----------------> ritorno
 ```
 
-Già il disegno rende visibili due cose.
+Il disegno chiarisce immediatamente due ruoli che in una tabella potrebbero sembrare simili. `engagement_pre` precede il trattamento e può aprire un backdoor path tra email e ritorno; `apertura` avviene dopo l'invio ed è un possibile **mediatore**. Se vogliamo l'effetto totale dell'invio, controllare automaticamente per `open_email` può eliminare parte del meccanismo che stiamo cercando di misurare.
 
-**Engagement pre-treatment** può aprire un backdoor path tra email e ritorno.
+Questo è il motivo per cui, nella causal inference, la feature selection non può essere lasciata interamente a una procedura predittiva. La domanda non è “quali variabili aiutano a prevedere `Y`?”, ma “quali variabili devo condizionare — e quali devo evitare — per identificare l'effetto definito?”.
 
-**Apertura dell'email** è post-trattamento e può essere un mediatore.
-
-Se vogliamo l'effetto totale dell'invio, controllare automaticamente per `open_email` cambia la domanda.
-
-### Il DAG viene prima della feature selection
-
-Nel predictive modeling possiamo lasciare che una procedura selezioni variabili utili alla previsione.
-
-Nella causal inference la domanda è diversa:
-
-> “Quali variabili devo condizionare — e quali devo evitare — per identificare l'effetto definito?”
-
-Questo richiede conoscenza del processo.
-
-### Tre ruoli da non confondere
-
-**Confondente pre-trattamento**
+Tre strutture ricorrono continuamente:
 
 ```text
-Z -> T
-Z -> Y
+Confondente:  Z -> T
+               Z -> Y
+
+Mediatore:    T -> M -> Y
+
+Collider:     T -> C <- U -> Y
 ```
 
-Può richiedere adjustment.
+Un confondente pre-treatment può richiedere adjustment; un mediatore può essere parte dell'effetto totale; un collider può creare bias se lo condizioniamo. Tutti e tre possono risultare “correlati con treatment e outcome” in un dataset. È il causal model a distinguerli.
 
-**Mediatore**
+### Dal totale al meccanismo
 
-```text
-T -> M -> Y
-```
-
-Controllarlo può bloccare parte dell'effetto totale.
-
-**Collider**
-
-```text
-T -> C <- U -> Y
-```
-
-Condizionare su `C` può aprire un'associazione non causale.
-
-Queste tre strutture possono apparire tutte come “variabili correlate con treatment e outcome” in una tabella.
-
-Il DAG ci impedisce di trattarle allo stesso modo.
-
-### Caso simulato/composito — Training commerciale
-
-Un'azienda vuole stimare l'effetto di un corso sul revenue trimestrale.
-
-Possibile meccanismo:
+Supponiamo che un'azienda voglia stimare l'effetto di un training commerciale sul revenue trimestrale:
 
 ```text
 training -> chiamate -> demo -> pipeline -> revenue
      \-----------------------------------> revenue
 ```
 
-Se la domanda è:
+Se la domanda è “qual è l'effetto totale del training?”, controllare per chiamate, demo e pipeline rischia di bloccare una parte dell'effetto stesso. Se invece chiediamo “quanto dell'effetto passa attraverso la pipeline?”, stiamo formulando un problema di mediazione e introduciamo assunzioni ulteriori. La variabile corretta da controllare dipende quindi dall'**estimand**, non da una regola universale.
 
-> “Qual è l'effetto totale del training?”
+Un DAG utile deve contenere anche ciò che non misuriamo. Se una motivazione non osservata influenza sia l'adesione al training sia il revenue, possiamo rappresentarla come `U_motivazione`. Il fatto che non esista nel warehouse non la rende causalmente irrilevante; al contrario, il grafo rende visibile perché una strategia puramente osservazionale potrebbe non identificare l'effetto.
 
-controllare per chiamate, demo e pipeline rischia di rimuovere proprio parte del meccanismo.
+Il DAG non dimostra che le frecce siano vere. È un modello del mondo e può essere contestato. Questo è un vantaggio: analyst e domain expert possono discutere quali relazioni mancano, distinguere conoscenza forte da ipotesi debole e verificare se modelli alternativi richiedono adjustment set diversi. L'assunzione, una volta disegnata, diventa criticabile.
 
-Se la domanda è invece:
-
-> “Quanto dell'effetto passa attraverso la pipeline?”
-
-entriamo in un problema di mediazione, con assunzioni ulteriori.
-
-### Disegnare anche ciò che non misuriamo
-
-Un errore comune è mettere nel DAG solo le colonne disponibili.
-
-Dovremmo invece inserire anche cause plausibili non osservate:
-
-```text
-U_motivazione -> training uptake
-U_motivazione -> revenue
-```
-
-Il fatto che `U_motivazione` non sia nel warehouse non la rende causalmente inesistente.
-
-Anzi, il DAG può mostrare esplicitamente perché una strategia di adjustment osservazionale non basta.
-
-### Il DAG non dimostra le frecce
-
-Un grafo è un modello del mondo, non una fotografia certa del mondo.
-
-Due analyst o domain expert possono proporre DAG differenti.
-
-Questa è una caratteristica utile: il disaccordo diventa visibile e discutibile **prima** della stima.
-
-Un buon processo è:
-
-1. costruire una prima versione con analyst e stakeholder;
-2. chiedere ai domain expert quali frecce mancano;
-3. distinguere conoscenza forte da ipotesi debole;
-4. verificare se DAG alternativi richiedono adjustment set diversi;
-5. documentare la versione usata per la causal claim.
-
-### DAG e tempo
-
-Le frecce devono rispettare una storia temporale plausibile.
-
-Se una variabile viene misurata dopo il trattamento, non può essere trattata come confondente preesistente senza una spiegazione molto specifica.
-
-Quando il processo è dinamico, può essere utile espandere il DAG nel tempo:
+Il tempo rimane parte del grafo. Quando il processo è dinamico può essere utile espanderlo:
 
 ```text
 usage_t-1 -> treatment_t -> usage_t+1 -> outcome_t+2
      \-------------------------------> outcome_t+2
 ```
 
-### Il DAG come parte del Causal Identification Brief
+Una variabile misurata dopo il trattamento non diventa un confondente preesistente soltanto perché compare come colonna numerica.
 
-Non serve sempre inserire un diagramma elegante nel report finale.
-
-Ma prima di una causal analysis seria dovremmo riuscire a rispondere:
-
-```text
-Quali cause comuni aprono backdoor path?
-Quali variabili sono mediatori?
-Dove possono esserci collider?
-Quali cause importanti non sono osservate?
-Quali variabili sono post-treatment?
-Esistono spillover tra unità?
-```
+Nel **Causal Identification Brief** il DAG può restare semplice, ma prima di una causal claim seria dovremmo poter dichiarare quali cause comuni aprono backdoor path, quali variabili sono mediatori, dove possono esserci collider, quali cause importanti non sono osservate, quali misure sono post-treatment e se esistono spillover tra unità.
 
 > **Il DAG non rende vere le assunzioni. Le rende visibili, e questo è già un enorme miglioramento rispetto a lasciarle implicite nel codice.**
 
-### Riferimento
-
-- Stanford University, STATS 361, *Causal Inference*: il corso include potential outcomes, observational studies, treatment heterogeneity, mediation, regression discontinuity, interference e graphical models: https://bulletin.stanford.edu/courses/2214431
+[^causalab-dag]: Harvard T.H. Chan School of Public Health, CAUSALab, materiali e corsi su causal diagrams e confounding adjustment: https://hsph.harvard.edu/research/causalab/onlinecourses/
