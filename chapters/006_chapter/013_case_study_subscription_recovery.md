@@ -1,30 +1,16 @@
 ## 6.12 Caso end-to-end: costruire una Lifecycle Diagnostic Map
 
-Il capitolo ha introdotto molte viste: segmenti, coorti, funnel, activation, retention, survival, reactivation, valore e rischio.
+Segmenti, coorti, funnel, activation, survival, reactivation, economics e risk score diventano pericolosi quando finiscono in dashboard separate e ognuno produce una storia propria. Il loro valore emerge quando convergono in una stessa diagnosi.
 
-Il pericolo è usarle come nove dashboard indipendenti.
+La **Lifecycle Diagnostic Map** serve proprio a questo: seguire la catena **chi → quando → dove → primo valore → persistenza → valore economico → rischio → actionability → prossimo metodo**.
 
-Il loro valore aumenta quando convergono in un unico oggetto decisionale: una **Lifecycle Diagnostic Map**.
+### OpsPilot: “trovate i clienti a rischio” è una richiesta troppo avanti nel processo
 
-La mappa deve rispondere, in ordine, a queste domande:
+**OpsPilot** è una piattaforma B2B in abbonamento. In due trimestri la Gross Revenue Retention scende dal **93,8% al 90,9%**. Il CEO chiede di identificare i clienti a rischio e salvarli prima che sia troppo tardi.
 
-**chi → quando → dove → primo valore → persistenza → valore economico → rischio → actionability → prossimo metodo**.
+La richiesta sembra già pronta per un churn model. Il team sceglie invece di ricostruire prima il lifecycle.
 
-### Caso simulato/composito: OpsPilot
-
-**OpsPilot** è una piattaforma B2B in abbonamento. Negli ultimi due trimestri la Gross Revenue Retention trimestrale è scesa dal 93,8% al 90,9%.
-
-Il CEO chiede:
-
-> Identificate i clienti a rischio e salvateli prima che sia troppo tardi.
-
-La richiesta sembra operativa, ma contiene domande diverse.
-
-Prima di costruire un modello, il team ricostruisce il lifecycle.
-
-### 1. Chi — segmentazione del valore perso
-
-Il peggioramento non è uniforme.
+La perdita non è uniforme:
 
 | Segmento | GRR precedente | GRR attuale |
 | --- | ---: | ---: |
@@ -32,31 +18,11 @@ Il peggioramento non è uniforme.
 | Mid-market | 94,0% | 90,8% |
 | SMB | 91,7% | 88,9% |
 
-La perdita maggiore è in mid-market e SMB.
+Mid-market e SMB spiegano gran parte del deterioramento. Aprendo per canale commerciale, emerge che i clienti acquisiti tramite un nuovo partner hanno GRR nettamente inferiore rispetto a quelli acquisiti dal sales team interno. Il problema non è più “la retention peggiora”, ma **il valore perso è concentrato nei clienti recenti mid-market/SMB provenienti dal nuovo partner**.
 
-Segmentando per canale commerciale emerge un pattern ancora più forte: i clienti acquisiti tramite un nuovo partner hanno GRR nettamente inferiore rispetto a quelli acquisiti dal sales team interno.
+Le coorti alla stessa età mostrano che il deterioramento compare nei nove mesi successivi al lancio del partner. Ma il contratto firmato si rivela un `t0` poco adatto: gli account partner impiegano più tempo fra firma e go-live. Il team riallinea quindi le coorti alla **prima automazione eseguita in produzione**. Il gap si riduce, ma non scompare. Una parte della differenza apparteneva al processo commerciale/implementativo; una parte rimane nel lifecycle d'uso.
 
-Il problema passa da “la retention peggiora” a:
-
-> il valore perso è concentrato nei clienti recenti mid-market/SMB provenienti dal nuovo partner.
-
-### 2. Quando — coorti di acquisizione e di go-live
-
-Il team confronta le coorti alla stessa età.
-
-Le coorti precedenti all'introduzione del partner hanno retention M6 relativamente stabile. Le coorti entrate nei nove mesi successivi peggiorano progressivamente.
-
-Ma emerge anche un dettaglio importante: il contratto non è un buon `t0`.
-
-Gli account partner hanno un intervallo più lungo tra firma e go-live. Il team riallinea quindi le coorti alla **prima automazione eseguita in produzione**.
-
-La differenza si riduce, ma non scompare.
-
-Questo evita di attribuire al prodotto una parte del ritardo che apparteneva al processo commerciale e implementativo.
-
-### 3. Dove — il funnel di onboarding
-
-Nei primi quattordici giorni:
+A quel punto il funnel dei primi quattordici giorni mostra dove le traiettorie divergono:
 
 | Passaggio | Sales interno | Partner |
 | --- | ---: | ---: |
@@ -65,117 +31,35 @@ Nei primi quattordici giorni:
 | Integrazione ERP attiva | 68% | 29% |
 | Primo workflow automatizzato | 72% | 38% |
 
-Il maggiore drop-off è tra setup iniziale e adozione collaborativa/integrata.
+Il problema non vive nel signup. Nasce nel passaggio da configurazione iniziale a uso collaborativo e integrato.
 
-Non è un problema generico di signup. È un problema nel passaggio da configurazione a utilizzo operativo.
+OpsPilot chiamava “activated” qualunque account che completasse il setup. L'analista propone un candidato più vicino al valore: **almeno tre utenti attivi, integrazione ERP funzionante e primo workflow automatizzato entro quattordici giorni**. Con questa definizione l'activation è **61%** per il sales interno e **24%** per il partner. Il median time-to-value è **3,1 giorni** contro **8,7 giorni**.
 
-### 4. Primo valore — activation e time-to-value
+Gli account che raggiungono il candidato entro sette giorni mostrano retention successiva molto più alta. È un segnale forte, non la prova che ridurre il TTV produrrebbe automaticamente più rinnovi.
 
-OpsPilot aveva definito “activated” ogni account che completava il setup.
+La curva di survival aggiunge un altro elemento. Le due popolazioni sono relativamente vicine nei primi quarantacinque giorni; la divergenza accelera fra il secondo e il quarto mese, proprio quando termina l'onboarding proattivo. Il problema non sembra quindi limitarsi al raggiungimento del primo valore: molti account partner arrivano a quel valore lentamente e non diventano abbastanza autonomi prima che il supporto intensivo finisca.
 
-L'analista propone un candidato più vicino al valore:
+### Dal rischio al valore a rischio
 
-> almeno tre utenti attivi, integrazione ERP funzionante e primo workflow automatizzato entro quattordici giorni.
+A questo punto il team potrebbe ancora commettere un errore: trattare tutti gli account fragili come equivalenti. ARR e contribution margin mostrano invece che alcuni account ad altissimo rischio sono piccoli, mentre altri con rischio leggermente inferiore rappresentano molto più valore economico.
 
-Con questa definizione:
+Per ogni account vengono quindi mantenuti separati rischio osservato, ARR/margine a rischio, tempo al rinnovo e stato del lifecycle.
 
-- sales interno: activation 61%;
-- partner: activation 24%.
+Solo ora viene costruito un modello predittivo. Fra i segnali principali emergono nessuna automazione nelle ultime tre settimane, meno del **40%** degli utenti invitati ancora attivi, integrazione ERP assente, aumento dei ticket di configurazione e mancata partecipazione alle sessioni di onboarding. Il modello identifica circa **1.200 account ad alto rischio**.
 
-Il median time-to-value è:
+Customer Success può seguirne soltanto **300**.
 
-- sales interno: 3,1 giorni;
-- partner: 8,7 giorni.
+Se il team prende i 300 score più alti, trova molti account che hanno già comunicato il mancato rinnovo, stanno chiudendo una divisione o hanno completato una migrazione verso un concorrente. Sono prevedibili, ma poco recuperabili. La priorità viene allora definita come combinazione di rischio significativo, valore economico materiale, problema ancora plausibilmente risolvibile, tempo sufficiente prima del rinnovo e stakeholder ancora coinvolti.
 
-Gli account che raggiungono il candidato di activation entro sette giorni mostrano retention successiva molto più alta.
+La lista cambia radicalmente.
 
-È una associazione importante, non ancora una prova che ridurre il TTV causi da solo il miglioramento.
+### La diagnosi indica l'intervento da testare, non il suo effetto
 
-### 5. Persistenza — la curva mostra il momento fragile
+OpsPilot considera due azioni: contatto generico del Customer Success oppure sessione tecnica dedicata a integrazione ERP e primo workflow. La seconda è più coerente con il punto di rottura osservato. Ma osservare che i clienti che ricevono più supporto rinnovano di più non basterebbe: potrebbero essere selezionati in modo diverso.
 
-Le survival curve delle due popolazioni sono relativamente vicine nei primi quarantacinque giorni.
+Questo è il punto in cui il lifecycle analysis deve fermarsi intenzionalmente. Ha ristretto il problema abbastanza da progettare un test sensato; non deve fingere di aver già misurato l'effetto dell'intervento.
 
-La divergenza accelera tra il secondo e il quarto mese.
-
-Questo coincide con la fine dell'onboarding proattivo.
-
-Il team scopre quindi un secondo problema: molti account partner non diventano realmente autonomi prima che il supporto intensivo termini.
-
-La domanda operativa cambia ancora:
-
-> il problema non è solo raggiungere il primo valore; è rendere il comportamento abbastanza stabile da sopravvivere alla fine del supporto guidato.
-
-### 6. Valore economico — non tutti gli account a rischio hanno la stessa priorità
-
-Il team calcola l'ARR a rischio e il contribution margin per segmento.
-
-Alcuni account con rischio elevato hanno contratti molto piccoli. Altri, con rischio leggermente inferiore, rappresentano una quota molto maggiore del valore economico.
-
-La priorità non può quindi essere definita soltanto dal churn rate.
-
-Per ogni account vengono tenute separate:
-
-- probabilità/rischio osservato;
-- ARR e margine a rischio;
-- tempo al rinnovo;
-- stato del lifecycle.
-
-### 7. Risk model — chi è più probabile che esca?
-
-Il team costruisce un modello predittivo semplice.
-
-I principali segnali includono:
-
-- nessuna automazione nelle ultime tre settimane;
-- meno del 40% degli utenti invitati ancora attivi;
-- integrazione ERP assente;
-- aumento dei ticket di configurazione;
-- mancata partecipazione alle sessioni di onboarding.
-
-Il modello identifica circa 1.200 account ad alto rischio.
-
-Il Customer Success team può gestirne soltanto 300.
-
-### 8. Actionability — chi possiamo ancora influenzare?
-
-I 300 risk score più alti includono molti account che:
-
-- hanno già comunicato la decisione di non rinnovare;
-- stanno chiudendo una divisione;
-- hanno completato la migrazione verso un concorrente.
-
-Sono facili da prevedere, ma poco recuperabili.
-
-OpsPilot aggiunge quindi un livello di actionability.
-
-Un account è prioritario se combina:
-
-- rischio significativo;
-- valore economico materiale;
-- problema potenzialmente risolvibile;
-- tempo sufficiente prima del rinnovo;
-- stakeholder ancora coinvolti.
-
-La lista dei 300 cambia radicalmente.
-
-### 9. Intervento — il lifecycle analysis non dimostra ancora cosa funziona
-
-Il team considera due interventi:
-
-- contatto generico del Customer Success;
-- sessione tecnica dedicata a ERP integration e primo workflow.
-
-Il lifecycle analysis suggerisce che il secondo è più coerente con il punto di rottura osservato.
-
-Ma non basta osservare che i clienti che ricevono più supporto rinnovano di più: potrebbero essere selezionati in modo diverso.
-
-Per attribuire un effetto all'intervento serve un disegno causale o sperimentale adeguato.
-
-Questo è il punto in cui il Capitolo 6 deve fermarsi intenzionalmente.
-
-### 10. La Lifecycle Diagnostic Map
-
-Il team sintetizza l'indagine in una pagina:
+La mappa finale comprime l'indagine in una pagina:
 
 | Campo | Evidenza OpsPilot |
 | --- | --- |
@@ -193,24 +77,8 @@ Il team sintetizza l'indagine in una pagina:
 | Cosa non sappiamo | quale intervento produce causalmente più rinnovi |
 | Prossimo metodo | disegno sperimentale/causale sull'intervento di onboarding tecnico |
 
-Questa tabella non sostituisce l'analisi. La comprime in una forma difendibile.
+La conclusione finale non è “il partner causa churn perché non configura ERP”. È più calibrata:
 
-### Il punto più importante: separare evidenza e inferenza
+> **Il deterioramento è concentrato nelle nuove coorti del canale partner. Questi account raggiungono meno spesso l'activation operativa, impiegano più tempo a ottenere valore e divergono soprattutto dopo la fine del supporto proattivo. L'assenza dell'integrazione ERP è un forte segnale, ma non abbiamo ancora dimostrato che completarla sia di per sé la causa della maggiore retention. Proponiamo di testare un intervento tecnico mirato sugli account ancora influenzabili.**
 
-La presentazione finale non dice:
-
-> Il partner causa churn perché non configura ERP.
-
-Dice:
-
-> Il deterioramento è concentrato nelle nuove coorti del canale partner. Questi account raggiungono meno spesso l'activation operativa, impiegano più tempo a ottenere valore e divergono soprattutto dopo la fine del supporto proattivo. L'assenza dell'integrazione ERP è un forte segnale, ma non abbiamo ancora dimostrato che completarla sia di per sé la causa della maggiore retention. Proponiamo di testare un intervento tecnico mirato sugli account ancora influenzabili.
-
-È una conclusione meno aggressiva. È anche molto più solida.
-
-### Dal KPI alla decisione
-
-Il percorso completo del capitolo diventa:
-
-**KPI aggregato → segmento → coorte → funnel → activation/TTV → curva → valore → rischio → actionability → evidenza mancante → prossimo metodo**
-
-Questo è ciò che trasforma retention e churn da percentuali di dashboard in una diagnosi del lifecycle.
+Questa è la funzione della Lifecycle Diagnostic Map: trasformare retention e churn da percentuali di dashboard in una diagnosi abbastanza precisa da sapere **quale domanda viene dopo**.
