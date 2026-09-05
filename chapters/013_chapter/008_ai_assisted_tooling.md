@@ -1,136 +1,32 @@
 ## 13.7 AI-assisted tooling: quando costruire costa meno, scegliere bene conta di più
 
-Il Capitolo 14 sarà dedicato al lavoro analitico assistito dall'AI: errori semantici, eval, privacy, auditability, agenti e verifica.
+Il Capitolo 14 sarà dedicato al lavoro analitico assistito dall'AI. Qui ci interessa una conseguenza più limitata ma decisiva per il tool selection: **l'AI riduce il costo marginale di costruire formule, query, codice, automazioni e documentazione**.
 
-Qui ci interessa un solo effetto sul tool selection:
+Questa riduzione cambia l'economia delle alternative. Non cambia però le responsabilità del processo.
 
-> **l'AI riduce il costo marginale di costruire soluzioni in strumenti che prima richiedevano più specializzazione.**
+Se un assistente può scrivere Python per noi, Python diventa più accessibile; non diventa automaticamente il posto giusto in cui far vivere il workload. Restano le domande su data location, execution environment, dipendenze, review, manutenzione, sicurezza, downstream e rollback. In altre parole, l'AI può abbassare il **build cost** senza abbassare il **ownership cost**.
 
-Oggi un analyst può ottenere rapidamente:
+### La velocità può comprimere il tempo prima dell'errore
 
-- formule spreadsheet;
-- SQL;
-- Python/R;
-- DAX;
-- trasformazioni;
-- documentazione;
-- test iniziali;
-- spiegazioni di codice legacy.
+Un analyst può chiedere a un assistente di generare una query, costruire un training set, addestrare un classificatore, mostrare feature importance e produrre una lista clienti. Nel nostro caso simulato, in pochi minuti compare un modello con **AUC 0,96**. Solo dopo emerge che `cancel_reason` è valorizzato dopo la cancellazione e introduce leakage.
 
-Questo rende i confini tra strumenti più permeabili.
+L'AI non ha reso il processo meno rigoroso per definizione. Ha semplicemente permesso di arrivare molto più rapidamente a un artefatto plausibile. **Il costo della comprensione del problema non è diminuito quanto il costo dell'implementazione.** Questo squilibrio rende ancora più importante mantenere frontiere informative, contract e validation gate.
 
-Non rende irrilevante scegliere il contesto di esecuzione.
+### L'AI può anche ridurre il costo di uscita
 
-### La falsa conclusione: “ora posso usare qualsiasi tool”
+Lo stesso abbassamento del build cost può essere utile quando una soluzione ha superato il proprio contesto. Un workbook con formule e macro può restare troppo a lungo in produzione perché riscriverlo sembra costoso. Un assistente può accelerare la lettura della logica legacy, la traduzione in SQL/Python, la generazione di test di equivalenza e la documentazione dei casi limite.
 
-Se un assistente può scrivere Python per noi, potremmo pensare che Python sia sempre una scelta praticabile.
+Questo non rende la migrazione automatica, ma cambia il TCO della scelta “restiamo qui perché spostarci costa troppo”. Il sunk cost diventa un argomento un po' meno forte, mentre la verifica di parity e semantic continuity resta indispensabile.
 
-Ma restano domande che non riguardano la sintassi:
-
-- dove vive il dato?
-- dove verrà eseguito il codice?
-- chi lo revisiona?
-- come gestiamo le dipendenze?
-- chi mantiene il processo tra sei mesi?
-- cosa succede se l'output alimenta un sistema downstream?
-- possiamo verificare ciò che è stato generato?
-
-L'AI può abbassare il **build cost** senza abbassare il **ownership cost**.
-
-### Caso simulato/composito — modello churn in venti minuti
-
-Un analyst chiede a un assistente di:
-
-1. generare la query;
-2. costruire il training set;
-3. addestrare un classificatore;
-4. mostrare feature importance;
-5. produrre una lista clienti.
-
-In pochi minuti ottiene un modello con AUC 0,96.
-
-Poi scopre che `cancel_reason` è valorizzato soltanto dopo la cancellazione.
-
-La velocità ha ridotto il costo dell'implementazione.
-
-Non ha ridotto il costo della comprensione del problema.
-
-Anzi: ha reso possibile arrivare molto più velocemente a un sistema plausibile ma inutilizzabile.
-
-### AI come acceleratore di migrazione
-
-C'è anche un effetto positivo importante.
-
-Un team può avere un workbook cresciuto troppo, ma rimandare la migrazione perché riscrivere:
-
-- formule;
-- macro;
-- SQL;
-- documentazione;
-
-è costoso.
-
-L'AI può ridurre questo switching cost aiutando a:
-
-- spiegare logica legacy;
-- tradurre formule in SQL/Python;
-- generare test di equivalenza;
-- documentare casi limite;
-- produrre una prima versione della migrazione.
-
-Questo non rende la migrazione automatica.
-
-Ma cambia l'economia della decisione “restiamo qui perché riscrivere costa troppo”.
-
-### Tool convergence
-
-Python in Excel è un esempio concreto di convergenza: Microsoft permette di usare Python e librerie analitiche all'interno del workbook.[^python-excel-13]
-
-Altri ambienti incorporano assistenti per query, dashboard o codice.
-
-Di conseguenza, una tassonomia basata soltanto sui nomi degli strumenti diventa meno utile.
-
-Conta di più chiedere:
-
-- dove gira il calcolo;
-- quali dati può vedere;
-- quale semantica eredita;
-- come viene versionato;
-- chi può approvarlo;
-- come viene distribuito l'output.
+Python in Excel è un esempio concreto della convergenza tra superfici che un tempo sembravano separate: Microsoft permette oggi di eseguire Python nell'ambiente del workbook.[^python-excel-13] Altri prodotti incorporano assistenti per query, dashboard e codice. Di conseguenza, una tassonomia basata soltanto sul nome del tool perde valore. Diventa più utile chiedere **dove gira il calcolo, quali dati può vedere, quale semantica eredita, come viene versionato e chi può approvarne l'output**.
 
 ### “Can build” non significa “should build”
 
-Prima dell'AI un piccolo costo tecnico poteva funzionare come freno naturale:
+Prima dell'AI un costo tecnico di tre giorni poteva funzionare come freno naturale a un'automazione marginale. Se oggi la prima versione richiede trenta minuti, quel freno scompare. Dobbiamo sostituirlo con una domanda esplicita:
 
-> non costruiamo questa automazione perché richiede tre giorni.
+> **Quale requisito concreto rende questa soluzione migliore dell'alternativa più semplice?**
 
-Ora può richiedere trenta minuti.
-
-Quel freno è più debole.
-
-Serve sostituirlo con un criterio esplicito:
-
-> **quale requisito concreto rende questa automazione o questo tool migliore dell'alternativa più semplice?**
-
-### Campo del Tooling Decision Record
-
-Quando l'AI influenza la scelta annotiamo:
-
-```text
-AI-assisted step:
-human owner:
-required context / schema:
-verification method:
-change in build cost:
-change in maintenance cost:
-security / data boundary:
-can output execute or only propose?:
-rollback / review for write actions:
-exit condition:
-```
-
-### Regola operativa
+Nel Tooling Decision Record conviene quindi separare ciò che l'AI riduce — tempo di costruzione, spiegazione, migrazione — da ciò che può lasciare invariato o perfino aumentare: manutenzione, dipendenze, superficie di security, review, rischio di output plausibili e costo di ownership.
 
 > **Usa l'AI per ridurre il costo di costruzione, comprensione e migrazione. Non lasciare che il costo basso della costruzione diventi una ragione sufficiente per costruire.**
 
