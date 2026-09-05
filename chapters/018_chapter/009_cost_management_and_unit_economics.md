@@ -1,341 +1,69 @@
-## 18.8 Cost-to-serve: un prodotto analitico deve avere anche un'economia
+## 18.8 Cost-to-serve: una promessa operativa ha anche un'economia
 
-Una piattaforma analitica può diventare tecnicamente più sofisticata e contemporaneamente economicamente peggiore.
+Una piattaforma analitica può diventare tecnicamente più sofisticata e contemporaneamente economicamente peggiore. I costi raramente esplodono per una sola scelta enorme; crescono attraverso migliaia di decisioni ragionevoli prese senza una vista comune: refresh sempre più frequenti, copie regionali, raw history letta da ogni dashboard, ambienti dimenticati, notebook sempre accesi, streaming per decisioni giornaliere, agenti che ripetono query costose, asset che nessuno usa più.
 
-I costi crescono attraverso migliaia di decisioni apparentemente piccole:
+La domanda utile non è quindi “come riduciamo il cloud bill?”, ma:
 
-- refresh più frequenti;
-- copie regionali;
-- query senza pruning;
-- retention eccessiva;
-- ambienti dimenticati;
-- notebook sempre accesi;
-- modello più grande del necessario;
-- streaming per decisioni giornaliere;
-- agenti che ripetono query costose;
-- dashboard che nessuno usa più.
+> **Quale prodotto, consumer o decisione genera questo costo, e il valore ottenuto giustifica il livello di servizio che stiamo pagando?**
 
-Il problema non è semplicemente:
+È qui che cost management torna dentro l'Analytics Operating Contract. Reliability, freshness e recovery non sono gratis; per questo devono essere lette insieme a criticality, adoption e valore.
 
-> “Spendiamo troppo.”
+## Prima l'allocazione, poi l'ottimizzazione
 
-È:
+Un costo aggregato è difficile da governare perché nessuno può collegarlo a una scelta. Per un portfolio analitico servono dimensioni di allocazione abbastanza coerenti con il modo in cui prendiamo decisioni: team, domain, data product, workload, environment, region, consumer class, model/agent, criticality tier.
 
-> **“Quale prodotto, consumer o decisione genera questo costo, e il valore ottenuto giustifica il livello di servizio che stiamo pagando?”**
-
-## Cost visibility prima dell'optimization
-
-Non possiamo governare un costo che vive soltanto nella fattura aggregata della piattaforma.
-
-Per un portfolio analitico servono livelli di allocazione coerenti con il modo in cui prendiamo decisioni.
-
-Possibili dimensioni:
-
-- team;
-- domain;
-- data product;
-- workload;
-- environment;
-- consumer class;
-- region;
-- model/agent;
-- criticality tier.
-
-Non tutto deve essere allocato al centesimo.
-
-Serve abbastanza trasparenza da cambiare comportamento.
-
-## Caso reale documentato: FinOps e cost allocation
-
-La FinOps Foundation definisce l'**Allocation** come la capacità di assegnare costi e utilizzo a team, progetti o altre unità responsabili, includendo una strategia esplicita per costi condivisi e metadata.
+La FinOps Foundation definisce **Allocation** come la capacità di assegnare costi e utilizzo a team, progetti o altre unità responsabili e di rendere esplicita una strategia anche per i shared cost.
 
 Fonte: https://www.finops.org/framework/capabilities/allocation/
 
-La stessa guida osserva che non tutti i shared cost devono necessariamente essere distribuiti con un modello estremamente sofisticato. In alcuni casi è legittimo decidere consapevolmente di mantenerli centrali: ciò che conta è che la scelta sia esplicita e utile al livello di maturità dell'organizzazione.
+Non tutto deve essere allocato al centesimo. Un costo diretto può essere attribuito a una pipeline o a un modello dedicato. Un shared cost può essere ripartito usando query time, storage, request count o workload unit. Una capability davvero comune — catalogo, governance, observability di base — può anche rimanere finanziata centralmente. La maturità sta nel rendere la scelta visibile e utile, non nel costruire un modello di chargeback più costoso del problema che vuole risolvere.
 
-Questa idea evita un anti-pattern frequente:
+## Unit economics: dal costo tecnologico al valore servito
 
-> spendere più per calcolare un'allocazione perfetta di quanto l'allocazione possa far risparmiare.
-
-## Cost allocation strategy
-
-Possiamo distinguere:
-
-### Direct cost
-
-Attribuibile chiaramente a un prodotto.
-
-Esempi:
-
-- warehouse compute di una pipeline dedicata;
-- API usage di un modello;
-- licenza specifica.
-
-### Shared cost allocabile
-
-Piattaforma condivisa il cui consumo può essere stimato con:
-
-- query time;
-- bytes processed;
-- storage;
-- request count;
-- active users;
-- workload unit.
-
-### Shared central cost
-
-Capability comune che decidiamo di finanziare centralmente:
-
-- catalogo;
-- governance;
-- base observability;
-- support platform.
-
-La strategia deve essere documentata, non nascosta nei report Finance.
-
-## Dal costo totale alla unit economics analitica
-
-La FinOps Foundation definisce la **Unit Economics** come la pratica di collegare uso/costo tecnologico al valore dei prodotti, servizi o attività organizzative, distinguendo metriche di efficienza tecnica e metriche di business.
+La FinOps Foundation definisce la **Unit Economics** come il collegamento tra spesa tecnologica e valore dei prodotti, servizi o attività organizzative e distingue resource-efficiency metrics da business unit metrics.
 
 Fonte: https://www.finops.org/framework/capabilities/unit-economics/
 
-Per analytics, unit metric possibili sono:
+Per analytics possiamo osservare costo per refresh, per milione di eventi, per forecast, per account scored, per decision feed, per consumer attivo o per workload business. Ma una unit metric è utile soltanto se guida un comportamento desiderabile. `Cost per query` può incentivare meno query anche quando la query crea valore. `Cost per decision feed` può essere più vicino al servizio reale. La metrica deve rappresentare l'economia della capability, non soltanto la voce che il provider fattura.
 
-- costo per 1.000 query;
-- costo per refresh;
-- costo per milione di eventi processati;
-- costo per forecast prodotto;
-- costo per account scored;
-- costo per decision feed servito;
-- costo per consumer attivo;
-- costo per workload business unit.
+## La dashboard “gratuita” da €31.000 al mese
 
-Ma attenzione.
+Un marketplace costruisce una executive dashboard. Nel tempo aggiunge refresh ogni dieci minuti, 34 visualizzazioni, due anni di raw event letti ripetutamente, cinque copie regionali, cinque semantic model quasi identici, export automatici e un agente che ogni ora ricalcola summary e anomalie. Il costo attribuito arriva a circa **€31.000 al mese**.
 
-La metrica:
+La prima reazione è “serve più capacità”. Il team invece ricostruisce il demand profile. Il CEO apre il prodotto una volta al giorno; il weekly review usa snapshot giornaliero; soltanto due metriche operative richiedono freshness sotto l'ora; l'80% delle query ripete aggregazioni calcolabili a monte; i cinque modelli regionali possono condividere core semantics; l'agente produce 24 summary al giorno ma ne vengono letti in media 1,7.
 
-> costo per query
+Il problema non è una query inefficiente. È un **service-level mismatch**. Il sistema sta pagando near-real-time, duplicazione e compute per consumer che non hanno quel bisogno.
 
-può incentivare meno query anche quando una query crea valore.
+## Freshness economics: ogni minuto in meno deve valere qualcosa
 
-La unit metric deve rappresentare l'economia della capability, non soltanto ciò che il cloud provider fattura.
+Chiedere “quanto vale davvero un dato più fresco?” è uno dei modi più semplici per riallineare costo e promessa. Un executive dashboard consultato una volta al giorno probabilmente non crea valore proporzionale con refresh ogni dieci minuti. Un fraud decision può invece avere valore elevato per ogni secondo di latency risparmiato. In inventory planning, alcuni segnali possono richiedere near-real-time mentre anagrafiche e dimensioni restano daily.
 
-## Caso simulato/composito: la dashboard “gratuita” da €31.000 al mese
+Non dobbiamo assegnare la freshness dell'elemento più urgente a tutto il prodotto. È una forma di over-engineering particolarmente costosa perché si moltiplica su compute, monitoring, supporto e incident surface.
 
-Un marketplace costruisce una executive dashboard.
+La stessa logica vale per la history. Raw event retention può avere valore per audit, replay o regolazione, ma non deve essere infinita per default. L'Operating Contract può distinguere hot window, cold/archive, replay requirement, legal retention, delete policy e cost owner. Recoverability ha un valore, ma anche un costo.
 
-All'inizio costa poco.
+## Reliability premium e criticality
 
-Nel tempo vengono aggiunti:
+Più reliability richiede test, replica, monitoring, recovery, parallel run e capacità umana. Un T1 sovra-ingegnerizzato può costare quanto un T3 senza creare valore equivalente. Per questo cost review e reliability review devono leggere lo stesso contratto: quale failure stiamo proteggendo, quale SLO abbiamo promesso, quanto costa e chi trae valore dalla protezione.
 
-- refresh ogni 10 minuti;
-- 34 visualizzazioni;
-- due anni di eventi raw letti ripetutamente;
-- copie per cinque regioni;
-- cinque semantic model quasi identici;
-- export automatici;
-- caching disallineato;
-- un agente che ricalcola ogni ora summary e anomalie.
+Questo evita due errori opposti. Ridurre un forecast da €2.000 a €1.300 al mese può essere una falsa economia se il servizio evita stock-out per centinaia di migliaia di euro. Mantenere una dashboard da €15.000 al mese che non entra più in alcuna decisione può invece essere un problema di **retirement**, non di tuning.
 
-Il costo attribuito al prodotto arriva a circa **€31.000/mese**.
+## Agent cost-to-serve: autonomia senza budget diventa spesa opaca
 
-La prima reazione è:
+Con gli agenti AI compaiono costi nuovi: token/model usage, tool call, retry loop, query duplicate, evaluation e human review. Un agente può sembrare economico per singolo task e diventare costoso perché gira troppo spesso, usa sempre il modello più potente, interroga raw data quando esistono aggregate o produce output che nessuno consuma.
 
-> “Serve più capacità.”
+Per questo l'Agent Operating Profile dovrà includere anche usage budget, model routing, cache/reuse strategy, cost anomaly threshold e adoption signal. Un runtime budget non è soltanto un controllo finanziario: limita anche loop e blast radius.
 
-Il team ricostruisce il demand profile.
+Una variazione di costo va poi diagnosticata come qualsiasi anomalia. `Cost-to-serve +45% WoW con usage +3%` è un segnale azionabile. `Cloud bill +8%` molto meno. La causa può essere crescita reale, query regressiva, mancato pruning, nuovo consumer, runaway agent o change di pricing provider. Serve owner e playbook, non soltanto un alert Finance.
 
-Scopre che:
+## Cost, output, adoption, outcome
 
-- il CEO la usa una volta al giorno;
-- il weekly review usa snapshot giornaliero;
-- soltanto due metriche operative richiedono freshness < 1 ora;
-- l'80% delle query ripete aggregazioni già calcolabili a monte;
-- i cinque modelli regionali possono condividere core semantics;
-- l'agente produce 24 summary al giorno, ma ne vengono letti in media 1,7.
+La metrica ideale sarebbe “costo per decisione migliorata”, ma spesso non possiamo misurarla direttamente. Possiamo però costruire una gerarchia utile:
 
-La soluzione non è una micro-ottimizzazione tecnica.
+**Cost → Output → Adoption → Outcome**.
 
-È un **service-level redesign**.
+Quanto costa il prodotto? Quanti feed, forecast o query serve? Quali processi reali lo usano? Quale tempo, rischio o valore cambia? Questa sequenza impedisce di chiamare efficienza il semplice taglio di spesa e prepara la sezione successiva: un prodotto può essere economico, affidabile e comunque inutile se non entra mai in una decisione.
 
-## Reliability ha un prezzo
+Una review mensile o trimestrale può quindi collegare cost driver, allocated/shared cost, SLO premium, cost per unit, adoption e evidence of value per decidere tra `optimize`, `resize`, `redesign` o `retire`.
 
-Più reliability può richiedere:
-
-- replica;
-- monitoring;
-- on-call;
-- test;
-- più frequenza;
-- recovery capability;
-- retention;
-- parallel run.
-
-Quindi il cost review deve leggere insieme:
-
-- criticality tier;
-- SLO;
-- consumer value;
-- cost-to-serve.
-
-Un T1 sovra-ingegnerizzato può costare quanto un T3 senza creare valore equivalente.
-
-## Freshness economics
-
-Una delle domande più potenti è:
-
-> **“Quanto vale davvero un dato più fresco?”**
-
-Esempio:
-
-### Dashboard executive
-
-Decisione una volta al giorno.
-
-Refresh ogni 10 minuti probabilmente non crea valore proporzionale.
-
-### Fraud decision
-
-Ogni secondo può cambiare l'esito.
-
-Ridurre latency può avere valore elevato.
-
-### Inventory planning
-
-Una parte del dato può richiedere near-real-time, altre dimensioni possono essere daily.
-
-Non dobbiamo assegnare la freshness dell'elemento più urgente a tutto il prodotto.
-
-## Storage e history economics
-
-Anche la retention deve dipendere dall'uso.
-
-Conservare raw event per sempre può essere utile per:
-
-- audit;
-- backfill;
-- ricerca;
-- regolazione.
-
-Ma può essere inutile per altre sorgenti.
-
-L'Operating Contract può definire:
-
-- hot window;
-- cold/archive;
-- replay requirement;
-- legal retention;
-- delete policy;
-- cost owner.
-
-Il valore della recoverability deve essere confrontato con il costo della history.
-
-## Agent cost-to-serve
-
-Con gli agenti AI emerge una nuova categoria di costo:
-
-- token/model usage;
-- tool calls;
-- repeated query;
-- retry loop;
-- duplicate agents;
-- evaluation;
-- human review.
-
-Un agente può sembrare economico per task e diventare costoso quando:
-
-- viene chiamato troppo spesso;
-- usa sempre il modello più potente;
-- interroga dati non aggregati;
-- produce output che nessuno consuma.
-
-L'Operating Contract dell'agente deve quindi avere anche:
-
-- usage budget;
-- escalation per cost anomaly;
-- model routing;
-- cache/reuse strategy;
-- consumer/adoption metric.
-
-## Cost anomaly management
-
-Come per data quality, una variazione di costo può essere:
-
-- errore;
-- nuovo consumer;
-- crescita reale;
-- query regressiva;
-- mancato pruning;
-- runaway agent;
-- change di pricing provider.
-
-Gli alert devono portare a un owner e a un playbook.
-
-Esempio:
-
-> cost-to-serve del prodotto +45% WoW con usage +3%.
-
-Questo è un segnale molto più azionabile di:
-
-> cloud bill +8%.
-
-## Cost per unit of value
-
-La metrica ideale sarebbe:
-
-> **costo per decisione migliorata**.
-
-Spesso non possiamo misurarla direttamente.
-
-Possiamo però avvicinarci con una gerarchia:
-
-### Cost
-
-Quanto costa il prodotto?
-
-### Output
-
-Quante query/forecast/decision feed serve?
-
-### Adoption
-
-Quanti processi reali lo usano?
-
-### Outcome
-
-Quale tempo, rischio o valore economico cambia?
-
-Questa gerarchia evita di chiamare efficienza il semplice taglio di spesa.
-
-## Non ottimizzare il prodotto utile fino a renderlo inutile
-
-Un forecast costa €2.000/mese e riduce stock-out attesi per centinaia di migliaia di euro.
-
-Ridurre la frequenza per risparmiare €700 può essere una falsa economia.
-
-Viceversa, un dashboard costa €15.000 e non entra più in alcuna decisione.
-
-Qui l'optimization corretta può essere **retirement**, non tuning.
-
-## Cost review nel lifecycle
-
-Ogni prodotto T2/T3 può avere review periodica:
-
-```text
-monthly/quarterly cost
-→ key drivers
-→ allocated vs shared cost
-→ SLO cost
-→ cost per unit
-→ adoption
-→ value evidence
-→ optimize / resize / redesign / retire
-```
-
-La FinOps Foundation sottolinea che unit metric e target devono essere rivisti nel tempo e collegati agli obiettivi organizzativi.
-
-Fonte: https://www.finops.org/framework/capabilities/unit-economics/
-
-## La regola economica
-
-> **Un sistema analitico sostenibile non è quello che costa poco. È quello in cui il livello di servizio, il costo e il valore sono leggibili nello stesso Operating Contract, così possiamo capire se stiamo pagando per reliability utile o per complessità ereditata.**
+> **Un sistema analitico sostenibile non è quello che costa poco. È quello in cui livello di servizio, costo e valore sono leggibili nello stesso Operating Contract, così possiamo distinguere reliability utile da complessità ereditata.**
