@@ -1,47 +1,12 @@
 ## 11.10 Deduplicazione: scegliere quale realtà vogliamo rappresentare
 
-La deduplicazione sembra un problema tecnico finché non poniamo la domanda giusta:
+La deduplicazione sembra un problema tecnico finché non chiediamo **quali righe descrivono lo stesso fenomeno e quale versione deve sopravvivere**. Due righe uguali possono essere un retry tecnico; due righe con la stessa business key possono essere versioni legittime; due righe dello stesso ordine possono essere eventi economici distinti. `SELECT DISTINCT` non risolve questa ambiguità: elimina soltanto righe identiche secondo le colonne selezionate.
 
-> **Quali righe rappresentano lo stesso fenomeno e quale versione deve sopravvivere nel modello analitico?**
+Prima di deduplicare conviene capire se la sorgente rappresenta **entità correnti**, **versioni** o **eventi**. Se il modello finale deve essere `current_orders`, una riga per `order_id`, e la sorgente contiene versioni dello stato ordine, la winner rule deve entrare nell’Analytical Data Contract.
 
-Due righe uguali possono essere un retry tecnico. Due righe con la stessa business key possono invece essere due versioni legittime di uno stato. Due righe dello stesso ordine possono essere eventi economici diversi che non devono essere eliminate.
+### LumaShop: revenue +8% senza ordini aggiuntivi
 
-Per questo `SELECT DISTINCT` non è una strategia di deduplicazione. È soltanto un operatore SQL.
-
-### Tre tipi di tabella da non confondere
-
-Prima di deduplicare conviene classificare il dato.
-
-**Entità corrente**
-
-Una riga finale per soggetto, per esempio lo stato corrente di un ordine.
-
-**Versioni**
-
-Più righe descrivono lo stesso soggetto in momenti successivi.
-
-**Eventi**
-
-Ogni riga rappresenta un accadimento che può avere valore autonomo.
-
-Questa distinzione entra direttamente nell'**Analytical Data Contract**.
-
-Se il contratto dice:
-
-```text
-model: current_orders
-grain: una riga per order_id
-source semantics: versioni dello stato ordine
-winner rule: updated_at più recente, poi ingestion_at
-```
-
-la deduplicazione diventa verificabile.
-
-### Caso simulato/composito — LumaShop e il revenue +8% senza vendite aggiuntive
-
-Dopo una migrazione ETL, LumaShop vede crescere la revenue giornaliera dell'8%, mentre il sistema operativo non mostra più ordini.
-
-Nel raw layer compare:
+Dopo una migrazione ETL, LumaShop vede crescere la revenue giornaliera dell’8%, mentre il sistema operativo non mostra più ordini. Nel raw layer compare:
 
 ```text
 order_id   updated_at   ingestion_at   status   amount
@@ -50,11 +15,9 @@ A102       10:04:38     10:04:45       paid     120
 A102       10:04:38     10:05:02       paid     120
 ```
 
-La seconda riga è una nuova versione. La terza è un retry della stessa versione.
+La seconda riga è una nuova versione; la terza è un retry della stessa versione. Poiché `ingestion_at` è diverso, `SELECT DISTINCT *` le conserva tutte.
 
-`SELECT DISTINCT *` può eliminare soltanto righe perfettamente identiche; qui `ingestion_at` è diverso e quindi tutte e tre sopravvivono.
-
-Se il modello desiderato è **lo stato corrente dell'ordine**, una possibile regola è:
+Se vogliamo lo stato corrente dell’ordine, una possibile regola è:
 
 ```sql
 WITH ranked AS (
@@ -71,15 +34,9 @@ FROM ranked
 WHERE rn = 1;
 ```
 
-La parte importante non è `ROW_NUMBER()`. Sono le decisioni che la rendono corretta:
+La parte decisiva non è `ROW_NUMBER()`. È il contratto che rende quella query legittima: identità `order_id`, output a una riga per ordine, priorità alla versione business più recente, tie-break sull’ultimo arrivo, output di current state e non di event history.
 
-- identità = `order_id`;
-- grain finale = una riga per ordine;
-- priorità = versione business più recente;
-- tie-break = ultimo arrivo;
-- output = stato corrente, non storia degli eventi.
-
-### Quando deduplicare distrugge informazione
+### Deduplicare può distruggere realtà
 
 Consideriamo invece:
 
@@ -89,78 +46,17 @@ P1         | A102     | capture    | 120
 P2         | A102     | refund     | -120
 ```
 
-Entrambe le righe riguardano lo stesso ordine, ma sono due eventi economici distinti.
+Le due righe condividono l’ordine ma rappresentano eventi economici distinti. Deduplicare per `order_id` cancellerebbe parte del fenomeno. La domanda da fare è quindi se la chiave usata per la dedup identifica l’evento oppure soltanto l’entità a cui appartiene.
 
-Deduplicare per `order_id` cancellerebbe parte della realtà.
+Anche il tie-break deve essere deterministico. Se più righe possono avere lo stesso `updated_at`, ordinare solo per quel campo lascia al database la scelta tra pari merito. Una sequenza completa come `updated_at DESC, ingestion_at DESC, source_sequence DESC` deve derivare da una semantica reale, non essere inventata soltanto per ottenere una riga.
 
-La domanda diventa quindi:
+### Dedup analitica e idempotenza di pipeline
 
-> **La chiave su cui sto deduplicando identifica l'evento o soltanto l'entità a cui l'evento appartiene?**
+La deduplicazione downstream può proteggere un modello, ma non sostituisce chiavi di idempotenza in ingestion, gestione dei retry, merge/upsert coerenti e audit delle versioni. Il Capitolo 12 allargherà il problema all’architettura. Qui basta riconoscere quando una tabella contiene versioni o retry e non osservazioni indipendenti.
 
-### Il tie-break deve essere deterministico
+Se il contract dice “una riga per ordine corrente”, possiamo testare l’unicità finale. Ma zero duplicati non basta: potremmo aver eliminato troppo. Conviene controllare anche righe raw vs finali, business key coinvolte, valore economico rimosso, distribuzione dei retry, percentuale di tie e riconciliazione con il sistema operativo.
 
-Un pattern fragile è:
-
-```sql
-ROW_NUMBER() OVER (
-    PARTITION BY order_id
-    ORDER BY updated_at DESC
-)
-```
-
-se più righe possono avere lo stesso `updated_at`.
-
-Il database è libero di scegliere tra i pari merito. Due esecuzioni potrebbero teoricamente selezionare righe diverse.
-
-Serve quindi un ordine completo, per esempio:
-
-```text
-updated_at DESC,
-ingestion_at DESC,
-source_sequence DESC
-```
-
-Il criterio deve avere significato e non essere inventato solo per far sparire il duplicato.
-
-### Idempotenza: il problema dovrebbe essere risolto anche a monte
-
-Una pipeline è idempotente quando rieseguirla con gli stessi input non moltiplica il risultato.
-
-La deduplicazione analitica può proteggere il modello downstream, ma non sostituisce:
-
-- chiavi di idempotenza in ingestion;
-- gestione dei retry;
-- merge/upsert coerenti;
-- audit delle versioni;
-- capacità di backfill.
-
-Il Capitolo 12 entrerà nell'architettura. Qui il punto è più limitato: **l'analista deve riconoscere quando la tabella che sta interrogando contiene versioni o retry e non eventi indipendenti**.
-
-### Gli invarianti da trasformare in test
-
-Se il contratto dice “una riga per ordine corrente”, allora possiamo testare:
-
-```sql
-SELECT order_id
-FROM current_orders
-GROUP BY order_id
-HAVING COUNT(*) > 1;
-```
-
-Ma zero duplicati non basta. Potremmo aver eliminato troppo.
-
-Controlliamo anche:
-
-- righe raw vs righe finali;
-- business key coinvolte;
-- valore economico rimosso;
-- distribuzione dei retry per sorgente;
-- percentuale di record con tie;
-- riconciliazione con il sistema operativo.
-
-### Campo del contract: identity/version rule
-
-Per un dataset soggetto a versionamento, l'Analytical Data Contract dovrebbe poter dichiarare:
+### Identity/version rule
 
 ```text
 business key:
@@ -173,8 +69,4 @@ late update policy:
 expected uniqueness after transformation:
 ```
 
-A quel punto la deduplicazione non è più un trucco nascosto dentro una CTE.
-
-Diventa una regola esplicita del prodotto dati.
-
-> **Deduplicare significa scegliere quale rappresentazione del fenomeno vogliamo conservare. Se quella scelta non è dichiarata, il modello può essere unico e comunque essere sbagliato.**
+> **Deduplicare significa scegliere quale rappresentazione del fenomeno conservare. Una tabella può essere perfettamente unica e continuare a essere semanticamente sbagliata.**
