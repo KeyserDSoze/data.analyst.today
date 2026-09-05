@@ -1,22 +1,10 @@
 ## 8.13 Effetti eterogenei: non basta sapere che “in media funziona”
 
-Il Capitolo 6 ha usato segmenti e coorti per localizzare **dove il comportamento differisce**.
-
-Qui la domanda è più forte:
-
-> **L'effetto causale dello stesso trattamento cambia tra popolazioni differenti?**
-
-Questa è causal heterogeneity, non semplice segmentazione descrittiva.
+Il Capitolo 6 ha usato segmenti e coorti per localizzare dove il comportamento differisce. Qui la domanda è più forte: **lo stesso trattamento produce effetti causali diversi in popolazioni differenti?** Non basta osservare che due segmenti hanno outcome diversi; dobbiamo confrontare il contrasto trattamento-controllo all'interno di ciascun segmento.
 
 ### Caso simulato/composito — Campagna retention
 
-Un esperimento produce:
-
-- churn controllo: 18,4%;
-- churn trattamento: 15,9%;
-- effetto medio: `-2,5 pp`.
-
-La media è utile, ma può nascondere differenze operative.
+Un esperimento produce churn **18,4%** nel controllo e **15,9%** nel trattamento, per un effetto medio di `-2,5 pp`. La media è utile, ma può nascondere differenze operative.
 
 Per tenure:
 
@@ -34,119 +22,40 @@ Per valore cliente:
 | medio | -2,9 pp |
 | alto | -6,4 pp |
 
-La domanda diventa:
+A questo punto la decisione non è più soltanto “la campagna funziona?”, ma “per chi l'effetto è abbastanza grande da giustificare costo e capacità?”. È qui che ATE, ATT e **CATE** smettono di essere sigle teoriche e diventano estimand differenti.
 
-> “Per chi l'effetto è abbastanza grande da giustificare costo e capacità operativa?”
+### Outcome level non è treatment effect
 
-### ATE, ATT e CATE non sono sinonimi
-
-- **ATE:** effetto medio nella popolazione target;
-- **ATT:** effetto medio sulle unità trattate;
-- **CATE:** effetto medio condizionato a caratteristiche `X`.
-
-Un CATE può essere più vicino alla decisione, ma è anche più difficile da stimare in modo stabile.
-
-Dividere il campione riduce informazione e aumenta il rischio di trovare pattern casuali.
-
-### Heterogeneity richiede un effect contrast, non due retention rate separate
-
-Errore comune:
-
-> “Il gruppo enterprise ha retention più alta, quindi il trattamento funziona meglio sugli enterprise.”
-
-Per dire che l'effetto è diverso dobbiamo confrontare **l'effetto trattamento-controllo dentro i segmenti**, non i livelli assoluti dell'outcome.
-
-Esempio:
+Un errore frequente consiste nel confrontare livelli di retention tra segmenti e chiamarli eterogeneità dell'effetto. Se otteniamo:
 
 | Segmento | Controllo | Trattamento | Effetto |
 |---|---:|---:|---:|
 | SMB | 70% | 73% | +3 pp |
 | Enterprise | 90% | 93% | +3 pp |
 
-Gli enterprise hanno retention maggiore, ma l'effetto stimato è identico.
+gli enterprise hanno retention molto più alta, ma l'effetto stimato è identico. L'eterogeneità causale riguarda **la differenza delle differenze tra trattamento e controllo**, non il livello dell'outcome.
 
-### Pre-specificato vs esplorativo
+Il prezzo della granularità è l'incertezza. Un CATE può essere più vicino alla decisione, ma dividere il campione riduce informazione. Un effetto di `-12 pp` su **38 clienti** non è automaticamente più interessante di `-4 pp` su **8.000**. Denominatori, intervalli, stabilità temporale, plausibilità del meccanismo e replica diventano ancora più importanti.
 
-Se analizziamo 50 segmenti dopo aver visto i risultati, qualcosa sembrerà eccezionale per caso.
+### Pre-specificare dove possibile
 
-Distingui sempre:
+Se esploriamo cinquanta segmenti dopo aver visto i risultati, qualche effetto sembrerà eccezionale per puro caso. Il Capitolo 5 ci ha già fornito il linguaggio di multiple testing e uncertainty; qui va applicato ai treatment effects. Dobbiamo distinguere heterogeneity ipotizzata prima del test, analisi esplorativa post hoc, risultati replicati e pattern basati su piccoli campioni. Quando appropriato, tecniche di shrinkage o partial pooling possono aiutare a evitare che il rumore dei segmenti piccoli venga scambiato per policy.
 
-- heterogeneity ipotizzata prima del test;
-- analisi esplorativa post hoc;
-- risultati replicati;
-- pattern basati su piccoli denominatori.
-
-Il Capitolo 5 ci ha già dato il linguaggio per multiple testing e incertezza. Qui lo applichiamo agli effetti causali.
-
-### Segmenti troppo granulari
-
-Un effetto di `-12 pp` su 38 clienti non va trattato come automaticamente più interessante di `-4 pp` su 8.000 clienti.
-
-Servono:
-
-- intervalli;
-- denominatori;
-- stabilità temporale;
-- plausibilità del meccanismo;
-- eventuale shrinkage/partial pooling quando appropriato;
-- replica.
-
-### Causal ML non elimina l'identificazione
-
-Causal forests, meta-learners e uplift models possono aiutare a trovare eterogeneità complessa.
-
-Ma se il trattamento è confuso in modo non identificato, l'algoritmo non trasforma magicamente l'associazione in causal effect.
-
-L'ordine resta:
+Causal forests, meta-learners e uplift models possono esplorare strutture complesse di heterogeneity, ma non sostituiscono l'identificazione. Se il trattamento è confuso in modo non risolto, l'algoritmo non trasforma l'associazione in treatment effect. L'ordine rimane:
 
 **design credibile → effetto identificabile → eterogeneità**.
 
-Non:
+### Dall'effetto alla convenienza
 
-**algoritmo sofisticato → causalità**.
-
-### Dall'effetto al valore decisionale
-
-Supponiamo che una chiamata costi 40 €.
-
-Segmento A:
-
-- riduzione churn: 2 pp;
-- margine cliente: 80 €.
-
-Segmento B:
-
-- riduzione churn: 5 pp;
-- margine cliente: 2.000 €.
-
-Anche se il CATE è la metrica causale, la priorità finale richiede economia:
+Anche un CATE credibile non decide da solo la policy. Supponiamo che una chiamata costi **40 €**. Nel segmento A riduce il churn di **2 pp** su clienti con margine **80 €**; nel segmento B lo riduce di **5 pp** su clienti con margine **2.000 €**. La priorità deve mettere insieme effetto, valore dell'outcome evitato e costo dell'intervento:
 
 `effect × valore dell'outcome - costo intervento`
 
-Questo ponte verrà sviluppato nel Capitolo 15.
+Questo ponte verrà sviluppato nel Capitolo 15, ma la causal analysis deve già evitare di confondere “effetto maggiore” con “decisione migliore”.
 
-### Caso simulato/composito — Pricing seller
+Lo stesso principio emerge in un marketplace che aumenta la commissione. Se l'effetto medio sui seller attivi è `-1,2%`, ma le stime sono `-0,1%` enterprise, `-0,8%` mid-market e `-6,7%` per piccoli seller a basso margine, una policy differenziata può essere più sensata di un rollback totale — purché gli effetti siano sufficientemente precisi, non frutto di esplorazione opportunistica e materialmente rilevanti.
 
-Un marketplace aumenta la commissione.
-
-Effetto medio sui seller attivi: `-1,2%`.
-
-Per segmento:
-
-- enterprise: -0,1%;
-- mid-market: -0,8%;
-- piccoli seller a basso margine: -6,7%.
-
-La decisione può diventare pricing differenziato invece di rollback totale.
-
-Ma prima di farlo dobbiamo sapere se questi effetti sono:
-
-- sufficientemente precisi;
-- pre-specificati o scoperti post hoc;
-- replicabili;
-- economicamente rilevanti.
-
-### Heterogeneity card
+La **Heterogeneity card** conserva il controllo decisionale:
 
 ```text
 Estimand medio:
@@ -161,4 +70,6 @@ Valore economico per segmento:
 Policy che cambierebbe:
 ```
 
-> **La media dice se un intervento funziona nel complesso. L'eterogeneità serve a capire se la stessa policy debba davvero essere applicata a tutti.**
+> **La media dice che cosa succede complessivamente. L'eterogeneità serve a capire se la stessa policy debba davvero essere applicata a tutti.**
+
+Questa distinzione prepara un ultimo errore molto comune: usare il **rischio previsto** come se misurasse la **persuadibilità** all'intervento.
