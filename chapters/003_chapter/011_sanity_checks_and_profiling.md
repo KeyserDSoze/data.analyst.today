@@ -1,76 +1,26 @@
 ## 3.10 Sanity check e data profiling: prima di descrivere il business, descrivi il dataset
 
-Prima di cercare pattern sofisticati conviene costruire una fotografia elementare del dato.
+Prima di cercare pattern sofisticati conviene costruire una fotografia elementare del dato. Non perché i controlli semplici siano “junior”, ma perché molte anomalie costose diventano visibili proprio quando confrontiamo ciò che **abbiamo** con ciò che **ci aspettiamo**.
 
-Non perché i controlli semplici siano "junior", ma perché molte anomalie costose diventano evidenti proprio quando confrontiamo ciò che **abbiamo** con ciò che **ci aspettiamo**.
+Il profiling non coincide con un `describe()` o con una collezione di statistiche descrittive. Minimi, massimi, medie e quantili sono utili soltanto quando diventano confronti contro un modello del processo: quante righe dovrebbero esserci, quale periodo dovrebbe essere coperto, quali chiavi dovrebbero essere uniche, quali categorie dovrebbero comparire, quali latenze sono normali.
 
-### Il profiling non è `describe()`
+La differenza tra riepilogo e profiling sta nella baseline. `2.000.000 righe` è un dato descrittivo; se ieri la stessa fonte ne conteneva 2,4 milioni e il business non è cambiato, la differenza diventa una pista investigativa.
 
-Un comando che produce minimi, massimi e medie è utile, ma non basta.
+## Profilare significa cercare rotture nel processo
 
-Il vero data profiling cerca di rispondere a cinque domande:
-
-1. **quanto dato abbiamo?**
-2. **quale periodo e popolazione copre?**
-3. **quali valori e categorie contiene?**
-4. **quali proprietà dovrebbero essere vere?**
-5. **dove il comportamento cambia rispetto al normale?**
-
-La quinta domanda è quella che trasforma un riepilogo in un controllo analitico.
-
-### Un set minimo di controlli
-
-Per quasi ogni dataset dovremmo conoscere almeno:
-
-- numero di righe;
-- cardinalità delle chiavi principali;
-- intervallo temporale;
-- numero di record per giorno/settimana/mese;
-- missing rate dei campi critici;
-- distribuzione delle categorie principali;
-- minimi, massimi e quantili delle misure;
-- presenza di valori fuori dominio;
-- duplicati al grain atteso;
-- record orfani rispetto alle relazioni principali;
-- freshness e ultimo timestamp disponibile.
-
-Ma ogni valore ha bisogno di una baseline.
-
-`2.000.000 righe` non ci dice se il dataset è completo. Se ieri ne avevamo 2,4 milioni e il business è stabile, la differenza è una pista.
+Un set minimo di controlli dovrebbe permetterci di ricostruire volume, cardinalità delle chiavi, intervallo temporale, missing dei campi critici, distribuzioni principali, valori fuori dominio, duplicati al grain atteso, record orfani e freshness. Ma questi controlli diventano davvero utili quando vengono osservati nel tempo e lungo le dimensioni che possono spiegare un cambiamento.
 
 ### Caso simulato/composito — Il giorno con il doppio delle letture
 
-**VerdeMare Energy** gestisce impianti fotovoltaici e riceve ogni notte le letture dei contatori.
+VerdeMare Energy gestisce impianti fotovoltaici e riceve ogni notte le letture dei contatori. Un analista deve calcolare la produzione media giornaliera di luglio. Il dataset contiene circa 46 milioni di letture e nessun errore evidente a livello di schema.
 
-Un analista deve calcolare la produzione media giornaliera di luglio.
-
-Il dataset contiene circa 46 milioni di letture e nessun errore evidente a livello di schema.
-
-Prima dell'analisi, l'analista conta i record per giorno.
-
-Per quasi tutto il mese il volume oscilla attorno a **1,48 milioni** di righe giornaliere.
-
-Il 18 luglio ne compaiono **2,96 milioni**.
+Prima dell'analisi conta i record per giorno. Quasi tutto il mese oscilla attorno a **1,48 milioni** di righe; il 18 luglio compaiono **2,96 milioni**.
 
 Esattamente il doppio.
 
-L'indagine mostra che, dopo un recovery, una giornata di dati è stata caricata due volte.
+Il recovery di una pipeline aveva ricaricato la stessa giornata. Non serviva un algoritmo sofisticato di anomaly detection: bastava conoscere il volume atteso e guardare la serie temporale prima di calcolare la metrica di business.
 
-Non serviva un algoritmo di anomaly detection. Bastava conoscere il volume atteso.
-
-### Profilare per dimensione, non soltanto in aggregato
-
-Una media complessiva può nascondere un difetto localizzato.
-
-Esempio:
-
-```text
-missing_rate(delivery_date) = 4,8%
-```
-
-Può sembrare accettabile.
-
-Poi segmentiamo per carrier:
+La stessa logica vale per i missing. Un `missing_rate(delivery_date) = 4,8%` può sembrare moderato finché non viene scomposto per carrier:
 
 ```text
 Carrier A: 0,7%
@@ -78,68 +28,18 @@ Carrier B: 1,1%
 Carrier C: 19,4%
 ```
 
-La domanda cambia da "abbiamo un po' di missing" a "cosa succede nell'integrazione del Carrier C?".
+A quel punto la domanda non è più “quanti valori mancano?”, ma “che cosa succede nell'integrazione del Carrier C?”. Il profiling ha trasformato una proprietà aggregata in un'ipotesi sul processo.
 
-Profilare significa quindi osservare le proprietà del dato lungo le dimensioni in cui il processo potrebbe comportarsi diversamente.
+## Il tempo e le categorie hanno memoria
 
-### Profiling temporale
+Un dataset può essere valido riga per riga e incompleto come storia. Giorni mancanti, volumi che cambiano improvvisamente, timestamp futuri, backfill, nuove timezone o categorie che compaiono dopo una release sono tutti segnali che il sistema di produzione è cambiato.
 
-Il tempo merita controlli propri:
+Anche i campi categoriali raccontano queste transizioni. Un `country` con valori `IT`, `ITA`, `Italy`, `Italia`, `italy` e `NULL` non è soltanto “sporco”: può rivelare che più sistemi stanno contribuendo alla stessa colonna con standard differenti. Normalizzare le etichette senza capire l'origine può nascondere proprio il confine fra le sorgenti.
 
-- giorni o ore mancanti;
-- volumi che cambiano improvvisamente;
-- timestamp futuri;
-- cambio di timezone;
-- ritardi di caricamento;
-- backfill;
-- cambi di schema o di categoria che iniziano da una data precisa.
+Per questo i controlli migliori derivano da **invarianti** o aspettative esplicite: un ordine dovrebbe avere almeno una riga d'ordine; la popolazione degli account non dovrebbe diminuire del 20% senza un evento noto; una valuta deve appartenere al dominio previsto; la data massima deve essere compatibile con la SLA di aggiornamento.
 
-Un dataset può essere perfettamente valido riga per riga e incompleto come storia.
+Quando queste aspettative si dimostrano stabili e importanti, potranno diventare controlli automatici. Prima, però, servono a guidare la lettura iniziale del dataset.
 
-### Profiling categoriale
+La disciplina dei primi minuti può essere riassunta in poche domande collegate: quante righe ho e quante dovrei averne? Quale periodo sto osservando? Quali chiavi dovrebbero essere uniche? Dove manca il dato? Quali categorie o distribuzioni sono cambiate recentemente? Quale evento di sistema potrebbe spiegare la rottura?
 
-Per ogni campo categorico chiediamo:
-
-- quante categorie esistono?
-- quali sono le più frequenti?
-- sono comparse categorie nuove?
-- alcune categorie sono scomparse?
-- esistono quasi-sinonimi?
-- la distribuzione cambia bruscamente dopo una release?
-
-Un `country` che contiene:
-
-```text
-IT
-ITA
-Italy
-Italia
-italy
-NULL
-```
-
-non è solo "sporco". Potrebbe indicare che più sistemi producono lo stesso concetto con standard differenti.
-
-### Dall'osservazione all'invariante
-
-I controlli migliori derivano da aspettative esplicite.
-
-Esempi:
-
-- un ordine dovrebbe avere almeno una riga d'ordine;
-- il numero di account non dovrebbe diminuire del 20% in una notte senza un evento noto;
-- la valuta di una transazione deve appartenere a un insieme previsto;
-- il volume giornaliero dovrebbe restare entro un intervallo plausibile rispetto allo storico;
-- la data massima dovrebbe essere compatibile con la SLA di aggiornamento.
-
-Queste aspettative diventeranno, quando serve, controlli automatici nella sezione 3.15.
-
-### La regola dei primi minuti
-
-Prima di un'analisi complessa, prova a rispondere rapidamente:
-
-> **Quante righe ho? Quante dovrei averne? Da quando a quando? Quali chiavi dovrebbero essere uniche? Dove manca il dato? Quali categorie dominano? Che cosa è cambiato recentemente?**
-
-Il profiling non serve a dimostrare che il dataset sia corretto.
-
-Serve a trovare abbastanza rapidamente i motivi per cui potrebbe non esserlo.
+> **Il profiling non dimostra che il dataset sia corretto. Serve a trovare rapidamente i motivi per cui potrebbe non esserlo e a trasformarli in domande verificabili sul processo che lo produce.**
