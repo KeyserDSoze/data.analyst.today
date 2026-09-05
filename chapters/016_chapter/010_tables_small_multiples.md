@@ -1,25 +1,8 @@
 ## 16.9 Tabelle, ranking e small multiples: scegliere tra pattern e precisione
 
-Non tutto deve diventare un grafico.
+Non tutto deve diventare un grafico. Prima della forma chiediamo se il destinatario deve **percepire un pattern** oppure **recuperare un valore preciso**. Questa distinzione elimina molta visualizzazione decorativa.
 
-La domanda utile è:
-
-> **“Il destinatario deve percepire un pattern o recuperare un valore preciso?”**
-
-Questa distinzione evita molta visualizzazione decorativa.
-
-## Quando la tabella è la forma migliore
-
-Una tabella è spesso superiore quando il lettore deve:
-
-- trovare un valore specifico;
-- confrontare numeri molto vicini;
-- leggere più metriche per la stessa entità;
-- verificare una soglia;
-- individuare owner e azione;
-- utilizzare il contenuto come lista operativa.
-
-Esempio decisionale:
+Una tabella è spesso la scelta migliore quando il lettore deve verificare una soglia, confrontare numeri vicini, leggere più metriche per la stessa entità, trovare un owner o usare il contenuto come lista operativa. Consideriamo:
 
 | Regione | OTD | Target | Gap | Ordini a rischio | Owner |
 |---|---:|---:|---:|---:|---|
@@ -27,103 +10,36 @@ Esempio decisionale:
 | Centro | 94,6% | 95% | -0,4 pp | 780 | Ops B |
 | Sud | 96,1% | 95% | +1,1 pp | 210 | Ops C |
 
-Una tabella ordinata per gap può essere più utile di tre gauge.
+Se la decisione è prioritizzare interventi, una tabella ordinata per gap comunica meglio di tre gauge. Se il compito fosse invece lookup amministrativo, un ordine alfabetico potrebbe essere più appropriato. **Anche l'ordinamento propone una priorità**, quindi deve essere coerente con il task.
 
-## Ranking: ordinare significa proporre una priorità
+### Small multiples: una grammatica comune per molti pattern
 
-Una tabella non è neutrale nemmeno nell'ordine.
+Una società logistica vuole confrontare l'on-time delivery di **18 regioni negli ultimi 24 mesi**. Un unico line chart con 18 serie contiene tutti i dati ma rende difficile seguire qualunque regione. Gli small multiples riducono il problema usando un pannello per regione, stessa finestra temporale e stesso encoding per target ed eventi.
 
-Possibili ordinamenti:
+Con una scala comune emergono rapidamente tre famiglie: regioni stabilmente forti, deterioramenti progressivi e shock temporanei con recovery. La ripetizione della grammatica riduce il costo cognitivo e rende comparabili i pattern.
 
-- valore assoluto;
-- delta;
-- severità;
-- impatto economico;
-- rischio;
-- alfabetico.
+La scala, però, dipende ancora dalla domanda. Se dobbiamo confrontare **magnitudini**, pannelli con scale diverse possono ingannare. Se dobbiamo confrontare soltanto la **forma interna** del trend, scale locali possono avere valore, purché siano evidenti. Una soluzione pratica può mostrare la scala comune nel decision layer e una vista normalizzata nell'appendix diagnostica.
 
-Se l'obiettivo è prioritizzare interventi, l'ordine alfabetico nasconde la decisione. Se l'obiettivo è lookup, può essere invece appropriato.
+### Sparklines: contesto compatto, non sostituto del grafico
 
-Dobbiamo rendere esplicita la regola di ranking quando ha significato decisionale.
+Una tabella operativa può aggiungere una sparkline per rispondere contemporaneamente a “quanto vale oggi?” e “è un problema nuovo o persistente?”. La sparkline è utile come contesto compatto, ma non dovrebbe sostituire un chart con assi e annotazioni quando il trend è il cuore del claim.
 
-## Small multiples: molti pattern, una grammatica comune
+### Conditional formatting: segnale, non pittura
 
-### Caso simulato/composito — 18 regioni, 18 linee
+Colorare ogni cella crea spesso una heatmap involontaria. La formattazione condizionale dovrebbe essere riservata a violazioni di soglia, top/bottom materialmente rilevanti o cambiamenti che richiedono azione. E deve avere una seconda codifica — testo, simbolo, label o ordinamento — perché il colore non può essere l'unico canale informativo.
 
-Una società logistica vuole confrontare l'on-time delivery di 18 regioni negli ultimi 24 mesi.
+### Table-first per audit e accessibilità
 
-Un line chart con 18 serie contiene tutto ma rende difficile seguire qualsiasi regione.
+Anche quando la pagina executive usa grafici, la Decision Communication Pack dovrebbe offrire una forma tabellare o underlying data per numeri esatti, verifica, export, accessibilità e provenance. La Government Analysis Function 2026 sottolinea che dashboard interattivi possono non essere pienamente accessibili e raccomanda contenuti alternativi, inclusi testo, tabelle e dati scaricabili.[^gaf-dashboard]
 
-Gli small multiples usano:
-
-- un pannello per regione;
-- stessa finestra temporale;
-- stessa scala quando la magnitudine deve essere confrontabile;
-- stesso encoding per target ed eventi.
-
-Emergono subito tre famiglie:
-
-- regioni stabilmente forti;
-- deterioramenti progressivi;
-- shock temporanei con recovery.
-
-La ripetizione della stessa grammatica riduce il costo cognitivo.
-
-## Scale coerenti: quando servono davvero
-
-Se vogliamo confrontare **magnitudini**, scale diverse tra pannelli possono ingannare.
-
-Se vogliamo confrontare soltanto **forma interna del pattern**, scale locali possono avere valore, ma vanno rese evidenti.
-
-Una soluzione possibile è mostrare:
-
-- small multiples con scala comune nella vista decisionale;
-- versione normalizzata o locale nell'appendix diagnostica.
-
-## Sparklines: contesto temporale dentro una tabella
-
-Una tabella operativa può aggiungere una piccola sparkline per rispondere contemporaneamente:
-
-- quanto vale oggi?
-- è un problema nuovo o persistente?
-
-La sparkline non deve sostituire assi o dettaglio quando il trend è il cuore del claim. Serve come contesto compatto.
-
-## Conditional formatting: segnale, non pittura
-
-Colorare ogni cella crea spesso una heatmap involontaria.
-
-La formattazione condizionale dovrebbe evidenziare soltanto:
-
-- violazioni di soglia;
-- top/bottom materialmente rilevanti;
-- cambiamenti che richiedono azione.
-
-E deve avere una codifica alternativa al colore: simbolo, testo, ordinamento o label.
-
-## Table-first per l'audit
-
-Anche quando la pagina executive usa grafici, la Decision Communication Pack dovrebbe offrire una forma tabellare per:
-
-- numeri esatti;
-- accessibilità;
-- verifica;
-- export;
-- provenance.
-
-La Government Analysis Function sottolinea che i dashboard interattivi non sono pienamente accessibili a tutti e raccomanda alternative come tabelle di supporto, testo e download dei dati.
-
-## Una regola operativa
+La regola operativa può restare molto semplice:
 
 - **pattern** → grafico;
 - **lookup** → tabella;
 - **molti pattern comparabili** → small multiples;
-- **priorità operativa** → tabella ordinata con soglie e owner;
-- **audit/accessibilità** → tabella o underlying data disponibile.
+- **priorità operativa** → tabella ordinata con soglia e owner;
+- **audit/accessibilità** → underlying table o alternativa testuale disponibile.
 
 > **La sofisticazione di una visualizzazione non si misura dal numero di encoding. Si misura da quanto rapidamente il destinatario riesce a svolgere il compito cognitivo corretto.**
 
-### Fonti
-
-- Office for National Statistics, *Axes and gridlines*: https://service-manual.ons.gov.uk/data-visualisation/guidance/axes-and-gridlines
-- Government Analysis Function, *Data visualisation: testing dashboards for design and accessibility*: https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-testing-dashboards-for-design-and-accessibility/
+[^gaf-dashboard]: Government Analysis Function, *Data visualisation: testing dashboards for design and accessibility*, https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-testing-dashboards-for-design-and-accessibility/
