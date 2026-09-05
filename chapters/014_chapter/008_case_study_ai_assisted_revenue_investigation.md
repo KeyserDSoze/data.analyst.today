@@ -2,31 +2,13 @@
 
 > **Nota editoriale:** Aurelia Travel è un caso simulato/composito costruito a fini didattici. Organizzazione, numeri e sequenza degli eventi non descrivono una singola azienda reale.
 
-Il caso serve a mostrare un workflow completo in cui l'AI accelera realmente l'analisi, ma ogni passaggio importante produce un artefatto verificabile.
+Aurelia Travel gestisce una piattaforma di prenotazione in 11 mercati europei. Lunedì alle 08:05 il CFO riceve un alert: net revenue settimana corrente €18,7M, settimana precedente €20,4M, variazione `-8,3%`. Il CEO chiede: "È un problema reale? Qual è il driver? Dobbiamo intervenire oggi?"
 
-### Il contesto decisionale
+La domanda sembra unica, ma contiene tre gate distinti: **measurement**, **diagnostic** e **action**. Il workflow AI-assisted è utile proprio se impedisce di saltarli.
 
-Aurelia Travel gestisce una piattaforma di prenotazione in 11 mercati europei.
+### Aprire la Control Sheet prima dell'indagine
 
-Lunedì, ore 08:05, il CFO riceve un alert automatico:
-
-- net revenue settimana corrente: €18,7M;
-- settimana precedente: €20,4M;
-- variazione: -8,3%.
-
-Il CEO chiede:
-
-> “È un problema reale? Qual è il driver? Dobbiamo intervenire oggi?”
-
-Questa non è una sola domanda. Sono tre gate distinti:
-
-1. **measurement gate** — il -8,3% è un numero affidabile?
-2. **diagnostic gate** — sappiamo dove si concentra il fenomeno?
-3. **action gate** — l'evidenza è sufficiente per una decisione operativa?
-
-### AI Analysis Control Sheet — apertura
-
-L'analista apre la scheda di controllo.
+L'analista registra subito:
 
 ```text
 decision:
@@ -49,57 +31,25 @@ alternative hypotheses
 human approval before action
 ```
 
-Questa scheda cambia il comportamento del copilota: non è autorizzato a trasformare direttamente una correlazione in una raccomandazione eseguibile.
+Questa specifica non rallenta l'analisi: impedisce che la velocità dell'AI trasformi una correlazione in un'azione prima della verifica.
 
-### Step 1 — La prima risposta è veloce e sbagliata
+### La prima risposta è veloce e sbagliata
 
-L'analista chiede:
+Alla richiesta di scomporre il calo, l'AI restituisce Francia `-€720k`, hotel urban `-€510k`, mobile app `-€430k` e propone che la domanda mobile in Francia sia il driver principale. La risposta è plausibile, ma non ha ancora superato il **measurement gate**.
 
-> “Scomponi il calo di net revenue rispetto alla settimana precedente. Mostra i tre contributi maggiori.”
+L'analista richiede metric id, date field, population filters, source objects, semantic expression, timestamp del dato e reconciliation reference. Emerge che il copilota ha usato una misura `Revenue` presente nel modello ma non certificata. Quella misura rappresenta gross booking value al netto delle sole cancellazioni immediate. La misura Finance è `Net_Revenue_Final`, che include commissioni, refund e adjustment tardivi.
 
-L'AI restituisce:
-
-1. Francia: -€720k;
-2. hotel urban: -€510k;
-3. mobile app: -€430k.
-
-E propone:
-
-> “Il calo è principalmente dovuto a una riduzione della domanda mobile in Francia.”
-
-Il risultato è plausibile. Non supera però il **measurement gate**.
-
-### Step 2 — Verificare la metrica prima dei driver
-
-L'analista richiede il Verification Bundle:
+Con la metrica certificata il confronto diventa:
 
 ```text
-metric id:
-date field:
-population filters:
-source objects:
-query / semantic expression:
-data timestamp:
-reconciliation reference:
+settimana corrente: €19,35M
+settimana precedente: €20,10M
+delta: -3,7%
 ```
 
-Emerge che il copilota ha usato una misura `Revenue` presente nel modello ma non certificata.
+La prima lezione del caso è semplice: **non diagnostichiamo un delta finché non abbiamo dimostrato che il delta significa ciò che crediamo**.
 
-Quella misura rappresenta gross booking value al netto delle sole cancellazioni immediate.
-
-La misura ufficiale Finance è `Net_Revenue_Final`, che include commissioni, refund e adjustment tardivi.
-
-Con la metrica certificata:
-
-- settimana corrente: €19,35M;
-- precedente: €20,10M;
-- delta: -3,7%.
-
-Prima lezione:
-
-> **non diagnostichiamo un delta finché non abbiamo dimostrato che il delta significa ciò che crediamo.**
-
-### Step 3 — Job verde non significa numero finale
+### Job verde non significa numero finale
 
 Il data-health layer mostra:
 
@@ -111,68 +61,31 @@ Il data-health layer mostra:
 | advertising | 06:55 | 100% | READY |
 | partner adjustments | 07:05 | 82% | PROVISIONAL |
 
-`partner_adjustments` viene normalmente finalizzato verso le 11:00.
-
-Il -3,7% diventa quindi:
+`partner_adjustments` viene normalmente finalizzato verso le 11:00. Il `-3,7%` può quindi orientare l'attenzione, ma non essere comunicato come revenue finale. La Control Sheet registra:
 
 ```text
 status: PROVISIONAL
-claim allowed: “revenue attualmente sotto baseline”
-claim not allowed: “revenue finale -3,7%”
+claim allowed: revenue attualmente sotto baseline
+claim not allowed: revenue finale -3,7%
 ```
 
-L'agente non deve inventare certezza dove il sistema di dati dichiara esplicitamente incompletezza.
+### Chiedere un piano prima della storia
 
-### Step 4 — Chiedere un piano, non una storia
+A questo punto l'analista non chiede "perché?". Chiede un decomposition plan che separi traffico, conversion, booking value, cancellation/refund, commission rate e mix; per ogni blocco richiede metriche certificate, sanity check e spiegazioni alternative. Nessun causal claim è autorizzato.
 
-L'analista non chiede più “perché?”.
+Dopo l'approvazione del piano, l'AI esegue la decomposizione. I risultati sono:
 
-Chiede:
+- traffico `-0,6%`;
+- conversion `-2,8%`;
+- average booking value `+1,1%`;
+- cancellation/refund leggermente peggiore;
+- commission rate stabile.
 
-> “Costruisci un decomposition plan. Separa traffico, conversion, booking value, cancellation/refund, commission rate e mix. Per ogni blocco indica metriche certificate, sanity check e possibili spiegazioni alternative. Non formulare causal claim.”
+Il fenomeno principale è compatibile con un deterioramento di conversion, non con una grande contrazione della domanda. È ancora un finding descrittivo.
 
-L'AI produce un piano che viene approvato prima di eseguire decine di query.
+### Segmentare senza confondere proxy e meccanismo
 
-Questo evita un failure mode comune:
-
-```text
-prima narrativa plausibile
-→ poi ricerca selettiva di evidenze che la confermano
-```
-
-### Step 5 — Decomposition
-
-Dopo i controlli:
-
-- traffico: -0,6%;
-- conversion: -2,8%;
-- average booking value: +1,1%;
-- cancellation/refund: leggermente peggiore;
-- commission rate: stabile.
-
-Il fenomeno principale è dunque compatibile con un deterioramento di conversion, non con una grande contrazione della domanda.
-
-Questo è ancora un finding descrittivo.
-
-### Step 6 — Segmentazione e composition check
-
-L'AI genera query per:
-
-- market;
-- device;
-- app/web;
-- payment method;
-- destination type;
-- acquisition channel;
-- app version.
-
-La prima vista fa sembrare la Francia il problema principale.
-
-L'analista chiede però:
-
-> “Il peggioramento resta dentro ciascuna app version oppure dipende dal cambiamento del mix di versioni?”
-
-Risultato:
+L'AI genera query per market, device, app/web, payment method, destination type, acquisition channel e app version. La prima vista continua a far sembrare la Francia il problema. L'analista però chiede se il peggioramento resta **dentro** ciascuna app version o dipende dal mix.
 
 | App version | Share precedente | Share corrente | Conversion precedente | Conversion corrente |
 |---|---:|---:|---:|---:|
@@ -180,150 +93,36 @@ Risultato:
 | 8.42 | 21% | 67% | 4,8% | 3,7% |
 | altro | 17% | 15% | 4,5% | 4,4% |
 
-Il calo è concentrato sulla 8.42.
+Il calo è concentrato sulla 8.42. La working hypothesis diventa che la release abbia degradato il pagamento, ma il workflow obbliga ora a cercare alternative: mix geografico, tracking mobile rotto, PSP outage, acquisition quality, stored cards correlate con mercati diversi, rollout non casuale.
 
-### Step 7 — Falsificare l'ipotesi prima di innamorarsene
+### Falsificazione e triangolazione
 
-Ipotesi corrente:
+L'analisi del funnel localizza la caduta tra `payment_started` e `payment_authorized`. Il payment error rate sale dal `2,1%` al `6,8%` sulla versione 8.42, quasi soltanto per stored cards. Un release note indica che la 8.42 ha modificato il token refresh delle carte salvate. Engineering riproduce poi il bug in ambiente controllato.
 
-> “La release 8.42 ha degradato il pagamento.”
+Ora abbiamo tre evidenze convergenti: pattern quantitativo, localizzazione nel funnel e riproduzione tecnica indipendente. La Francia si rivela un proxy: aveva rollout 8.42 più avanzato e utilizzo più elevato delle stored cards. Il claim "la domanda mobile in Francia è crollata" viene rifiutato.
 
-L'AI viene usata come generatore di alternative.
+Il claim consentito è:
 
-Propone:
+> Il deterioramento di conversion è concentrato sugli utenti della versione 8.42 che usano stored cards. La Francia appare maggiormente colpita perché presenta una quota più alta di quella combinazione. Engineering ha riprodotto un difetto nel token refresh compatibile con il pattern osservato.
 
-- mix geografico;
-- tracking mobile rotto;
-- PSP outage;
-- acquisizione di traffico peggiore;
-- stored cards correlate con mercati diversi;
-- rollout non casuale.
+### Quantificare senza falsa precisione
 
-Per ogni ipotesi viene associato un test discriminante.
-
-Questa è una funzione molto più utile di “scrivi una spiegazione convincente”.
-
-### Step 8 — Funnel, log e triangolazione
-
-La caduta si concentra tra:
+L'impatto viene espresso come range:
 
 ```text
-payment_started
-→ payment_authorized
+booking persi: circa 8.900–10.600
+net revenue associata: circa €510k–€620k
 ```
 
-Il payment error rate sale dal 2,1% al 6,8% sulla versione 8.42, ma quasi solo per carte salvate.
+La stima resta soggetta a refund e partner adjustment non finalizzati. La Control Sheet registra `impact status: estimated / provisional` e identifica come fonti di incertezza late adjustments e assunzione sulla conversion controfattuale.
 
-Un release note indica che la 8.42 ha modificato il token refresh delle stored cards.
+### Action gate
 
-Engineering riproduce il bug in ambiente controllato.
+La decisione proposta è bloccare ulteriore rollout della 8.42 sulle stored cards, preparare rollback mirato, mantenere monitoraggio su conversion/payment errors, aggiornare il CFO dopo la finalizzazione dei dati e fare una post-incident review su metric selection e readiness gate. L'AI può preparare il piano, ma non approvare il rollback: l'Agent Execution Contract è **A2 — Prepare action**. L'approvazione resta a Product/Engineering owner.
 
-Ora abbiamo tre evidenze convergenti:
+Alla fine della run la Control Sheet conserva domanda, metrica/versione, readiness, piano AI, query, controlli, alternative testate, claim level, impact range, raccomandazione, approvatore e decisione finale. Questo trace è più importante della cronologia completa della chat: rende ricostruibile **quale evidenza ha autorizzato quale passaggio**.
 
-1. pattern quantitativo;
-2. localizzazione coerente nel funnel;
-3. riproduzione tecnica indipendente.
-
-### Step 9 — La Francia era un proxy
-
-Perché la prima risposta indicava la Francia?
-
-Perché quel mercato aveva:
-
-- rollout 8.42 più avanzato;
-- utilizzo più elevato delle stored cards.
-
-Il paese era quindi un **proxy di esposizione**, non il meccanismo del problema.
-
-La frase:
-
-> “la domanda mobile in Francia è crollata”
-
-viene rifiutata.
-
-Il claim consentito diventa:
-
-> “Il deterioramento di conversion è concentrato sugli utenti della versione 8.42 che usano stored cards. La Francia appare maggiormente colpita perché presenta una quota più alta di quella combinazione. Engineering ha riprodotto un difetto nel token refresh compatibile con il pattern osservato.”
-
-### Step 10 — Quantificare senza falsa precisione
-
-L'analista stima un range di impatto, non un numero singolo:
-
-- booking persi: circa 8.900–10.600;
-- net revenue associata: circa €510k–€620k;
-- stima ancora soggetta a refund e partner adjustment non finalizzati.
-
-La scheda registra:
-
-```text
-impact status: estimated / provisional
-uncertainty driver:
-late adjustments + counterfactual conversion assumption
-```
-
-### Step 11 — Action gate
-
-La decisione proposta è:
-
-1. bloccare ulteriore rollout della 8.42 sulle stored cards;
-2. rollback mirato della modifica;
-3. mantenere monitoraggio su conversion e payment errors;
-4. aggiornare il CFO dopo la finalizzazione dei dati;
-5. fare post-incident review su metric selection e data-readiness gate.
-
-L'AI può preparare il piano.
-
-Non può approvare il rollback perché l'Agent Execution Contract prevede **A2 — Prepare action**.
-
-L'approvazione finale resta a Product/Engineering owner.
-
-### Il trace che deve restare
-
-Alla fine dell'indagine la AI Analysis Control Sheet contiene:
-
-```text
-question:
-certified metric:
-metric version:
-data readiness:
-AI-generated plan:
-queries executed:
-checks passed/failed:
-alternative hypotheses tested:
-claim level allowed:
-impact estimate + caveat:
-recommended action:
-human approver:
-final decision:
-```
-
-Questo trace è più importante della cronologia completa della chat con l'AI.
-
-Serve a ricostruire **quale evidenza ha autorizzato quale passaggio**.
-
-### Dove l'AI ha creato valore
-
-Ha ridotto il costo di:
-
-- scrivere query;
-- generare decomposition;
-- enumerare alternative;
-- costruire sanity check;
-- confrontare segmenti;
-- preparare la documentazione.
-
-### Dove avrebbe creato danno senza controllo
-
-La prima risposta combinava:
-
-- metrica non certificata;
-- dato non finalizzato;
-- proxy geografico scambiato per driver;
-- narrativa anticipata rispetto alla verifica.
-
-La velocità avrebbe reso l'errore operativo prima, non migliore.
-
-### Il workflow canonico del caso
+L'AI ha creato valore riducendo il costo di scrivere query, generare decomposition, enumerare alternative e preparare controlli. Senza il sistema di controllo avrebbe invece accelerato una diagnosi basata su metrica non certificata, dato immaturo e proxy geografico scambiato per driver.
 
 ```text
 Decision
