@@ -1,12 +1,8 @@
 ## 6.14 Esercizi: costruire diagnosi di lifecycle, non soltanto KPI
 
-Gli esercizi di questo capitolo non richiedono soltanto calcoli. L'obiettivo è allenare la capacità di distinguere **presenza, valore, tempo, rischio e causalità**.
+Questi esercizi restano volutamente strutturati: sono il laboratorio operativo del capitolo. L'obiettivo non è soltanto calcolare una percentuale, ma allenare la distinzione fra **presenza, valore, tempo, rischio, actionability e causalità**.
 
-Per ogni esercizio prova a separare:
-
-1. ciò che osservi;
-2. ciò che interpreti;
-3. ciò che richiede altra evidenza.
+Per ogni caso separa sempre tre livelli: ciò che i dati mostrano direttamente, l'interpretazione che consideri plausibile e ciò che richiede altra evidenza prima di diventare una conclusione.
 
 ### Esercizio 1 — Activation ambigua
 
@@ -40,11 +36,7 @@ Un e-commerce modifica il checkout. Dopo il redesign:
 - return rate: 8% → 12%;
 - contribution margin per visitatore: -3%.
 
-Prepara una nota al Product Manager di massimo 120 parole che distingua:
-
-- miglioramento locale del funnel;
-- effetto economico complessivo;
-- evidenza mancante prima di dichiarare il redesign “vincente”.
+Prepara una nota al Product Manager di massimo 120 parole che distingua miglioramento locale del funnel, effetto economico complessivo ed evidenza mancante prima di dichiarare il redesign “vincente”.
 
 ### Esercizio 3 — Due coorti, stessa D30
 
@@ -75,14 +67,7 @@ Nel trimestre:
 - 85 clienti riducono il contratto, per 410.000 € di contraction;
 - 30 clienti espandono il contratto, per 540.000 € di expansion.
 
-Calcola o descrivi:
-
-- logo churn;
-- gross revenue retention;
-- net revenue retention;
-- perché i tre indicatori raccontano storie diverse.
-
-Poi indica quale useresti per una riunione Customer Success e quale per una valutazione della salute economica della base.
+Calcola o descrivi logo churn, Gross Revenue Retention e Net Revenue Retention, poi spiega perché i tre indicatori raccontano storie differenti. Indica quale useresti per una riunione Customer Success e quale per valutare la salute economica della base.
 
 ### Esercizio 5 — Churn involontario
 
@@ -94,9 +79,7 @@ L'indagine mostra:
 - 520 pagamenti falliti mai recuperati;
 - 230 account chiusi per altri motivi amministrativi.
 
-Il CRM team propone uno sconto del 20% a tutti i clienti persi.
-
-Spiega perché l'intervento è mal disegnato. Costruisci almeno tre segmenti di uscita e associa a ciascuno un possibile tipo di intervento.
+Il CRM team propone uno sconto del 20% a tutti i clienti persi. Spiega perché l'intervento è mal disegnato. Costruisci almeno tre segmenti di uscita e associa a ciascuno un possibile tipo di intervento.
 
 ### Esercizio 6 — Reactivation o semplice apertura?
 
@@ -128,15 +111,11 @@ Tre coorti hanno questi dati:
 | Giugno | 7 mesi | 68 € | 121 € |
 | Novembre | 2 mesi | 54 € | 61 € |
 
-Un manager conclude che novembre è la coorte migliore perché ha già quasi recuperato il CAC.
-
-Quali controlli faresti prima di accettare la conclusione? Distingui valore osservato, payback e LTV futuro previsto.
+Un manager conclude che novembre è la coorte migliore perché ha già quasi recuperato il CAC. Quali controlli faresti prima di accettare la conclusione? Distingui valore osservato, payback e LTV futuro previsto.
 
 ### Esercizio 8 — Il churn model trova clienti impossibili da salvare
 
-Un modello assegna score di rischio elevatissimi a clienti che hanno già comunicato la disdetta.
-
-Il Customer Success può contattare soltanto 200 account.
+Un modello assegna score di rischio elevatissimi a clienti che hanno già comunicato la disdetta. Il Customer Success può contattare soltanto 200 account.
 
 Progetta una tabella di prioritizzazione con almeno queste colonne:
 
@@ -147,7 +126,7 @@ Progetta una tabella di prioritizzazione con almeno queste colonne:
 - actionability;
 - stato della disdetta.
 
-Spiega perché il ranking finale potrebbe essere diverso dal ranking del modello.
+Spiega perché il ranking finale può essere molto diverso dal ranking del modello.
 
 ### Esercizio finale — Il board vuole sapere perché la retention è scesa
 
@@ -163,7 +142,7 @@ Sai che:
 - i clienti con TTV sotto tre giorni mostrano retention molto più alta;
 - non esiste ancora evidenza causale sull'onboarding o sul pricing.
 
-Costruisci una **Lifecycle Diagnostic Map** con questi campi:
+Costruisci una **Lifecycle Diagnostic Map**:
 
 | Campo | La tua risposta |
 | --- | --- |
@@ -180,6 +159,12 @@ Costruisci una **Lifecycle Diagnostic Map** con questi campi:
 | Problema di data quality/tracking |  |
 | Prossimo metodo |  |
 
-Chiudi con una risposta al board di massimo 180 parole.
+Chiudi con una risposta al board di massimo 180 parole. La qualità della risposta non dipende dal “trovare una causa” a tutti i costi, ma dal mostrare quanto il problema sia stato ristretto e quale evidenza serva per restringerlo ancora.
 
-La risposta migliore non deve “trovare una causa” a tutti i costi. Deve mostrare con precisione **quanto abbiamo ristretto il problema e quale evidenza serve per restringerlo ancora**.
+## Dal lifecycle al tempo come processo
+
+Il capitolo ha trasformato una base clienti in una traiettoria: ingresso, activation, persistenza, rischio, uscita, ritorno e valore. Nel prossimo capitolo il tempo smetterà di essere soltanto l'età del cliente e diventerà una proprietà del processo stesso.
+
+Vendite, domanda, ticket, ordini e capacità operativa hanno memoria, calendario, stagionalità e cambi di regime. Il **Capitolo 7** userà queste strutture per distinguere una normale oscillazione temporale da un'anomalia e una descrizione del passato da un forecast credibile.
+
+> **Nel lifecycle abbiamo chiesto come cambia una relazione mentre invecchia. Nelle serie temporali chiederemo come cambia il processo mentre scorre il calendario.**
