@@ -1,61 +1,30 @@
 ## 2.14 Value of Information: quanto vale sapere qualcosa in più?
 
-Prioritizzare decide **quale** domanda affrontare. Il Value of Information aiuta a decidere **quanto approfondirla prima di agire**.
+La prioritizzazione decide quale domanda merita capacità analitica. Il **Value of Information** aiuta a decidere quanto approfondirla prima di agire.
 
-L'idea è semplice:
+L'idea è economica prima ancora che statistica: un'informazione aggiuntiva ha valore quando ha una possibilità realistica di cambiare una decisione o di ridurre un rischio che conta. Questo criterio protegge da due errori opposti. Possiamo fermarci troppo presto e prendere una decisione costosa sulla base di evidenza fragile; oppure possiamo continuare a perfezionare l'analisi quando la scelta non cambierebbe comunque.
 
-> un'informazione aggiuntiva ha valore nella misura in cui può cambiare una decisione o ridurre un rischio che conta.
+### Caso simulato/composito: due giorni prima di spendere €2 milioni
 
-Non serve costruire ogni volta un modello decisionale formale. Basta usare il concetto per evitare due estremi:
+Un'azienda sta per investire **€2 milioni** in una nuova campagna di acquisizione. Il business case presume che il segmento target abbia economics simili ai clienti acquisiti l'anno precedente. Prima del lancio, il team dedica due giorni a un controllo mirato e scopre che il churn del nuovo segmento è molto più alto e che il payback atteso supera ampiamente l'orizzonte accettato dal business.
 
-- decidere con troppo poca evidenza;
-- inseguire una certezza che costa più di quanto vale.
+L'analisi non deve essere perfetta per avere enorme valore. Se quei due giorni cambiano la decisione di spendere €2 milioni o impongono un test più piccolo, il valore dell'informazione può essere ordini di grandezza superiore al suo costo.
 
-### Cinque domande
+Consideriamo ora il caso opposto. Un forecast passa dal 93% al 94% di accuratezza dopo tre settimane di tuning, ma staffing, stock e budget rimangono identici in tutto il range di previsioni plausibili. Il modello è migliorato; la decisione no. In quel contesto l'informazione marginale può valere molto meno delle tre settimane impiegate per ottenerla.
 
-Prima di aggiungere un'altra settimana di analisi, chiediamoci:
+## Informazione sufficiente, non informazione perfetta
 
-1. La decisione è reversibile?
-2. Quanto costa sbagliare?
-3. Le alternative hanno conseguenze materialmente diverse?
-4. L'informazione aggiuntiva ha una probabilità realistica di cambiare la scelta?
-5. Quanto costa aspettare?
+Nel lavoro reale raramente possiamo eliminare tutta l'incertezza. Cerchiamo un livello di evidenza sufficiente rispetto al costo dell'errore e al costo di aspettare.
 
-### Caso simulato/composito: analizzare prima di spendere €2 milioni
+Una prima decomposizione può cambiare completamente il piano; la ventesima segmentazione aggiunge magari dettaglio senza modificare nulla. Questo rendimento decrescente è ciò che collega Value of Information e stop rule: ogni nuovo approfondimento dovrebbe giustificare il proprio costo mostrando quale incertezza importante potrebbe ancora ridurre.
 
-Un'azienda sta per investire €2 milioni in una nuova campagna di acquisizione.
+La reversibilità della decisione cambia il calcolo. Se un piccolo test può essere annullato rapidamente e il costo di aspettare è alto, può essere razionale agire con evidenza incompleta ma guardrail forti. Se la scelta è difficilmente reversibile e può produrre un danno molto grande, spendere più tempo per ridurre l'incertezza può avere valore elevato.
 
-Il piano presuppone che il segmento target abbia economics simili ai clienti acquisiti l'anno precedente. Un controllo preliminare di due giorni mostra però che il churn del segmento è molto più elevato e che il payback atteso supera di parecchio l'orizzonte accettato dal business.
+Perciò prima di aggiungere un'altra settimana di analisi conviene ragionare su cinque elementi in relazione fra loro: quanto costa sbagliare, quanto costa aspettare, quanto sono diverse le conseguenze delle alternative, quanto è reversibile la scelta e quanto è probabile che l'informazione aggiuntiva cambi effettivamente la decisione.
 
-L'analisi non deve essere perfetta per avere enorme valore.
+## Il prossimo dato deve competere con il suo costo
 
-Se cambia la decisione di investire €2 milioni, il beneficio potenziale dell'informazione è molto superiore al costo di due giorni di lavoro.
-
-Al contrario, migliorare per tre settimane un forecast dal 93% al 94% di accuratezza può avere valore quasi nullo se nessuna decisione di stock, staffing o budget cambia dentro quell'intervallo.
-
-### Informazione perfetta e informazione sufficiente
-
-Nel lavoro reale cerchiamo raramente informazione perfetta.
-
-Cerchiamo una quantità di evidenza **sufficiente rispetto al costo dell'errore**.
-
-Questa distinzione è importante perché ogni approfondimento può produrre un beneficio decrescente.
-
-Una prima decomposizione può cambiare completamente la decisione. Il ventesimo segmento aggiuntivo magari no.
-
-### Il valore del tempo
-
-Aspettare dati migliori ha un costo.
-
-Se un intervento reversibile può generare €100.000 al mese di beneficio, attendere tre mesi per ridurre modestamente l'incertezza può essere meno razionale che agire oggi con un test controllato e guardrail chiari.
-
-Viceversa, se una decisione è irreversibile e può produrre un danno enorme, raccogliere più informazione prima di agire può essere molto prezioso.
-
-Il Value of Information non dice sempre “analizza di più”. Dice **analizza quanto vale la pena**.
-
-### Il brief può contenere una domanda di VoI
-
-Per progetti importanti possiamo aggiungere:
+Per progetti importanti il brief può contenere un piccolo promemoria operativo:
 
 ```text
 Quale incertezza, se ridotta, potrebbe cambiare la decisione?
@@ -64,16 +33,8 @@ Quanto costa ottenerla?
 Quanto costa aspettarla?
 ```
 
-Queste domande aiutano anche a scegliere il prossimo passo quando l'analisi è inconcludente.
+Queste domande diventano particolarmente utili quando il primo ciclo è inconcludente. Non dobbiamo automaticamente “analizzare ancora”; dobbiamo scegliere quale nuovo dato, esperimento o fonte abbia la probabilità più alta di cambiare ciò che faremo.
 
-### AI e costo dell'informazione
+L'AI modifica il costo di alcune informazioni. Se segmentazioni, sensitivity analysis e controlli preliminari diventano più economici, può essere razionale eseguirne di più. Ma il criterio non cambia: una verifica facile da generare non è automaticamente utile.
 
-L'AI può ridurre il costo di controlli preliminari, sensitivity analysis, segmentazioni e prime ricerche.
-
-Questo aumenta il numero di verifiche che può essere razionale fare.
-
-Ma non cambia il criterio economico fondamentale:
-
-> **un'informazione non vale perché è facile da produrre. Vale se può cambiare una decisione abbastanza importante da giustificarne il costo e il tempo.**
-
-Il Capitolo 15 riprenderà questi concetti dal punto di vista della decisione vera e propria. Qui servono a progettare la profondità dell'analisi prima che diventi infinita.
+> **Il valore dell'informazione non dipende da quanto è interessante produrla. Dipende da quanto può cambiare una decisione abbastanza importante da giustificare tempo, costo e attesa.**

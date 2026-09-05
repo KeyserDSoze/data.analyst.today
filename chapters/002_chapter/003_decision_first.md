@@ -1,69 +1,34 @@
 ## 2.2 Specificare la decisione prima di progettare l'output
 
-Molte richieste arrivano già nella forma di un deliverable:
+Molte richieste arrivano già travestite da soluzione. “Mi fai una dashboard?”, “mi serve un report settimanale”, “vorrei vedere questi KPI” sembrano requisiti chiari perché nominano un deliverable. In realtà stanno saltando il passaggio più importante: **quale comportamento, controllo o scelta dovrebbe migliorare grazie a quell'output?**
 
-- “Mi fai una dashboard?”
-- “Mi serve un report settimanale.”
-- “Vorrei vedere questi KPI.”
-- “Puoi fare un grafico per regione?”
+La domanda conta perché il formato utile dipende dalla decisione. Un responsabile logistico che ogni mattina deve capire quali spedizioni richiedono intervento ha bisogno di freschezza, soglie e un'interfaccia ricorrente. Un product team che deve capire perché la conversione è scesa del 12% può ottenere più valore da una EDA mirata e da un memo che da una dashboard permanente. Un team commerciale che deve scegliere tra sconto, spedizione gratuita e nessun intervento ha invece bisogno di confrontare scenari, impatto economico, guardrail e incertezza.
 
-Il deliverable può essere appropriato. Ma non è ancora il requisito fondamentale.
+Lo stesso ecosistema dati può alimentare tutti e tre i casi. Cambia il prodotto analitico perché cambia ciò che qualcuno deve fare dopo averlo letto.
 
-Prima dobbiamo capire **quale decisione, controllo o comportamento dovrebbe migliorare** grazie a quell'output.
+## La decision specification
 
-### La decision specification
+Per questo il brief dovrebbe rendere espliciti pochi elementi, ma sostanziali. Dobbiamo sapere quale decisione è in gioco, chi ha l'autorità di prenderla, quali alternative sono realmente disponibili, entro quando la scelta deve essere fatta e che cosa costa sbagliare. Quando possibile conviene anticipare anche la soglia che renderebbe un risultato abbastanza importante da modificare la scelta.
 
-Per il brief è utile annotare cinque elementi.
+Questi campi non sono metadati amministrativi. Modificano direttamente il disegno dell'analisi. Una decisione irreversibile giustifica più evidenza di un test facilmente annullabile. Una decisione che si ripete ogni mattina può richiedere automazione e monitoring, mentre una scelta unica può essere servita meglio da un'analisi ad hoc. Se il decision owner non può realmente scegliere tra le alternative che stiamo modellando, stiamo ottimizzando uno spazio decisionale che non esiste.
 
-**Decisione.** Che cosa deve essere scelto, modificato o monitorato?
-
-**Owner.** Chi ha l'autorità di agire?
-
-**Alternative.** Quali opzioni sono realmente disponibili?
-
-**Timing.** Quando deve essere presa la decisione e con quale frequenza si ripete?
-
-**Conseguenze dell'errore.** Che cosa costa agire troppo presto, troppo tardi o nella direzione sbagliata?
-
-Queste informazioni cambiano direttamente il disegno dell'analisi.
-
-### Tre decisioni, tre prodotti diversi
-
-**Monitoraggio operativo.**
-
-Ogni mattina il responsabile logistico deve decidere quali spedizioni richiedono intervento. Qui possono servire dati freschi, alert e un'interfaccia ricorrente.
-
-**Diagnosi ad hoc.**
-
-La conversione è scesa del 12% e il product team deve capire quale parte del funnel investigare. Una EDA mirata e un memo possono essere più utili di una dashboard permanente.
-
-**Scelta tra alternative.**
-
-Il team commerciale deve decidere tra sconto, spedizione gratuita e nessun intervento. Servono scenari, impatto economico, guardrail e incertezza.
-
-Lo stesso database può alimentare tutti e tre i casi. Il prodotto analitico cambia perché cambia la decisione.
-
-### La domanda che smaschera i report senza uso
-
-Prova a completare:
+Una formula semplice aiuta a verificare il collegamento:
 
 > **“Se scoprissimo che ________, il decision owner potrebbe decidere di ________.”**
 
-Se nessun risultato plausibile porta a una scelta diversa, il lavoro può avere comunque valore informativo, ma non dovremmo presentarlo come decision support senza chiarire il processo che lo userà.
+Se nessun risultato plausibile completa la seconda parte della frase, il lavoro può avere valore informativo, ma non dovremmo chiamarlo decision support senza spiegare quale processo lo userà.
 
-### Decisione e soglia d'azione
+## Soglie prima del risultato, quando è possibile
 
-Quando possibile, il brief dovrebbe anticipare anche che cosa renderebbe un risultato abbastanza importante da modificare una scelta.
-
-Per esempio:
+Definire in anticipo una soglia non è sempre realistico, ma provarci è utile. Supponiamo che un nuovo processo logistico debba essere valutato per un rollout. Il team potrebbe concordare:
 
 > “Se il nuovo processo riduce il tempo di evasione di almeno il 10% senza aumentare gli errori oltre 0,5 punti percentuali, valuteremo il rollout.”
 
-Non sempre una soglia può essere definita prima dell'analisi. Ma provare a farlo evita che, dopo aver visto il risultato, si sposti arbitrariamente il criterio con cui lo giudichiamo.
+Questa specifica cambia la domanda analitica. Non basta più chiedere se il tempo medio è sceso: dobbiamo stimare la dimensione del miglioramento e osservare contemporaneamente il guardrail sugli errori. Inoltre evitiamo di spostare retrospettivamente il criterio di successo dopo aver visto i risultati.
 
-Il **Capitolo 15** entrerà molto più in profondità su soglie, expected value, trade-off e qualità della decisione. Qui la funzione della decision specification è più semplice: **impedire che l'analisi venga progettata senza sapere come verrà usata**.
+Il Capitolo 15 approfondirà expected value, soglie e trade-off decisionali. Qui l'obiettivo è più elementare: impedire che il metodo e il deliverable vengano progettati prima di sapere come il risultato verrà usato.
 
-### Campo del brief
+Il campo operativo del brief rimane deliberatamente strutturato:
 
 ```text
 Decisione:

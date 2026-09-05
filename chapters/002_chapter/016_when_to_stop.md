@@ -1,87 +1,42 @@
-## 2.15 Stop rule: decidere prima quando l'analisi sarà abbastanza
+## 2.15 Stop rule: sapere quando l'analisi ha guadagnato il diritto di fermarsi
 
-Ogni analisi potrebbe continuare indefinitamente.
+Ogni analisi può continuare indefinitamente. Esisterà quasi sempre un altro segmento da esplorare, una sorgente da aggiungere, un modello più sofisticato, una visualizzazione ulteriore o una spiegazione concorrente da verificare. La disponibilità di nuove mosse non implica però che ognuna abbia valore.
 
-Possiamo aggiungere un segmento, un controllo, un modello, una sorgente, un'altra visualizzazione o una nuova ipotesi. L'abbondanza di possibilità non significa che ogni approfondimento abbia valore.
+Per questo il brief dovrebbe contenere una **stop rule analitica**: non una scadenza arbitraria, ma un criterio che descrive quando la prima fase dispone di evidenza sufficiente per sostenere la decisione oppure quando deve fermarsi perché le fonti disponibili non possono produrre una conclusione credibile.
 
-Per questo il brief dovrebbe contenere una **stop rule analitica**: un criterio che indica quando la prima fase dispone di evidenza sufficiente per essere consegnata o quando deve essere fermata perché non può rispondere in modo credibile.
+È diversa dalle stop condition operative degli agenti discusse nel Capitolo 0. Lì governavamo l'autonomia di un sistema. Qui governiamo la profondità di un'indagine umana o assistita.
 
-È diversa dalle stop condition operative degli agenti discusse nel Capitolo 0. Qui non stiamo fermando un sistema autonomo: stiamo governando la profondità di un'indagine.
+## Tre modi professionali di chiudere un ciclo
 
-### Tre modi legittimi di fermarsi
+Un'analisi può fermarsi perché l'evidenza è sufficiente: abbiamo eseguito i controlli minimi, la decisione è supportata abbastanza bene e il valore marginale di un'altra settimana di lavoro è basso. Può fermarsi perché abbiamo raggiunto un **limite informativo**: le fonti disponibili non distinguono le ipotesi principali e continuare a modellare gli stessi dati produrrebbe soltanto una versione più elaborata della stessa incertezza. Oppure può fermarsi perché l'indagine ha scoperto un problema diverso e più importante, che richiede un nuovo brief invece di un'espansione silenziosa dello scope.
 
-**1. Evidenza sufficiente**
+Questi esiti sono diversi, ma condividono una regola: la chiusura deve essere collegata a ciò che la decisione richiede.
 
-La decisione è abbastanza supportata e ulteriore lavoro ha basso valore marginale.
+Per una fase diagnostica potremmo stabilire:
 
-**2. Limite informativo raggiunto**
+> “Terminiamo quando abbiamo validato la metrica, localizzato almeno l'80% del delta e testato le tre ipotesi prioritarie.”
 
-I dati disponibili non permettono di distinguere le ipotesi principali. Continuare con le stesse fonti produrrebbe soltanto analisi più elaborate della stessa incertezza.
-
-**3. Cambio di domanda**
-
-L'indagine ha rivelato un problema diverso e più importante. Conviene chiudere o aggiornare il brief invece di espandere silenziosamente lo scope.
-
-### Una stop rule deve essere collegata alla decisione
-
-Esempi:
-
-> “La fase diagnostica termina quando abbiamo validato la metrica, localizzato almeno l'80% del delta e testato le tre ipotesi prioritarie.”
-
-oppure:
+In un problema di tracking potremmo invece decidere:
 
 > “Se il sanity check mostra che il tracking non è comparabile prima e dopo la migrazione, fermiamo l'analisi del trend e apriamo una fase di ricostruzione della metrica.”
 
-oppure:
+Per un forecast operativo:
 
-> “Se i due scenari di forecast portano alla stessa decisione di staffing, non ottimizziamo ulteriormente il modello prima del primo ciclo operativo.”
+> “Se gli scenari plausibili portano alla stessa decisione di staffing, non ottimizziamo ulteriormente il modello prima del primo ciclo operativo.”
 
-La stop rule non richiede sempre una percentuale. Richiede una condizione di sufficienza o di impossibilità.
+In tutti e tre i casi la stop rule dice quali condizioni rendono ulteriore precisione poco utile **per quella decisione**.
 
-### Fermarsi troppo presto
+## Fermarsi richiede controlli minimi
 
-Anche la fretta è un rischio.
+La stop rule non deve diventare un alibi per chiudere troppo presto. Una correlazione iniziale può scomparire dopo una segmentazione; una variazione mensile può essere stagionale; una pipeline può aver cambiato definizione; un risultato aggregato può dipendere soltanto da mix shift. Perciò una regola di sufficienza deve includere le verifiche senza le quali non abbiamo ancora il diritto di concludere.
 
-Una correlazione iniziale può scomparire dopo una segmentazione. Una variazione mensile può essere stagionale. Una metrica può essere cambiata dalla pipeline. Un risultato aggregato può nascondere mix shift.
+Qui il collegamento con il Value of Information diventa naturale. All'inizio le verifiche spesso modificano molto il nostro modello del problema. Con il tempo, ogni nuova analisi aggiunge dettagli ma non sposta più la decisione. Quando entriamo in questa zona di rendimenti decrescenti, il perfezionismo può sembrare rigore mentre in realtà sta consumando capacità che avrebbe più valore altrove.
 
-Per questo una stop rule robusta include controlli minimi obbligatori prima della conclusione.
+Il timeboxing è utile per controllare questo costo, ma non sostituisce il criterio epistemico. Un checkpoint dopo quattro ore può imporre una review del piano; non rende automaticamente sufficiente l'evidenza. **Il timebox protegge il budget. La stop rule protegge la conclusione.**
 
-### Rendimenti decrescenti
+Con l'AI la distinzione diventa ancora più importante, perché è economico generare altre segmentazioni, altri modelli e altre spiegazioni. Prima di ogni iterazione dovremmo sapere quale incertezza ci aspettiamo di ridurre. Se non sappiamo rispondere, il fatto che l'analisi successiva sia facile da produrre è un motivo molto debole per eseguirla.
 
-Un segnale importante è osservare il **marginal value** delle nuove analisi.
-
-Le prime verifiche cambiano molto il nostro modello del problema. Poi ogni nuova analisi aggiunge dettagli ma non modifica più la decisione.
-
-Quando siamo in quella zona, continuare può essere una forma di perfezionismo più che di rigore.
-
-### Timeboxing come strumento, non come criterio epistemico
-
-Dividere il lavoro in checkpoint è utile:
-
-- chiarimento iniziale;
-- sanity check;
-- prima decomposizione;
-- review con stakeholder;
-- approfondimento mirato.
-
-Ma “sono finite le quattro ore” non significa automaticamente che l'evidenza sia sufficiente.
-
-Il timebox protegge il costo. La stop rule protegge la qualità della conclusione.
-
-### AI e analisi infinita
-
-Con l'AI è molto facile generare:
-
-- altre segmentazioni;
-- altri modelli;
-- altre correlazioni;
-- altre spiegazioni.
-
-Questa capacità rende ancora più importante sapere **che cosa stiamo cercando di apprendere da ogni iterazione**.
-
-Se non sappiamo quale incertezza dovrebbe ridurre la prossima analisi, probabilmente non dovremmo eseguirla soltanto perché costa poco.
-
-### Campo del brief
+Il campo del brief rimane operativo:
 
 ```text
 Controlli minimi prima di concludere:
@@ -90,4 +45,4 @@ Condizione di stop per limite dati:
 Checkpoint di scope/reframing:
 ```
 
-> **Rigore non significa analizzare per sempre. Significa sapere quali controlli sono necessari prima di avere il diritto di fermarsi.**
+> **Rigore non significa continuare finché non restano domande. Significa completare i controlli che la decisione richiede e riconoscere quando nuova analisi non sta più comprando informazione utile.**

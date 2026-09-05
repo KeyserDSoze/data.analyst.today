@@ -1,98 +1,46 @@
-## 2.16 Quando l'analisi è inconcludente
+## 2.16 Quando la conclusione corretta è “non sappiamo ancora abbastanza”
 
-Una stop rule deve prevedere anche un esito che molte culture aziendali trattano male:
+Una stop rule deve prevedere un esito che molte culture aziendali tollerano male: **i dati disponibili non hanno guadagnato il diritto di sostenere una conclusione più forte**.
 
-> **non abbiamo abbastanza evidenza per sostenere una conclusione più forte.**
+Questo risultato non implica automaticamente che l'analisi sia fallita. Può essere precisamente ciò che il brief doveva scoprire. Un campione piccolo, un tracking non comparabile, una variabile decisiva non osservata o due spiegazioni che producono lo stesso pattern possono rendere impossibile scegliere una storia senza inventare certezza.
 
-Non è necessariamente un fallimento dell'analista.
+L'errore professionale non consiste nell'incontrare questo limite. Consiste nel nasconderlo dietro una narrazione più netta di quanto l'evidenza permetta.
 
-Può essere la conclusione corretta del brief.
+## “Non abbiamo evidenza” non significa sempre “non esiste”
 
-### Perché un'analisi può non concludere
+Tre situazioni vengono confuse frequentemente.
 
-Tra le cause più comuni:
+Nel primo caso **non abbiamo trovato evidenza convincente di un effetto**. Il risultato può dipendere da un effetto realmente piccolo, ma anche da dati troppo rumorosi o insufficienti.
 
-- campione troppo piccolo;
-- dato troppo rumoroso;
-- metrica o tracking non comparabili;
-- variabile importante non osservata;
-- gruppi troppo diversi per il confronto richiesto;
-- periodo troppo breve;
-- dati non ancora maturi;
-- effetto plausibile ma troppo piccolo rispetto alla precisione disponibile;
-- più spiegazioni rimangono compatibili con gli stessi pattern.
+Nel secondo caso disponiamo di dati abbastanza informativi da dire che **un effetto materialmente rilevante è improbabile**. Questa è una conclusione più forte: non stiamo soltanto fallendo nel rilevare qualcosa, stiamo escludendo una parte importante degli effetti che avrebbero contato per la decisione.
 
-L'errore professionale non è incontrare uno di questi limiti. È nasconderlo dietro una storia più sicura di quanto i dati permettano.
+Nel terzo caso l'incertezza è così ampia che i dati restano compatibili sia con un effetto trascurabile sia con uno materialmente importante. Qui la risposta corretta è che **non distinguiamo ancora tra le due possibilità**.
 
-### Tre affermazioni da non confondere
+Trasformare il primo o il terzo caso in “non c'è effetto” non semplifica il messaggio; cambia il significato statistico e decisionale della conclusione.
 
-**1. Non abbiamo trovato evidenza di un effetto.**
+## Un esito inconcludente deve comunque ridurre l'incertezza
 
-Il test o l'analisi non hanno prodotto evidenza convincente.
+Una buona consegna non si limita a dire “non è emerso niente”. Deve spiegare che cosa è stato verificato, quali pattern sono compatibili con i dati, quale affermazione non possiamo sostenere e perché. Deve poi collegare quel limite alla decisione: possiamo scegliere comunque l'opzione più reversibile? Conviene raccogliere più campione? Serve migliorare la misurazione? Un esperimento avrebbe più valore di un'altra analisi osservazionale?
 
-**2. Abbiamo evidenza che un effetto materialmente rilevante è improbabile.**
+Consideriamo due onboarding flow. Nei dati disponibili il flow B mostra retention a 30 giorni superiore di circa **3 punti percentuali**, ma il campione è piccolo e l'intervallo compatibile con i dati include sia un effetto trascurabile sia un effetto materialmente utile.
 
-Questa è una conclusione più forte e richiede dati sufficientemente informativi da escludere una parte importante degli effetti plausibili.
+Una conclusione professionale potrebbe essere:
 
-**3. I dati non distinguono tra presenza e assenza di un effetto rilevante.**
+> “Nei dati disponibili il flow B mostra retention a 30 giorni superiore di circa 3 punti percentuali, ma il campione è piccolo e l'incertezza include sia un effetto trascurabile sia un effetto materialmente utile. Non raccomandiamo un rollout globale sulla base di questa evidenza. Il prossimo passo con maggiore valore è estendere l'esperimento fino al campione pianificato mantenendo invariata la metrica primaria.”
 
-L'incertezza rimane troppo ampia.
+Questa frase non nasconde l'incertezza, ma non rinuncia a guidare il passo successivo.
 
-La prima e la terza frase vengono spesso trasformate impropriamente in “non c'è effetto”.
+## Il prossimo passo compete sul Value of Information
 
-### Un risultato inconcludente deve comunque produrre informazione
+Quando il primo ciclo non conclude, la domanda non dovrebbe essere automaticamente “come possiamo analizzare ancora?”. La domanda corretta è:
 
-Una buona consegna dovrebbe spiegare:
+> **“Quale nuova informazione ha la probabilità più alta di cambiare la decisione?”**
 
-- che cosa abbiamo verificato;
-- che cosa mostrano i dati;
-- quale conclusione non possiamo sostenere;
-- perché;
-- quale decisione può essere presa comunque;
-- quale nuova informazione avrebbe il maggiore valore.
+Forse serve più campione. Forse serve un campo di exposure che oggi non viene tracciato. Forse serve un esperimento. Forse nessuna informazione aggiuntiva vale il costo perché tutte le alternative plausibili portano comunque alla stessa scelta.
 
-Per esempio:
+Anche “non agire per ora” è una decisione, purché sia coerente con il costo dell'errore e con il valore dell'attesa. L'assenza di una conclusione causale non rende impossibile ogni azione; può spingerci verso un intervento più piccolo, reversibile e osservabile.
 
-> “Nei dati disponibili il flow B mostra retention a 30 giorni superiore di circa 3 punti percentuali, ma il campione è piccolo e l'intervallo compatibile con i dati include sia un effetto trascurabile sia un effetto materialmente utile. Non raccomandiamo un rollout globale sulla base di questa evidenza. Il prossimo passo con maggiore valore è estendere l'esperimento fino al campione pianificato mantenendo invariata la metrica primaria.”
-
-Questa risposta è più utile di:
-
-> “Non è emerso niente.”
-
-### Anche “non agire” può essere una decisione
-
-Se l'evidenza è insufficiente, le opzioni possono essere:
-
-- raccogliere più dati;
-- progettare un esperimento;
-- migliorare la misurazione;
-- usare un proxy con limiti espliciti;
-- scegliere l'opzione più reversibile;
-- non intervenire per ora.
-
-L'assenza di una conclusione causale non impedisce sempre qualsiasi decisione. Cambia il livello di rischio con cui dobbiamo prenderla.
-
-### Il link con il Value of Information
-
-Quando l'analisi è inconcludente, la domanda successiva non dovrebbe essere automaticamente:
-
-> “Come possiamo analizzare ancora?”
-
-Meglio chiedere:
-
-> **“Quale informazione aggiuntiva avrebbe la probabilità più alta di cambiare la decisione?”**
-
-Forse serve più campione. Forse serve una fonte che oggi non esiste. Forse nessuna informazione aggiuntiva vale il costo perché le alternative portano comunque alla stessa scelta.
-
-### AI e pressione a chiudere la storia
-
-Un sistema generativo tende a produrre una risposta completa anche quando le evidenze rimangono ambigue.
-
-Il Capitolo 0 ha fissato il principio di supervisione. In questo contesto la regola pratica è semplice: **non premiare la completezza narrativa più della completezza dell'evidenza**.
-
-### Campo del brief/output
-
-Per analisi ad alto rischio può essere utile pre-accettare tre possibili esiti:
+Per analisi ad alto rischio può essere utile pre-accettare nel brief più di un esito legittimo:
 
 ```text
 A. Evidenza sufficiente per raccomandare un'azione.
@@ -100,4 +48,6 @@ B. Evidenza sufficiente per escludere alcune azioni ma non scegliere tra le rest
 C. Evidenza insufficiente: specificare il prossimo dato/test con maggiore Value of Information.
 ```
 
-> **L'abilità professionale non consiste nell'avere sempre una risposta netta. Consiste nel sapere quale affermazione i dati hanno guadagnato il diritto di sostenere.**
+Questa struttura è particolarmente utile quando parte della sintesi viene prodotta con sistemi generativi, che tendono naturalmente a chiudere la storia in una risposta completa. La completezza linguistica non deve avere più valore della completezza dell'evidenza.
+
+> **Un'analisi professionale non promette sempre una risposta netta. Promette che il livello di certezza dichiarato sarà quello che i dati hanno realmente guadagnato.**

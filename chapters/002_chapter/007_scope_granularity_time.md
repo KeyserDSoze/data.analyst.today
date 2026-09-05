@@ -1,100 +1,40 @@
-## 2.6 Scope: popolazione, unità di analisi e tempo
+## 2.6 Scope: a chi, a che cosa e a quale tempo si applicherà la conclusione
 
-Una domanda può sembrare precisa e produrre comunque risultati incompatibili se persone diverse immaginano popolazioni, unità di analisi o finestre temporali diverse.
+Una domanda può sembrare precisa e produrre comunque risposte incompatibili se persone diverse immaginano popolazioni, unità di analisi o finestre temporali differenti. Per questo lo scope non è un dettaglio che si risolve nella `WHERE` della query: definisce **a quale porzione del mondo potremo applicare la conclusione**.
 
-Per questo il brief deve fissare lo **scope** prima che inizi l'estrazione dei dati.
+Il Capitolo 3 entrerà nel grain tecnico di tabelle, chiavi, eventi e snapshot. Nel brief ci serve la specifica analitica che viene prima: che cosa entra nell'indagine, che cosa resta fuori e quale osservazione rappresenta ogni riga del ragionamento.
 
-Il Capitolo 3 entrerà nel dettaglio tecnico di grain, chiavi, eventi e snapshot. Qui ci interessa la specifica analitica: **che cosa deve essere dentro e fuori dall'indagine?**
+## Popolazione e unità di analisi
 
-### Popolazione
+Scrivere “clienti” o “ordini” è raramente sufficiente. Una popolazione utile contiene condizioni di eleggibilità ed esclusioni intenzionali. “Clienti con contratto attivo all'inizio del mese”, “nuovi clienti acquisiti tra gennaio e giugno” oppure “ordini completati e non integralmente rimborsati” definiscono mondi diversi e impediscono che stati incompatibili vengano aggregati come se fossero equivalenti.
 
-Chi o che cosa è eleggibile per l'analisi?
+Una volta definita la popolazione, dobbiamo scegliere l'unità a cui attribuiamo il fenomeno. La stessa azienda può essere analizzata a livello di evento, sessione, ordine, cliente, account, prodotto, negozio o coorte. Questa non è una preferenza tecnica. Se chiediamo quale percentuale di clienti riacquista, il cliente è l'unità naturale; se cerchiamo dove fallisce un pagamento, dobbiamo osservare tentativi o eventi. Se una policy è assegnata per negozio, trattare ogni transazione come osservazione indipendente può farci sovrastimare quanta informazione possediamo.
 
-Esempi:
-
-- tutti i clienti con contratto attivo all'inizio del mese;
-- nuovi clienti acquisiti tra gennaio e giugno;
-- ordini completati e non integralmente rimborsati;
-- sessioni web non interne e non bot;
-- prodotti disponibili per almeno l'80% del periodo.
-
-Scrivere “clienti” o “ordini” non basta quando esistono stati e condizioni diverse.
-
-Una buona popolazione contiene anche le **esclusioni intenzionali**.
-
-### Unità di analisi
-
-Qual è l'entità elementare a cui attribuiamo il fenomeno?
-
-Possiamo ragionare a livello di:
-
-- evento;
-- sessione;
-- ordine;
-- cliente;
-- account;
-- prodotto;
-- negozio;
-- giorno o coorte.
-
-Questa scelta non è soltanto tecnica.
-
-Se la domanda è “quale percentuale di clienti riacquista?”, il cliente è un'unità naturale. Se la domanda è “dove fallisce il pagamento?”, probabilmente servono tentativi o eventi. Se stiamo valutando una policy assegnata per negozio, analizzare ogni transazione come osservazione indipendente può dare un'immagine ingannevole.
-
-Prima della query dobbiamo riuscire a completare:
+Prima della query dovremmo quindi riuscire a completare senza ambiguità:
 
 > **“Una osservazione nella mia analisi rappresenta…”**
 
-### Periodo e campo temporale
+## Il tempo è parte del fenomeno
 
-Anche “ultimo trimestre” è ambiguo se non specifichiamo quale evento determina il periodo.
+Anche una finestra apparentemente semplice come “ultimo trimestre” è ambigua finché non scegliamo quale evento assegna un'osservazione al periodo. Un ordine può avere `created_at`, `paid_at`, `shipped_at`, `delivered_at` e `returned_at`; ciascuna data descrive una fase diversa del processo. La data corretta dipende dalla domanda, non dalla comodità della colonna già disponibile.
 
-Un ordine può avere:
+Il tempo introduce inoltre il problema della **maturazione**. Se misuriamo retention o repeat purchase a 90 giorni, i clienti acquisiti dieci giorni fa non hanno ancora avuto la stessa opportunità di manifestare l'outcome. Includerli nel denominatore non significa avere dati più freschi: significa mescolare osservazioni mature e immature e attribuire alle seconde un esito che non è ancora conoscibile.
 
-- `created_at`;
-- `paid_at`;
-- `shipped_at`;
-- `delivered_at`;
-- `returned_at`.
+Per la stessa ragione il brief deve annotare la latenza con cui una sorgente diventa completa. Una metrica calcolata oggi su eventi che si consolidano dopo tre giorni può apparire in calo ogni volta che guardiamo l'ultima finestra disponibile.
 
-La data corretta dipende dal fenomeno.
+## Stock e flow non sono intercambiabili
 
-Nel brief annotiamo almeno:
+Lo scope deve anche chiarire se stiamo descrivendo uno **stock**, cioè uno stato in un istante, oppure un **flow**, cioè eventi accumulati durante un intervallo. “Clienti attivi a fine mese” è uno stock; “nuovi clienti acquisiti nel mese” è un flow. “Pipeline aperta al 31 marzo” e “opportunità create nel trimestre” possono entrambe essere metriche commerciali valide, ma non misurano lo stesso oggetto temporale.
 
-- campo temporale principale;
-- timezone, se rilevante;
-- inizio e fine della finestra;
-- eventuale periodo di maturazione necessario;
-- ritardo con cui il dato diventa completo.
+Questa distinzione evita KPI confusi e aiuta a capire quali confronti siano legittimi.
 
-La **maturazione** è particolarmente importante per metriche future rispetto all'evento iniziale. Per misurare retention a 90 giorni non possiamo trattare come pienamente osservabili clienti acquisiti dieci giorni fa.
+## Lo scope protegge anche dal progetto che si espande
 
-### Stock e flow
+Una volta iniziata l'analisi, nuove domande emergeranno inevitabilmente. Partiamo dal churn enterprise europeo e qualcuno propone di includere SMB, pricing globale, support e tre anni di storico. Le nuove piste possono essere utili, ma non sono gratuite: modificano costo, tempo, dati richiesti e forse perfino la decisione supportata.
 
-Lo scope dovrebbe inoltre chiarire se stiamo misurando uno stato in un istante o un evento durante un intervallo.
+La disciplina consiste nel trattarle come un **cambio di brief**, non come dettagli che entrano silenziosamente nel lavoro. Questo permette di distinguere una scoperta che richiede reframing dallo scope creep che consuma capacità senza una scelta esplicita.
 
-**Stock**:
-- clienti attivi a fine mese;
-- inventario disponibile oggi;
-- pipeline aperta al 31 marzo.
-
-**Flow**:
-- nuovi clienti acquisiti nel mese;
-- ordini ricevuti;
-- ticket aperti;
-- revenue riconosciuta durante il trimestre.
-
-Confrontare uno stock con un flow senza rendere esplicito il modello temporale produce facilmente KPI confusi.
-
-### Scope creep
-
-Definire lo scope serve anche a impedire che una domanda si espanda durante l'esecuzione.
-
-Partiamo dal churn enterprise europeo e, dopo due giorni, qualcuno chiede di includere anche SMB, pricing globale, support e tre anni di storico. Le nuove domande possono essere valide, ma devono essere trattate come ampliamento del brief, non come dettaglio gratuito.
-
-Ogni espansione modifica costo, tempi e potenzialmente la decisione supportata.
-
-### Campo del brief
+Il campo operativo rimane strutturato perché deve poter essere riutilizzato:
 
 ```text
 Popolazione eleggibile:
@@ -109,4 +49,4 @@ Data latency / data complete as of:
 Fuori scope:
 ```
 
-> **Lo scope non serve a limitare la curiosità. Serve a sapere esattamente a quale popolazione e a quale periodo potremo applicare la conclusione.**
+> **Definire lo scope significa stabilire in anticipo chi ha davvero avuto l'opportunità di entrare nel numeratore, nel denominatore e nella conclusione.**

@@ -1,52 +1,20 @@
-## 2.9 Il tipo di domanda come impegno metodologico
+## 2.9 Il tipo di domanda è una promessa metodologica
 
-Il Capitolo 1 ha già distinto cinque famiglie operative di domanda:
+Il Capitolo 1 ha già distinto domande descrittive, diagnostiche, predittive, causali e decisionali. Nel brief non serve ripetere quella tassonomia come teoria. Serve usarla per dichiarare **quale tipo di pretesa l'analisi avrà il diritto di sostenere**.
 
-1. **descrittiva** — che cosa è successo?
-2. **diagnostica** — dove e in quali condizioni è successo?
-3. **predittiva** — che cosa è probabile che succeda?
-4. **causale** — che cosa cambierebbe se intervenissimo?
-5. **decisionale** — quale azione conviene intraprendere date evidenza, costi e vincoli?
+La distinzione conta perché lo stesso tema può generare domande molto diverse. Sul churn possiamo misurare quanto sia aumentato negli ultimi tre mesi, localizzare il peggioramento per coorte e piano, prevedere quali clienti abbiano maggiore probabilità di cancellare, stimare se un contatto proattivo ridurrebbe le cancellazioni oppure decidere su quali clienti valga economicamente la pena intervenire.
 
-Non serve ripetere qui la tassonomia. Nel brief dobbiamo fare qualcosa di più concreto: **dichiarare quale tipo di pretesa dovrà sostenere l'analisi**, perché questo vincola metodo e dati.
+Parte dei dati può essere la stessa, ma l'evidenza richiesta cambia radicalmente. Una segmentazione può essere sufficiente per una domanda diagnostica. Un modello predittivo può ordinare clienti per rischio senza spiegare che cosa accadrebbe se li contattassimo. Una domanda causale richiede un confronto controfattuale credibile. Una domanda decisionale aggiunge costi, capacità, alternative e valore degli esiti.
 
-### Lo stesso tema può contenere domande diverse
-
-Tema: churn.
-
-**Descrittiva**
-
-> “Quanto è aumentato il churn negli ultimi tre mesi?”
-
-**Diagnostica**
-
-> “In quali coorti, piani e fasi del customer journey si concentra l'aumento?”
-
-**Predittiva**
-
-> “Quali clienti hanno maggiore probabilità di cancellare nei prossimi 30 giorni?”
-
-**Causale**
-
-> “Un contatto proattivo del customer success ridurrebbe le cancellazioni?”
-
-**Decisionale**
-
-> “Su quali clienti conviene usare il contatto proattivo, considerando capacità del team, valore del cliente e probabile effetto incrementale?”
-
-Le cinque domande possono utilizzare parte degli stessi dati, ma non richiedono la stessa evidenza.
-
-### Perché dichiararlo nel brief
-
-Se il requester dice:
+Per questo una frase apparentemente innocua come:
 
 > “Voglio capire perché gli utenti abbandonano.”
 
-potrebbe aspettarsi una lista di correlazioni diagnostiche. Oppure potrebbe aspettarsi una raccomandazione causale su quale intervento ridurrà il churn.
+può nascondere aspettative incompatibili. Lo stakeholder può aspettarsi un'analisi dei segmenti associati al churn oppure una raccomandazione su quale intervento lo ridurrà. Se questa differenza emerge soltanto alla presentazione finale, possiamo avere svolto un lavoro corretto e consegnato la risposta alla domanda sbagliata.
 
-Se questa differenza emerge soltanto alla presentazione finale, l'analisi può essere metodologicamente corretta e comunque deludere lo stakeholder.
+## Delimitare in anticipo ciò che potremo dire
 
-Il brief dovrebbe quindi contenere una riga come:
+Nel brief basta spesso una riga molto esplicita:
 
 ```text
 Tipo di domanda: diagnostica con obiettivo di generare ipotesi per un successivo test causale.
@@ -58,33 +26,29 @@ oppure:
 Tipo di domanda: predittiva; il modello servirà a prioritizzare review umana, non a stimare l'effetto di un intervento.
 ```
 
-Queste frasi delimitano ciò che l'output potrà sostenere.
+Queste specifiche non limitano inutilmente il lavoro. Proteggono il linguaggio finale. Se abbiamo concordato una diagnosi osservazionale, non possiamo trasformare una correlazione interessante in “questa leva causa churn” soltanto perché il management desidera una raccomandazione più netta.
 
-### “Prescrittivo” e “decisionale”
+Nella letteratura analytics è comune parlare di descriptive, diagnostic, predictive e prescriptive analytics. IBM descrive la prescriptive analytics come l'uso di dati e previsioni per raccomandare corsi d'azione.[^ibm-prescriptive] In questo libro useremo più spesso il termine **decisionale**, perché vogliamo includere anche situazioni in cui non esiste un ottimizzatore formale: la scelta può dipendere da expected value, vincoli operativi, reversibilità e giudizio umano.
 
-Nella letteratura analytics è comune la distinzione tra descriptive, diagnostic, predictive e prescriptive analytics. IBM, per esempio, descrive la prescriptive analytics come il livello che usa dati, previsioni, obiettivi e vincoli per raccomandare azioni.
+## Il metodo segue la promessa, non la moda
 
-Fonte:
-- IBM, *What is prescriptive analytics?*: https://www.ibm.com/think/topics/prescriptive-analytics
+Dichiarare il tipo di domanda impedisce anche un errore molto comune: scegliere il metodo perché è disponibile o prestigioso. Un modello predittivo non risponde automaticamente a una domanda causale; un before/after non dimostra automaticamente l'effetto di una policy; una dashboard diagnostica non seleziona l'intervento migliore; un algoritmo di ottimizzazione non rende vere le assunzioni con cui lo alimentiamo.
 
-In questo libro useremo più spesso **decisionale** perché vogliamo includere anche casi in cui non esiste un ottimizzatore formale: la scelta può richiedere expected value, trade-off, capacità operativa e giudizio umano. Il Capitolo 15 approfondirà questo livello.
+Il metodo appropriato è quello capace di sostenere la pretesa concordata, con il livello di affidabilità richiesto dalla decisione.
 
-### Il metodo deve seguire la pretesa
-
-Un errore frequente è scegliere il metodo perché disponibile:
-
-- un modello predittivo non risponde automaticamente a una domanda causale;
-- un confronto before/after non dimostra automaticamente l'effetto di una policy;
-- una dashboard diagnostica non sceglie automaticamente l'intervento migliore;
-- un algoritmo di ottimizzazione non rende corrette le assunzioni su cui è costruito.
-
-### Campo del brief
+Il campo del brief resta quindi breve:
 
 ```text
 Tipo di domanda primaria:
 Pretesa massima che l'analisi dovrà sostenere:
 Metodo iniziale previsto:
-Metodo/evidenza che sarebbe necessario per una conclusione più forte:
+Metodo/evidenza necessario per una conclusione più forte:
 ```
 
-> **Dichiarare il tipo di domanda significa impegnarsi a non promettere con il linguaggio più di quanto il disegno dell'analisi possa sostenere.**
+> **Specificare il tipo di domanda significa decidere prima quale salto inferenziale siamo autorizzati a fare, invece di negoziarlo dopo aver visto i dati.**
+
+---
+
+### Fonte
+
+[^ibm-prescriptive]: IBM, *What is prescriptive analytics?*. https://www.ibm.com/think/topics/prescriptive-analytics

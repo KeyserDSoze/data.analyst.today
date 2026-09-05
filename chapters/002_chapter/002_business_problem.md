@@ -1,81 +1,43 @@
-## 2.1 Dal problema di business al problema analitico
+## 2.1 Dal sintomo al problema analitico
 
-Il Capitolo 1 ha già mostrato che una richiesta di business non è ancora una domanda analitica. Qui ci interessa il passaggio successivo: **come documentare la traduzione senza perdere il problema originale**.
+Una richiesta di business nasce quasi sempre da qualcosa che preoccupa o interessa l'organizzazione: clienti che sembrano diminuire, margini che si comprimono, una campagna che non convince, un processo che rallenta. Il primo compito dell'analista non è sostituire quella frase con un termine tecnico. È preservarne il significato mentre la trasforma in qualcosa che possa essere osservato e discusso con precisione.
 
-Un problema di business riguarda un risultato, un rischio o un'opportunità.
+Consideriamo la richiesta:
 
 > “Stiamo perdendo clienti.”
 
-Un problema analitico specifica invece che cosa dobbiamo misurare e confrontare per ridurre l'incertezza su quel risultato.
+Questa frase descrive un problema di business, ma non dice ancora che cosa significhi “perdere”. Potrebbe indicare cancellazioni contrattuali, assenza di acquisti per novanta giorni, riduzione d'uso, downgrade o perdita di marginalità. Scegliere in silenzio la definizione più facile da calcolare introdurrebbe una precisione soltanto apparente: la query sarebbe specifica, ma la domanda resterebbe irrisolta.
+
+Una formulazione analitica più utile potrebbe essere:
 
 > “La retention a 90 giorni delle coorti acquisite negli ultimi sei mesi è diminuita rispetto alle coorti comparabili dell'anno precedente? In quali segmenti si concentra il delta e quali cambiamenti osservabili lo precedono?”
 
-La seconda formulazione introduce:
+La nuova frase non è semplicemente una parafrasi. Ha introdotto un outcome, una popolazione, un orizzonte temporale, una baseline e una direzione investigativa. Soprattutto, ha reso possibile discutere se quelle scelte rappresentino davvero il problema che il business vuole capire.
 
-- un outcome definito;
-- una popolazione;
-- un orizzonte temporale;
-- una baseline;
-- una segmentazione;
-- una direzione investigativa.
+## La traduzione deve conservare il legame con la decisione
 
-Ma non deve sostituire il problema di business. Deve rimanergli collegata.
+Il passaggio da business problem ad analytical problem è riuscito soltanto se rende più chiaro che cosa dovremo osservare **senza perdere il motivo per cui lo osserviamo**. Scrivere “analizziamo il churn perché stiamo perdendo clienti” non basta: ha sostituito una parola con un'altra, ma non ci dice quale decisione cambierà né quale evidenza sarebbe importante.
 
-### Traduzione non significa parafrasi
+Una formulazione più completa lega invece fenomeno e decisione:
 
-Scrivere:
-
-> “Vogliamo analizzare il churn perché stiamo perdendo clienti.”
-
-non è una vera traduzione. Ha soltanto sostituito una parola con una metrica.
-
-Una traduzione utile rende possibile decidere:
-
-- che cosa osserveremo;
-- quale evidenza sarebbe sorprendente;
-- quali dati servono;
-- quale metodo potrebbe essere necessario;
-- quale decisione potrebbe cambiare.
-
-### Il rischio della falsa precisione
-
-Precisione non significa inventare definizioni che il business non ha ancora concordato.
-
-Se “cliente perso” può significare cancellazione formale, 90 giorni senza acquisto, riduzione d'uso o perdita di marginalità, l'analista non dovrebbe scegliere in silenzio la versione più facile da calcolare.
-
-Il brief deve trasformare l'ambiguità in una **decisione esplicita sulla definizione**.
-
-Una buona frase può essere:
-
-> “Per questa analisi useremo churn contrattuale, definito come cancellazione dell'abbonamento. Il calo di utilizzo verrà trattato come possibile leading indicator, non come churn.”
-
-Ora sappiamo che cosa misura la metrica e che cosa non misura.
-
-### Un formato di riscrittura
-
-Una struttura utile è:
-
-> **Dobbiamo capire [fenomeno] per supportare [decisione], osservando [popolazione] nel periodo [tempo], misurando [outcome] e confrontando [baseline/alternative].**
+> **Dobbiamo capire [fenomeno] per supportare [decisione], osservando [popolazione] nel periodo [tempo], misurando [outcome] e confrontando [baseline o alternative].**
 
 Per esempio:
 
 > “Dobbiamo capire che cosa sta comprimendo il margine e-commerce per decidere se intervenire su pricing, promozioni o logistica, osservando gli ordini completati degli ultimi dodici mesi e confrontando margine e driver con lo stesso periodo dell'anno precedente.”
 
-Non è ancora il brief completo, ma è già abbastanza precisa da impedire che l'analisi parta da “facciamo qualche grafico sul margine”.
+Questa frase non contiene ancora tutto il brief, ma cambia già il modo in cui verrà eseguito il lavoro. Se la decisione riguarda pricing, promozioni o logistica, il margine deve essere definito in modo coerente con quelle leve; una semplice analisi della revenue sarebbe insufficiente. Se il confronto è year-over-year, dovremo verificare stagionalità e comparabilità del perimetro. La specifica comincia quindi a generare requisiti concreti.
 
-### Le ambiguità che vanno risolte subito
+## Ambiguità non risolta è un requisito, non un dettaglio
 
-Davanti a una richiesta vaga, le domande iniziali dovrebbero chiarire almeno:
+La professionalità non consiste nel far sparire l'ambiguità rapidamente. Consiste nel renderla discutibile prima che si trasformi in codice.
 
-1. Che cosa è cambiato o potrebbe cambiare?
-2. Perché conta per il business?
-3. Quale decisione potrebbe essere influenzata?
-4. Quale fenomeno dobbiamo definire operativamente?
-5. Qual è la popolazione rilevante?
-6. Quale confronto rende il fenomeno interpretabile?
-7. Entro quando serve la decisione?
-8. Quale errore sarebbe più costoso?
+Se “cliente perso” ha più significati plausibili, il brief deve registrare la scelta. Potremmo scrivere:
 
-Le domande più dettagliate verranno distribuite nelle sezioni successive del brief.
+> “Per questa analisi useremo churn contrattuale, definito come cancellazione dell'abbonamento. Il calo di utilizzo verrà trattato come possibile leading indicator, non come churn.”
 
-> **La richiesta descrive il sintomo. Il problema analitico definisce quale evidenza può renderlo comprensibile e azionabile.**
+Da quel momento sappiamo sia che cosa misura l'outcome sia che cosa **non** misura. Questa distinzione diventerà importante più avanti, quando useremo il calo di utilizzo come possibile spiegazione o segnale anticipatore senza confonderlo con l'evento finale.
+
+Prima di procedere, il team dovrebbe quindi riuscire a chiarire almeno il nucleo del problema: che cosa sembra essere cambiato, perché conta, quale decisione potrebbe essere influenzata, quale fenomeno deve essere definito operativamente, quale popolazione e quale confronto sono rilevanti e quanto costa sbagliare. Non serve trasformare queste domande in un'intervista interminabile; serve evitare che le risposte vengano inventate implicitamente durante l'esecuzione.
+
+> **La richiesta descrive il sintomo. Il problema analitico specifica quale evidenza può trasformare quel sintomo in qualcosa di comprensibile e azionabile.**
