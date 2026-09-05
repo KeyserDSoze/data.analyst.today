@@ -2,127 +2,46 @@
 
 > **Una differenza osservata è un fatto sui dati. Un effetto causale è una conclusione su ciò che sarebbe cambiato sotto un'alternativa credibile.**
 
-Nei capitoli precedenti abbiamo imparato a descrivere pattern, quantificare incertezza, seguire clienti nel lifecycle e modellare il tempo.
+Nei capitoli precedenti abbiamo imparato a formulare domande, verificare i dati, descrivere pattern, quantificare l'incertezza, seguire clienti nel lifecycle e modellare il tempo. Tutto questo può dirci molto su **che cosa è successo** e, in alcuni casi, su **che cosa probabilmente succederà**. La causalità introduce una domanda più esigente: **che cosa cambierebbe se intervenissimo?**
 
-Ora la domanda cambia.
+Aumentare il budget advertising genererebbe vendite incrementali oppure comprerebbe soprattutto conversioni che sarebbero avvenute comunque? Un onboarding guidato ridurrebbe il churn oppure viene semplicemente completato più spesso dai clienti già motivati? Uno sconto salva un rinnovo oppure viene concesso proprio quando il cliente ha già deciso di andarsene? Queste domande non chiedono una correlazione più precisa. Chiedono di rappresentare un mondo che non osserviamo direttamente.
 
-Non chiediamo più soltanto:
+## 8.0 Dal pattern al causal claim
 
-> “Che cosa è successo?”
+Consideriamo tre frasi che, in una dashboard, possono sembrare molto vicine. “I clienti che usano la nuova feature hanno retention più alta” descrive un'associazione. “Rendere disponibile la feature aumenta la retention” formula un effetto causale. “Rendere disponibile la feature a questo segmento aumenterebbe la retention a 90 giorni di circa 3 punti percentuali rispetto all'esperienza attuale” aggiunge anche popolazione, alternativa, orizzonte e dimensione dell'effetto. La distanza tra la prima e la terza frase non viene colmata da una regressione più sofisticata: richiede un **disegno di identificazione**.
 
-oppure:
+La World Bank definisce il controfattuale come il nucleo dell'impact evaluation e presenta randomizzazione, instrumental variables, Regression Discontinuity, Difference-in-Differences e matching come strategie diverse per costruire un gruppo di confronto valido.[^worldbank-impact] Il metodo, quindi, viene dopo una domanda più fondamentale: **perché questo confronto dovrebbe rappresentare ciò che sarebbe successo senza l'intervento?**
 
-> “Che cosa probabilmente succederà?”
+Prima di scegliere il design dobbiamo sapere quale effetto vogliamo stimare. Una causal question utile specifica l'unità, il trattamento, l'alternativa, l'outcome, l'orizzonte e la popolazione. Per esempio:
 
-Chiediamo:
+> **Qual è l'effetto medio di una sessione tecnica aggiuntiva, rispetto al processo standard, sul rinnovo a 90 giorni degli account SMB che non hanno completato l'integrazione ERP entro il giorno 30?**
 
-> **“Che cosa cambierebbe se intervenissimo?”**
+Questa frase è molto più vincolante di “il training funziona?”. Impedisce di cambiare trattamento, outcome o popolazione dopo aver visto il risultato e rende esplicito l'**estimand** che la decisione richiede.
 
-Aumentare il budget advertising aumenterebbe davvero le vendite incrementali? Un onboarding guidato ridurrebbe il churn? Uno sconto genererebbe ordini aggiuntivi oppure verrebbe usato soprattutto da clienti che avrebbero comprato comunque? Una chiamata del Customer Success salva clienti oppure viene semplicemente assegnata a quelli già più a rischio?
-
-Queste sono domande causali.
-
-## 8.0 Dal pattern alla causal claim
-
-Consideriamo tre frasi.
-
-1. **Associazione:** i clienti che usano la nuova feature hanno retention più alta.
-2. **Effetto causale:** rendere disponibile la feature aumenta la retention.
-3. **Effetto decisionale:** rendere disponibile la feature a questo segmento aumenterebbe la retention a 90 giorni di circa 3 punti percentuali rispetto all'esperienza attuale.
-
-La distanza tra la prima e la terza frase non viene colmata da una regressione più sofisticata.
-
-Richiede un **disegno di identificazione**.
-
-La World Bank descrive il controfattuale come il nucleo dell'impact evaluation: tutti i principali metodi — randomizzazione, instrumental variables, regression discontinuity, Difference-in-Differences e matching — cercano, con assunzioni diverse, di costruire un gruppo di confronto capace di rappresentare ciò che sarebbe accaduto senza il programma.[^worldbank-impact]
-
-### Prima del metodo: definire l'estimand
-
-Una domanda causale deve specificare almeno:
-
-- **unità:** cliente, account, negozio, ordine, territorio;
-- **trattamento/esposizione:** che cosa cambia concretamente;
-- **alternativa:** rispetto a quale condizione confrontiamo il trattamento;
-- **outcome:** quale risultato misuriamo;
-- **orizzonte:** entro quale finestra;
-- **popolazione:** per chi vogliamo l'effetto;
-- **estimand:** quale effetto medio vogliamo stimare.
-
-Per esempio:
-
-> “Qual è l'effetto medio di una sessione tecnica aggiuntiva, rispetto al processo standard, sul rinnovo a 90 giorni degli account SMB che non hanno completato l'integrazione ERP entro il giorno 30?”
-
-È molto più preciso di:
-
-> “Il training funziona?”
-
-Quella precisione evita di cambiare domanda a metà analisi.
-
-### Identificazione e stima sono due lavori diversi
-
-È utile distinguere:
-
-**Identificazione**
-
-> Perché il confronto che stiamo usando può rappresentare il controfattuale?
-
-**Stima**
-
-> Dato quel confronto, quale effetto numerico otteniamo e con quale incertezza?
-
-Possiamo avere una stima matematicamente impeccabile di un confronto causalmente sbagliato.
-
-È uno degli errori più pericolosi nell'analytics.
+Identificazione e stima sono due lavori diversi. L'identificazione chiede perché il confronto osservato possa rappresentare il controfattuale; la stima chiede quale effetto numerico emerge da quel confronto e con quale incertezza. Possiamo avere una stima matematicamente impeccabile di un confronto causalmente sbagliato. In analytics è uno degli errori più pericolosi proprio perché il numero finale può apparire estremamente professionale.
 
 ### Caso simulato/composito — Il programma VIP
 
-Una piattaforma e-commerce presenta:
+Una piattaforma e-commerce osserva:
 
 | Gruppo | Spesa media annua | Ordini medi | Retention 12 mesi |
 |---|---:|---:|---:|
 | VIP | 1.420 € | 9,8 | 88% |
 | Non VIP | 510 € | 3,4 | 61% |
 
-Il CEO conclude:
+La differenza di **27 punti percentuali** nella retention è reale come differenza osservata. Ma l'accesso al programma è riservato ai clienti che hanno già superato **800 € di spesa nell'anno precedente**. I gruppi sono quindi diversi prima ancora che il programma inizi: il criterio di eleggibilità seleziona clienti già più fedeli e di maggior valore.
 
-> “Il VIP aumenta enormemente la fedeltà. Estendiamolo.”
+La domanda utile non è più “quanto sono migliori i VIP?”, ma “quale retention avrebbero avuto clienti eleggibili e comparabili se non avessero ricevuto il programma VIP?”. Quel risultato non osservato è il controfattuale. Finché non abbiamo un argomento credibile per rappresentarlo, il 27 pp non può essere chiamato effetto del programma.
 
-Ma l'accesso al programma è riservato a clienti che hanno già superato 800 € di spesa nell'anno precedente.
+Il Premio Sveriges Riksbank 2021 ha riconosciuto David Card per i contributi empirici all'economia del lavoro e Joshua Angrist e Guido Imbens per i contributi metodologici all'analisi delle relazioni causali. I materiali del Nobel sottolineano proprio il ruolo dei **natural experiments**: situazioni in cui eventi o policy generano gruppi trattati in modo differente e consentono, sotto specifiche condizioni, di formulare conclusioni su causa ed effetto senza una randomizzazione deliberata.[^nobel-2021]
 
-I gruppi sono stati costruiti usando una caratteristica legata proprio alla fedeltà e al valore che vogliamo spiegare.
+La lezione per un Data Analyst è più generale del contesto accademico: **la forza della conclusione dipende da come si è generato il confronto, non dal prestigio del modello applicato dopo**.
 
-Il 27 punti percentuali di differenza nella retention è reale come **differenza osservata**.
+## Il percorso del capitolo
 
-Non è automaticamente l'effetto causale del programma.
+Il capitolo seguirà un ordine intenzionale. Prima definiremo il controfattuale e distingueremo descrizione, previsione e intervento. Poi ricostruiremo il processo che genera il trattamento: confounding, interventi reattivi, selection bias, collider, mediatori e interference. Solo a quel punto entreranno i design — randomizzazione, DiD, matching, RDD e IV — letti non come un catalogo di tecniche, ma come risposte diverse a strutture diverse dell'assignment mechanism. Infine vedremo eterogeneità, causal targeting e un caso end-to-end in cui più interventi richiedono livelli di evidenza differenti.
 
-La domanda corretta è:
-
-> “Quale retention avrebbero avuto clienti eleggibili e comparabili se non avessero ricevuto il programma VIP?”
-
-Quel risultato non osservato è il controfattuale.
-
-### Un caso reale documentato — Perché i natural experiment hanno cambiato l'empirical work
-
-Nel 2021 il Premio Sveriges Riksbank per le scienze economiche ha riconosciuto David Card per contributi empirici all'economia del lavoro e Joshua Angrist e Guido Imbens per contributi metodologici all'analisi delle relazioni causali. Il comitato sottolinea il ruolo dei **natural experiments** nel permettere conclusioni su causa ed effetto quando una randomizzazione deliberata non è disponibile.[^nobel-2021]
-
-Il punto per un Data Analyst non è imitare un paper accademico.
-
-È capire la logica:
-
-> **la forza della conclusione dipende da come si è generato il confronto, non dal prestigio del modello usato dopo.**
-
-## Le quattro domande che guideranno il capitolo
-
-Per ogni causal claim chiederemo:
-
-1. **Che effetto stiamo cercando?** — estimand.
-2. **Perché alcune unità ricevono il trattamento e altre no?** — assignment mechanism.
-3. **Perché il gruppo di confronto rappresenta un controfattuale credibile?** — identification strategy e assunzioni.
-4. **Quale frase siamo autorizzati a pronunciare dopo i diagnostics?** — claim consentito.
-
-## Il Causal Identification Brief
-
-Il deliverable finale del capitolo sarà un **Causal Identification Brief**.
+Il deliverable sarà un **Causal Identification Brief**:
 
 ```text
 DECISIONE
@@ -162,13 +81,7 @@ PROSSIMO TEST
 Che cosa ridurrebbe maggiormente l'incertezza residua?
 ```
 
-Questo schema impedisce una scorciatoia molto comune:
-
-**dati osservazionali → modello → coefficiente → verbo “causare”**.
-
-Il percorso corretto è:
-
-**domanda → estimand → processo di assegnazione → controfattuale → assunzioni → design → diagnostics → stima → claim**.
+Il brief serve a impedire una scorciatoia comune: **dati osservazionali → modello → coefficiente → verbo “causare”**. Il percorso corretto è invece **domanda → estimand → assignment mechanism → controfattuale → assunzioni → design → diagnostics → stima → claim**.
 
 > **La causalità non è una proprietà del coefficiente. È una proprietà dell'argomento che collega il confronto al controfattuale.**
 
