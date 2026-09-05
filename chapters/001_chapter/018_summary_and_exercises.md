@@ -1,28 +1,20 @@
 ## 1.17 Sintesi ed esercizi
 
-Il capitolo ha costruito una tesi semplice ma decisiva: gli strumenti dell'analisi cambiano rapidamente, mentre il nucleo del ragionamento analitico cambia molto meno.
+Il capitolo è partito da un'apparente contraddizione. Gli strumenti dell'analisi cambiano a grande velocità, e l'AI sta accelerando ulteriormente questa trasformazione; eppure il nucleo del lavoro continua a ruotare attorno a problemi molto più stabili.
 
-Un Data Analyst moderno deve saper usare fogli elettronici, SQL, Python, BI, cloud e AI quando servono. Ma il suo valore non coincide con nessuno di questi strumenti.
+Un Data Analyst moderno deve saper usare fogli elettronici, SQL, Python, BI, cloud e AI quando sono gli strumenti adatti. Ma il suo valore non coincide con nessuno di essi. Si manifesta nella capacità di trasformare una richiesta vaga in una domanda verificabile, capire che cosa i dati rappresentano e che cosa lasciano fuori, definire metriche coerenti con la decisione, scegliere confronti e metodi proporzionati, distinguere pattern da cause e rendere l'incertezza utilizzabile.
 
-Il lavoro centrale consiste nel trasformare problemi vaghi in domande verificabili, capire che cosa rappresentano i dati, scegliere metriche e confronti coerenti, usare un metodo proporzionato, interpretare l'evidenza senza andare oltre ciò che sostiene e collegarla a decisioni di cui possiamo misurare l'effetto.
-
-### 1.17.1 Idee chiave da ricordare
-
-- Una richiesta di business non è ancora una domanda analitica.
-- I dati sono rappresentazioni prodotte da sistemi, non la realtà stessa.
-- Una metrica è una definizione, non un fatto naturale.
-- Descrivere, diagnosticare, prevedere, stimare un effetto causale e scegliere un'azione sono problemi diversi.
-- Una relazione osservata non implica automaticamente causalità.
-- L'incertezza va resa utilizzabile, non nascosta.
-- L'AI riduce il costo dell'execution, non il costo di una decisione sbagliata.
-- Il valore dell'analisi emerge lungo la catena tra problema, evidenza e decisione.
-- Dopo l'azione, la misurazione genera nuova evidenza.
-
-La formula di riferimento è:
+Il filo che collega questi passaggi è la catena che useremo nel resto del libro:
 
 **Problema → Domanda → Dati → Metodo → Evidenza → Interpretazione → Decisione → Azione → Misurazione**
 
-### 1.17.2 Esercizio 1 — Trasformare una richiesta
+Non è una pipeline lineare. È un sistema di controllo del significato. Se un passaggio rivela un problema, possiamo tornare indietro; se un'azione è reversibile, possiamo usarla per produrre nuova evidenza; se la misura non rappresenta bene il fenomeno, nessuna sofisticazione successiva può recuperare automaticamente ciò che abbiamo perso a monte.
+
+L'AI modifica soprattutto il costo con cui possiamo attraversare questa catena. Può ampliare le alternative e accelerare l'execution. Non riduce da sola il costo di una decisione sbagliata e non elimina la necessità di sapere quale evidenza siamo disposti a credere.
+
+Gli esercizi seguenti servono quindi meno a verificare memoria e più ad allenare i passaggi in cui il significato può rompersi.
+
+### 1.17.1 Esercizio 1 — Trasformare una richiesta
 
 Parti dalla frase:
 
@@ -39,7 +31,9 @@ Poi costruisci tre formulazioni analitiche diverse, specificando per ciascuna:
 - baseline;
 - decisione o incertezza associata.
 
-### 1.17.3 Esercizio 2 — Definire una metrica
+L'obiettivo non è trovare la formulazione “corretta” in assoluto, ma mostrare come decisioni diverse generino domande e misure diverse.
+
+### 1.17.2 Esercizio 2 — Definire una metrica
 
 Definisci formalmente “cliente attivo”.
 
@@ -52,24 +46,21 @@ Crea almeno quattro definizioni alternative, per esempio:
 
 Per ogni definizione indica:
 
-- business in cui avrebbe senso;
-- casi che classificherebbe diversamente;
-- decisione per cui sarebbe inadatta.
+- un business in cui avrebbe senso;
+- casi che classificherebbe diversamente dalle altre;
+- una decisione per cui sarebbe inadatta.
 
-### 1.17.4 Esercizio 3 — Dato e realtà
+Chiudi l'esercizio scegliendo una definizione e scrivendo il suo mini contratto semantico: popolazione, data di riferimento, esclusioni e owner.
+
+### 1.17.3 Esercizio 3 — Dato e realtà
 
 Scegli un concetto non direttamente osservabile, come soddisfazione, engagement, produttività o qualità.
 
-Elenca almeno quattro proxy possibili.
+Individua almeno quattro proxy possibili. Per ciascuno chiediti che cosa catturi bene, quale parte del fenomeno lasci invisibile, quale comportamento potrebbe incentivare se diventasse un KPI e in quale situazione produrrebbe una conclusione fuorviante.
 
-Per ciascuno chiediti:
+Poi indica quale combinazione di proxy useresti per una decisione reale e perché nessuno, preso da solo, sarebbe sufficiente.
 
-- che cosa cattura bene?
-- che cosa non osserva?
-- quale comportamento potrebbe incentivare se diventasse KPI?
-- in quale situazione produrrebbe una conclusione fuorviante?
-
-### 1.17.5 Esercizio 4 — Scomporre un problema
+### 1.17.4 Esercizio 4 — Scomporre un problema
 
 Una piattaforma SaaS registra un calo del 12% dei ricavi mensili.
 
@@ -79,9 +70,9 @@ Puoi partire da:
 
 **Ricavi = clienti paganti × ricavo medio per cliente**
 
-Poi continua a scomporre le componenti fino ad arrivare a variabili osservabili o a ipotesi verificabili.
+Continua a scomporre le componenti fino ad arrivare a variabili osservabili o ipotesi verificabili. Prima di proporre una causa, indica quali rami dell'albero spieghino effettivamente il delta e quali possano essere deprioritizzati.
 
-### 1.17.6 Esercizio 5 — Correlazione non significa causa
+### 1.17.5 Esercizio 5 — Correlazione non significa causa
 
 Scopri che gli utenti che utilizzano una certa funzionalità hanno retention doppia rispetto agli altri.
 
@@ -91,20 +82,23 @@ Poi indica:
 
 - quali dati aggiuntivi cercheresti;
 - quale ordine temporale controlleresti;
+- quale meccanismo di selezione potrebbe distorcere il confronto;
 - quale esperimento o disegno osservazionale produrrebbe evidenza più forte.
 
-### 1.17.7 Esercizio 6 — L'incertezza cambia la decisione
+Chiudi scrivendo due frasi: una consentita dai soli dati osservazionali e una che potresti usare soltanto dopo avere ottenuto evidenza causale adeguata.
+
+### 1.17.6 Esercizio 6 — L'incertezza cambia la decisione
 
 Hai due progetti:
 
-- Progetto A: beneficio atteso elevato, test poco costoso e facilmente reversibile;
-- Progetto B: beneficio simile, ma implementazione costosa e difficile da invertire.
+- **Progetto A:** beneficio atteso elevato, test poco costoso e facilmente reversibile;
+- **Progetto B:** beneficio simile, ma implementazione costosa e difficile da invertire.
 
 Per entrambi l'evidenza iniziale suggerisce una probabilità del 60% di successo.
 
-Spiega perché la stessa probabilità può giustificare decisioni diverse. Elenca quali informazioni aggiuntive avrebbero maggiore valore nei due casi.
+Spiega perché la stessa probabilità può giustificare decisioni diverse. Indica quale errore sia più costoso nei due casi, quali informazioni aggiuntive abbiano maggiore valore e se sia preferibile agire, sperimentare o raccogliere altra evidenza prima della decisione.
 
-### 1.17.8 Esercizio 7 — Analisi assistita da AI
+### 1.17.7 Esercizio 7 — Analisi assistita da AI
 
 Prendi un piccolo dataset pubblico e usa un assistente AI per:
 
@@ -124,7 +118,9 @@ Annota:
 - quale controllo ha avuto più valore;
 - se la conclusione finale è diversa dalla prima risposta generata.
 
-### 1.17.9 Esercizio 8 — Il memo decisionale
+L'esercizio non misura quanta parte del lavoro hai delegato. Misura se, alla fine, sai ricostruire perché la conclusione meriti fiducia.
+
+### 1.17.8 Esercizio 8 — Il memo decisionale
 
 Scrivi una pagina che contenga soltanto:
 
@@ -137,7 +133,7 @@ Scrivi una pagina che contenga soltanto:
 
 Non inserire grafici se non sono necessari alla decisione.
 
-L'esercizio serve a ricordare che il prodotto finale dell'analisi non è necessariamente un dashboard. Spesso è una scelta meglio informata.
+L'esercizio serve a ricordare che il prodotto finale dell'analisi non è necessariamente un dashboard. Spesso è una scelta meglio informata e un modo chiaro per sapere, dopo, se quella scelta ha funzionato.
 
 ### Domande di autovalutazione
 
@@ -156,9 +152,11 @@ Alla fine del capitolo dovresti saper rispondere a queste domande:
 
 ### Chiusura del capitolo
 
-Il resto del libro costruirà strumenti sempre più potenti sopra queste fondamenta.
+Abbiamo definito il mestiere prima di entrare nei suoi strumenti. Il passaggio successivo è rendere operativo il primo anello della catena: trasformare una richiesta in un problema ben inquadrato, con decisione, stakeholder, perimetro, metriche e criteri di successo espliciti.
 
-Ogni tecnologia verrà valutata con la stessa domanda:
+È ciò che farà il Capitolo 2.
+
+Da qui in avanti ogni tecnologia verrà valutata con la stessa domanda:
 
 > **Quale problema risolve, quale evidenza produce, quali assunzioni introduce e quando è lo strumento giusto?**
 

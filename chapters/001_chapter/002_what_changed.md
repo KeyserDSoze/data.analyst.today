@@ -1,105 +1,68 @@
 ## 1.1 Cosa è cambiato davvero
 
-Per capire il ruolo del Data Analyst nell'era dell'AI bisogna separare due livelli:
+Per capire il ruolo del Data Analyst nell'era dell'AI conviene separare due cose che spesso vengono confuse: **il lavoro analitico** e **il modo in cui quel lavoro viene eseguito**.
 
-- **il lavoro analitico** — definire problemi, scegliere evidenze, interpretare risultati, supportare decisioni;
-- **il modo in cui quel lavoro viene eseguito** — strumenti, interfacce, linguaggi, automazioni e infrastruttura.
+Il primo riguarda problemi, evidenze, interpretazioni e decisioni. Il secondo riguarda interfacce, linguaggi, strumenti, automazioni e infrastruttura. Il lavoro analitico evolve, ma lentamente; il modo di eseguirlo può cambiare nel giro di pochi anni, a volte di pochi mesi.
 
-Il primo cambia lentamente.
+Per molto tempo una parte importante del vantaggio tecnico di un analista è dipesa dalla capacità di svolgere attività che richiedevano conoscenze operative specifiche: scrivere SQL, costruire formule e misure DAX, trasformare dati, programmare, configurare dashboard, conoscere le particolarità di strumenti diversi. Queste competenze non diventano inutili. Cambia però il loro peso relativo, perché il costo di ottenere una prima implementazione si sta abbassando.
 
-Il secondo cambia molto velocemente.
+Questo spostamento produce almeno quattro conseguenze.
 
-Per anni una parte significativa del vantaggio tecnico di un analista è derivata dalla capacità di eseguire attività che richiedevano conoscenze operative specifiche: SQL, formule, DAX, trasformazioni, scripting, dashboard, configurazioni di strumenti.
+### Dalla sintassi all'intento
 
-Queste competenze restano importanti. Ma cambia il loro ruolo, perché il costo di produrre una prima versione di molti artefatti tecnici si sta abbassando.
+Per interrogare un database serviva conoscere SQL. Per automatizzare un'analisi serviva Python o R. Per costruire determinate metriche in Power BI serviva DAX. Per trasformare un foglio elettronico bisognava conoscere formule, pivot, Power Query o macro.
 
-### 1. Dalla sintassi all'intento
+L'AI generativa introduce un'altra possibilità: esprimere l'intento in linguaggio naturale e lasciare che un sistema traduca parte di quell'intento in codice o operazioni.
 
-Per molto tempo l'interazione con i sistemi analitici è stata dominata dalla sintassi.
-
-Per interrogare un database serviva SQL. Per automatizzare un'analisi serviva Python o R. Per costruire determinate metriche in Power BI serviva DAX. Per trasformare un foglio elettronico bisognava conoscere formule, pivot, Power Query o macro.
-
-L'AI generativa aggiunge un'altra interfaccia: **l'intento espresso in linguaggio naturale**.
-
-Un analista può chiedere:
+Possiamo chiedere, per esempio:
 
 > “Calcola il fatturato mensile per categoria, confrontalo con lo stesso mese dell'anno precedente e segnala le categorie con una diminuzione superiore al 15%.”
 
-Un sistema può trasformare la richiesta in SQL, Python, DAX o una sequenza di operazioni.
+Il sistema può produrre SQL, Python, DAX o una sequenza di trasformazioni. Il lavoro si sposta quindi in parte da *come scrivo questa istruzione?* a *che cosa sto davvero chiedendo e come verifico che l'implementazione corrisponda all'intento?*
 
-Questo sposta parte del lavoro da:
+La seconda domanda è meno meccanica della prima. “Fatturato” può significare lordo o netto, includere o escludere resi, dipendere dalla data dell'ordine o da quella di contabilizzazione, richiedere conversioni valutarie e diventare non confrontabile se nel frattempo è cambiato il perimetro aziendale. Un sistema può generare codice perfettamente valido prima che queste decisioni siano state prese.
 
-> “Come si scrive?”
+L'AI riduce quindi il costo della traduzione tra intento e implementazione. **Non definisce automaticamente l'intento corretto.**
 
-verso:
+### Iterare costa meno, scegliere costa relativamente di più
 
-> “Che cosa voglio ottenere, e come verifico che l'implementazione corrisponda davvero all'intento?”
+Quando una query, un grafico o uno script richiedono meno tempo, possiamo esplorare ipotesi che in passato avremmo scartato per ragioni di costo. Una spiegazione secondaria può essere controllata; due definizioni alternative possono essere confrontate; un sanity check può essere costruito quasi senza attrito; una visualizzazione poco convincente può essere sostituita rapidamente.
 
-Il cambiamento è reale. Ma non elimina l'ambiguità.
+Il beneficio non è soltanto fare prima la stessa analisi. È poter lavorare in modo più iterativo.
 
-Che cosa significa “fatturato”? Lordo o netto? Con resi? Quale data? Quale valuta? Il confronto è valido se il perimetro aziendale è cambiato?
+Ma l'abbondanza ha un effetto collaterale. Se produrre dieci alternative diventa economico, non diventa automaticamente economico valutarle tutte con la stessa profondità. Il nuovo collo di bottiglia si sposta verso priorità, semantica, verifica e capacità di fermarsi quando l'evidenza è sufficiente.
 
-L'AI riduce il costo della traduzione tra intento e codice. Non definisce automaticamente l'intento corretto.
+Il Capitolo 0 ha affrontato questo problema dal punto di vista della supervisione. Qui ci interessa la conseguenza economica: **quando l'esecuzione diventa abbondante, il giudizio diventa relativamente più scarso e quindi più prezioso.**
 
-### 2. Iterare costa meno
+### I confini tra ruoli diventano più permeabili
 
-Se una query, un grafico o uno script richiedono meno tempo, possiamo esplorare più ipotesi.
+In molte organizzazioni il percorso del lavoro era scandito da passaggi relativamente netti: richiesta di business, analyst, data engineer, BI developer, report. Le specializzazioni continuano a essere necessarie, soprattutto quando aumentano scala, affidabilità e rischio, ma attraversarne i confini costa meno.
 
-Questo è uno dei cambiamenti più utili per l'analista.
+Un analista può prototipare codice che prima avrebbe richiesto l'intervento immediato di uno sviluppatore. Un business user può interrogare in linguaggio naturale un modello semantico. Un data engineer può produrre documentazione o analisi esplorative più rapidamente. Un data scientist può costruire una prima visualizzazione senza attendere un passaggio di consegne.
 
-Un'ipotesi secondaria che in passato avremmo ignorato per mancanza di tempo può essere controllata. Possiamo confrontare definizioni alternative, generare rapidamente sanity check, prototipare più visualizzazioni o testare una seconda decomposizione del problema.
+Questa permeabilità non rende tutti specialisti di tutto. Al contrario, aumenta il valore di chi possiede una visione abbastanza ampia da riconoscere dove termina la propria autonomia. Un prototipo generato velocemente può essere sufficiente per un'esplorazione e completamente inadeguato per un processo che alimenta decisioni finanziarie ogni mattina.
 
-Il vantaggio non è soltanto “fare prima”.
+La competenza trasversale diventa quindi saper seguire il percorso end-to-end e capire **quando procedere, quando verificare e quando coinvolgere una competenza specialistica**.
 
-È poter costruire un processo più iterativo.
+### La semantica diventa infrastruttura
 
-Ma l'abbondanza di output crea anche un nuovo vincolo: **la capacità di produrre alternative cresce più velocemente della capacità di valutarle tutte con la stessa profondità**.
+Il cambiamento meno spettacolare è forse il più profondo. Il significato dei dati viene formalizzato sempre di più dentro i sistemi analitici: metriche, relazioni, descrizioni, sinonimi, regole di business e istruzioni possono vivere in semantic layer e modelli condivisi invece di restare soltanto nella testa degli analisti o in documenti separati.
 
-Il Capitolo 0 ha affrontato questo problema dal punto di vista della supervisione. Qui ci basta registrare il cambiamento economico: quando l'esecuzione costa meno, diventano relativamente più preziosi priorità, semantica e verifica.
+L'AI rende questa formalizzazione ancora più importante. Microsoft, nella documentazione dedicata alla preparazione dei semantic model di Power BI per Copilot, raccomanda di restringere lo schema ai campi rilevanti e di fornire terminologia e istruzioni di business per ridurre l'ambiguità.[^ms-ai-schema][^ms-ai-faq]
 
-### 3. I confini tra ruoli diventano più permeabili
-
-In molte organizzazioni il lavoro era tradizionalmente suddiviso in passaggi molto netti:
-
-business request → analyst → data engineer → BI developer → report.
-
-Le specializzazioni non scompaiono, soprattutto nei sistemi complessi. Ma diventa più economico attraversarne i confini.
-
-Un analista può generare codice più facilmente. Un business user può interrogare un modello semantico in linguaggio naturale. Un data engineer può produrre documentazione rapidamente. Un data scientist può prototipare una visualizzazione senza passare subito da un altro team.
-
-Questo aumenta il valore di una competenza trasversale: **capire abbastanza bene l'intero percorso da sapere quando procedere, quando verificare e quando coinvolgere uno specialista.**
-
-### 4. La semantica diventa infrastruttura
-
-Uno dei cambiamenti meno visibili ma più importanti è che il significato dei dati viene formalizzato sempre di più dentro i sistemi analitici.
-
-Metriche, relazioni, descrizioni, sinonimi e logiche di business possono vivere in semantic layer e modelli condivisi invece che soltanto nella testa degli analisti o in documenti separati.
-
-L'AI rende questa formalizzazione ancora più importante.
-
-Microsoft, nella documentazione dedicata alla preparazione dei semantic model di Power BI per Copilot, raccomanda schemi mirati, terminologia aziendale, descrizioni e istruzioni che riducano l'ambiguità. La piattaforma prevede anche meccanismi per configurare risposte validate in aree specifiche.[^ms-ai-schema][^ms-ai-faq]
-
-È un caso reale documentato di una dinamica generale:
+La dinamica generale è semplice:
 
 > **quando l'interfaccia diventa più semplice, il modello semantico sottostante deve diventare più rigoroso.**
 
-Se l'utente non deve più conoscere il nome esatto della tabella o della misura, il sistema deve conoscere con maggiore precisione che cosa significano “revenue”, “cliente attivo” o “retention”.
+Se l'utente non deve conoscere il nome esatto della tabella o della misura, qualcuno — o qualcosa — deve comunque sapere con precisione che cosa significano “revenue”, “cliente attivo” o “retention”. La complessità non scompare; una parte viene trasferita dal gesto dell'utente alla qualità del sistema che interpreta la richiesta.
 
 ### Che cosa cambia, quindi, per l'analista?
 
-La competenza tecnica non scompare. Cambia la sua funzione.
+La competenza tecnica non scompare: cambia funzione.
 
-Studiamo SQL non soltanto per digitare una `JOIN`, ma per capire grain, cardinalità, aggregazioni e possibili duplicazioni.
+Studiamo SQL non soltanto per ricordare come si scrive una `JOIN`, ma per capire grain, cardinalità, aggregazioni e duplicazioni. Studiamo statistica non per ripetere formule che un software può calcolare, ma per sapere quale conclusione è giustificata dall'evidenza. Studiamo visualizzazione non per aumentare il numero di grafici prodotti, ma per riconoscere quali rappresentazioni chiariscono un fenomeno e quali lo deformano. Studiamo architettura non perché ogni analista debba amministrare un warehouse, ma perché raccolta, trasformazione e modellazione determinano ciò che sarà possibile osservare dopo.
 
-Studiamo statistica non per calcolare ogni formula a mano, ma per sapere quale conclusione è giustificata dall'evidenza.
-
-Studiamo visualizzazione non per produrre più grafici, ma per riconoscere quali rappresentazioni chiariscono o distorcono un fenomeno.
-
-Studiamo architettura non perché ogni analista debba amministrare un warehouse, ma perché raccolta, trasformazione e modellazione determinano ciò che possiamo osservare.
-
-In breve:
-
-> **si riduce il premio per la pura esecuzione e aumenta il premio per il giudizio informato sull'esecuzione.**
+Il premio per la pura esecuzione diminuisce. **Aumenta il premio per il giudizio informato sull'esecuzione.**
 
 La sezione successiva affronta l'altra metà della tesi: ciò che, nonostante tutti questi cambiamenti, è rimasto sorprendentemente stabile.
 

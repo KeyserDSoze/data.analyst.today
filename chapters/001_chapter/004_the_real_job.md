@@ -1,76 +1,44 @@
 ## 1.3 Il vero lavoro dell'analista
 
-La parte più visibile del lavoro di un Data Analyst è spesso la meno importante.
+La parte più visibile del lavoro di un Data Analyst è spesso quella che l'organizzazione scambia più facilmente per il lavoro stesso.
 
-Una dashboard è visibile. Una query SQL è visibile. Un notebook è visibile. Una presentazione è visibile.
+Una dashboard si vede. Una query SQL si può aprire. Un notebook lascia codice. Una presentazione arriva in riunione. Sono artefatti concreti e quindi facili da contare, mostrare e consegnare.
 
-Molto meno visibili sono le decisioni che determinano se quegli output abbiano valore:
+Molto meno visibile è il percorso che determina se quell'artefatto meriti fiducia.
 
-- quale domanda merita una risposta;
-- quale fenomeno stiamo davvero cercando di misurare;
-- quale metrica lo rappresenta abbastanza bene;
-- quale confronto è legittimo;
-- quali dati sono affidabili;
-- quali assunzioni stiamo introducendo;
-- quale metodo è sufficiente;
-- quale livello di incertezza è accettabile;
-- quale evidenza cambierebbe una decisione.
+Due analisti possono consegnare lo stesso grafico: stessa linea, stesso asse, stesso numero finale. Il primo può aver preso una tabella pronta e riportato il trend. Il secondo può aver scoperto che la definizione della metrica è cambiata a metà periodo, verificato il grain della tabella, escluso una duplicazione da join, scelto una baseline coerente con la stagionalità e controllato che il movimento aggregato non dipendesse soltanto da un cambiamento nel mix dei clienti.
 
-Queste scelte sono il lavoro analitico.
+Il deliverable è quasi identico. **La qualità dell'evidenza che contiene è completamente diversa.**
 
-Il resto è implementazione necessaria.
+### Il prodotto non coincide con l'output
 
-### L'output non è il prodotto finale
+Definire il mestiere in base all'artefatto porta facilmente a confondere il mezzo con il fine. Un analyst può consegnare una tabella, un dashboard, una query, un modello, un forecast, un memo o una raccomandazione. Nessuno di questi oggetti produce valore per il semplice fatto di esistere.
 
-Se definiamo il lavoro in base all'artefatto, rischiamo di confondere il mezzo con il fine.
+Una tabella è utile se rende più chiara una domanda. Un forecast è utile se cambia una scelta di capacità, budget o rischio. Un dashboard è utile se permette a qualcuno di rilevare una deviazione e reagire. Una raccomandazione è utile se il livello di evidenza che la sostiene è proporzionato al costo di seguirla quando è sbagliata.
 
-Un analyst può consegnare:
+Per questo è più utile pensare al prodotto finale dell'analisi come a **una riduzione dell'incertezza utilizzabile da qualcuno**. L'artefatto è il veicolo attraverso cui quella riduzione diventa condivisibile, verificabile e, quando serve, operativa.
 
-- una tabella;
-- un dashboard;
-- una query;
-- un modello;
-- un forecast;
-- un memo;
-- una raccomandazione.
+Questa distinzione cambia anche il modo in cui valutiamo il lavoro. Un analyst che produce molti dashboard può avere un impatto inferiore a chi elimina un equivoco semantico che alimentava dieci report. Una query di poche righe può valere più di un modello complesso se isola il driver che cambia una decisione. Un'analisi può persino concludere che non abbiamo evidenza sufficiente per agire e creare più valore di una raccomandazione molto sicura costruita su dati fragili.
 
-Ma nessuno di questi oggetti è utile in modo automatico.
+### Il lavoro invisibile è fatto di scelte
 
-Una tabella diventa utile se chiarisce una domanda. Un forecast diventa utile se supporta una scelta di capacità o budget. Un dashboard diventa utile se aiuta qualcuno a rilevare un cambiamento e reagire. Una raccomandazione diventa utile se l'evidenza che la sostiene è abbastanza forte rispetto al costo dell'errore.
+Ciò che non compare nel deliverable sono spesso le decisioni più importanti: quale domanda valga la pena affrontare, quale fenomeno stiamo davvero cercando di misurare, quale proxy sia accettabile, quale baseline renda il confronto onesto, quale trasformazione possa cambiare il significato del dato e quale metodo sia sufficiente senza introdurre complessità inutile.
 
-Il prodotto finale dell'analisi è quindi meglio descritto come **una riduzione dell'incertezza utilizzabile da qualcuno**.
+Poi arrivano scelte ancora più difficili: capire quali spiegazioni rivali meritino un controllo, quanta incertezza possiamo tollerare e quale evidenza sarebbe abbastanza forte da modificare una decisione.
 
-### Il lavoro invisibile
+È qui che si trova gran parte del mestiere. L'esecuzione tecnica serve a rendere queste scelte concrete; non le sostituisce.
 
-Due analisti possono produrre lo stesso grafico finale e avere svolto lavori molto diversi.
+### Business understanding e data understanding devono incontrarsi
 
-Il primo ha preso una tabella già pronta, scelto una visualizzazione e riportato il trend.
-
-Il secondo ha verificato la definizione della metrica, controllato un cambio di schema, escluso una duplicazione da join, scelto una baseline stagionale, segmentato il fenomeno e verificato che il pattern non dipendesse da un cambiamento nel mix dei clienti.
-
-Il grafico può sembrare identico.
-
-La qualità dell'evidenza no.
-
-Questa differenza è una delle ragioni per cui il lavoro analitico è difficile da valutare soltanto osservando il deliverable.
-
-### Business understanding e data understanding
-
-CRISP-DM formalizza due passaggi che nel lavoro reale tendono a intrecciarsi continuamente:
-
-1. capire il problema e gli obiettivi di business;
-2. capire i dati disponibili e i loro limiti.
-
-IBM descrive la fase di *Business Understanding* come il momento in cui obiettivi e requisiti vengono tradotti in un problema analitico, mentre la fase di *Data Understanding* riguarda raccolta iniziale, esplorazione e valutazione della qualità del dato.
+CRISP-DM formalizza due momenti che nel lavoro reale si alimentano a vicenda. La *Business Understanding* chiarisce obiettivi e requisiti e li traduce in un problema analitico. La *Data Understanding* riguarda la raccolta iniziale, l'esplorazione e la valutazione della qualità del dato.
 
 Fonti:
 - https://www.ibm.com/docs/en/spss-modeler/saas?topic=understanding-business-overview
 - https://www.ibm.com/docs/en/spss-modeler/saas?topic=understanding-data-overview
 
-La distinzione è utile perché impedisce due errori opposti:
+La distinzione è utile perché mostra due modi opposti di fallire. Possiamo costruire un'analisi tecnicamente impeccabile che non risponde a nessuna decisione reale. Oppure possiamo formulare una domanda importante e scoprire troppo tardi che i dati disponibili non rappresentano il fenomeno con sufficiente credibilità.
 
-- costruire un'analisi tecnicamente impeccabile che non risponde a una decisione reale;
-- formulare una domanda interessante senza verificare se i dati possano rappresentarla in modo credibile.
+Un buon analista fa dialogare continuamente i due lati. Il business chiarisce che cosa conta; i dati chiariscono che cosa possiamo osservare; il metodo stabilisce quale inferenza sia possibile; la decisione determina quanto forte debba essere l'evidenza.
 
 ### Una definizione di lavoro
 
@@ -78,8 +46,6 @@ Useremo quindi questa definizione lungo tutto il libro:
 
 > **Un Data Analyst utilizza dati, metodi quantitativi, conoscenza del dominio e strumenti tecnologici per ridurre l'incertezza attorno a decisioni reali.**
 
-La definizione è volutamente indipendente da Excel, SQL, Python, Power BI o AI.
+La definizione è volutamente indipendente da Excel, SQL, Python, Power BI o AI. Gli strumenti determinano che cosa possiamo fare, a quale costo e con quale affidabilità.
 
-Gli strumenti determinano come possiamo lavorare.
-
-Non determinano perché il lavoro abbia valore.
+Non determinano, da soli, perché quel lavoro abbia valore.

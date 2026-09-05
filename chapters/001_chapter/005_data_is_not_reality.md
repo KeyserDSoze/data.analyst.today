@@ -2,94 +2,67 @@
 
 Uno degli errori più pericolosi nell'analisi è confondere il dato con il fenomeno che il dato cerca di rappresentare.
 
-Un database non contiene il mondo reale.
+Un database non contiene il mondo reale. Contiene una rappresentazione costruita da applicazioni, processi, definizioni, regole operative e decisioni prese spesso molto prima che l'analista formulasse la propria domanda.
 
-Contiene una rappresentazione del mondo reale costruita attraverso sistemi, processi, definizioni e regole operative.
+Quando leggiamo una colonna chiamata `customer`, `revenue`, `active_user` o `conversion`, il nome può dare l'impressione che il significato sia già risolto. In realtà siamo arrivati alla fine di una catena di scelte. Qualcuno ha deciso quando una persona diventa cliente, quale evento conta come vendita, in quale momento registrare l'importo, quale stato rende un utente attivo e che cosa succede a ordini annullati, rimborsi o eventi che il tracking non riesce a osservare.
 
-Quando leggiamo una colonna chiamata `customer`, `revenue`, `active_user` o `conversion`, stiamo già osservando il risultato di una serie di scelte.
+I nomi familiari rendono naturali decisioni che naturali non sono.
 
-Chi è considerato cliente? Quando una persona diventa cliente? Un ordine annullato conta? Una vendita viene registrata all'ordine, al pagamento, alla spedizione o alla contabilizzazione? Un utente è attivo se apre l'app, se effettua una sessione o se compie un'azione specifica?
+### Un evento reale, molte rappresentazioni valide
 
-I nomi familiari possono far sembrare naturali decisioni che naturali non sono.
-
-### Un evento, più rappresentazioni
-
-Immaginiamo un e-commerce.
-
-Un cliente effettua un ordine alle 23:58 del 31 gennaio. Il pagamento viene autorizzato alle 00:01 del 1° febbraio. Il magazzino prepara il pacco il 2 febbraio. La spedizione parte il 3. Il cliente restituisce metà dell'ordine il 10 e riceve il rimborso il 15.
+Immaginiamo un e-commerce. Un cliente effettua un ordine alle 23:58 del 31 gennaio. Il pagamento viene autorizzato alle 00:01 del 1° febbraio. Il magazzino prepara il pacco il 2 febbraio, la spedizione parte il 3, il cliente restituisce metà dell'ordine il 10 e riceve il rimborso il 15.
 
 A quale mese appartiene quella vendita?
 
-Non esiste una risposta universale.
+La domanda non ha una risposta universale perché “la vendita” non è un singolo evento tecnico. Se stiamo studiando la domanda commerciale può interessarci la data dell'ordine. Se analizziamo il cash flow contano pagamento e rimborso. Per la logistica conta l'evasione; per la contabilità può valere una regola diversa ancora.
 
-Per analizzare la domanda commerciale può avere senso la data dell'ordine. Per il cash flow contano pagamento e rimborso. Per la logistica conta l'evasione. Per la contabilità può valere un'altra regola ancora.
+Lo stesso fatto economico genera quindi più timestamp, stati e importi, tutti potenzialmente corretti rispetto a domande diverse. **La scelta analitica non consiste nel trovare la data vera in assoluto, ma nel collegare la rappresentazione adatta al fenomeno che vogliamo comprendere.**
 
-Lo stesso evento reale produce più date, stati e importi validi per domande diverse.
+### Misurare significa costruire un modello del fenomeno
 
-La scelta analitica consiste nel collegare la rappresentazione corretta al fenomeno corretto.
+Una metrica comprime una parte della realtà in una forma utilizzabile. Nel farlo sceglie che cosa includere, quale unità osservare, quale finestra temporale adottare, come aggregare gli eventi, come trattare eccezioni e missing value e quale popolazione considerare eleggibile.
 
-### Misurare significa scegliere
+Queste decisioni possono essere scritte in una specifica oppure rimanere implicite nella query. Ma esistono comunque.
 
-Una metrica comprime una parte della realtà in una rappresentazione utilizzabile.
-
-Quando la definiamo decidiamo implicitamente:
-
-- cosa includere e cosa escludere;
-- quale unità usare;
-- quale intervallo temporale osservare;
-- come aggregare gli eventi;
-- come gestire eccezioni, resi e valori mancanti;
-- quale popolazione considerare;
-- quale momento del processo rappresenta il fenomeno.
-
-Per questo due dashboard possono mostrare numeri diversi pur partendo dallo stesso ecosistema dati. Non è detto che una delle due contenga un bug. Potrebbero rappresentare due definizioni diverse.
-
-La sezione 1.9 entrerà nel dettaglio delle metriche. Qui ci interessa una regola più generale:
+Per questo due dashboard possono partire dallo stesso ecosistema dati e mostrare numeri diversi senza che una delle due contenga necessariamente un bug. Potrebbero usare due rappresentazioni diverse dello stesso processo. La sezione 1.9 entrerà nel dettaglio delle metriche; qui ci basta fissare un principio più generale:
 
 > **prima del calcolo esiste sempre un modello della realtà, esplicito o implicito.**
 
-### Il dato osservato non è sempre il fenomeno desiderato
+Il problema nasce quando quel modello rimane invisibile e il numero viene trattato come se fosse il fenomeno stesso.
 
-Molti concetti importanti non possono essere osservati direttamente.
+### Spesso osserviamo proxy, non ciò che ci interessa davvero
 
-Vogliamo conoscere la soddisfazione del cliente, ma osserviamo survey, recensioni, reclami, utilizzo e retention.
+Molti concetti importanti non sono direttamente registrabili. Vogliamo conoscere la soddisfazione del cliente, ma osserviamo survey, recensioni, reclami, utilizzo e retention. Vogliamo capire la produttività, ma misuriamo ticket chiusi, output, ore lavorate o tempi di ciclo. Vogliamo parlare di qualità e disponiamo di difetti, resi, errori o reclami.
 
-Vogliamo misurare produttività, ma osserviamo ticket chiusi, ore lavorate, output prodotti o tempi di ciclo.
+Queste variabili sono **proxy**: segnali osservabili che rappresentano fenomeni più complessi.
 
-Vogliamo misurare qualità, ma osserviamo difetti, resi, errori o reclami.
+Un proxy può essere molto utile proprio perché rende misurabile ciò che altrimenti rimarrebbe astratto. Diventa pericoloso quando dimentichiamo il pezzo di realtà che non cattura. Un aumento dei ticket chiusi può indicare maggiore produttività, ma può anche riflettere ticket più semplici, una diversa classificazione o un incentivo a chiudere troppo presto. Se il proxy diventa un KPI, può persino cambiare il comportamento che pretendeva soltanto di osservare.
 
-Queste variabili funzionano come **proxy**: segnali osservabili che rappresentano fenomeni più complessi.
+La domanda corretta non è quindi soltanto *quanto è correlato al fenomeno?*, ma anche *in quali condizioni smette di rappresentarlo bene?*
 
-Un proxy può essere molto utile. Diventa pericoloso quando smettiamo di ricordare che è un'approssimazione.
+### Anche l'assenza di dato è prodotta da un processo
 
-Un aumento dei ticket chiusi può significare maggiore produttività. Può anche significare ticket più semplici, classificazioni diverse o incentivi a chiudere troppo in fretta.
+Ciò che non compare in tabella può essere importante quanto ciò che compare.
 
-### Anche l'assenza di dato ha un significato
+Un sistema di supporto registra i problemi segnalati, non tutti i problemi vissuti dai clienti. Una survey osserva chi ha risposto, non automaticamente l'intera popolazione. Un funnel digitale contiene gli eventi che il tracking è riuscito a catturare; un sensore rotto può far sparire un comportamento invece di modificarlo.
 
-Ciò che non viene registrato può essere importante quanto ciò che compare in tabella.
-
-Un sistema di supporto contiene i problemi segnalati, non necessariamente tutti i problemi vissuti dai clienti.
-
-Una survey contiene le risposte di chi ha scelto di rispondere.
-
-Un funnel digitale contiene gli eventi che il tracking è riuscito a osservare.
-
-Questo introduce una domanda che accompagnerà tutto il libro:
+Per questo una domanda accompagnerà tutto il libro:
 
 > **Quale meccanismo ha determinato che questa osservazione entrasse — o non entrasse — nel dataset?**
 
-È una domanda di qualità, ma anche di selezione e di interpretazione.
+È una domanda di qualità del dato, ma anche di selezione. Se la probabilità di essere osservati dipende dal fenomeno che stiamo studiando, l'assenza non è rumore neutrale: può deformare l'interpretazione.
 
-### Perché l'AI rende il problema più visibile
+### Perché l'AI rende il problema ancora più evidente
 
-Un sistema generativo può costruire una query sintatticamente perfetta usando la colonna sbagliata, la relazione sbagliata o una definizione non adatta alla domanda.
+Un sistema generativo può costruire una query sintatticamente perfetta usando la colonna sbagliata, una relazione non adatta o una definizione incoerente con la domanda. La documentazione Microsoft per Copilot in Power BI insiste proprio sulla dipendenza degli output dal modello semantico e dal contesto con cui viene preparato.[^ms-semantic][^ms-prepare]
 
-La documentazione Microsoft per Copilot in Power BI mette in evidenza proprio la dipendenza degli output dal modello semantico e dal contesto fornito agli strumenti AI.
+La tecnologia cambia la velocità con cui possiamo interrogare la rappresentazione. Non cambia il fatto che dobbiamo sapere che cosa quella rappresentazione significa.
 
-Fonti:
-- https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
-- https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai
+> **Prima di chiedere che cosa dicono i dati, dobbiamo capire che cosa rappresentano, come sono stati prodotti e che cosa non riescono a vedere.**
 
-Ma il principio non appartiene all'AI. Vale per qualsiasi analisi.
+---
 
-> **Prima di chiedere che cosa dicono i dati, dobbiamo capire che cosa rappresentano e come sono stati prodotti.**
+### Fonti
+
+[^ms-semantic]: Microsoft Learn, *Use Copilot with semantic models in Power BI*. https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-semantic-models
+[^ms-prepare]: Microsoft Learn, *Prepare your data for AI*. https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai
