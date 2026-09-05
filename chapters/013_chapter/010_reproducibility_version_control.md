@@ -1,167 +1,55 @@
 ## 13.9 Reproducibility e version control: il tool giusto deve lasciare una traccia ricostruibile
 
-La scelta di uno strumento non riguarda soltanto ciò che possiamo fare oggi.
+Una scelta di tooling non riguarda soltanto ciò che possiamo fare oggi. Riguarda anche ciò che un'altra persona potrà capire, rieseguire e verificare domani.
 
-Riguarda anche ciò che un'altra persona potrà capire e rifare domani.
+> **Se un risultato importante non può essere ricostruito, una parte della conoscenza è rimasta nella memoria delle persone invece di diventare un asset dell'organizzazione.**
 
-> **Se un risultato importante non può essere ricostruito, il processo contiene conoscenza che non è stata trasformata in un asset dell'organizzazione.**
+La riproducibilità non è binaria. Un calcolo scratch può non promettere nulla; un'analisi una tantum può limitarsi a documentare input e assunzioni; un processo ricorrente deve essere almeno rieseguibile; un prodotto critico può richiedere versionamento, test, automation e audit trail.
 
-### Riproducibilità come requisito graduato
+Possiamo rappresentare questa progressione così:
 
-Non tutti i lavori richiedono lo stesso livello.
+| Livello | Promessa |
+|---|---|
+| R0 — scratch | nessuna promessa di riproduzione |
+| R1 — documented | input, passaggi e assunzioni comprensibili |
+| R2 — rerunnable | riesecuzione con gli stessi input senza ricostruzione arbitraria |
+| R3 — versioned | logica, configurazione e dipendenze tracciate |
+| R4 — automated and tested | esecuzione automatizzata, controllata e revisionabile |
 
-Possiamo distinguere:
+Il livello giusto dipende dalla responsabilità del lavoro. Una statistica pubblicata mensilmente o un processo che influenza milioni di euro non dovrebbe dipendere da una sequenza di passaggi che esiste solo nella memoria di chi l'ha costruita.
 
-**R0 — scratch**  
-Calcolo temporaneo. Nessuna promessa di riproduzione.
+Consideriamo Finance che produce venerdì il margine per categoria. Lunedì nessuno ricorda quali righe erano state escluse manualmente, quale FX table era stata usata, quali formule erano diventate valori o quale versione del product mapping era corretta. Il problema non è l'estensione `.xlsx`: è **lo stato non registrato**.
 
-**R1 — documented**  
-Input, passaggi e assunzioni principali sono comprensibili.
+### RAP: la riproducibilità cresce con frequenza e pressione
 
-**R2 — rerunnable**  
-Il processo può essere rieseguito con gli stessi input senza ricostruzione manuale arbitraria.
+La Government Analysis Function del Regno Unito promuove le **Reproducible Analytical Pipelines (RAP)** come processi analitici automatizzati che incorporano pratiche di software engineering per aumentare riproducibilità, auditabilità, efficienza e qualità.[^rap-overview] Tra i requisiti minimi compaiono la riduzione dei passaggi manuali, peer review e un audit trail tramite version control; la strategia collega queste pratiche anche a business continuity e knowledge management.[^rap-strategy]
 
-**R3 — versioned**  
-Codice/logica, configurazione e dipendenze sono tracciati.
+Il punto per il nostro capitolo è importante: **riproducibilità non è decorazione da sviluppatori. Diventa più preziosa proprio quando un processo aumenta in frequenza, pressione o importanza**.
 
-**R4 — automated and tested**  
-L'esecuzione è automatizzata, controllata e revisionabile.
+Il codice da solo non basta. Uno script con path personali, package non versionati, query non salvate e step manuali nascosti può essere meno riproducibile di un workflow visuale ben controllato. Allo stesso modo, Power Query o un processo low-code possono essere abbastanza riproducibili se input, trasformazioni, change history e controlli sono dichiarati.
 
-Un'analisi una tantum può fermarsi a R1 o R2.
-
-Una statistica pubblicata mensilmente o un processo che influenza milioni di euro probabilmente richiede molto di più.
-
-### Caso simulato/composito — il margine che cambia tra venerdì e lunedì
-
-Finance produce venerdì il margine per categoria.
-
-Lunedì deve aggiornare il file e nessuno ricorda:
-
-- quali righe erano state escluse manualmente;
-- quale FX table era stata usata;
-- quali formule erano state convertite in valori;
-- se i resi erano stati riallocati al mese originale;
-- quale versione del product mapping era corretta.
-
-Il problema non è il formato `.xlsx`.
-
-Il processo dipende da **stato e memoria umana non registrati**.
-
-### Reproducible Analytical Pipelines: un caso pubblico di maturità analitica
-
-La Government Analysis Function del Regno Unito promuove le **Reproducible Analytical Pipelines (RAP)** come processi analitici automatizzati che incorporano pratiche di software engineering per aumentare riproducibilità, auditabilità, efficienza e qualità.[^rap-overview]
-
-Tra i requisiti minimi indicati ci sono la riduzione dei passaggi manuali e un audit trail tramite version control; la strategia RAP sottolinea anche riuso, quality assurance e business continuity.[^rap-strategy]
-
-La strategia cita l'**ONS COVID-19 Infection Survey** come esempio di analisi nazionale realizzata sotto forte pressione in cui pratiche RAP hanno aiutato il team a migliorare efficienza e qualità.[^rap-strategy]
-
-Questo è un punto importante per il nostro capitolo:
-
-> riproducibilità non è “abbellimento da sviluppatori”. Diventa più preziosa proprio quando frequenza, pressione e importanza aumentano.
-
-### Codice aiuta, ma non basta
-
-Uno script può essere non riproducibile se contiene:
-
-```text
-/home/mario/Desktop/final_data.csv
-```
-
-oppure se dipende da:
-
-- package non versionati;
-- credenziali personali;
-- query non salvate;
-- step manuali non documentati;
-- dati modificati in-place;
-- notebook eseguiti fuori ordine.
-
-Allo stesso modo un workflow visuale o Power Query può essere sufficientemente riproducibile se:
-
-- input sono noti;
-- trasformazioni sono salvate;
-- modifiche sono tracciabili;
-- il processo può essere rieseguito;
-- esistono controlli sull'output.
-
-Quindi **codice e riproducibilità sono correlati, non sinonimi**.
+Codice e riproducibilità sono correlati, non sinonimi.
 
 ### Version control come memoria della logica
 
-La Government Analysis Function raccomanda esplicitamente Git per bloccare e registrare la versione del codice usata in una specifica esecuzione, osservando che file chiamati `v1`, `v2` non offrono la stessa garanzia.[^rap-sophisticated]
+La Government Analysis Function raccomanda esplicitamente Git per registrare la versione del codice usata in una specifica esecuzione, osservando che nomi come `v1` e `v2` non offrono la stessa garanzia.[^rap-sophisticated] Questo ci permette di rispondere a domande operative: quando è cambiata la metrica? quale commit ha modificato il filtro? quale logica ha prodotto il report di marzo? possiamo tornare alla versione precedente?
 
-Per l'analytics, versionare significa poter rispondere:
+Per un processo critico non serve mettere ogni dato grezzo in Git. Serve poter identificare **quali dati, quale logica, quale configurazione e quale ambiente hanno prodotto l'output**.
 
-- quando è cambiata la metrica?
-- quale commit ha modificato il filtro?
-- quale codice ha prodotto il report di marzo?
-- perché è cambiata la logica?
-- possiamo tornare alla versione precedente?
+### Ogni tool paga una reproducibility tax
 
-Un messaggio come:
-
-```text
-Exclude full refunds from net revenue
-```
-
-ha molto più valore di:
-
-```text
-final fix 2
-```
-
-### Cosa deve essere ricostruibile
-
-A seconda del rischio, possiamo versionare o identificare:
-
-- SQL;
-- Python/R;
-- notebook;
-- definizioni metriche;
-- configurazioni;
-- test;
-- environment/dependencies;
-- schema atteso;
-- source snapshot o data version/reference;
-- modello e parametri;
-- output pubblicato.
-
-Non significa mettere ogni raw dataset in Git.
-
-Significa poter identificare **quali dati** sono stati usati e **quale trasformazione** li ha convertiti nell'output.
-
-### Reproducibility tax
-
-Ogni scelta di tool ha un costo per renderla riproducibile.
+La riproducibilità ha un costo diverso per ogni superficie:
 
 | Ambiente | Tax tipica |
 |---|---|
-| Spreadsheet | tracciare modifiche manuali, input, formule e versioni |
-| SQL | versionare query/model, definire sorgenti e temporalità |
-| Notebook | environment + clean run + input/output dichiarati |
+| Spreadsheet | input, formule, versioni e modifiche manuali |
+| SQL | query/model versionati, sorgenti e temporalità |
+| Notebook | environment, clean run, input/output dichiarati |
 | Python/R | dipendenze, config, package/code version |
-| BI | versionare semantic definitions e source artifacts quando possibile |
+| BI | semantic definitions e source artifacts |
 | Low-code | change history, export/config, test e audit trail |
 
-Se quel costo diventa molto alto, può essere un segnale che il tool corrente ha superato il suo contesto ideale.
-
-### Campo del Tooling Decision Record
-
-```text
-required reproducibility level: R0-R4
-input identification:
-logic versioning:
-environment/dependencies:
-manual steps:
-QA / review:
-execution record:
-output version:
-business continuity risk:
-reproducibility owner:
-exit condition:
-```
-
-### Regola operativa
+Se rendere un processo sufficientemente riproducibile dentro il tool corrente diventa sempre più difficile, questo è un segnale che il contesto è cambiato. Il Tooling Decision Record dovrebbe quindi includere il livello R0–R4 richiesto e il costo necessario per raggiungerlo.
 
 > **Scegli un tool non soltanto perché permette di produrre il risultato, ma anche perché permette di ricostruirlo con un costo proporzionato alla sua importanza.**
 
