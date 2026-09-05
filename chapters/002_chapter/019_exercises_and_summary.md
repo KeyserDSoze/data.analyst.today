@@ -1,30 +1,18 @@
 ## 2.18 Sintesi ed esercizi
 
-Il Capitolo 2 ha trasformato la mentalità analitica del Capitolo 1 in un oggetto operativo: l'**Analytical Brief**.
+Il Capitolo 1 aveva definito il lavoro analitico come una catena che collega problema, evidenza e decisione. Questo capitolo ha lavorato sul tratto che viene **prima dell'esecuzione**, quando le scelte sono ancora economiche da cambiare ma abbastanza importanti da determinare tutto ciò che verrà dopo.
 
-Il brief collega una richiesta di business a una specifica sufficientemente precisa da guidare dati, metodo ed esecuzione senza anticipare artificialmente la risposta.
+L'Analytical Brief è il risultato di quel lavoro. Non è un modulo che aggiunge burocrazia alla richiesta: è il punto in cui una frase come “facci una dashboard clienti” viene costretta a dichiarare quale problema esista davvero, chi possa agire, quale outcome rappresenti il fenomeno, quali spiegazioni siano in competizione e quale evidenza abbia il diritto di cambiare la decisione.
 
-Il percorso del capitolo è:
+La parte più importante del metodo è che questi elementi **non vivono separatamente**. La decisione stabilisce quanto costa sbagliare e quindi quanta evidenza serve. La definizione della metrica determina popolazione e maturazione. Le ipotesi determinano segmentazioni e requisiti dati. I gap nei dati possono ridurre la pretesa metodologica. Priorità e Value of Information decidono quanto investire; la stop rule stabilisce quando ulteriore lavoro non compra più informazione utile. Se le fonti non distinguono le alternative, “inconcludente” diventa una conclusione professionale, non uno spazio da riempire con una storia plausibile.
+
+Il caso Velora Home ha mostrato perché questa disciplina conta. La richiesta iniziale suggeriva una dashboard e un possibile investimento in CRM. Il brief ha prima reso verificabile la Repeat Purchase Rate, poi il sanity check ha scoperto un problema di identity stitching che spiegava circa metà del deterioramento apparente. Solo dopo quella correzione il team ha analizzato il delta reale, evitando di allocare €600.000 sulla base di una metrica parzialmente rotta. Il brief non ha previsto la risposta; ha costruito le condizioni necessarie per accorgersi che la prima risposta non meritava fiducia.
+
+Possiamo quindi leggere il percorso del capitolo come un'unica specifica che si costruisce progressivamente:
 
 **Problema → Decisione → Stakeholder → Domanda → Metriche → Ipotesi → Scope → Baseline → Segmentazioni → Dati → Piano → Priorità → Stop rule**
 
-Non sostituisce la catena analitica completa del Capitolo 1. È la parte che dobbiamo progettare **prima** di eseguirla.
-
-### Idee chiave
-
-- Una richiesta descrive spesso un sintomo o un deliverable, non ancora il problema analitico.
-- La decisione determina profondità, timing e formato dell'analisi.
-- Requester, decision owner, domain expert, data owner ed end user possono essere persone diverse.
-- Le metriche nel brief devono avere un ruolo: outcome, driver, guardrail o soglia.
-- Le ipotesi sono spiegazioni candidate; una buona ipotesi include anche ciò che potrebbe indebolirla.
-- Scope significa popolazione, unità di analisi, tempo, esclusioni e fuori-scope.
-- Una baseline rende il numero interpretabile, ma non è automaticamente un controfattuale causale.
-- Le segmentazioni prioritarie devono poter cambiare spiegazione o azione.
-- I dati required, useful e proxy non sono la stessa cosa.
-- Un gap di misurazione scoperto prima dell'analisi è un risultato utile.
-- Prioritizzazione e Value of Information aiutano a decidere quanto investire nell'analisi.
-- Una stop rule protegge sia dalla superficialità sia dall'analisi infinita.
-- “Inconcludente” è un possibile esito professionale, non una risposta da nascondere.
+Non sostituisce la catena analitica completa del Capitolo 1. È il contratto che la rende eseguibile.
 
 ### Esercizio 1 — Costruire un brief da una richiesta vaga
 
@@ -242,12 +230,12 @@ Alla fine del capitolo dovresti saper rispondere a queste domande:
 11. So consegnare in modo utile un risultato inconcludente?
 12. So produrre un Analytical Brief di una pagina prima di aprire il tool?
 
-## Chiusura
+## Chiusura — Il brief incontra i dati
 
-Un buon brief non garantisce una buona analisi.
+Un buon brief non garantisce una buona analisi. Può però rendere molto più visibili le condizioni che l'analisi dovrà rispettare e, soprattutto, le assunzioni che le fonti dovranno essere in grado di sostenere.
 
-Ma rende molto più visibili le condizioni che una buona analisi dovrà rispettare.
+Finora abbiamo scritto cose come “identità cliente coerente”, “ordine valido”, “campo temporale”, “fonte disponibile” o “dato completo”. Nel brief queste espressioni sono requisiti. Nel prossimo capitolo diventeranno domande empiriche.
 
-Nel prossimo capitolo entreremo nella materia prima del lavoro: il dato. A quel punto la domanda non sarà più soltanto “quali informazioni ci servono?”, ma:
+Dovremo aprire le sorgenti e verificare se l'identità è davvero stabile, se le chiavi sono uniche al grain dichiarato, se il tracking è comparabile nel tempo, se gli eventi arrivano con la latenza attesa e se le trasformazioni conservano il significato su cui abbiamo costruito il piano.
 
-> **“Le fonti che abbiamo rappresentano davvero ciò che il brief presume, e con quale qualità?”**
+Il passaggio è importante: il Capitolo 2 ha definito **quale realtà vorremmo osservare**. Il Capitolo 3 verificherà quanto i dati disponibili riescano davvero a rappresentarla.
