@@ -1,88 +1,30 @@
 ## 2.3 Stakeholder: chi chiede non è sempre chi decide
 
-Una richiesta analitica attraversa spesso più ruoli.
+Una richiesta analitica raramente appartiene a una sola persona. Chi apre il ticket può non usare mai il risultato; chi usa il report ogni giorno può non avere autorità sulla decisione; chi decide può dipendere da una metrica definita da Finance; e la persona che conosce davvero le eccezioni del processo può non essere stata coinvolta nella richiesta iniziale.
 
-Chi apre il ticket può non essere chi userà il risultato. Chi usa il report può non avere autorità decisionale. Chi decide può dipendere da definizioni possedute da un altro team. Chi conosce il processo reale può non essere stato coinvolto affatto.
+Questa distribuzione del contesto è uno dei motivi per cui un'analisi può essere tecnicamente corretta e organizzativamente sbagliata. Il problema non è soltanto raccogliere “i requisiti”. È capire **dove vive il significato necessario a rendere quei requisiti coerenti**.
 
-Per questo, nelle analisi importanti, conviene distinguere almeno cinque figure:
-
-- **requester** — formula la richiesta;
-- **decision owner** — può agire sul risultato;
-- **domain expert** — conosce processo, eccezioni e significato operativo;
-- **data/metric owner** — conosce fonte, trasformazioni o definizione ufficiale;
-- **end user** — utilizza concretamente l'output.
-
-A volte coincidono. Spesso no.
+Nel brief conviene quindi distinguere almeno cinque funzioni: il **requester**, che formula la richiesta; il **decision owner**, che possiede l'autorità di agire; il **domain expert**, che conosce processi ed eccezioni; il **data o metric owner**, che conosce fonti e definizioni autorevoli; e l'**end user**, che utilizzerà concretamente l'output. Nelle analisi semplici possono coincidere nella stessa persona. Nei processi importanti, assumere che coincidano è rischioso.
 
 ### Caso simulato/composito: un CAC, quattro interpretazioni
 
-Marketing chiede:
+Marketing chiede un report sul Customer Acquisition Cost. Il marketing manager ha aperto la richiesta, ma il CMO userà il numero per allocare budget. Finance stabilisce quali costi devono entrare nel calcolo, il CRM owner conosce i limiti dell'attribuzione e i campaign manager utilizzeranno il report ogni giorno.
 
-> “Costruiamo un report sul Customer Acquisition Cost.”
+Se l'analista parla soltanto con il requester, può costruire un CAC perfettamente coerente con le tabelle marketing e tuttavia incompatibile con la definizione su cui Finance costruisce il budget. A quel punto non abbiamo una formula sbagliata: abbiamo **ownership semantica non mappata**.
 
-Il marketing manager è il requester. Il CMO userà il numero per allocare budget. Finance stabilisce quali costi devono entrare nel calcolo. Il CRM owner conosce i limiti dell'attribuzione. I campaign manager sono gli utenti quotidiani del report.
+Lo stesso problema appare con colonne apparentemente inequivocabili. `status = closed`, per esempio, può indicare un problema risolto, una richiesta duplicata, un cliente non raggiungibile, una pratica annullata oppure una chiusura automatica dopo un certo numero di giorni. Il domain expert può cambiare l'interpretazione di settimane di dati spiegando in pochi minuti quale evento operativo produce realmente quello stato.
 
-Se l'analista parla soltanto con chi ha aperto la richiesta, può costruire un CAC tecnicamente consistente con i dati marketing ma incompatibile con la definizione usata da Finance per il budget.
+Per questo il dominio non è un'aggiunta “soft” alla parte tecnica. È una componente del modello dei dati.
 
-Il problema non è una formula sbagliata.
+## Il disaccordo va reso visibile
 
-È **ownership semantica non mappata**.
+Quando stakeholder diversi definiscono in modo incompatibile “cliente acquisito”, “revenue” o “lead qualificato”, la soluzione non è scegliere silenziosamente la versione che rende più semplice la query. Il disaccordo stesso è un requisito: forse serve una definizione condivisa, forse due metriche sono legittime perché supportano decisioni diverse, forse un owner deve stabilire la source of truth, oppure la divergenza va documentata come limite dell'analisi.
 
-### Il disaccordo è informazione
+Una stakeholder interview serve quindi anche a trovare incompatibilità **prima che entrino nel codice**. Dovrebbe far emergere il problema, la decisione, le alternative, il timing, le metriche già utilizzate, le eccezioni operative, gli owner delle fonti critiche e i vincoli economici o normativi. Non occorre trasformarla in un questionario meccanico: l'obiettivo è ricostruire la mappa di responsabilità che determina il significato del brief.
 
-Se due stakeholder danno definizioni diverse di “cliente acquisito”, “revenue” o “lead qualificato”, non bisogna nascondere il conflitto scegliendo una versione in silenzio.
+L'analista, inoltre, non è un raccoglitore passivo. Se lo stakeholder chiede venti grafici, il requisito reale non diventa automaticamente “produrre venti grafici”. Il business porta contesto e possibilità d'azione; domain e data owner portano conoscenza operativa e semantica; l'analista deve usare questi elementi per proporre il prodotto minimo capace di ridurre l'incertezza che conta.
 
-Il disaccordo rivela un requisito del progetto:
-
-- serve una definizione condivisa?
-- servono due metriche diverse per due decisioni diverse?
-- chi ha autorità sulla definizione?
-- la divergenza deve essere documentata come limite?
-
-Una stakeholder interview non serve soltanto a raccogliere requisiti. Serve anche a trovare **incompatibilità prima che entrino nel codice**.
-
-### Domande iniziali
-
-Una breve intervista dovrebbe chiarire almeno:
-
-1. Quale problema stiamo cercando di risolvere?
-2. Quale decisione verrà presa e da chi?
-3. Quando deve essere presa?
-4. Quali alternative sono realmente disponibili?
-5. Quali metriche vengono già usate?
-6. Dove esistono disaccordi sulle definizioni?
-7. Chi conosce le eccezioni operative?
-8. Chi possiede le fonti o le metriche critiche?
-9. Quali vincoli economici, normativi o operativi esistono?
-10. Che cosa renderebbe l'analisi inutilizzabile?
-
-### Il dominio è parte del dato
-
-Una colonna `status = closed` sembra precisa. Nel processo reale, però, *closed* può significare:
-
-- problema risolto;
-- richiesta duplicata;
-- cliente non raggiungibile;
-- pratica annullata;
-- chiusura automatica dopo un certo numero di giorni.
-
-Il domain expert può evitare giorni di analisi sbagliata spiegando in dieci minuti il significato operativo di uno stato.
-
-Questo è un motivo per cui il contesto di business non è un'aggiunta “soft” all'analisi. È parte del modello dei dati.
-
-### L'analista non è un raccoglitore passivo di requisiti
-
-Se lo stakeholder chiede venti grafici, il compito non è automaticamente costruire venti grafici.
-
-L'analista deve capire che cosa lo stakeholder sta cercando di sapere, quali decisioni ha davanti e quale prodotto analitico sarebbe sufficiente.
-
-La relazione è collaborativa:
-
-- il business porta contesto, vincoli e possibilità d'azione;
-- i domain e data owner portano significato e conoscenza delle fonti;
-- l'analista porta struttura, metodo e disciplina dell'evidenza.
-
-### Campo del brief: stakeholder map
+La stakeholder map rimane quindi un artefatto utile da compilare:
 
 | Ruolo | Persona/Team | Conoscenza/ownership | Decisione o uso | Coinvolgimento necessario |
 |---|---|---|---|---|
@@ -92,4 +34,4 @@ La relazione è collaborativa:
 | Data/metric owner |  |  |  |  |
 | End user |  |  |  |  |
 
-> **Mappare gli stakeholder significa capire dove vive il contesto necessario perché una domanda analitica abbia lo stesso significato per tutti.**
+> **Mappare gli stakeholder significa sapere chi possiede la decisione, chi possiede il significato e chi subirà le conseguenze di una definizione sbagliata.**
