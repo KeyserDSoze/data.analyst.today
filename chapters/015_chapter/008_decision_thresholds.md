@@ -1,97 +1,20 @@
-## 15.7 Switching threshold: quale valore farebbe cambiare decisione?
+## 15.7 Switching threshold: dove cambia la scelta?
 
-Nei capitoli precedenti abbiamo già incontrato soglie statistiche, soglie predittive e criteri di rollout.
+Nei capitoli precedenti abbiamo incontrato soglie statistiche, soglie predittive e criteri di rollout. Qui la soglia ha un significato diverso: **quale valore deve assumere una delle nostre assunzioni perché un'altra alternativa diventi preferibile?**
 
-Qui il concetto è diverso.
+Questa è una *switching threshold*. Sposta l'attenzione dalla precisione della stima centrale alla robustezza della decisione.
 
-La domanda centrale del Decision Record è:
+Supponiamo che un progetto abbia uplift atteso +6%, costo €400k e margine incrementale €650k. In un primo caso il progetto diventa negativo se l'uplift scende appena a 5,4%; in un secondo resta preferibile fino al 2%. La stima centrale è identica. La fragilità della recommendation è completamente diversa.
 
-> **quanto deve cambiare una delle assunzioni chiave perché un'altra alternativa diventi preferibile?**
+Il *Green Book 2026* usa esplicitamente sensitivity analysis e **switching values** per identificare il valore al quale un'assunzione rende un'opzione non più value for money o meno attraente di un'alternativa.[^green-book-switching] Nel nostro contesto la domanda diventa:
 
-Questa è una **switching threshold**.
+> **Quanto possiamo sbagliare su questa assunzione prima che dovremmo scegliere diversamente?**
 
-### Dalla domanda “qual è la stima?” alla domanda “dove cambia la scelta?”
+Le soglie possono riguardare economics, performance, rischio, tempo o capacità: CAC massimo sostenibile, costo implementazione massimo, uplift minimo, conversion loss massima, churn guardrail, time-to-value oltre il quale l'opzione perde senso oppure numero minimo di casi che Operations può realmente trattare.
 
-Supponiamo che un progetto sia conveniente con:
-
-```text
-uplift atteso: +6%
-costo: €400k
-margine incrementale: €650k
-```
-
-La stima centrale da sola dice poco sulla robustezza.
-
-Due casi:
-
-**Caso A**
-
-Il progetto diventa negativo se l'uplift scende da 6% a 5,4%.
-
-**Caso B**
-
-Il progetto resta preferibile fino a un uplift di 2%.
-
-Stessa stima centrale.
-
-Decisioni con fragilità completamente diversa.
-
-### Caso pubblico documentato — switching values nel Green Book
-
-Il Green Book 2026 di HM Treasury raccomanda sensitivity analysis e **switching values** per identificare il valore al quale una variabile rende un'opzione non più preferibile o non più value for money.
-
-Fonte: https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2026
-
-Il concetto è molto utile anche nel lavoro analitico aziendale perché sposta l'attenzione da una precisione artificiale a una domanda decisionale concreta:
-
-> “Quanto possiamo sbagliare su questa assunzione prima che la raccomandazione cambi?”
-
-### Le soglie possono riguardare variabili molto diverse
-
-**Economics**
-
-```text
-CAC massimo sostenibile
-costo implementazione massimo
-margine minimo
-saving minimo
-```
-
-**Performance**
-
-```text
-uplift minimo
-conversion loss massima
-forecast error massimo
-```
-
-**Rischio**
-
-```text
-probabilità massima di failure
-customer complaints massime
-churn guardrail
-```
-
-**Tempo**
-
-```text
-time-to-value massimo
-delay oltre il quale l'opzione perde senso
-```
-
-**Capacità**
-
-```text
-numero minimo di casi trattabili
-headcount massimo richiesto
-```
-
-### Caso simulato/composito — build vs buy
+### Build vs buy: il valore è nelle condizioni che ribaltano il confronto
 
 Un team deve scegliere tra costruire internamente un sistema di reporting o acquistare una soluzione esterna.
-
-Stima centrale:
 
 ```text
 Build
@@ -104,79 +27,35 @@ licenza + servizi: €310k/anno
 lead time: 2 mesi
 ```
 
-Dire soltanto “Buy costa meno nel primo anno” è insufficiente.
+Dire che Buy costa meno nel primo anno non basta. Il Decision Record deve chiedere: a quale costo annuale della licenza Build diventa preferibile? A quale maintenance interna Buy continua a dominare? Quanto vale economicamente arrivare sei mesi prima? Quanti anni di utilizzo servono per recuperare il costo iniziale di Build? Quanto pesa il lock-in?
 
-Il team calcola alcune switching questions:
+La decisione diventa leggibile quando possiamo descrivere **le condizioni che la fanno cambiare**.
 
-- a quale costo annuale della licenza Build diventa preferibile?
-- a quale maintenance interna Buy continua a dominare?
-- quanto vale economicamente arrivare 6 mesi prima?
-- quanti anni di utilizzo sono necessari perché il costo iniziale di Build venga recuperato?
-- quanto pesa il rischio di lock-in?
+### Evidence threshold e switching threshold rispondono a domande diverse
 
-La scelta diventa leggibile perché possiamo indicare **le condizioni che la fanno cambiare**.
+L'**evidence threshold** chiede quanta evidenza vogliamo prima di agire. La **switching threshold** chiede quale valore cambia la preferenza tra opzioni.
 
-### Evidence threshold e switching threshold non sono la stessa cosa
+I due concetti si incontrano nella distanza dal decision boundary. Se stimiamo CAC €1.800 e la soglia è €1.850, una piccola revisione del dato può ribaltare la scelta: serve informazione molto più precisa. Se la soglia è €3.000, una stima meno stretta può essere sufficiente.
 
-**Evidence threshold**
+Quindi il livello di evidenza non dipende soltanto dalla criticità della decisione, ma anche da **quanto siamo vicini al punto di indifferenza**.
 
-> Quanta evidenza richiediamo prima di agire?
+### Meridian Cloud: non cambiare metrica dopo aver visto l'esito
 
-**Switching threshold**
-
-> Quale valore dell'assunzione cambia la preferenza tra alternative?
-
-Sono collegati.
-
-Se la nostra stima di CAC è €1.800 e la switching threshold è €1.850, serve grande precisione prima di investire.
-
-Se la soglia è €3.000, una stima meno precisa può essere sufficiente.
-
-Quindi il livello di evidenza dipende anche dalla **distanza dalla decision boundary**.
-
-### Caso simulato/composito — pricing di Meridian Cloud
-
-Meridian Cloud aumenta il prezzo SMB.
-
-Dopo il cambiamento:
+Meridian Cloud aumenta il prezzo SMB. Dopo il cambiamento:
 
 - conversion: -2,1 pp;
 - ARPU: +11%;
 - revenue per visitor: +4,3%.
 
-Un manager propone rollback immediato perché conversion è peggiorata.
+Un manager propone rollback perché conversion è peggiorata. Ma il Decision Record aveva definito come obiettivo contribution margin per visitor e come guardrail churn a 90 giorni, support burden e SMB acquisition volume.
 
-Il Decision Record contiene però:
+La domanda rilevante non è quindi “conversion è diminuita?”, ma:
 
-```text
-objective:
-contribution margin / visitor
+> **A quale aumento di churn o perdita di acquisition il nuovo prezzo smette di creare valore complessivo?**
 
-guardrails:
-churn 90d
-support burden
-SMB acquisition volume
-```
+Definire queste soglie **prima** dei dati futuri impedisce di cambiare metrica ogni volta che un outcome è scomodo.
 
-La domanda non è:
-
-> “conversion è diminuita?”
-
-È:
-
-> “A quale aumento di churn o perdita di acquisition il nuovo prezzo smette di creare valore complessivo?”
-
-Il team definisce queste soglie **prima** di interpretare i dati futuri.
-
-Questo evita di cambiare metrica ogni volta che un outcome è scomodo.
-
-### Una soglia deve avere una regola operativa
-
-Debole:
-
-> “Se il churn peggiora molto, facciamo rollback.”
-
-Forte:
+Una soglia deve inoltre contenere la propria regola operativa. “Se il churn peggiora molto, facciamo rollback” è ambiguo. Una policy più seria specifica metrica, popolazione, finestra, maturità del dato e conseguenza:
 
 ```text
 if churn_90d_delta > +1,5 pp
@@ -187,43 +66,11 @@ if contribution_margin_per_visitor < baseline for 2 mature cohorts
 THEN rollback candidate
 ```
 
-La soglia deve chiarire:
-
-- metrica;
-- popolazione;
-- finestra;
-- maturità del dato;
-- azione conseguente.
-
-### Non tutte le soglie devono essere automatiche
-
-Per decisioni complesse, superare una soglia può significare:
-
-- review;
-- escalation;
-- nuova analisi;
-- stop di un rollout;
-
-non necessariamente azione automatica.
-
-Esempio:
-
-```text
-supplier delay risk > threshold
-→ procurement review
-```
-
-non:
-
-```text
-→ ordine alternativo automatico
-```
-
-se esistono relazioni strategiche e costi non rappresentati dal modello.
+Superare la soglia non significa sempre azione automatica. Può attivare una review, un'escalation, una nuova analisi o lo stop di un rollout quando esistono costi e vincoli non rappresentati dal modello.
 
 ### Robustness margin
 
-Possiamo descrivere una decisione con la distanza dalla soglia.
+La distanza tra stima e soglia è una misura intuitiva della fragilità:
 
 ```text
 estimated CAC: €1.700
@@ -239,17 +86,13 @@ switching CAC: €2.400
 margin: €80
 ```
 
-Nel secondo caso una piccola revisione del dato può cambiare scelta.
+Nel secondo caso una piccola revisione può cambiare ranking. La recommendation dovrebbe dirlo apertamente: **l'opzione è preferita, ma siamo vicini al punto di indifferenza**.
 
-La recommendation dovrebbe comunicarlo:
-
-> “L'opzione è preferita, ma la decisione è vicina al punto di indifferenza.”
-
-### Campo del Decision Record
+Nel Decision Record conserviamo quindi:
 
 ```text
 critical variable:
-central estimate/range:
+central estimate / range:
 switching value:
 distance to threshold:
 evidence quality around threshold:
@@ -257,15 +100,6 @@ action if crossed:
 measurement maturity required:
 ```
 
-### Regola operativa
+> **La stima centrale dice dove pensiamo di essere. Lo switching value dice quanto deve cambiare il mondo perché dovremmo scegliere diversamente. Per una decisione, spesso la seconda informazione è più preziosa della prima.**
 
-Per ogni raccomandazione importante chiediamo:
-
-1. quali 2–5 variabili governano realmente il ranking?
-2. a quale valore cambia l'opzione preferita?
-3. quanto siamo lontani da quel valore?
-4. quanto è affidabile la stima proprio vicino alla soglia?
-5. quale azione scatta se la soglia viene superata?
-6. la soglia è stata definita prima dell'esito?
-
-> **La stima centrale ci dice dove pensiamo di essere. Lo switching value ci dice quanto deve cambiare il mondo perché dovremmo scegliere diversamente. Per una decisione, spesso la seconda informazione è più preziosa della prima.**
+[^green-book-switching]: HM Treasury, *The Green Book 2026*, https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2026
