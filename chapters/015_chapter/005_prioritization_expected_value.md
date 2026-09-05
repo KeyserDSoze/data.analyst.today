@@ -1,12 +1,8 @@
-## 15.4 Expected value e priorità: utile quando illumina le assunzioni, pericoloso quando le nasconde
+## 15.4 Expected value e priorità: rendere visibili le assunzioni, non nasconderle nei decimali
 
-Quando abbiamo più alternative, serve un modo per confrontare valore, probabilità, costo e rischio.
+Quando più alternative competono per capitale, capacità e attenzione, serve un modo per confrontare valore, probabilità, costo e rischio. L'**expected value** può essere molto utile, a patto di ricordare che è un modello del ragionamento, non una macchina che trasforma automaticamente supposizioni in fatti.
 
-L'**expected value** può essere molto utile.
-
-Ma una formula semplice non rende automaticamente comparabili opzioni complesse.
-
-Una versione didattica è:
+Una forma didattica è:
 
 ```text
 expected net value
@@ -14,16 +10,9 @@ expected net value
 − costi incrementali
 ```
 
-Il punto non è ottenere un euro “scientifico”.
+Il valore principale della formula è costringerci a dichiarare quali esiti stiamo considerando, da dove arrivano le probabilità, quali costi sono veramente incrementali e quale downside stiamo accettando.
 
-È costringerci a dichiarare:
-
-- quali esiti stiamo considerando;
-- quali probabilità stiamo assumendo;
-- quali costi includiamo;
-- quale downside stiamo accettando.
-
-### Caso simulato/composito — cinque iniziative, una sola squadra
+### La priorità non coincide con l'upside più grande
 
 Un prodotto fintech ha cinque iniziative possibili:
 
@@ -35,19 +24,11 @@ Un prodotto fintech ha cinque iniziative possibili:
 | Nuova dashboard merchant | €600k | media | €250k | 3 mesi | basso |
 | Pricing optimization | €3,4M | media | €800k | 6 mesi | alto |
 
-Guardando soltanto all'upside, pricing sembra vincere.
+Se leggiamo soltanto la colonna dell'upside, pricing sembra il vincitore. Ma payment failures è già localizzato, reversibile, economicamente materiale, tecnicamente vicino alla soluzione e misurabile in poche settimane. Con una squadra limitata, può essere la priorità migliore anche senza avere il numero più grande.
 
-Ma il team ha capacità limitata e il problema payment failures è:
+Questo è il primo limite dell'expected value: la decisione vive dentro **time to value, capacity, reversibility ed evidence strength**, non soltanto dentro una stima centrale.
 
-- già localizzato;
-- reversibile;
-- economicamente materiale;
-- tecnicamente vicino alla soluzione;
-- misurabile in poche settimane.
-
-La priorità può quindi essere payment failures anche se non ha il numero più grande nella colonna “opportunità”.
-
-### Probability × impact è un modello, non un fatto
+### La probabilità deve avere una provenienza
 
 Supponiamo:
 
@@ -57,50 +38,25 @@ probabilità di successo: 70%
 costo: €200k
 ```
 
-Una scorciatoia produce:
+La scorciatoia produce:
 
 ```text
 €1M × 70% − €200k = €500k
 ```
 
-Ma da dove arriva il 70%?
+Ma il 70% può provenire da un esperimento precedente, dal base rate di progetti simili, da un forecast calibrato, dal judgment di esperti oppure dalla semplice impressione del proponente. Il formato numerico è identico; la qualità epistemica no.
 
-Potrebbe derivare da:
+Per questo il Decision Record conserva anche:
 
-- un esperimento precedente;
-- base rate di progetti simili;
-- forecast calibrato;
-- judgment di esperti;
-- semplice impressione del proponente.
+```text
+source of probability / confidence:
+```
 
-Il numero può avere lo stesso formato e qualità epistemica completamente diversa.
+Quando non abbiamo probabilità credibili, è spesso più onesto usare range, scenario analysis, confidence ordinali motivate, break-even e switching values. Sapere che “l'opzione A resta preferibile finché l'uplift supera 1,8%” può essere molto più utile che scrivere “probabilità di uplift 63,7%” senza una base seria.
 
-Per questo il Decision Record deve registrare anche **source of probability / confidence**.
+### Stesso expected value, rischio diverso
 
-### Quando non abbiamo probabilità credibili
-
-Non sempre è sensato assegnare 23%, 47% e 71% a scenari che conosciamo poco.
-
-Alternative più oneste:
-
-- range;
-- scenario analysis;
-- ordinal confidence `low / medium / high` con motivazione;
-- break-even analysis;
-- switching values;
-- dominance analysis.
-
-È spesso meglio sapere:
-
-> “L'opzione A resta preferibile finché l'uplift supera 1,8%.”
-
-che fingere:
-
-> “La probabilità di uplift è 63,7%.”
-
-### Downside asimmetrico
-
-Due opzioni possono avere lo stesso expected value e profili di rischio molto diversi.
+Consideriamo:
 
 ```text
 Opzione A
@@ -113,69 +69,19 @@ Opzione B
 expected: +€0,5M
 ```
 
-Non sono equivalenti per un'organizzazione che non può assorbire una perdita da €1M.
+Le due opzioni non sono equivalenti per un'organizzazione che non può assorbire una perdita da €1M. Maximum plausible loss, liquidità, customer harm, reputazione, irreversibilità, concentrazione del rischio e downside correlato con altri progetti possono dominare l'EV medio.
 
-Dobbiamo considerare:
+Lo stesso vale per vincoli e guardrail. Un progetto con EV +€3M non resta in shortlist se viola un requisito regolatorio non negoziabile o richiede una capacità operativa che non esiste.
 
-- maximum plausible loss;
-- cash/liquidity constraint;
-- customer harm;
-- reputazione;
-- irreversibilità;
-- concentrazione del rischio;
-- correlated downside con altri progetti.
+### Il valore deve incorporare l'azione realmente disponibile
 
-L'expected value è una dimensione della decisione, non l'intera decisione.
+Un modello identifica 40.000 clienti ad alto rischio di churn; Customer Success può intervenire su 2.000. La decisione non è “quali clienti hanno il rischio più alto?”, ma:
 
-### Guardrail e vincoli possono dominare il valore atteso
+> **quali 2.000 interventi hanno il miglior valore incrementale atteso entro la capacità disponibile?**
 
-Se una opzione viola un vincolo non negoziabile, non viene salvata da un EV positivo.
+Questo collega i Capitoli 8–10 al problema decisionale senza confonderli: risk non è treatment effect, score non è policy e un vantaggio predittivo non genera valore se l'azione downstream non può essere eseguita o non cambia l'outcome.
 
-Esempio:
-
-```text
-EV stimato: +€3M
-ma
-probabilità di violare requisito regolatorio non accettabile
-```
-
-La scelta è fuori shortlist finché quel rischio non viene mitigato.
-
-Allo stesso modo, un progetto può avere valore positivo ma richiedere capacità che non esiste.
-
-### Expected value e capacità operativa
-
-Un modello identifica 40.000 clienti ad alto rischio di churn.
-
-Customer Success può intervenire su 2.000.
-
-La decisione non è:
-
-> “Quali clienti hanno il rischio più alto?”
-
-È:
-
-> “Quali 2.000 interventi hanno il miglior valore incrementale atteso entro la capacità disponibile?”
-
-Questa distinzione collega il Capitolo 15 ai Capitoli 8–10 senza ripeterli:
-
-- risk ≠ treatment effect;
-- score ≠ decision;
-- expected value deve includere **azione disponibile e capacità reale**.
-
-### Portfolio effect: le decisioni non vivono sempre isolate
-
-Cinque progetti individualmente interessanti possono insieme creare:
-
-- troppo rischio sullo stesso team;
-- dipendenza dalla stessa piattaforma;
-- concentrazione sullo stesso mercato;
-- picco di change management;
-- correlazione del downside.
-
-Quindi una priorità può cambiare quando la guardiamo dentro il portafoglio.
-
-Il Decision Record può annotare:
+Anche il portafoglio conta. Cinque iniziative individualmente attraenti possono creare insieme dipendenza dalla stessa piattaforma, saturazione dello stesso team, concentrazione sullo stesso mercato o downside correlato. Il Decision Record può quindi annotare:
 
 ```text
 shared dependencies:
@@ -184,33 +90,13 @@ correlated risks:
 projects displaced:
 ```
 
-### Do nothing deve avere un valore
+### Business as usual ha un valore e un costo
 
-Anche business as usual ha:
+`Do nothing` non è zero. Ha benefici, costi, rischi, optionality e costo dell'inazione. Se il problema vale €50k l'anno e la soluzione costa €700k, business as usual può dominare. Se il costo dell'inazione cresce di €100k a settimana, il timing diventa parte del valore atteso.
 
-- benefici;
-- costi;
-- rischi;
-- optionality;
-- costo dell'inazione.
+Il *Green Book 2026* tratta le metriche sintetiche come supporto all'appraisal, non come criterio meccanico unico: costi, benefici, rischi, incertezze, impatti distributivi e non monetizzabili restano parte del giudizio sull'opzione preferita.[^green-book-ev]
 
-Se il problema costa €50k l'anno e la soluzione richiede €700k, “non fare nulla per ora” può dominare.
-
-Se invece il costo dell'inazione cresce di €100k a settimana, il timing diventa parte dell'expected value.
-
-### Caso pubblico documentato — la preferred option non è una gara a un solo numero
-
-Il Green Book 2026 di HM Treasury richiede una valutazione complessiva di costi, benefici, rischi e incertezze e chiarisce che metriche sintetiche non devono essere usate meccanicamente come unico criterio per selezionare l'opzione preferita. Include inoltre analisi distributive e impatti non monetizzabili quando rilevanti.
-
-Fonte: https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2026
-
-Il principio è utile anche fuori dall'appraisal pubblico:
-
-> **una metrica di valore serve a strutturare il trade-off, non a sostituire la responsabilità della scelta.**
-
-### Decision Scorecard senza falsa precisione
-
-Per una shortlist possiamo usare una tabella come questa:
+Per una shortlist aziendale possiamo usare una Decision Scorecard senza trasformarla in un punteggio artificiale:
 
 | Dimensione | A | B | C |
 |---|---|---|---|
@@ -224,11 +110,9 @@ Per una shortlist possiamo usare una tabella come questa:
 | non-monetizable impact | | | |
 | key switching assumption | | | |
 
-Non sommiamo automaticamente tutto in “82,4 punti”.
+La tabella serve a rendere visibile **perché le alternative differiscono**, non a produrre automaticamente “82,4 punti”.
 
-La tabella serve a rendere visibile **perché le alternative differiscono**.
-
-### Campo del Decision Record
+Nel Decision Record conserviamo:
 
 ```text
 expected outcomes:
@@ -241,15 +125,6 @@ portfolio/opportunity cost:
 business-as-usual cost:
 ```
 
-### Regola operativa
+> **Il valore atteso è potente quando rende esplicita l'incertezza. Diventa pericoloso quando trasforma assunzioni fragili in decimali che sembrano fatti.**
 
-Usa expected value quando:
-
-- gli esiti sono abbastanza definiti;
-- le probabilità o range hanno una base difendibile;
-- i costi sono realmente incrementali;
-- il downside è rappresentato.
-
-Preferisci switching values o scenari quando le probabilità puntuali sarebbero soprattutto decorazione numerica.
-
-> **Il valore atteso è potente quando rende esplicita l'incertezza. Diventa pericoloso quando trasforma supposizioni fragili in decimali che sembrano fatti.**
+[^green-book-ev]: HM Treasury, *The Green Book 2026*, https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2026
