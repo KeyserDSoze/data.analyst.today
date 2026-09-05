@@ -1,34 +1,18 @@
 ## 3.17 Sintesi ed esercizi
 
-Questo capitolo ha costruito una disciplina: **non trattare mai un dataset come una verità già pronta**.
+Il Capitolo 2 ci ha insegnato a non iniziare dall'output. Questo capitolo aggiunge una seconda disciplina: **non iniziare nemmeno dal presupposto che il dataset rappresenti già correttamente ciò che vogliamo analizzare**.
 
-Prima dell'analisi vengono la comprensione di ciò che rappresenta una riga, dell'identità, del tempo, dei missing, dei duplicati, dei domini, delle unità, delle trasformazioni e della provenienza.
+Prima della statistica viene una ricostruzione. Dobbiamo capire che cosa rappresenta una riga, quale grain rende distinti i record, che cosa identifica davvero una chiave, quale tempo descrive il dataset, perché alcuni valori mancano, quando più record rappresentano la stessa realtà, quali estremi sono errori e quali eventi reali, quali trasformazioni separano la sorgente dal report e se il risultato si riconcilia con una fonte indipendente.
 
-Il percorso del capitolo può essere sintetizzato così:
+Il percorso può essere sintetizzato così:
 
 **Riga → grain → identità → tempo → qualità → anomalie → lineage → riconciliazione → data readiness**
 
-L'analista non deve dimostrare che il dato sia perfetto. Deve sapere abbastanza da stabilire:
+Ma il valore non sta nella sequenza come checklist. Sta nel fatto che ogni passaggio restringe il confine delle conclusioni che possiamo sostenere. Un grain ambiguo rende sospetti i conteggi; un'identità instabile altera retention e clienti unici; un timestamp che cambia significato rompe la comparabilità; un missing concentrato in un segmento può selezionare la popolazione; una riconciliazione incompleta può impedire di usare il dato per un consuntivo pur lasciandolo utile per un monitoraggio preliminare.
 
-- dove il dato è affidabile;
-- dove richiede caveat;
-- dove una conclusione sarebbe prematura.
+Per questo il verdetto finale non è “dataset pulito”. È **PRONTO / PRONTO CON CAVEAT / NON PRONTO** rispetto a una domanda specifica. La maturità consiste nel sapere abbastanza del dato da spiegare dove può essere usato, dove richiede limiti e dove una conclusione sarebbe prematura.
 
-### Idee chiave
-
-- un record non coincide necessariamente con l'entità reale che pensiamo di studiare;
-- il grain deve essere dichiarato e verificato;
-- una chiave tecnica non definisce automaticamente l'identità di business;
-- eventi, stati e snapshot richiedono aggregazioni temporali differenti;
-- i missing hanno cause e meccanismi, non sono semplicemente celle vuote;
-- un duplicato può essere semantico anche quando le righe non sono identiche;
-- un outlier può essere un errore oppure un evento raro e reale;
-- tipo, dominio e unità fanno parte del significato della variabile;
-- il profiling deve confrontare comportamento osservato e comportamento atteso;
-- lineage e provenance spiegano quali trasformazioni separano la realtà dal numero finale;
-- riconciliare significa spiegare una differenza, non necessariamente eliminarla;
-- le scoperte ricorrenti dovrebbero diventare contract o controlli automatici;
-- il verdetto finale è **pronto / pronto con caveat / non pronto** rispetto a una domanda specifica.
+Gli artefatti introdotti nel capitolo — schede di variabile, reconciliation bridge, data contract, controlli automatici e Data Readiness Review — servono proprio a rendere riutilizzabile questa conoscenza, così che l'organizzazione non debba riscoprire ogni volta gli stessi problemi.
 
 ---
 
@@ -143,7 +127,7 @@ Per ogni variabile elenca almeno due interpretazioni possibili.
 
 Poi spiega perché il caso reale del **Mars Climate Orbiter** è un esempio estremo dello stesso principio: un valore numerico può essere formalmente disponibile ma inutilizzabile se l'unità interpretata dai sistemi non coincide.
 
-Riferimento: NASA Science, *Mars Climate Orbiter*. https://science.nasa.gov/mission/mars-climate-orbiter/
+Riferimento: NASA Lessons Learned, *Mars Climate Orbiter Mishap Investigation Board — Phase I Report, Lesson 641*. https://llis.nasa.gov/lesson/641
 
 ---
 
@@ -245,9 +229,7 @@ Prepara un piano operativo che specifichi:
 7. quale verdetto di data readiness assegni a ogni KPI;
 8. che cosa comunichi al board se il problema non viene risolto entro la scadenza.
 
-Il punto non è riuscire a "salvare" il report a tutti i costi.
-
-È mostrare che sai proteggere una decisione dalla falsa precisione.
+Il punto non è riuscire a “salvare” il report a tutti i costi. È mostrare che sai proteggere una decisione dalla falsa precisione.
 
 ### Domande di autovalutazione
 
@@ -267,6 +249,10 @@ Alla fine del capitolo dovresti saper rispondere con sicurezza:
 - Quando una scoperta dovrebbe diventare un data contract o un test automatico?
 - Come giustifico un verdetto **pronto / pronto con caveat / non pronto**?
 
-Nel prossimo capitolo useremo dati che hanno superato questo livello di interrogazione per fare un passo diverso: **descrivere distribuzioni, confronti e pattern senza confondere il riepilogo numerico con una spiegazione**.
+## Chiusura
 
-Prima di fare statistica sui dati, dobbiamo sapere che cosa stiamo contando.
+Il Capitolo 3 completa il lavoro preparatorio iniziato nel Capitolo 2. L'Analytical Brief definisce che cosa vorremmo sapere; la Data Readiness Review verifica se le fonti disponibili possono davvero sostenere quella pretesa. Soltanto quando questi due livelli sono coerenti ha senso passare alla descrizione statistica del fenomeno.
+
+Nel prossimo capitolo inizieremo quindi a osservare distribuzioni, confronti e pattern. Ma entreremo in quella fase con una distinzione già acquisita: **un riepilogo numerico descrive ciò che il dataset contiene; non dimostra da solo perché il fenomeno esista né che la rappresentazione sia perfetta**.
+
+Prima di fare statistica sui dati, dobbiamo sapere che cosa stiamo contando. Dopo questo capitolo, quella frase non è più un avvertimento generico: è un metodo operativo.
