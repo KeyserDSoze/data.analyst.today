@@ -1,20 +1,12 @@
 ## 6.1 Segmentazione: dividere la popolazione solo quando cambia la decisione
 
-Nel Capitolo 4 abbiamo usato la segmentazione come strumento esplorativo: rompere una media aggregata per scoprire struttura nascosta.
+Nel Capitolo 4 la segmentazione serviva soprattutto a rompere un aggregato e vedere se nascondeva strutture differenti. Nel lifecycle analysis deve fare qualcosa di più: **trasformare differenze osservate in unità decisionali**.
 
-Nel lifecycle analysis la segmentazione ha un compito più specifico:
+Un segmento è utile quando clienti che entrano, si attivano, restano, espandono o abbandonano in modo diverso richiedono una diagnosi, una priorità o un intervento differente. Se dividere la popolazione non cambia nulla di ciò che faremmo, abbiamo creato un filtro, non ancora un segmento strategico.
 
-> **identificare gruppi che entrano, si attivano, restano, espandono o abbandonano in modo abbastanza diverso da richiedere una strategia diversa.**
+### Northstar Home: dal “mobile converte peggio” a un punto preciso del sistema
 
-Il punto non è creare più filtri.
-
-È creare **unità decisionali**.
-
-### Caso simulato/composito — “Il mobile converte peggio” non è ancora una diagnosi
-
-L'e-commerce immaginario **Northstar Home** vede il conversion rate scendere dal 3,9% al 3,5%.
-
-Per device:
+L'e-commerce immaginario **Northstar Home** vede il conversion rate scendere dal **3,9% al 3,5%**. La prima apertura per device mostra che il deterioramento è quasi interamente mobile:
 
 | Device | Q1 | Q2 |
 |---|---:|---:|
@@ -22,9 +14,7 @@ Per device:
 | Mobile | 3,1% | 2,5% |
 | Tablet | 3,4% | 3,3% |
 
-Il deterioramento è mobile.
-
-Sul mobile, per canale:
+“Il mobile converte peggio” è però ancora troppo ampio per essere una diagnosi. Sul mobile, il confronto per canale restringe ulteriormente il problema:
 
 | Canale | Q1 | Q2 |
 |---|---:|---:|
@@ -33,140 +23,27 @@ Sul mobile, per canale:
 | Paid search | 2,9% | 2,8% |
 | Paid social | 2,7% | 1,6% |
 
-Il problema è soprattutto `mobile + paid social`.
+Il calo vive soprattutto in `mobile + paid social`. Incrociando il paese emerge poi che il gap è concentrato in Italia e Spagna, dove è stata introdotta una nuova landing page. La frase utile diventa quindi:
 
-Segmentando ulteriormente per paese, il gap è concentrato in Italia e Spagna, dove è stata introdotta una nuova landing page.
+> **Il calo aggregato è concentrato nel traffico paid social mobile di Italia e Spagna dopo il cambio di landing.**
 
-La conclusione diventa:
+La landing non è ancora una causa dimostrata. Ma la segmentazione ha già cambiato la decisione: non serve aprire un progetto generico sulla conversione mobile globale; serve indagare una popolazione e un punto del percorso molto più circoscritti.
 
-> **“Il calo aggregato è concentrato nel traffico paid social mobile di Italia e Spagna dopo il cambio di landing.”**
+Questa è la soglia che un buon segmento deve superare. Può cambiare **dove** crediamo si trovi il problema, **quanto** valore o rischio attribuiamo a un gruppo, **quale** intervento è plausibile, **quale** metrica è adatta o **chi** possiede la leva operativa.
 
-Non abbiamo dimostrato che la landing **causi** il calo. Abbiamo però delimitato il punto del lifecycle in cui l'indagine deve continuare.
+Nel lifecycle i segmenti possono nascere da acquisizione, profilo, comportamento, stato del percorso o economics. Un canale o una campagna ci aiutano a capire quale popolazione stiamo portando dentro; mercato, use case, piano o dimensione account descrivono differenze strutturali; feature adottate e frequenza d'uso descrivono ciò che il cliente fa; stati come onboarding, activated, at-risk o reactivated localizzano il punto del percorso; ARR, margine, cost-to-serve ed LTV distinguono infine frequenza e impatto economico. Queste famiglie sono utili soltanto se restano collegate alla decisione. Un churn del 10% su clienti da 20 € al mese e lo stesso 10% su account enterprise sono la stessa frequenza, non lo stesso problema economico.
 
-### Una segmentazione utile deve cambiare qualcosa
+### Un comportamento interessante non è ancora una leva causale
 
-Un segmento è analiticamente utile se modifica almeno una di queste decisioni:
+Un case study pubblicato da **Amplitude** descrive come Canal+ abbia confrontato gruppi con pattern di utilizzo differenti. Gli utenti che guardavano sia contenuti live sia on-demand mostravano retention più alta rispetto a chi usava soltanto uno dei due formati; il team usò questa osservazione per orientare cambiamenti di prodotto.[^canal-amplitude]
 
-- **diagnosi:** dove crediamo si trovi il problema;
-- **priorità:** quale gruppo genera più rischio o valore;
-- **intervento:** quale azione è plausibile;
-- **misurazione:** quale KPI o frequenza naturale è appropriata;
-- **owner:** quale team può agire sul meccanismo.
+Il claim va letto per ciò che è: **un'associazione comportamentale utile alla diagnosi e alla progettazione del prodotto**. Non dimostra, da solo, che indurre un utente a consumare entrambi i formati provochi causalmente maggiore retention. La segmentazione ci aiuta a trovare comportamenti che meritano attenzione; il metodo successivo deve stabilire se quei comportamenti sono anche leve.
 
-Se dividere `country = IT / ES / FR / DE` non cambia nessuna di queste cose, la segmentazione può essere descrittiva ma non decisionale.
+Lo stesso principio protegge da due errori molto comuni. Il primo è la frammentazione eccessiva. Incrociare 8 paesi, 4 device, 6 canali, 5 piani e 3 fasce di tenure genera già **2.880 combinazioni** potenziali. Molte avranno basi minuscole, e un uplift del 40% su 17 utenti può essere una pista esplorativa senza essere una priorità aziendale. Per questo denominatore e distinzione tra segmenti pre-specificati ed esplorativi devono restare visibili.
 
-### Cinque famiglie di segmenti nel lifecycle
+Il secondo errore è definire il segmento usando informazione futura. Se al giorno 30 vogliamo distinguere clienti promettenti e creiamo il gruppo “chi farà almeno 10 ordini nei primi 12 mesi”, abbiamo usato il futuro per costruire la categoria e poi celebrato una relazione quasi tautologica con la retention annuale. Un segmento operativo al giorno 30 deve essere costruito con ciò che era conoscibile entro quel giorno. È lo stesso principio di leakage che tornerà nei modelli predittivi.
 
-#### 1. Segmenti di acquisizione
-
-- canale;
-- campagna;
-- referral source;
-- sales motion;
-- prezzo o offerta iniziale.
-
-Servono a chiedere:
-
-> *stiamo acquisendo lo stesso tipo di cliente?*
-
-#### 2. Segmenti di profilo
-
-- mercato;
-- dimensione account;
-- use case;
-- piano;
-- categoria prodotto.
-
-Servono quando gruppi strutturalmente diversi hanno bisogni o frequenze differenti.
-
-#### 3. Segmenti comportamentali
-
-- feature adottate;
-- frequenza d'uso;
-- numero di collaboratori invitati;
-- attività nei primi giorni;
-- breadth/depth di utilizzo.
-
-Sono spesso potenti perché descrivono ciò che il cliente **fa**, non soltanto ciò che è.
-
-Ma richiedono cautela: un comportamento associato a retention elevata non è automaticamente una leva causale.
-
-#### 4. Segmenti di lifecycle stage
-
-- nuovo;
-- onboarding;
-- activated;
-- retained;
-- at-risk;
-- dormant;
-- reactivated.
-
-Sono particolarmente utili per definire journey, comunicazioni e metriche coerenti con la fase.
-
-#### 5. Segmenti economici
-
-- ARR/GMV;
-- margine;
-- cost-to-serve;
-- espansione;
-- LTV.
-
-Servono a distinguere frequenza e impatto economico.
-
-Un churn del 10% su clienti da 20 € al mese non ha lo stesso significato economico del 10% su account enterprise.
-
-### Caso reale documentato — Canal+ e i “power users”
-
-In un case study pubblicato da **Amplitude**, Canal+ viene descritto mentre confronta la retention di gruppi con pattern di utilizzo differenti. Secondo il case study, gli utenti che guardavano sia contenuti live sia on-demand mostravano retention più alta rispetto a chi utilizzava soltanto una delle due modalità; il team usò questa informazione per orientare cambiamenti di prodotto.[^canal-amplitude]
-
-È importante leggere correttamente il claim.
-
-Il case study documenta una **associazione comportamentale utile al product team**. Non dimostra da solo che indurre un utente a consumare entrambi i formati provochi causalmente maggiore retention.
-
-Questa distinzione è esattamente ciò che deve fare un buon analyst:
-
-> **segmentare per trovare comportamenti interessanti, poi scegliere il metodo necessario per capire se sono anche leve.**
-
-### Segmenti troppo piccoli: il problema che arriva dopo la heatmap
-
-Se incrociamo:
-
-- 8 paesi;
-- 4 device;
-- 6 canali;
-- 5 piani;
-- 3 fasce di tenure;
-
-abbiamo già `8 × 4 × 6 × 5 × 3 = 2.880` combinazioni potenziali.
-
-Molte avranno poche osservazioni.
-
-Il Capitolo 5 ci impone quindi due discipline:
-
-1. mostrare il denominatore;
-2. distinguere segmentazione **pre-specificata** da pattern scoperti esplorativamente.
-
-Un uplift del 40% su 17 utenti può essere una pista. Non è automaticamente una priorità aziendale.
-
-### Segmenti definiti con il futuro: leakage analitico
-
-Supponiamo di voler capire quali clienti, nei primi 30 giorni, hanno lifecycle migliore.
-
-Creiamo un segmento chiamato:
-
-> “clienti che hanno effettuato almeno 10 ordini nei primi 12 mesi”.
-
-Poi scopriamo che questo segmento ha retention annuale altissima.
-
-La scoperta è quasi tautologica: abbiamo usato comportamento futuro per definire il gruppo.
-
-Se vogliamo una segmentazione utilizzabile **al giorno 30**, dobbiamo costruirla con informazione disponibile entro il giorno 30.
-
-Questa regola anticipa il concetto di leakage del Capitolo 10.
-
-### La scheda di un segmento utile
-
-Prima di aggiungerlo a una dashboard lifecycle, compila:
+Per i segmenti che entrano stabilmente in una dashboard lifecycle conviene conservare una piccola scheda operativa:
 
 ```text
 Segmento:
@@ -180,8 +57,8 @@ Ipotesi o meccanismo plausibile:
 Confermativo o esplorativo?
 ```
 
-Se non sappiamo dire quale decisione cambia, probabilmente abbiamo creato un filtro, non ancora un segmento strategico.
+La domanda che chiude la sezione non è “quanti modi abbiamo per dividere gli utenti?”. È:
 
-> **La segmentazione è utile quando trasforma “gli utenti sono diversi” in “questi gruppi richiedono diagnosi o azioni diverse”.**
+> **quale divisione della popolazione rende più precisa la diagnosi e cambia concretamente ciò che il team dovrebbe fare?**
 
 [^canal-amplitude]: Amplitude, *How Canal+ used Product Intelligence to increase conversion by 3x*: https://amplitude.com/case-studies/canal
