@@ -1,15 +1,21 @@
 ## 15.12 Esercizi: costruire decisioni, non soltanto analisi
 
-Gli esercizi di questo capitolo non chiedono principalmente di calcolare numeri.
+Gli esercizi chiudono il capitolo facendo lavorare sull'intera catena:
 
-Chiedono di produrre **Decision Record difendibili**.
+```text
+objective
+→ alternatives
+→ evidence
+→ uncertainty
+→ value / downside
+→ reversibility
+→ switching logic
+→ recommendation
+→ decision
+→ learning
+```
 
-Per ogni caso, quando mancano dati, non inventarli silenziosamente. Indica:
-
-- assunzione;
-- informazione mancante;
-- se vale la pena ottenerla;
-- quale stato del Decision Quality Gate assegneresti.
+Quando un caso non fornisce abbastanza informazione, non inventarla. Dichiara l'assunzione mancante, indica se vale la pena comprarla e assegna uno stato del Decision Quality Gate. Il punto non è arrivare sempre a `DECIDE`: saper concludere `PILOT / STAGE`, `WAIT FOR X` o `NO ACTION` fa parte della competenza.
 
 ---
 
@@ -23,20 +29,7 @@ utenti con ≥3 sessioni nella prima settimana: 12%
 altri utenti: 31%
 ```
 
-### Compito
-
-Costruisci la prima metà del Decision Record.
-
-Deve contenere:
-
-- finding;
-- materialità;
-- claim level;
-- possibili confondenti;
-- almeno quattro alternative, incluso business as usual;
-- una possibile azione reversibile prima di avere evidenza causale forte;
-- quale informazione potrebbe cambiare la scelta;
-- quale deliverable dei Capitoli 8–9 useresti se volessi sostenere un causal claim.
+Costruisci la prima metà del Decision Record. Deve includere finding, materialità, claim level, possibili confondenti, almeno quattro alternative compreso business as usual, una possibile azione reversibile prima di avere evidenza causale forte, l'informazione che potrebbe cambiare scelta e il deliverable dei Capitoli 8–9 che useresti per sostenere un causal claim.
 
 Non concludere automaticamente che “tre sessioni riducono il churn”.
 
@@ -50,20 +43,9 @@ Un modello stima:
 P(delivery delay) = 68%
 ```
 
-Un ordine alternativo preventivo costa €18.000.
+Un ordine alternativo preventivo costa €18.000. Uno stock-out potrebbe costare circa €120.000, con range plausibile €60k–€200k. L'ordine alternativo è annullabile con penale di €4.000 fino a 48 ore prima della consegna.
 
-Uno stock-out potrebbe costare circa €120.000, ma il range plausibile è €60k–€200k.
-
-L'ordine alternativo è annullabile con una penale di €4.000 fino a 48 ore prima della consegna.
-
-### Compito
-
-1. Definisci le alternative.
-2. Calcola o ragiona sul break-even probability / switching threshold rilevante.
-3. Mostra come la reversibilità dell'ordine alternativo modifica la decisione.
-4. Aggiungi almeno due impatti non monetari.
-5. Distingui la qualità del risk score dalla qualità della decision policy.
-6. Assegna uno stato: `DECIDE / PILOT-STAGE / WAIT FOR X / NO ACTION`.
+Definisci le alternative, ragiona sul break-even probability / switching threshold, mostra come la reversibilità modifichi la scelta, aggiungi almeno due impatti non monetari e separa qualità del risk score da qualità della decision policy. Concludi con `DECIDE / PILOT-STAGE / WAIT FOR X / NO ACTION`.
 
 ---
 
@@ -71,7 +53,7 @@ L'ordine alternativo è annullabile con una penale di €4.000 fino a 48 ore pri
 
 Tre iniziative competono per lo stesso team.
 
-### A — Payment reliability
+**A — Payment reliability**
 
 - upside plausibile: €1,4M–€2,0M annui;
 - evidenza forte;
@@ -79,14 +61,14 @@ Tre iniziative competono per lo stesso team.
 - time to value: 2 mesi;
 - downside limitato.
 
-### B — Referral redesign
+**B — Referral redesign**
 
 - upside: €0–€3M;
 - evidenza debole;
 - costo: €450k;
 - time to value: 5 mesi.
 
-### C — Pricing redesign
+**C — Pricing redesign**
 
 - upside: €1M–€4M;
 - evidenza media;
@@ -94,24 +76,9 @@ Tre iniziative competono per lo stesso team.
 - downside plausibile: churn e sales friction;
 - difficile rollback sui contratti annuali.
 
-### Compito
+Non assegnare probabilità puntuali che non puoi difendere. Costruisci una Decision Scorecard con range value, evidence strength, downside, reversibilità, time to value, capacity fit, opportunity cost e switching assumption. Raccomanda una priorità e completa:
 
-Non assegnare probabilità puntuali se non puoi difenderle.
-
-Costruisci una Decision Scorecard con:
-
-- expected/range value;
-- evidence strength;
-- downside;
-- reversibilità;
-- time to value;
-- capacity fit;
-- opportunity cost;
-- switching assumption.
-
-Raccomanda una priorità e completa:
-
-> “Cambierei scelta se…”
+> **Cambierei scelta se...**
 
 ---
 
@@ -125,76 +92,23 @@ Un progetto di automazione ha:
 - orizzonte previsto: 3 anni;
 - adoption completa prevista dopo 4 mesi.
 
-### Compito
-
-Costruisci almeno questi switching values:
-
-- risparmio annuo minimo;
-- costo implementazione massimo;
-- ritardo massimo di adozione;
-- manutenzione massima.
-
-Poi rispondi:
-
-1. Quale variabile è più vicina alla decision boundary?
-2. Su quale variabile compreresti informazione aggiuntiva?
-3. Quanto deve essere precisa la stima perché la decisione sia robusta?
-4. Esiste una versione staged/pilot con maggiore option value?
+Costruisci almeno gli switching values per risparmio annuo minimo, costo implementazione massimo, ritardo massimo di adozione e manutenzione massima. Poi identifica la variabile più vicina al decision boundary, quella su cui compreresti informazione aggiuntiva, la precisione necessaria perché la scelta sia robusta e una possibile versione staged/pilot con maggiore option value.
 
 ---
 
 ## Esercizio 5 — Scenari coerenti, non ±20%
 
-Aster Logistics deve scegliere tra:
+Aster Logistics deve scegliere tra BAU, nuovo hub completo, hub modulare e outsourcing per 24 mesi.
 
-- BAU;
-- nuovo hub completo;
-- hub modulare;
-- outsourcing per 24 mesi.
-
-### Compito
-
-Costruisci tre scenari **coerenti**:
-
-1. domanda debole;
-2. crescita centrale;
-3. crescita forte + fuel inflation.
-
-Per ogni scenario valuta qualitativamente:
-
-- volume;
-- saving logistico;
-- capacità;
-- capex;
-- reversibilità;
-- time to value.
-
-Poi indica:
-
-- opzioni dominate;
-- opzione con massimo upside;
-- opzione più robusta;
-- informazione che potrebbe cambiare il ranking.
+Costruisci tre scenari coerenti — domanda debole, crescita centrale, crescita forte + fuel inflation — e per ciascuno valuta qualitativamente volume, saving logistico, capacità, capex, reversibilità e time to value. Indica poi opzioni dominate, opzione con massimo upside, opzione più robusta e informazione che potrebbe cambiare il ranking.
 
 ---
 
 ## Esercizio 6 — Caso reale documentato: leggere una decisione come NASA
 
-NASA descrive la Decision Analysis come un processo che identifica criteri e alternative, valuta performance e incertezza, analizza la robustezza del ranking e documenta recommendation e decisione finale.
+NASA descrive la Decision Analysis come un processo che identifica criteri e alternative, valuta performance e incertezza, analizza la robustezza del ranking e documenta recommendation e decisione finale.[^nasa-exercise]
 
-Fonte: https://www.nasa.gov/reference/6-8-decision-analysis/
-
-### Compito
-
-Scegli una decisione analitica aziendale, per esempio:
-
-- build vs buy;
-- nuovo data warehouse;
-- nuovo mercato;
-- rollout di un pricing;
-- migrazione BI.
-
-Ristrutturala usando:
+Scegli una decisione analitica aziendale — build vs buy, nuovo data warehouse, nuovo mercato, pricing rollout, migrazione BI o altro — e ristrutturala così:
 
 ```text
 objectives
@@ -206,32 +120,17 @@ objectives
 → final decision
 ```
 
-Quali elementi aggiunge questa struttura rispetto a un normale business case “progetto proposto + ROI”? 
+Spiega che cosa aggiunge questa struttura rispetto a un normale business case “progetto proposto + ROI”.
 
 ---
 
 ## Esercizio 7 — Pre-mortem prima del go-live
 
-Un'azienda vuole lanciare un sistema AI che assegna priorità ai lead commerciali.
+Un'azienda vuole lanciare un sistema AI che assegna priorità ai lead commerciali. Assumi:
 
-Assumi:
+> **Tra sei mesi il progetto è considerato un fallimento.**
 
-> “Tra sei mesi il progetto è considerato un fallimento.”
-
-### Compito
-
-Genera almeno dieci failure mode divisi tra:
-
-- data;
-- model;
-- sales process;
-- incentives;
-- adoption;
-- governance;
-- measurement;
-- feedback loop.
-
-Per i cinque più importanti definisci:
+Genera almeno dieci failure mode distribuiti tra data, model, sales process, incentives, adoption, governance, measurement e feedback loop. Per i cinque più importanti definisci:
 
 ```text
 leading indicator:
@@ -241,11 +140,7 @@ stop condition:
 owner:
 ```
 
-Poi spiega quali failure mode dovrebbero cambiare il design **prima** del rollout.
-
-Riferimento sulla tecnica pre-mortem:
-
-https://hbr.org/2007/09/performing-a-project-premortem
+Concludi indicando quali failure mode dovrebbero cambiare il design **prima** del rollout.[^premortem-exercise]
 
 ---
 
@@ -253,55 +148,28 @@ https://hbr.org/2007/09/performing-a-project-premortem
 
 Un team approva una campagna sulla base di un A/B test ben progettato.
 
-Stima pre-rollout:
-
 ```text
 uplift centrale: +4%
 plausible interval: +1% to +7%
 ```
 
-La campagna viene lanciata.
-
 Nel mese successivo le vendite totali dell'azienda diminuiscono del 3%.
 
-### Compito
+Non giudicare subito la decisione. Costruisci una review separando:
 
-Non giudicare subito la decisione.
+**Decision quality** — design dell'esperimento, alternative, economics, guardrail, evidence threshold.
 
-Costruisci una review separando:
+**Execution quality** — rollout, exposure, targeting, implementazione.
 
-**Decision quality**
+**Outcome quality** — performance della campagna, traffico totale, stagionalità, competitor/macroeconomia, altri shock.
 
-- design dell'esperimento;
-- alternative;
-- economics;
-- guardrail;
-- evidence threshold.
-
-**Execution quality**
-
-- rollout;
-- exposure;
-- targeting;
-- implementazione.
-
-**Outcome quality**
-
-- performance della campagna;
-- traffico totale;
-- stagionalità;
-- competitor/macroeconomia;
-- altri shock.
-
-Concludi spiegando che cosa sarebbe necessario osservare per affermare che la scelta di rollout era ex ante debole.
+Concludi spiegando quale evidenza sarebbe necessaria per affermare che la scelta di rollout era ex ante debole.
 
 ---
 
 ## Esercizio 9 — Aurora Home: secondo round
 
-Riprendi il caso Aurora Home.
-
-Dopo quattro settimane il pilot mostra:
+Dopo quattro settimane il pilot di Aurora Home mostra:
 
 - contribution margin per visitor: +1,8%;
 - conversion sul segmento esposto: -3,2%;
@@ -316,13 +184,7 @@ Il guardrail originario era:
 conversion delta non oltre -3%
 ```
 
-### Compito
-
-1. Il guardrail è stato superato materialmente o siamo troppo vicini alla soglia per dirlo?
-2. Quale switching value conta di più?
-3. Quale nuova informazione compreresti?
-4. Continueresti, fermeresti o restringeresti il pilot?
-5. Aggiorna il Decision Record senza riscrivere retroattivamente quello originale.
+Valuta se il superamento è materialmente interpretabile oppure troppo vicino alla soglia, identifica lo switching value più importante, scegli quale nuova informazione comprare e decidi se continuare, fermare o restringere il pilot. Aggiorna il Decision Record **senza riscrivere retroattivamente quello originale**.
 
 ---
 
@@ -352,57 +214,23 @@ Learning plan
 Review date
 ```
 
-Il vincolo è che **recommendation e final decision devono essere distinguibili**.
+Il vincolo fondamentale è che **recommendation e final decision devono restare distinguibili**.
 
 ---
 
 ## Esercizio 11 — Decision memo da una pagina
 
-Dopo aver compilato l'esercizio precedente, crea una sintesi da una pagina per il decision owner.
+Dopo aver compilato l'esercizio precedente, comprimi il Decision Record in una pagina per il decision owner. Il memo deve contenere soltanto decisione richiesta, alternative, evidenza che discrimina le alternative, recommendation, upside/downside, incertezza decisiva, switching condition, guardrail e scelta richiesta oggi.
 
-Deve contenere soltanto:
-
-1. decisione richiesta;
-2. alternative;
-3. evidenza che discrimina le alternative;
-4. raccomandazione;
-5. upside/downside;
-6. incertezza decisiva;
-7. switching condition;
-8. guardrail;
-9. decisione richiesta oggi.
-
-Non raccontare cronologicamente tutta l'analisi.
-
-Il Capitolo 16 mostrerà come trasformare questo contenuto in una comunicazione executive ancora più efficace.
-
----
+Non raccontare cronologicamente tutta l'analisi. Questa è la preparazione diretta al Capitolo 16: la comunicazione dovrà **ridurre il costo cognitivo senza cambiare il significato, il claim level o il trade-off registrati nel Decision Record**.
 
 ## Chiusura del capitolo
 
-L'analisi non termina quando abbiamo prodotto un numero corretto.
+L'analisi non termina quando abbiamo prodotto un numero corretto e nemmeno quando abbiamo trovato una spiegazione interessante. Termina quando objective, alternatives, evidence, uncertainty, value/downside, reversibility, switching logic, recommendation, decision e learning sono abbastanza espliciti da poter essere discussi, approvati e poi rivisti senza lasciare che l'esito riscriva ciò che sapevamo prima.
 
-E non termina nemmeno quando abbiamo trovato una spiegazione interessante.
-
-Termina quando abbiamo costruito un processo in cui:
-
-```text
-objective
-→ alternatives
-→ evidence
-→ uncertainty
-→ value/downside
-→ reversibility
-→ switching logic
-→ recommendation
-→ decision
-→ learning
-```
-
-sono espliciti abbastanza da poter essere discussi, approvati e rivisti.
-
-Il lavoro dell'analista non consiste nell'eliminare l'incertezza.
-
-Consiste nel ridurla dove vale la pena, accettarla dove non è eliminabile e impedire che venga nascosta proprio nel momento in cui scegliamo.
+Il lavoro dell'analista non consiste nell'eliminare l'incertezza. Consiste nel ridurla dove vale la pena, accettarla dove non è eliminabile e impedire che venga nascosta proprio nel momento in cui scegliamo.
 
 > **Dati migliori non garantiscono decisioni migliori. Una decisione migliora quando evidenza, alternative, rischio e condizioni per cambiare idea sono visibili prima che l'esito ci racconti una storia troppo semplice.**
+
+[^nasa-exercise]: NASA, *6.8 Decision Analysis*, https://www.nasa.gov/reference/6-8-decision-analysis/
+[^premortem-exercise]: Gary Klein, *Performing a Project Premortem*, Harvard Business Review, September 2007, https://hbr.org/2007/09/performing-a-project-premortem
