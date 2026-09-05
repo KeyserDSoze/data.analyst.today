@@ -1,88 +1,24 @@
 ## 3.6 Missing values: l'assenza ha una causa
 
-Un valore mancante non è semplicemente una cella vuota da riempire.
+Un valore mancante non è una cella vuota da riempire. È una traccia del processo che ha prodotto — o non prodotto — quell'informazione.
 
-È il risultato di un processo.
+Può mancare perché il campo non era previsto nel vecchio sistema, perché l'utente non ha risposto, perché l'evento non è ancora avvenuto, perché una pipeline non ha caricato il valore, perché la join non ha trovato corrispondenza oppure perché il dato è stato rimosso o anonimizzato. In altri casi il missing non appare come `NULL` ma come un codice sentinella: `-1`, `9999`, `unknown`, `1900-01-01`.
 
-Può mancare perché:
+Queste situazioni producono lo stesso sintomo visivo — “manca un valore” — ma implicano popolazioni e rischi diversi. La gestione del missing deve quindi partire dalla causa, non dalla tecnica di imputazione.
 
-- l'informazione non è stata richiesta;
-- l'utente non ha risposto;
-- il campo non esisteva nel vecchio sistema;
-- la pipeline non lo ha caricato;
-- il dato non è applicabile;
-- l'evento non è ancora avvenuto;
-- il valore è stato rimosso o anonimizzato;
-- una join non ha trovato corrispondenza;
-- il sistema usa codici sentinella come `-1`, `9999`, `unknown` o `1900-01-01`.
+## Prima di trattare il missing, capire chi riguarda
 
-Queste cause producono lo stesso aspetto visivo — "manca un valore" — ma hanno significati analitici molto diversi.
+Supponiamo che `cancellation_date` sia nulla per un abbonamento ancora attivo. Non abbiamo un errore: il null rappresenta correttamente l'assenza dell'evento di cancellazione. Riempirlo con una data media inventerebbe un fatto che non è avvenuto.
 
-### Quattro domande prima di qualsiasi imputazione
+Ora consideriamo `delivery_date` mancante soprattutto per un corriere con problemi d'integrazione. Se quel corriere è anche quello che consegna più lentamente, calcolare il late delivery rate soltanto sui record completi elimina proprio una parte della popolazione più problematica. Il missing non è neutrale: il meccanismo che lo genera è collegato all'outcome.
 
-Davanti a un campo incompleto chiediamoci:
+Una join introduce un terzo significato. Se colleghiamo ordini e catalogo e alcuni `product_id` non trovano corrispondenza, le colonne del catalogo diventano nulle. Quel valore non significa “il prodotto non possiede questa informazione”, ma **“non siamo riusciti a collegare il record alla dimensione attesa”**. Trattarlo come un semplice null nasconderebbe un problema di relazione o di identità.
 
-1. **Dovrebbe esistere per questo record?**
-2. **Perché potrebbe mancare?**
-3. **La probabilità che manchi è collegata a un segmento o all'outcome?**
-4. **Che cosa cambia se escludiamo, manteniamo o stimiamo quel valore?**
+Per questo, prima di qualsiasi imputazione, servono quattro domande concatenate: il valore dovrebbe esistere per questo record? Perché potrebbe mancare? Il missing si concentra in un segmento, un periodo o una condizione collegata all'outcome? E che cosa cambia nella conclusione se escludiamo, manteniamo o stimiamo quel valore?
 
-La quarta domanda impedisce di trasformare il cleaning in un automatismo.
+## La percentuale aggregata può mentire
 
-### Missing strutturale: il valore non dovrebbe esserci
-
-Se `cancellation_date` è nulla per un abbonamento ancora attivo, non abbiamo un errore. Il null descrive correttamente lo stato del processo.
-
-Lo stesso vale per `delivery_date` quando l'ordine è ancora in transito.
-
-Riempire questi valori con una data media non "completa" il dataset. Inventa un evento che non è ancora avvenuto.
-
-### Missing da processo: qualcosa non è stato osservato
-
-Supponiamo invece che `delivery_date` manchi soprattutto per un corriere che ha avuto problemi di integrazione.
-
-A quel punto il missing non è neutrale. Se quel vettore è anche quello con più ritardi, calcolare il late delivery rate soltanto sugli ordini con data presente può produrre una stima troppo ottimistica.
-
-Il problema non è il numero di null in sé. È **chi viene escluso dal calcolo**.
-
-### Missing introdotto dalla trasformazione
-
-Una join può creare valori mancanti anche quando entrambe le sorgenti erano complete.
-
-Se colleghiamo ordini e catalogo prodotti e alcuni `product_id` non trovano corrispondenza, le colonne del catalogo diventano nulle.
-
-Quel missing significa:
-
-> "non siamo riusciti a collegare questo record"
-
-non:
-
-> "il prodotto non possiede questa informazione".
-
-È una distinzione essenziale.
-
-### Codici sentinella: il missing che sembra un valore
-
-Un campo può risultare completo al 100% e contenere comunque assenze mascherate.
-
-Esempi:
-
-```text
-birth_date = 1900-01-01
-income = -1
-country = UNKNOWN
-postal_code = 99999
-```
-
-Per questo il profiling dei missing deve includere anche valori convenzionali e categorie anomale, non soltanto `NULL`.
-
-### La percentuale aggregata può nascondere il problema
-
-Supponiamo che `support_reason` abbia il 6% di missing complessivo.
-
-Sembra modesto.
-
-Poi lo scomponiamo nel tempo:
+Un missing rate complessivo può apparire rassicurante e nascondere un break di processo. Immaginiamo `support_reason` mancante nel 6% dei record. Il totale sembra modesto, ma la serie temporale racconta altro:
 
 | Periodo | Missing rate |
 |---|---:|
@@ -90,20 +26,16 @@ Poi lo scomponiamo nel tempo:
 | luglio | 4,1% |
 | agosto | 31,7% |
 
-Il problema non è strutturale al dataset. È comparso recentemente.
+A questo punto il problema non è più “il campo è incompleto”. È diventato “che cosa è cambiato a luglio e agosto?”. Una release, una migrazione, un nuovo flusso operativo o una sorgente diversa possono aver modificato il modo in cui il dato viene raccolto.
 
-La domanda successiva diventa: **cosa è cambiato a luglio/agosto?** Release, migrazione, processo operativo, sorgente?
+Lo stesso controllo va fatto lungo le dimensioni plausibilmente legate al processo: canale, Paese, dispositivo, carrier, segmento cliente. Il missing acquista significato quando osserviamo **chi viene sistematicamente escluso**.
 
-Lo stesso controllo va fatto per segmento, canale, paese, dispositivo o qualsiasi dimensione plausibilmente collegata alla raccolta del dato.
+## Imputare è una scelta modellistica
 
-### Imputare non significa recuperare la verità
+Media, mediana, forward fill e modelli di imputazione possono essere appropriati in alcuni contesti, ma nessuna tecnica recupera automaticamente la verità. Un valore imputato resta una stima costruita per preservare determinate proprietà e ne può alterare altre.
 
-Media, mediana, forward fill e modelli di imputazione possono essere appropriati in alcuni contesti. Ma un valore imputato resta una stima.
+Nel lavoro del Data Analyst la disciplina più importante viene prima della tecnica:
 
-Prima di scegliere una tecnica dobbiamo sapere quale proprietà vogliamo preservare e quale bias rischiamo di introdurre.
+> **Prima spiega il missing. Poi misura chi riguarda. Solo alla fine decidi come trattarlo e quanto la scelta modifica la conclusione.**
 
-Per il Data Analyst la regola più utile è:
-
-> **Prima spiega il missing. Poi quantifica chi riguarda. Solo alla fine decidi come trattarlo.**
-
-La gestione dei valori mancanti non è housekeeping. Può cambiare popolazione, distribuzioni, comparabilità e quindi la decisione finale.
+La gestione dei valori mancanti non è housekeeping. Può cambiare popolazione, distribuzioni e comparabilità; quindi può cambiare direttamente la decisione che l'analisi pretende di supportare.
