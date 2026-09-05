@@ -1,73 +1,40 @@
 ## 4.13 L'output dell'EDA: una mappa dell'evidenza, non una cartella di grafici
 
-Una buona EDA può produrre decine di tabelle e visualizzazioni durante il lavoro.
+Durante l'esplorazione possiamo produrre decine di tabelle, scatter plot, distribuzioni e segmentazioni. Sono strumenti di lavoro, non necessariamente il deliverable. Conservare tutto equivale spesso a trasferire allo stakeholder il costo di ricostruire il ragionamento che l'analista avrebbe dovuto sintetizzare.
 
-Il deliverable finale non dovrebbe conservarle tutte.
+Il prodotto finale dovrebbe invece mostrare **come è cambiata la nostra comprensione del fenomeno**. Per questo useremo una **EDA Evidence Map**: un artefatto breve che separa il fatto osservato dalla sua concentrazione, la robustezza del pattern dalle ipotesi e ciò che possiamo descrivere da ciò che richiede un metodo più forte.
 
-Dovrebbe conservare **la struttura dell'evidenza** emersa dall'esplorazione.
-
-Un modo utile è costruire una **EDA Evidence Map** con cinque blocchi:
-
-1. fenomeno osservato;
-2. concentrazione e composizione;
-3. robustezza;
-4. ipotesi candidate;
-5. prossimo metodo necessario.
+La struttura si è guadagnata il diritto di restare esplicita perché serve a impedire che, nella sintesi, i livelli di evidenza tornino a mescolarsi.
 
 ### 1. Fenomeno osservato
 
-Scrivi il cambiamento principale in modo quantitativo e con la baseline esplicita.
-
-Esempio:
+Il punto di partenza è una frase quantitativa con baseline esplicita:
 
 > Il churn mensile è passato dal 6,2% all'8,1% negli ultimi quattro mesi, +1,9 pp rispetto alla media dei sei mesi precedenti.
 
-Non ancora:
-
-> Il nuovo onboarding sta facendo aumentare il churn.
-
-La seconda frase appartiene a un livello di evidenza diverso.
+Questa è un'osservazione. “Il nuovo onboarding sta facendo aumentare il churn” è già una spiegazione e richiede altra evidenza.
 
 ### 2. Concentrazione e composizione
 
-Dove vive il fenomeno?
+Il secondo blocco spiega dove vive il fenomeno e quanto del totale riusciamo a localizzare. Possiamo scoprire, per esempio, che **circa il 72% dell'aumento assoluto di churn proviene da SMB con meno di sei mesi di tenure, mentre Enterprise è stabile**. La frase restringe il problema senza attribuirgli ancora una causa.
 
-- quali segmenti contribuiscono di più al delta?
-- il movimento è generalizzato o localizzato?
-- cambia il mix della popolazione?
-- numeratore e denominatore si muovono nello stesso modo?
-- media e percentili raccontano la stessa storia?
-
-Esempio:
-
-> Circa il 72% dell'aumento assoluto di churn proviene da SMB con meno di sei mesi di tenure; Enterprise è stabile.
-
-Questa frase restringe il problema senza pretendere di averne trovato la causa.
+Qui entrano anche mix, denominatori, code e differenze tra media e percentili. Un movimento aggregato è più interpretabile quando sappiamo se è generalizzato oppure prodotto da pochi segmenti, da una popolazione che cambia composizione o da una parte estrema della distribuzione.
 
 ### 3. Robustezza
 
-Ogni pattern importante dovrebbe essere accompagnato da almeno un controllo di sensibilità.
+Ogni pattern importante dovrebbe sopravvivere ad almeno un controllo ragionevole della lente con cui lo abbiamo osservato. Possiamo confrontare media e mediana, baseline temporali alternative sensate, tasso e volume, totale e segmentazioni motivate, dataset completo e sensitivity analysis sui punti influenti.
 
-Domande utili:
+Una classificazione informale può essere sufficiente:
 
-- resta visibile usando mediana invece della media?
-- cambia se escludiamo un periodo eccezionale, mantenendolo comunque documentato?
-- sopravvive alla segmentazione per una dimensione plausibile?
-- dipende da uno o due punti influenti?
-- è stabile con una baseline temporale alternativa sensata?
-- cambia quando mostriamo tasso e volume insieme?
+- **robusto** — resta sostanzialmente invariato nelle letture plausibili;
+- **moderatamente sensibile** — cambia in ampiezza ma non nella direzione o nella sostanza;
+- **fragile** — dipende fortemente da una scelta, un periodo o poche osservazioni.
 
-Possiamo classificare informalmente il pattern come:
+Non è un test statistico. È memoria della dipendenza del pattern dalle scelte esplorative.
 
-- **robusto**;
-- **moderatamente sensibile**;
-- **fragile**.
+### 4. Ipotesi candidate e alternative
 
-Non è un test statistico. È un modo per non dimenticare quanto la conclusione dipenda dalle scelte esplorative.
-
-### 4. Ipotesi candidate e spiegazioni alternative
-
-Una tabella semplice evita che le ipotesi diventino fatti per ripetizione:
+Una piccola tabella evita che le interpretazioni diventino fatti per ripetizione:
 
 | Pattern | Ipotesi candidata | Alternativa plausibile | Evidenza mancante |
 |---|---|---|---|
@@ -75,24 +42,13 @@ Una tabella semplice evita che le ipotesi diventino fatti per ripetizione:
 | P95 delivery alto nel weekend | capacity insufficiente | mix geografico | volume per zona |
 | AOV alto nel social | effetto canale | product mix premium | confronto a mix costante |
 
-L'EDA è molto utile proprio quando mantiene aperte spiegazioni concorrenti.
+L'EDA è utile proprio perché riduce lo spazio delle storie possibili **senza chiuderlo artificialmente**.
 
-### 5. Prossimo metodo
+### 5. Prossimo metodo o stop
 
-Alla fine dobbiamo sapere che cosa non può più essere risolto con un altro grafico.
+L'ultima parte deve chiarire che cosa non può più essere risolto con un altro grafico. La risposta può essere inferenza statistica, nuova raccolta dati, analisi di coorte, forecasting, modello predittivo, esperimento o metodo causale. Può anche essere “nessun altro lavoro”: se la domanda era puramente descrittiva e l'evidenza è sufficiente per la decisione, fermarsi è una conclusione professionale.
 
-Possibili prossimi passi:
-
-- statistica inferenziale;
-- raccolta di nuovi dati;
-- analisi di coorte;
-- modello predittivo;
-- esperimento;
-- metodo causale;
-- approfondimento temporale;
-- nessun ulteriore lavoro, se l'evidenza è già sufficiente per la decisione descrittiva.
-
-### Template operativo
+## Template operativo
 
 ```text
 Domanda:
@@ -124,33 +80,12 @@ Cosa NON è dimostrato:
 Prossimo metodo / decisione:
 ```
 
-### Caso breve
+La differenza rispetto a una consegna del tipo “correlazione ticket-churn = 0,54” è sostanziale. Una Evidence Map può dire che il churn è aumentato dal 6,2% all'8,1%, quasi tutto nei nuovi SMB; in quel gruppo chi apre almeno tre ticket nei primi 30 giorni mostra churn maggiore; la relazione resta visibile per canale ma si riduce molto controllando per product tier; non sappiamo se i ticket siano causa, sintomo di problemi di prodotto o entrambe le cose. A quel punto il prossimo controllo — categorie ticket e sequenza temporale — nasce direttamente dall'evidenza.
 
-Invece di consegnare:
-
-> Correlazione ticket-churn = 0,54.
-
-l'EDA può produrre:
-
-> Il churn è aumentato dal 6,2% all'8,1%, quasi interamente nei nuovi SMB. In quel gruppo i clienti che aprono almeno tre ticket nei primi 30 giorni mostrano churn più elevato. La relazione resta visibile per canale ma si riduce molto controllando per product tier. Non sappiamo se i ticket siano causa del churn, sintomo di problemi di prodotto o entrambe le cose. Il prossimo passo è distinguere categorie ticket e sequenza temporale, poi valutare un disegno causale se vogliamo decidere un intervento.
-
-Questa è già una rappresentazione analitica molto più utile.
-
-### Una checklist finale, ma non quella del Capitolo 3
-
-Prima di chiudere l'EDA chiediti:
-
-- ho descritto centro, dispersione e forma dove servono?
-- ho mostrato volumi e denominatori?
-- ho controllato la composizione dei gruppi?
-- ho guardato i grafici prima di fidarmi dei coefficienti?
-- ho verificato pattern temporali plausibili?
-- ho stressato gli insight principali?
-- ho distinto fatti, ipotesi e causalità non dimostrata?
-- so quale domanda viene dopo?
+Prima di chiudere l'EDA, quindi, vogliamo aver descritto centro, dispersione e forma dove servono, conservato volumi e denominatori, verificato composizione e tempo, guardato la forma prima dei coefficienti e stressato i pattern principali. Soprattutto, dobbiamo saper dire quali frasi sono fatti, quali ipotesi e quali ancora non abbiamo il diritto di sostenere.
 
 NIST descrive l'EDA come un approccio orientato alla scoperta della struttura e al controllo delle assunzioni, non come una procedura meccanica.[^nist-eda]
 
-> **Una buona EDA riduce il numero di storie compatibili con i dati, ma non finge di aver identificato la storia causale definitiva.**
+> **Una buona EDA riduce il numero di storie compatibili con i dati e rende esplicito quale metodo serve per ridurlo ancora.**
 
-[^nist-eda]: NIST/SEMATECH, *Exploratory Data Analysis*. https://www.itl.nist.gov/div898/handbook/eda/eda_d.htm
+[^nist-eda]: NIST/SEMATECH, *Exploratory Data Analysis*. https://www.nist.gov/publications/nistsematech-e-handbook-statistical-methods-chapter-1-exploratory-data-analysis
