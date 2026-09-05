@@ -1,18 +1,12 @@
 ## 5.6 Legge dei grandi numeri: più osservazioni stabilizzano il rumore, non il bias
 
-Uno dei fenomeni che confonde più spesso l'interpretazione dei KPI è la volatilità dei **piccoli denominatori**.
+Un KPI su pochi casi può sembrare spettacolare perché bastano pochissimi esiti per spostarlo di molti punti. Questo non rende il numero falso. Significa che la sua **variabilità casuale è grande rispetto alla base che lo sostiene**.
 
-Un conversion rate può passare dal 4% al 9% e sembrare un cambiamento enorme. Se però deriva da poche decine di visite, bastano pochissimi acquisti in più per produrre il salto.
+La legge dei grandi numeri formalizza l'intuizione opposta: sotto condizioni appropriate, aumentando il numero di osservazioni indipendenti e comparabili una media o una frequenza tende a stabilizzarsi attorno al proprio valore atteso.
 
-La **legge dei grandi numeri** formalizza un'intuizione importante: sotto condizioni appropriate, quando aumentano le osservazioni indipendenti e comparabili, una media o una frequenza osservata tende a stabilizzarsi attorno al proprio valore atteso.
+La formulazione va tenuta stretta. La legge non dice “big data = verità”. Dice che più osservazioni possono ridurre una componente specifica dell'incertezza: **il rumore casuale dovuto al fatto di aver osservato un insieme finito di esiti**.
 
-Non dice che “big data = verità”.
-
-Dice qualcosa di molto più limitato e utile:
-
-> **aumentando il numero di osservazioni riduciamo in genere una parte della variabilità casuale.**
-
-### Caso simulato/composito — Il negozio migliore della rete
+## Il negozio migliore della settimana
 
 Una catena retail confronta 84 punti vendita.
 
@@ -21,89 +15,40 @@ Una catena retail confronta 84 punti vendita.
 | Aosta | 42 | 16 | 38,1% |
 | Milano Centrale | 4.920 | 1.181 | 24,0% |
 
-Aosta è prima nella classifica settimanale.
+Se ordiniamo la classifica, Aosta sembra straordinaria. La settimana precedente, però, aveva registrato 37 visitatori, 7 acquisti e conversion rate del 18,9%. Il tasso è quasi raddoppiato senza cambiamenti noti di promozione, layout o processo commerciale.
 
-La settimana precedente aveva però registrato:
+Con 42 visitatori, pochi acquisti in più o in meno muovono enormemente la percentuale. Con quasi 5.000 visitatori, la stima di Milano è molto meno volatile. Non abbiamo un “numero vero” e uno falso: abbiamo due stime con **precisione molto diversa**.
 
-- 37 visitatori;
-- 7 acquisti;
-- conversion rate 18,9%.
+Questo è il ponte verso standard error e confidence interval. Prima, però, vale la pena osservare una conseguenza pratica: quando classifichiamo molte unità, quelle con denominatori piccoli hanno più probabilità di comparire agli estremi proprio perché oscillano di più.
 
-Il tasso è quasi raddoppiato senza che il team abbia cambiato promozioni, layout o processo commerciale.
+Per questo “studiamo il top performer del mese e copiamo ciò che fa” può essere una strategia ingenua. Il top può essere davvero eccellente, ma può anche essere stato selezionato nel momento in cui una componente casuale lo ha spinto molto in alto. Serve verificare se il ranking persiste su più periodi, quante osservazioni lo sostengono e quanto cambia quando la stima viene accompagnata dalla propria incertezza.
 
-Con 42 visitatori, pochi esiti muovono enormemente la percentuale. Con quasi 5.000 visitatori, la stima di Milano è molto meno volatile.
+## Regressione verso la media: gli estremi non restano sempre estremi
 
-Questo non significa che Milano abbia “il valore vero” e Aosta no. Significa che le due percentuali hanno **precisione diversa**.
+Quando scegliamo un caso proprio perché è eccezionale, la misurazione successiva tende spesso a essere meno estrema. Una parte della performance precedente può essere stata rumore.
 
-Le sezioni su standard error e intervalli di confidenza quantificheranno esattamente questa differenza.
+Un negozio scelto come “peggiore” dopo una settimana eccezionalmente negativa può migliorare senza che l'intervento appena introdotto sia la causa. Il migliore può peggiorare senza aver perso competenza. Questa **regressione verso la media** diventerà particolarmente importante nei capitoli sulla causalità: confrontare “prima” e “dopo” su unità selezionate perché erano estreme può attribuire all'intervento un movimento che sarebbe avvenuto in parte comunque.
 
-### La classifica crea estremi anche quando non c'è una storia speciale
+## Un milione di risposte può essere un milione di risposte sbagliate per la domanda
 
-Se confrontiamo decine o centinaia di negozi, campagne, seller o account executive, alcuni finiranno inevitabilmente molto in alto e altri molto in basso anche per semplice variabilità casuale.
+La numerosità, però, non affronta ogni errore. Supponiamo di raccogliere un milione di risposte volontarie a una survey. Il sampling noise all'interno di quel gruppo può diventare minuscolo. Ma se chi risponde è sistematicamente diverso dalla popolazione che vogliamo descrivere, possiamo ottenere una stima estremamente precisa della popolazione sbagliata.
 
-Questo rende pericolose frasi come:
+AAPOR separa proprio il margin of sampling error da componenti come coverage, measurement e nonresponse.[^aapor-definitions] La precisione campionaria può quindi aumentare senza che migliori la rappresentatività.
 
-> “Studiamo il top performer del mese e copiamo ciò che fa.”
+Lo stesso principio vale fuori dalle survey. Se un sensore sovrastima sistematicamente la temperatura di 2 °C, passare da mille a un miliardo di misurazioni non elimina il bias: restringe l'incertezza attorno a una misura sistematicamente spostata.
 
-Prima dobbiamo capire quanto della performance estrema sia persistente.
+È utile tenere separate due leve:
 
-Un modo semplice è verificare:
+> **sample size riduce soprattutto rumore casuale; design, misurazione e rappresentatività affrontano altri errori.**
 
-- più settimane o mesi;
-- numerosità della base;
-- intervalli di incertezza;
-- stabilità del ranking;
-- performance dopo il periodo in cui il soggetto è stato selezionato come estremo.
+Quando un KPI appare improvvisamente estremo, il controllo non dovrebbe quindi fermarsi al denominatore. Dobbiamo chiederci quante osservazioni sostengono il numero, quanto una stima di quella dimensione tende normalmente a oscillare, se il risultato persiste e se abbiamo ragioni indipendenti per credere che i dati rappresentino bene la popolazione che ci interessa.
 
-### Regressione verso la media
+La sezione sul campionamento mostrerà che questa ultima domanda viene logicamente **prima** di qualsiasi formula di precisione.
 
-I casi selezionati perché estremi tendono spesso a essere meno estremi alla misurazione successiva.
+> **Più dati possono rendere una stima più precisa. Solo un processo di osservazione adeguato può renderla anche credibile per la popolazione che vogliamo descrivere.**
 
-Non necessariamente perché il processo sia migliorato o peggiorato. Una parte del valore precedente può essere stata rumore.
+---
 
-Un negozio scelto come “peggiore” dopo una settimana eccezionalmente negativa può migliorare anche senza intervento. Il migliore può peggiorare senza aver perso competenza.
+### Fonte
 
-Questo fenomeno, **regressione verso la media**, è una ragione in più per non attribuire automaticamente ogni movimento successivo all'azione appena implementata.
-
-Lo ritroveremo nei capitoli su causalità ed experimentation.
-
-### Più dati non correggono una selezione sbagliata
-
-Supponiamo di avere un sondaggio con un milione di risposte volontarie.
-
-La numerosità può rendere piccolissimo l'errore casuale **all'interno di quel gruppo di rispondenti**. Ma se chi risponde è sistematicamente diverso dalla popolazione che vogliamo descrivere, l'estrema precisione non risolve il problema.
-
-AAPOR distingue infatti l'errore di campionamento da altre fonti di errore come coverage, measurement e nonresponse.[^aapor-definitions]
-
-Il principio è fondamentale:
-
-> **un campione enorme può stimare con grandissima precisione la popolazione sbagliata.**
-
-Nella sezione 5.8 vedremo un caso storico famoso proprio su questo punto.
-
-### Sensore sbagliato, miliardi di righe
-
-Lo stesso vale fuori dai survey.
-
-Se un sensore sovrastima sistematicamente la temperatura di 2 °C, aumentare da mille a un miliardo di misurazioni non elimina il bias. Riduce l'incertezza attorno a una misura sistematicamente spostata.
-
-Quindi:
-
-- **sample size** aiuta contro il rumore casuale;
-- **design, misurazione e rappresentatività** affrontano altre fonti di errore.
-
-Confondere questi livelli è uno degli errori più costosi della statistica applicata.
-
-### La domanda operativa
-
-Quando vediamo un KPI estremo chiediamoci:
-
-1. qual è il denominatore?
-2. quante osservazioni sostengono il numero?
-3. quanto oscilla normalmente una stima di questa dimensione?
-4. il risultato persiste nel tempo?
-5. stiamo riducendo incertezza casuale o abbiamo anche ragioni per credere che il dato rappresenti bene la popolazione?
-
-> **Più dati possono rendere una stima più precisa. Solo un buon processo di raccolta può renderla anche più credibile.**
-
-[^aapor-definitions]: AAPOR, *Standard Definitions*: https://aapor.org/standards-and-ethics/standard-definitions/
+[^aapor-definitions]: AAPOR, *Standard Definitions*, 10th edition. https://aapor.org/standards-and-ethics/standard-definitions/
