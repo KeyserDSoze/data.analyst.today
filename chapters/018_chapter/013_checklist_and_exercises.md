@@ -1,137 +1,95 @@
-## 18.12 Analytics Operating Contract, gate ed esercizi
+## 18.12 Analytics Operating Contract, Promotion Gate ed esercizi
 
-Questo capitolo non termina con una checklist di tecnologie.
-
-Termina con una domanda più impegnativa:
+Il capitolo non termina chiedendo quale piattaforma usare. Termina con una domanda precedente all'architettura:
 
 > **Questa analisi ricorrente ha davvero il diritto di diventare un servizio operativo?**
 
-Industrializzare troppo presto crea infrastruttura per domande ancora instabili.
-
-Industrializzare troppo tardi lascia decisioni critiche dipendenti da memoria, file locali e controlli manuali.
-
-Serve quindi un gate.
+Industrializzare troppo presto crea infrastruttura per una domanda ancora instabile. Industrializzare troppo tardi lascia decisioni critiche dipendenti da memoria, file locali e controlli manuali. Il gate serve a distinguere le due situazioni.
 
 ## Promotion Gate: da analisi a prodotto operativo
 
-Prima di promuovere un workflow chiediamo:
+Un workflow merita promozione quando la combinazione di ricorrenza, failure cost e stabilità semantica rende utile trasferire la promessa dalla persona al sistema.
 
-### Decisione
+Prima della promozione devono essere leggibili almeno quattro dimensioni.
 
-- Quale decisione ricorrente supporta?
-- Chi è il decision owner?
-- Con quale frequenza viene presa?
-- Qual è il costo del dato sbagliato, in ritardo o non disponibile?
-- Che cosa succede se il prodotto scompare per una settimana?
+**Decisione e failure cost.** Quale scelta ricorrente supporta il prodotto? Chi la prende, con quale frequenza e deadline? Che cosa costa un dato sbagliato, in ritardo o non disponibile? Che cosa succede se il prodotto scompare per una settimana?
 
-### Stabilità del significato
+**Stabilità del significato.** Grain, popolazione, metriche e tempo sono abbastanza stabili da poter essere contrattualizzati? Esiste un semantic owner? Le varianti legittime hanno nomi diversi? I consumer principali condividono il significato?
 
-- Metriche, grain, popolazione e tempo sono abbastanza stabili?
-- Esiste un semantic owner?
-- Le varianti legittime sono nominate in modo distinto?
-- I principali consumer condividono il significato?
+**Ripetizione e scala.** Il processo viene ricostruito spesso? È usato da più persone o sistemi? Il lavoro manuale ripetuto ha costo significativo o ha già prodotto errore, ritardo o ownership drift?
 
-### Scala e ripetizione
+**Governabilità.** Possiamo testare e monitorare i failure mode rilevanti? Possiamo definire serving state, fallback e recovery? Possiamo identificare consumer downstream e gestire structural/semantic change?
 
-- Il processo è ricorrente?
-- Viene usato da più persone o sistemi?
-- Ricostruirlo manualmente ha un costo significativo?
-- Gli errori manuali hanno già prodotto rischio o ritardo?
-
-### Governabilità
-
-- Possiamo testarlo?
-- Possiamo monitorarlo?
-- Possiamo definirne degraded mode e rollback/recovery?
-- Possiamo identificare i downstream consumer?
-- Possiamo versionare semantic e structural change?
-
-Se le risposte sono immature, la scelta corretta può essere:
+Se queste condizioni non sono mature, l'output del gate può essere semplicemente:
 
 `KEEP EXPLORATORY`.
 
-L'automazione non è sempre una promozione.
+Automazione non equivale a promozione.
 
 ## Analytics Operating Contract
 
-Quando il workflow supera il Promotion Gate, il contratto minimo può contenere:
+Quando il workflow supera il Promotion Gate, il contratto operativo riunisce le promesse costruite nel capitolo. Questa struttura resta intenzionalmente schematica: è un artefatto da usare durante design, incident, handover e review.
 
-### 1. Purpose e consumer
+### 1. Purpose e decision boundary
 
-- recurring decision;
+- recurring decision / use case;
 - consumer;
-- decision cadence;
-- decision deadline.
+- decision owner;
+- cadence e decision deadline;
+- do-nothing / fallback process.
 
 ### 2. Criticality
 
-- `T0 Exploratory`;
-- `T1 Team`;
-- `T2 Business-critical`;
-- `T3 High-consequence`.
+- `T0 — Exploratory`;
+- `T1 — Team`;
+- `T2 — Business-critical`;
+- `T3 — High-consequence`.
 
-Il tier determina quanto rigore è proporzionato.
+Il tier non certifica qualità. Determina quanto controllo è economicamente proporzionato al failure cost.
 
 ### 3. Ownership
 
-- decision owner;
-- semantic/metric owner;
-- product/technical owner;
+- semantic / metric owner;
+- product / technical owner;
 - source owner;
-- governance/steward;
-- escalation owner.
+- stewardship / governance;
+- incident escalation owner;
+- backup e ownership-transfer path.
 
-### 4. Product boundary
+### 4. Product e compatibility boundary
 
-- input autorevoli;
-- output;
-- grain;
-- semantic interface;
-- consumer supportati;
-- consumer fuori scope.
+- input authoritative;
+- output e grain;
+- metriche/semantic interface;
+- consumer supportati e use case fuori scope;
+- schema/semantic compatibility promise;
+- version e history policy.
 
 ### 5. Reliability contract
 
-- SLI;
-- SLO;
-- freshness;
-- completeness;
-- reconciliation;
-- availability;
-- error budget;
-- latency se decision-critical.
+- SLI e SLO;
+- freshness, completeness, correctness/reconciliation;
+- availability/latency se decision-critical;
+- error-budget policy quando utile;
+- decision deadline.
 
 ### 6. Serving states
 
-Definire esplicitamente gli stati che il consumer può vedere:
+| Stato | Uso consentito |
+|---|---|
+| `READY` | tutti i blocking gate passano |
+| `READY WITH CAVEATS` | uso consentito entro caveat visibili |
+| `STALE BUT SERVABLE` | last-known-good ancora valido entro limiti definiti |
+| `PARTIAL / DEGRADED` | ambito escluso dichiarato; solo decisioni compatibili con la copertura |
+| `BLOCKED` | non fit for decision |
 
-- `READY`;
-- `READY WITH CAVEATS`;
-- `STALE BUT SERVABLE`;
-- `PARTIAL`;
-- `BLOCKED`.
+Per ogni stato devono essere noti fallback, comunicazione e chi può accettare il rischio residuo.
 
-Per ogni stato devono essere chiari:
+### 7. Failure-mode coverage
 
-- cosa può essere usato;
-- cosa non può essere usato;
-- quale fallback esiste;
-- chi può accettare il rischio residuo.
+La testing strategy deve indicare quali rischi proteggono source contract, structural test, transformation invariant, reconciliation, distribution check, semantic test, consumer/decision test e recovery test.
 
-### 7. Testing strategy
-
-Copertura almeno dei failure mode rilevanti attraverso:
-
-- source contract test;
-- structural test;
-- transformation invariants;
-- reconciliation;
-- distribution/data-health check;
-- semantic test;
-- decision/consumer test;
-- recovery test.
-
-Ogni test deve avere disposition:
+Ogni controllo ha disposition:
 
 - `BLOCKING`;
 - `WARNING`;
@@ -139,315 +97,136 @@ Ogni test deve avere disposition:
 
 ### 8. Observability e incident response
 
-- monitor;
-- alert actionability;
+- monitor e alert actionability;
 - severity;
-- on-call/escalation;
+- on-call/escalation proporzionata al tier;
 - runbook;
-- MTTR target quando rilevante;
+- fallback/degraded mode;
+- repair/replay/re-certification;
 - incident communication;
-- postmortem;
-- data repair/replay.
+- postmortem e reliability review.
 
-### 9. Change e compatibility
+### 9. Change e lifecycle
 
-- versioning;
-- technical diff;
-- semantic diff;
+- technical + semantic diff;
 - consumer impact analysis;
-- notice period;
+- notice;
 - shadow/dual run;
-- backfill/forward-only decision;
-- rollback/replay plan;
-- deprecation policy.
+- backfill vs forward-only;
+- rollback/replay;
+- asset states `EXPERIMENTAL → SUPPORTED → CERTIFIED → DEPRECATED → RETIRED`;
+- successor e archival requirement.
 
-### 10. Adoption
+### 10. Adoption e decision value
 
 Misurare la ladder:
 
 **availability → discoverability → usage → effective use → decision embedding → outcome**.
 
-Evitare di chiamare `success` il solo numero di utenti.
+Usage non è automaticamente success. Anche la riduzione di dashboard, alert o query può indicare un sistema migliore.
 
 ### 11. Economics
 
-- cost allocation;
+- allocation strategy;
 - cost-to-serve;
-- freshness/latency premium;
-- anomaly detection sui costi;
-- unit economics;
-- capacity/budget owner.
+- service-level/freshness premium;
+- cost anomaly;
+- unit metrics coerenti con il valore;
+- `optimize / resize / redesign / retire` review.
 
-### 12. AI/agent profile, se presente
+### 12. Agent Operating Profile, se presente
 
-- purpose;
+- purpose e criticality;
 - model/tool/context configuration;
-- data boundary;
-- permission boundary;
-- autonomy level;
-- eval suite;
-- runtime/action budget;
-- stop condition;
-- escalation;
+- data e permission boundary;
+- autonomy/action budget;
+- eval e monitor;
+- stop/escalation;
 - audit;
-- change/re-eval trigger;
-- revoke/retire path.
-
-### 13. Lifecycle
-
-- review cadence;
-- ownership transfer;
-- deprecation state;
-- retirement trigger;
-- successor;
-- archival/audit requirement.
+- authority-reduction/revoke path;
+- re-eval trigger;
+- retirement.
 
 ## Operating Readiness Gate
 
-Un prodotto può uscire dal gate come:
+Un prodotto non esce dal gate soltanto come “approvato” o “rifiutato”. Gli stati devono riflettere il rischio operativo reale.
 
-### READY TO OPERATE
-
-Ownership, reliability, monitoring, change e recovery sono coerenti con il tier.
-
-### READY WITH EXPLICIT DEBT
-
-Il prodotto può operare, ma esistono gap accettati da un owner e con scadenza.
-
-### SHADOW / LIMITED MODE
-
-Il prodotto deve produrre output in parallelo o per consumer limitati prima della promozione.
-
-### NOT READY
-
-Il failure cost è troppo alto rispetto ai controlli disponibili.
-
-### KEEP EXPLORATORY
-
-La domanda o la semantica non sono abbastanza stabili da meritare industrializzazione.
-
-Questa ultima risposta è importante.
+| Stato | Significato |
+|---|---|
+| `READY TO OPERATE` | ownership, reliability, change, recovery e cost model coerenti con il tier |
+| `READY WITH EXPLICIT DEBT` | gap accettati da owner nominato, con scadenza e failure boundary chiari |
+| `SHADOW / LIMITED MODE` | parallel run, audience o autorità limitati prima della promozione |
+| `NOT READY` | failure cost troppo alto rispetto ai controlli disponibili |
+| `KEEP EXPLORATORY` | domanda o semantica non abbastanza stabili da meritare industrializzazione |
 
 > **Non tutto ciò che può essere automatizzato merita di diventare infrastruttura.**
 
 ## Esercizio 1 — Il report fragile
 
-Ogni mattina alle 08:00 un report commerciale viene inviato a 200 manager.
+Ogni mattina alle 08:00 un report commerciale viene inviato a 200 manager. Negli ultimi tre mesi è arrivato in ritardo **7 volte**, due volte ha mostrato dati incompleti, nessuno sa quale versione di `pipeline_coverage` sia ufficiale, costa circa **€9.000/mese** e il **60%** dei destinatari non lo apre mai.
 
-Negli ultimi tre mesi:
-
-- è arrivato in ritardo 7 volte;
-- due volte ha mostrato dati incompleti;
-- nessuno sa quale versione di `pipeline_coverage` sia ufficiale;
-- il processo costa circa €9.000 al mese;
-- il 60% dei destinatari non apre mai il report.
-
-Costruire un Analytics Operating Contract che includa:
-
-1. recurring decision;
-2. criticality tier;
-3. ownership;
-4. SLI/SLO;
-5. serving states;
-6. testing strategy;
-7. adoption ladder;
-8. cost-to-serve;
-9. retirement trigger.
-
-Domanda finale:
-
-> il prodotto va migliorato, ridimensionato o ritirato?
+Costruisci l'Operating Contract minimo: recurring decision, tier, ownership, SLI/SLO, serving states, failure-mode coverage, adoption ladder, cost-to-serve e retirement trigger. Concludi scegliendo tra `IMPROVE`, `RESIZE`, `REDESIGN` o `RETIRE`; non assumere che un report inviato a 200 persone sia automaticamente T2.
 
 ## Esercizio 2 — Tutto verde, ma il numero è sbagliato
 
-Una pipeline `customer_health` mostra:
+La pipeline `customer_health` ha job success 100%, freshness entro SLO, schema invariato, null rate stabile e row count nel range. Customer Success scopre però che il CRM ha ridefinito `renewal_date` da data contrattuale a data prevista.
 
-- job success 100%;
-- freshness entro SLO;
-- schema invariato;
-- null rate stabile;
-- row count nel range atteso.
+Classifica il failure, progetta il semantic test che avrebbe potuto intercettarlo, ricostruisci blast radius e consumer, scegli il serving state durante l'incidente e definisci recovery/backfill e change notice.
 
-Tuttavia, il team Customer Success scopre che `renewal_date` è stata ridefinita dal CRM come data prevista invece che data contrattuale.
+## Esercizio 3 — Error budget quasi esaurito
 
-Progettare:
+Una dashboard executive T2 ha readiness SLO **99%** dei business day. Nel trimestre l'error budget è quasi esaurito, ma il team propone tre nuove feature che aggiungono dipendenze.
 
-- failure-mode classification;
-- test che avrebbe potuto intercettarlo;
-- semantic diff;
-- blast-radius analysis;
-- serving state durante l'incidente;
-- comunicazione ai consumer;
-- recovery/backfill.
+Decidi se continuare feature work, quali SLI/root-cause analizzare, chi può accettare un cambio di SLO e quale evidenza dimostrerebbe che il 99% è troppo aggressivo o troppo permissivo. Evita di trattare lo SLO come un numero rituale.
 
-## Esercizio 3 — Error budget consumato
+## Esercizio 4 — Self-service con usage alto e effective use basso
 
-Una dashboard executive T2 ha SLO di readiness del 99% dei giorni lavorativi.
+Una piattaforma ha **2.400 utenti registrati**, **61% MAU**, **490 dashboard**, **38 metriche certificate**, **74 duplicate non certificate**, **11 data incident/mese** e quattro ore medie di reconciliation prima del monthly business review.
 
-Nel trimestre corrente il budget di failure è quasi esaurito.
+Costruisci una scorecard che distingua reach, usage, effective use, decision embedding, reliability, semantic consistency, outcome e cost efficiency. Indica almeno due metriche che potrebbero **diminuire** mentre il sistema migliora.
 
-Il team propone comunque tre nuove feature che aumentano complessità e dipendenze.
+## Esercizio 5 — Un agente cambia natura
 
-Decidere:
+Un agente può interrogare il warehouse, generare SQL, leggere lineage, produrre grafici, inviare sintesi e aprire data-incident ticket. La prima versione è `suggestion-only`. La seconda può anche sospendere automaticamente una campagna marketing fino a **€500.000/mese**.
 
-- se congelare feature work;
-- quali cause del failure budget affrontare;
-- quali SLI verificare;
-- chi deve accettare un eventuale cambio di SLO;
-- come evitare che `99%` diventi un numero rituale scollegato dalla decisione.
+Costruisci per entrambe le versioni l'Agent Operating Profile: tier, data/tool boundary, authority, eval, runtime/action budget, monitoring, stop condition, escalation, revoke/rollback, re-eval e retirement. Spiega perché il secondo agente non è “lo stesso sistema con un tool in più”: è cambiata l'autorità e quindi il failure cost.
 
-## Esercizio 4 — Self-service ad alta adozione, bassa efficacia
+## Esercizio 6 — CI verde, change management rosso
 
-Una piattaforma analytics ha:
+Una nuova semantic layer è tecnicamente migliore ma cambia nomi di metriche, navigation path, workflow Finance, export e ownership di due data product. La CI passa.
 
-- 2.400 utenti registrati;
-- 61% utenti attivi mensili;
-- 490 dashboard;
-- 38 metriche certificate;
-- 74 metriche duplicate non certificate;
-- 11 incidenti dati al mese;
-- quattro ore medie di riconciliazione prima del monthly business review.
+Disegna consumer impact analysis, dual run, migration deadline, training/support, deprecation, feedback e rollback. La Fabric Adoption Roadmap ricorda che change management riguarda l'impatto sulle persone e sui processi, non soltanto il deploy tecnico.
 
-Costruire una scorecard che distingua:
-
-- availability/discoverability;
-- usage;
-- effective use;
-- decision embedding;
-- reliability;
-- semantic consistency;
-- business outcome;
-- cost efficiency.
-
-Quali metriche potrebbero diminuire mentre il sistema migliora?
-
-## Esercizio 5 — Un agente entra in produzione
-
-Un agente può:
-
-- interrogare il warehouse;
-- generare SQL;
-- leggere lineage;
-- produrre grafici;
-- inviare una sintesi;
-- aprire ticket di data incident.
-
-Prima versione: suggestion-only.
-
-Seconda versione: può anche sospendere automaticamente una campagna marketing fino a €500.000 al mese.
-
-Per entrambe costruire l'Agent Operating Profile:
-
-- criticality;
-- data/tool boundary;
-- authority;
-- eval;
-- runtime/action budget;
-- monitoring;
-- stop condition;
-- escalation;
-- rollback/revoke;
-- re-eval trigger;
-- retirement.
-
-Spiegare perché il secondo agente non è soltanto “la prima versione con un tool in più”.
-
-## Esercizio 6 — Change management umano
-
-Una nuova versione del semantic layer è tecnicamente migliore ma cambia:
-
-- nomi di alcune metriche;
-- navigation path;
-- workflow usato da Finance;
-- export disponibile agli utenti;
-- ownership di due data product.
-
-La CI è tutta verde.
-
-Progettare il change plan considerando:
-
-- consumer impact;
-- training/support;
-- dual run;
-- migration deadline;
-- deprecation;
-- feedback;
-- resistance;
-- rollback.
-
-La Microsoft Fabric Adoption Roadmap sottolinea che il change management analytics riguarda anche l'impatto sulle persone e sui processi, non soltanto il deploy tecnico.
-
-Fonte pubblica: https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-change-management
+Fonte: https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-change-management
 
 ## Esercizio 7 — Il prodotto che nessuno vuole spegnere
 
-Una tabella certificata `customer_360_v1`:
+`customer_360_v1` ha un successore da **14 mesi**, costa **€18.000/mese**, riceve ancora il **7% delle query**, non ha owner attivo, contiene due definizioni legacy e alimenta tre job notturni senza business owner noto.
 
-- ha un successore `customer_360_v2` da 14 mesi;
-- costa €18.000 al mese;
-- riceve ancora il 7% delle query;
-- non ha owner attivo;
-- contiene due definizioni legacy non più supportate;
-- è usata da tre job notturni di cui nessuno conosce il business owner.
+Progetta: lineage/discovery → consumer classification → replacement validation → notice → migration → access restriction progressiva → archival/audit → shutdown → post-retirement monitoring. Decidi anche chi deve possedere il retirement fino alla chiusura effettiva.
 
-Progettare un retirement plan:
+## Esercizio finale — Cinque workflow, cinque promesse diverse
 
-1. lineage/discovery;
-2. consumer classification;
-3. replacement validation;
-4. notice;
-5. migration;
-6. access restriction progressiva;
-7. archival/audit;
-8. shutdown;
-9. post-retirement monitoring.
+Un marketplace ha:
 
-## Esercizio finale — Operating system senza etichetta
-
-Un marketplace ha cinque processi:
-
-**A.** executive revenue review giornaliero;
-
-**B.** forecast trimestrale aggiornato mensilmente;
-
-**C.** fraud decision in pochi secondi;
-
-**D.** notebook una tantum per valutare una nuova categoria;
-
+**A.** executive revenue review giornaliero;  
+**B.** forecast trimestrale aggiornato mensilmente;  
+**C.** fraud decision in pochi secondi;  
+**D.** notebook una tantum per valutare una nuova categoria;  
 **E.** agente che triagea anomalie e può aprire incident.
 
-Per ciascuno decidere:
+Per ciascuno scegli se merita un Analytics Operating Contract, tier, ownership, SLO/failure boundary, testing depth, degraded mode, change process, cost model, adoption/outcome metric, agent governance se rilevante e review/retirement cadence.
 
-- se merita un Analytics Operating Contract;
-- criticality tier;
-- ownership;
-- reliability target;
-- testing depth;
-- degraded mode;
-- change process;
-- cost model;
-- adoption/outcome metric;
-- AI governance se rilevante;
-- retirement/review cadence.
+Il vincolo è lo stesso che attraversa tutto il libro: **assegnare il minimo controllo sufficiente al costo del failure**, non il massimo controllo tecnicamente possibile.
 
-L'obiettivo non è assegnare più governance a tutto.
+## Dal sistema operativo dell'analytics al sistema operativo della carriera
 
-È assegnare **il minimo controllo sufficiente al costo del failure**.
-
-## Chiusura del capitolo
-
-Il percorso completo è:
+Il percorso del capitolo è:
 
 **analisi → asset → prodotto → servizio operativo → capacità organizzativa**.
 
-A ogni passaggio cresce la necessità di esplicitare:
-
-**promessa → owner → failure boundary → controllo → recovery → costo → lifecycle**.
-
-Un'organizzazione matura non dipende da un analyst eroico che ricorda tutte le eccezioni.
-
-E non cerca neppure di eliminare ogni giudizio umano attraverso l'automazione.
-
-Costruisce un sistema in cui il giudizio importante è posizionato nei punti giusti e il resto del processo rende visibili le condizioni in cui quel giudizio deve essere esercitato.
+A ogni passaggio cresce la necessità di rendere espliciti **promessa → owner → failure boundary → controllo → recovery → costo → lifecycle**. Un'organizzazione matura non dipende dall'analyst eroico che ricorda tutte le eccezioni, ma non cerca neppure di eliminare ogni giudizio umano tramite automazione. Posiziona il giudizio nei punti in cui cambia significato, rischio o decisione e incorpora il resto nella capacità operativa.
 
 > **La vera scalabilità non è fare più analisi con le stesse persone. È fare in modo che una decisione continui a ricevere evidenza affidabile anche quando cambiano dati, persone, software, agenti e organizzazione.**
+
+Il Capitolo 19 porta la stessa idea sul professionista. Se query, dashboard, orchestrazione e una parte dell'analisi diventano più automatizzabili, il problema non sarà difendere ogni task manuale. Sarà capire **quali responsabilità vogliamo essere capaci di possedere quando l'esecuzione diventa più economica**.
