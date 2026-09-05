@@ -1,28 +1,10 @@
-## 5.9 Distribuzione campionaria: la stima è uno dei risultati possibili
+## 5.9 Distribuzione campionaria: la stima osservata è una sola possibilità
 
-Quando calcoliamo una media, una proporzione o una differenza su un campione, il valore ottenuto sembra spesso definitivo.
+Una volta stabilito che il campione ha una relazione difendibile con la popolazione, compare un secondo problema. Anche con un disegno corretto, **un campione diverso avrebbe quasi certamente prodotto una stima leggermente diversa**.
 
-Ma se avessimo estratto un campione diverso dalla stessa popolazione, avremmo quasi certamente ottenuto un numero leggermente diverso.
+Questa è l'idea che rende possibile tutta la parte inferenziale del capitolo.
 
-Questa idea è il cuore della **distribuzione campionaria**.
-
-### Distribuzione dei dati e distribuzione della statistica
-
-È utile distinguere due oggetti:
-
-1. **distribuzione dei dati** — come variano le singole osservazioni;
-2. **distribuzione campionaria** — come varierebbe una statistica se ripetessimo il campionamento molte volte.
-
-Esempio:
-
-- i tempi delle singole consegne possono andare da 1 a 12 giorni;
-- la **media di 400 consegne** varia molto meno da campione a campione.
-
-Sono due distribuzioni diverse e rispondono a due domande diverse.
-
-### Caso simulato/composito — Cinque campioni, cinque medie
-
-Un marketplace vuole stimare il tempo medio di consegna internazionale. Ogni settimana seleziona casualmente 400 spedizioni da una popolazione molto più ampia.
+Immaginiamo un marketplace che voglia stimare il tempo medio di consegna internazionale. Ogni settimana seleziona casualmente 400 spedizioni da una popolazione molto più ampia e ottiene:
 
 | Campione | Media stimata |
 |---|---:|
@@ -32,54 +14,35 @@ Un marketplace vuole stimare il tempo medio di consegna internazionale. Ogni set
 | 4 | 3,72 giorni |
 | 5 | 3,80 giorni |
 
-Non dobbiamo concludere che il sistema logistico sia cambiato cinque volte.
+Non c'è bisogno di supporre che il sistema logistico sia cambiato cinque volte. Campioni diversi contengono combinazioni diverse di spedizioni. Se potessimo ripetere l'estrazione migliaia di volte, otterremmo migliaia di medie leggermente differenti. La distribuzione di quelle medie è la **sampling distribution della media**.
 
-Anche con una popolazione stabile, campioni diversi contengono combinazioni diverse di spedizioni.
+## Dati e stime hanno distribuzioni diverse
 
-Se potessimo ripetere l'estrazione migliaia di volte, avremmo migliaia di medie. La distribuzione di quelle medie è la **sampling distribution della media**.
+La distinzione più importante è tra la distribuzione delle osservazioni e quella della statistica che calcoliamo su di esse.
 
-Questa distribuzione descrive la variabilità dovuta al processo di campionamento.
+Le singole consegne possono durare da 1 a 12 giorni e avere una distribuzione molto dispersa. La media di 400 consegne varia molto meno da campione a campione. La prima distribuzione racconta **come varia il fenomeno**; la seconda racconta **come varia la nostra stima del suo centro**.
 
-### Una statistica è una variabile casuale prima di essere osservata
+Prima di raccogliere il campione, la media campionaria non ha ancora un valore: è una quantità casuale. Lo stesso vale per una proporzione, un churn rate, una differenza tra due gruppi o un coefficiente. Dopo il campionamento ne osserviamo una sola realizzazione.
 
-Prima di raccogliere i dati, non sappiamo quale valore assumerà:
+L'inferenza nasce da questa domanda:
 
-- la media campionaria;
-- una proporzione;
-- un churn rate;
-- una differenza tra due gruppi;
-- un coefficiente stimato.
+> **Quanto avrebbe potuto essere diversa la statistica che abbiamo osservato se il processo di raccolta avesse prodotto un altro campione comparabile?**
 
-La statistica è quindi una quantità casuale indotta dal campionamento.
+## Lo stesso numero di decimali non implica la stessa precisione
 
-Dopo aver osservato il campione ne vediamo una sola realizzazione.
-
-L'inferenza nasce dal tentativo di capire **quanto quella realizzazione avrebbe potuto essere diversa**.
-
-### Due percentuali con gli stessi decimali possono avere precisione opposta
-
-Supponiamo:
+Una dashboard può mostrare:
 
 - Regione A: conversion rate 6,1% su 80.000 sessioni eleggibili;
 - Regione B: conversion rate 6,5% su 180 sessioni eleggibili.
 
-La dashboard visualizza entrambi con una cifra decimale.
+Entrambe le stime hanno una cifra decimale. Visivamente sembrano possedere la stessa precisione. In realtà pochi acquisti in più o in meno spostano enormemente il 6,5% della Regione B, mentre il 6,1% della Regione A è molto più stabile rispetto al solo rumore campionario.
 
-Ma la seconda stima è molto più sensibile a pochi eventi in più o in meno.
+Questo ci costringe a leggere ogni stima su due assi:
 
-Questo è il motivo per cui una percentuale dovrebbe essere letta insieme almeno a:
+> **livello:** quale valore abbiamo osservato?
+>
+> **precisione:** quanto quella stima oscillerebbe tra campioni ottenuti con lo stesso disegno?
 
-- numerosità;
-- disegno con cui sono state ottenute le osservazioni;
-- misura della precisione quando stiamo facendo inferenza.
+Il prossimo concetto, lo standard error, quantifica proprio il secondo asse.
 
-### Livello e precisione
-
-Ogni stima ha quindi almeno due dimensioni:
-
-- **livello:** quale valore abbiamo osservato;
-- **precisione:** quanto quella stima tende a variare tra campioni comparabili.
-
-Il prossimo concetto, lo **standard error**, quantifica proprio la seconda.
-
-> **L'errore standard non ci dice quanto sono dispersi i clienti, gli ordini o i ticket. Ci dice quanto è dispersa la nostra stima tra possibili campioni.**
+> **Una stima puntuale è un risultato osservato. La sampling distribution ci ricorda tutti i risultati plausibili che il campionamento avrebbe potuto produrre al suo posto.**
