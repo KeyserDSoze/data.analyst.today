@@ -1,109 +1,41 @@
 ## 3.8 Outlier e valori impossibili: raro non significa sbagliato
 
-Un valore estremo può essere un errore. Ma può anche essere il record più importante del dataset.
+Un valore estremo può essere un errore, ma può anche essere il record più importante del dataset. La distanza dalla media non basta a distinguerli, perché l'anomalia statistica e l'errore di misura sono concetti diversi.
 
-Prima di eliminarlo conviene distinguere almeno tre categorie:
+Conviene pensare a tre categorie. Un valore **impossibile** viola una regola del fenomeno o del sistema. Un valore **implausibile** è possibile ma abbastanza anomalo da richiedere verifica. Un valore **raro ma reale** descrive invece un evento eccezionale che non deve essere cancellato soltanto perché disturba una distribuzione.
 
-- **impossibile**: viola una regola del fenomeno o del sistema;
-- **implausibile**: è possibile, ma abbastanza anomalo da richiedere verifica;
-- **raro ma reale**: rappresenta un evento eccezionale che non deve essere cancellato solo perché disturba la distribuzione.
-
-Questa distinzione sposta il problema dalla statistica alla comprensione del dominio.
+Questa distinzione porta immediatamente il problema fuori dalla sola statistica e dentro il dominio.
 
 ### Caso simulato/composito — Il cliente da 487.000 euro
 
-**Asteria Components**, distributore B2B di componenti industriali, analizza il valore degli ordini.
+Asteria Components, distributore B2B di componenti industriali, ha ordini mensili con mediana di poche migliaia di euro. Un record da **487.000 euro** viene segnalato da un boxplot e una routine automatica propone di rimuoverlo.
 
-La mediana mensile è di poche migliaia di euro. Un record mostra invece un ordine da **487.000 euro**.
+L'analista verifica il caso e scopre che appartiene a un produttore ferroviario che ha concentrato un ordine annuale in una singola commessa. Il valore è eccezionale ma reale. Eliminarlo ridurrebbe artificialmente fatturato, concentrazione del portafoglio, esposizione di cassa e rischio commerciale.
 
-Un boxplot lo segnala immediatamente come outlier. Una routine automatica di cleaning propone di rimuoverlo.
+Nello stesso dataset compare un ordine da **9.999.999 euro**. L'indagine porta a una storia diversa: è un placeholder generato da un'importazione legacy fallita.
 
-L'analista verifica il record prima di accettare la proposta.
+Due valori estremi. Uno descrive il business; l'altro descrive un errore del sistema che lo misura.
 
-Scopre che appartiene a un produttore ferroviario che ha concentrato un ordine annuale in una sola commessa. Il valore è eccezionale, ma reale.
+## Le regole del dominio vengono prima delle soglie statistiche
 
-Eliminarlo avrebbe distorto:
+Alcuni problemi possono essere identificati senza conoscere la distribuzione storica. Età negativa, `delivery_date < order_date` quando il processo non lo consente, percentuali oltre il dominio ammesso, una valuta non supportata o una quantità negativa in una tabella che non registra resi sono violazioni di regole esplicite.
 
-- fatturato mensile;
-- concentrazione del portafoglio clienti;
-- distribuzione del valore degli ordini;
-- previsione di cassa;
-- valutazione del rischio commerciale.
+Più difficile è il caso dell'implausibile. Un ordine da 100.000 euro può essere assurdo per un piccolo e-commerce e normale per un distributore industriale. Una sessione di quattordici ore può essere un bug oppure una pagina lasciata aperta; ottocento ordini in un giorno possono indicare un bot, un reseller o un'importazione batch.
 
-Nello stesso dataset compare anche un ordine da **9.999.999 euro**.
-
-Questa volta l'indagine porta a una spiegazione diversa: è un valore placeholder proveniente da un'importazione legacy fallita.
-
-Due valori estremi.
-
-Uno è informazione.
-
-L'altro è errore.
-
-La distanza dalla media non basta a distinguerli.
-
-### Valori impossibili: le regole del dominio sono più forti della distribuzione
-
-Alcuni problemi possono essere identificati senza conoscere la distribuzione storica.
-
-Esempi:
-
-- età = `-4`;
-- `delivery_date < order_date` quando il processo non consente correzioni retroattive di quel tipo;
-- percentuale = `143%` quando il dominio ammette solo 0–100;
-- quantità negativa in una tabella che non registra resi;
-- data futura per un evento già concluso;
-- valuta non supportata dal sistema.
-
-Questi sono controlli di dominio o di business rule.
-
-### Implausibile non significa impossibile
-
-Un ordine da 100.000 euro può essere assurdo in un negozio di cover per smartphone e normale in una società industriale.
-
-Una sessione web di 14 ore può essere un bug di tracking, ma anche una pagina lasciata aperta.
-
-Un cliente con 800 ordini in un giorno può essere un bot, un reseller o un'importazione batch.
-
-Per questo soglie arbitrarie come:
+Per questo un filtro come:
 
 ```python
 orders = orders[orders["amount"] < 100000]
 ```
 
-sono metodologicamente deboli se non sappiamo da dove proviene `100000`.
+è metodologicamente fragile se `100000` non deriva da una regola di dominio, da un processo documentato o da una decisione esplicita sull'analisi.
 
-### Gli outlier possono rivelare il processo
+## L'outlier è una pista sul processo
 
-Un valore estremo può segnalare:
+Un valore estremo può segnalare un cliente strategico, una frode, un cambio di unità, un backfill, una nuova modalità operativa o una transazione che prima arrivava frammentata e ora arriva aggregata. Trattarlo come rumore prima di investigarlo significa perdere proprio l'informazione che può spiegare un cambiamento nel sistema.
 
-- un cliente strategico;
-- una frode;
-- una nuova modalità operativa;
-- un errore di unità;
-- un cambio di sistema;
-- un backfill;
-- una transazione aggregata che prima arrivava separata.
+La procedura, quindi, deve seguire la storia del record: verificare tipo e unità, risalire alla sorgente più vicina all'evento reale, osservare timestamp e campi correlati, cercare casi analoghi e confrontare il valore con limiti di business conosciuti. Quando la plausibilità resta incerta, il domain expert diventa parte del controllo.
 
-Quindi l'outlier non è soltanto qualcosa da "gestire". È una pista investigativa.
+Se decidiamo di escludere un record, la regola deve essere riproducibile e l'effetto dell'esclusione va quantificato. Se una conclusione cambia radicalmente perché rimuoviamo tre osservazioni, quella sensibilità non è un dettaglio da nascondere: è parte dell'evidenza.
 
-### Procedura pratica
-
-Quando incontri un valore estremo:
-
-1. controlla tipo, unità e formato;
-2. verifica il record nella sorgente più vicina all'evento reale;
-3. osserva campi correlati e timestamp;
-4. cerca altri casi analoghi;
-5. confronta il valore con limiti di business noti;
-6. coinvolgi un domain expert quando la plausibilità non è evidente;
-7. documenta la decisione presa;
-8. se escludi il record, conserva una regola riproducibile e quantifica l'effetto dell'esclusione.
-
-### Una domanda utile
-
-Prima e dopo aver trattato gli outlier, confronta il risultato principale.
-
-Se una conclusione cambia radicalmente perché abbiamo escluso tre osservazioni, quella sensibilità è essa stessa informazione da comunicare.
-
-> **L'obiettivo non è normalizzare il mondo finché assomiglia alla nostra distribuzione attesa. È capire quali valori descrivono il mondo e quali descrivono un errore del sistema che lo misura.**
+> **L'obiettivo non è normalizzare il mondo finché assomiglia alla distribuzione attesa. È capire quali valori descrivono il mondo e quali descrivono un errore del sistema che lo misura.**
