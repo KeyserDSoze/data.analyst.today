@@ -1,213 +1,77 @@
-## 18.9 Adoption: un prodotto analitico non ha successo perché esiste
+## 18.9 Adoption: un prodotto analitico non crea valore perché esiste
 
-Una dashboard può essere tecnicamente eccellente e non entrare mai in una decisione.
+Una dashboard può essere tecnicamente eccellente e non entrare mai in una decisione. Un semantic layer può essere interrogato da centinaia di persone e continuare a produrre discussioni su che cosa significhi `revenue`. Un modello può generare score ogni ora e non modificare nessuna azione operativa.
 
-Un semantic layer può essere usato da centinaia di persone e continuare a produrre discussioni sulla definizione di `revenue`.
+Per questo **availability, usage, adoption e value non sono sinonimi**. Il cost-to-serve della sezione precedente acquista significato soltanto quando sappiamo quale parte del servizio viene realmente incorporata nei processi decisionali.
 
-Un modello può generare score ogni ora e non modificare nessuna azione operativa.
+Microsoft, nella Fabric Adoption Roadmap, distingue organizzazione, utenti e singole soluzioni e sottolinea che statistiche di utilizzo sono segnali utili ma non dimostrano, da sole, un uso efficace dell'analytics.
 
-Per questo **utilizzo, adozione e valore non sono sinonimi**.
+Fonti:
+- https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap
+- https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-maturity-levels
 
-Microsoft, nella Fabric Adoption Roadmap, distingue esplicitamente il semplice uso dall'uso efficace: numero di utenti e statistiche di utilizzo sono segnali utili, ma non dimostrano da soli che l'analytics sia stato adottato con successo.
+## Dall'accesso all'outcome: l'adoption ladder
 
-Fonte pubblica: https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap
-
-## L'adoption ladder
-
-Per un prodotto analitico ricorrente possiamo pensare a sei livelli.
-
-### 1. Availability
-
-Il prodotto esiste ed è accessibile.
-
-Non significa ancora che qualcuno sappia che esiste.
-
-### 2. Discoverability
-
-Il consumer riesce a trovarlo e capisce per quale problema è autorevole.
-
-Un catalogo con cinquemila asset e nessuna indicazione di certification non crea vera discoverability.
-
-### 3. Usage
-
-Il prodotto viene effettivamente consultato o interrogato.
-
-Questa è la parte più semplice da misurare:
-
-- utenti attivi;
-- query;
-- sessioni;
-- report view;
-- API call;
-- frequenza di utilizzo.
-
-Ma resta soltanto un livello intermedio.
-
-### 4. Effective use
-
-Gli utenti usano l'asset nel modo previsto.
-
-Per esempio:
-
-- scelgono la metrica certificata invece di una copia locale;
-- interpretano correttamente denominatore e caveat;
-- usano il drill-down appropriato;
-- non esportano il numero per ricostruirlo manualmente in un altro file.
-
-### 5. Decision embedding
-
-Il prodotto è diventato parte di un workflow reale.
-
-Esempi:
-
-- il weekly pricing meeting usa il Decision Communication Pack prodotto dal sistema;
-- il planner consulta il forecast prima del cut-off operativo;
-- il Customer Success team utilizza la lista prioritaria durante la pianificazione settimanale;
-- Finance chiude il mese usando la stessa metrica certificata del board pack.
-
-### 6. Outcome
-
-Possiamo osservare un miglioramento nel processo o nel risultato supportato.
-
-Non sempre sarà causalmente attribuibile al prodotto, ma dobbiamo almeno cercare segnali come:
-
-- minore tempo necessario per decidere;
-- meno riconciliazioni manuali;
-- meno decisioni prese su dati non ready;
-- minore frequenza di metriche duplicate;
-- migliore forecast-driven planning;
-- riduzione del cost-to-serve;
-- migliore qualità o reversibilità delle decisioni.
-
-La ladder è quindi:
+La progressione utile non è “pubblicato → usato”. È:
 
 **availability → discoverability → usage → effective use → decision embedding → outcome**.
 
-Saltare direttamente da `usage` a `success` è uno degli errori più comuni nei programmi analytics.
+**Availability** significa soltanto che il prodotto esiste ed è accessibile. **Discoverability** aggiunge la capacità del consumer di trovarlo e capire per quale problema sia autorevole. **Usage** misura sessioni, query, report view o API call. È facile da osservare, ma dice ancora poco sulla correttezza dell'uso.
 
-## Caso simulato/composito: 1.200 utenti, ma il problema resta
+Con **effective use** chiediamo se il consumer usa la metrica certificata invece della copia locale, interpreta correttamente denominatore e caveat e non deve esportare il numero per ricostruirlo manualmente altrove. **Decision embedding** è il salto successivo: il prodotto entra davvero nel weekly pricing meeting, nel capacity plan, nel workflow Customer Success o nel closing Finance. Solo a quel punto possiamo cercare **outcome** come minore tempo per decidere, meno reconciliation, meno decisioni prese su dati non ready, migliore planning o riduzione del cost-to-serve.
 
-Un'azienda lancia un portale self-service.
+Non sempre l'outcome sarà causalmente attribuibile al prodotto. La disciplina sta nel non fermarsi alla vanity metric più semplice.
 
-Dopo sei mesi:
+## 1.200 utenti e lo stesso meeting che comincia con “quale revenue?”
 
-- 1.200 utenti registrati;
-- 18.000 sessioni mensili;
-- 320 dashboard create;
-- 74% dei manager dichiara di aver usato il portale almeno una volta nell'ultimo mese.
+Un'azienda lancia un portale self-service. Dopo sei mesi conta 1.200 utenti registrati, 18.000 sessioni mensili, 320 dashboard e il 74% dei manager che dichiara di averlo usato almeno una volta nel mese. Il programma viene definito un successo.
 
-Il progetto viene dichiarato un successo.
+Il monthly business review, però, continua a iniziare con “quale revenue stiamo usando?”. Un audit trova 23 definizioni di `active_customer`, 11 varianti di `net_revenue`, il 41% delle dashboard executive su dataset non certificati e quasi quattro ore medie di reconciliation prima del meeting.
 
-Ma il monthly business review continua a iniziare con:
+L'accesso è aumentato. Il significato condiviso no. Il sistema ha migliorato availability e usage, non effective use né decision embedding.
 
-> “Quale revenue stiamo usando?”
+Questo caso mostra perché un adoption failure non è automaticamente un user failure. Se un prodotto viene usato male, il problema può essere scarsa discoverability, troppe alternative quasi equivalenti, naming incomprensibile, freshness insufficiente, workflow separato dal processo reale, mancanza di fiducia dopo incidenti, nessun owner visibile o nessuna distinzione tra `experimental` e `certified`.
 
-Un audit trova:
+Dire “gli utenti non sono data-driven” è spesso il modo più rapido per evitare una product diagnosis.
 
-- 23 definizioni attive di `active_customer`;
-- 11 varianti di `net_revenue`;
-- 41% delle dashboard executive basate su dataset non certificati;
-- quasi quattro ore medie di riconciliazione prima del meeting mensile.
+## Tre prospettive diverse sull'adozione
 
-L'accesso è aumentato.
+La Fabric Adoption Roadmap distingue **organizational adoption**, cioè governance, supporto e pratiche che rendono possibile l'uso corretto; **user adoption**, cioè uso effettivo ed efficace da parte delle persone; e **solution adoption**, cioè valore prodotto dalla specifica soluzione.
 
-Il significato condiviso no.
+Fonte: https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-maturity-levels
 
-Il prodotto ha migliorato availability e usage, ma non effective use né decision embedding.
+Per un prodotto critico questa distinzione può diventare una scorecard:
 
-## Adoption failure non significa automaticamente user failure
-
-Se un prodotto non viene usato bene, non basta concludere:
-
-> “Gli utenti non sono data-driven.”
-
-Il problema può essere nel prodotto.
-
-Possibili failure mode:
-
-- scarsa discoverability;
-- naming incomprensibile;
-- troppe alternative quasi equivalenti;
-- freshness insufficiente;
-- workflow separato dal processo operativo;
-- mancanza di fiducia dopo incidenti precedenti;
-- assenza di supporto;
-- interfaccia troppo tecnica;
-- nessuna indicazione di owner;
-- nessuna distinzione tra experimental e certified.
-
-L'adoption è quindi una responsabilità condivisa tra prodotto e consumer.
-
-## Misurare tre tipi di adozione
-
-La Fabric Adoption Roadmap di Microsoft distingue tre prospettive che sono utili anche oltre un prodotto specifico:
-
-- **organizational adoption** — quanto governance, supporto e pratiche organizzative rendono possibile l'uso corretto dell'analytics;
-- **user adoption** — quanto le persone utilizzano effettivamente ed efficacemente gli strumenti;
-- **solution adoption** — quale valore e impatto produce una specifica soluzione analitica.
-
-Fonte pubblica: https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-maturity-levels
-
-Questa distinzione evita di comprimere tutto in una metrica come `monthly active users`.
-
-## Una scorecard di adozione
-
-Per un prodotto critico possiamo osservare almeno cinque famiglie.
-
-| Dimensione | Esempi |
+| Dimensione | Evidenza utile |
 |---|---|
 | Reach | consumer target raggiunti, discoverability, access success |
 | Usage | utenti attivi, frequenza, query/report view |
-| Effective use | quota su metriche certificate, errori di interpretazione, support request ripetitive |
-| Workflow | percentuale di decisioni/processi che usa il prodotto, tempo domanda → risposta |
-| Outcome | tempo decisionale, riconciliazioni evitate, errori ridotti, valore economico/operativo |
+| Effective use | quota su metriche certificate, misunderstanding, support request ripetitive |
+| Workflow | processi decisionali che usano il prodotto, tempo domanda→risposta |
+| Outcome | reconciliation evitate, errori/rischi ridotti, decision time, valore operativo/economico |
 
-Non tutte richiedono una metrica perfetta.
+La scorecard non richiede una metrica perfetta per ogni cella. Richiede però di non comprimere tutta l'adozione in `monthly active users`.
 
-Serve però evitare che il solo utilizzo diventi la definizione implicita di successo.
+## A volte una buona adozione fa diminuire le metriche di attività
 
-## L'adoption può anche diminuire correttamente
+Se due dashboard duplicate vengono ritirate a favore di un prodotto certificato, il numero di asset e query può scendere mentre il sistema migliora. Se un alert diventa più preciso, le notifiche diminuiscono. Se un feed entra direttamente nel workflow operativo, gli utenti possono aprire meno dashboard.
 
-Una crescita continua dell'utilizzo non è sempre desiderabile.
+Quindi una metrica di adoption deve riflettere il comportamento desiderato, non l'attività massima. Anche qui il Decision Record aiuta: se sappiamo quale processo vogliamo migliorare, possiamo scegliere una misura coerente con quel processo.
 
-Se due dashboard duplicate vengono sostituite da un unico prodotto certificato, il numero totale di dashboard e query può diminuire mentre il sistema migliora.
+## Retirement è una forma di successo
 
-Se un alert diventa più preciso, il numero di notifiche può scendere.
+Un asset che nessun decision process usa più non dovrebbe restare `CERTIFIED` indefinitamente. L'Operating Contract deve prevedere retirement trigger: nessun consumer decisionale, usage sotto soglia per più periodi, successore certificato, cost-to-serve superiore al valore residuo, semantica non più valida.
 
-Se un prodotto viene incorporato direttamente nel workflow operativo, gli utenti possono non aprire più una dashboard separata.
+Prima di spegnerlo vanno verificati lineage e consumer reali; dopo il retirement, catalogo e documentazione devono indicare chiaramente il successore. Il portfolio scala anche attraverso ciò che smette di mantenere.
 
-Quindi:
+Questo chiude il legame con cost management: una dashboard costosa e poco usata non è automaticamente da eliminare se sostiene un processo trimestrale critico; una dashboard economica e molto usata non è automaticamente di valore se perpetua definizioni incoerenti. **Adoption e economics devono essere letti attraverso la decisione.**
 
-> **la metrica di adozione deve riflettere il comportamento desiderato, non una vanity metric di attività.**
+La domanda finale non è quindi “quante persone usano questa dashboard?”, ma:
 
-## Retirement è parte dell'adoption
+> **Quale decisione viene presa meglio, più velocemente o con meno ambiguità perché questo prodotto esiste?**
 
-Un asset che nessuno usa più non dovrebbe restare indefinitamente `certified`.
-
-L'Analytics Operating Contract deve prevedere anche un **retirement trigger**.
-
-Possibili segnali:
-
-- nessun decision process dipende più dal prodotto;
-- utilizzo sotto soglia per più periodi;
-- esiste un sostituto certificato;
-- cost-to-serve superiore al valore residuo;
-- definizione o processo business non più valido.
-
-Prima del retirement bisogna verificare lineage e consumer reali.
-
-Dopo il retirement, discovery e documentazione devono indicare chiaramente il successore.
-
-## La domanda finale
-
-La domanda più utile non è:
-
-> “Quante persone usano questa dashboard?”
-
-È:
-
-> **“Quale decisione viene presa meglio, più velocemente o con meno ambiguità perché questo prodotto esiste?”**
-
-Se non riusciamo a nominare quella decisione, abbiamo ancora un problema di product design.
+Se non sappiamo nominarla, abbiamo ancora un problema di product design.
 
 > **Un prodotto analitico realizza valore quando entra nel flusso di una decisione e riduce un rischio reale, non quando accumula visualizzazioni.**
+
+Questo vale anche per il prodotto più nuovo del portfolio: un agente AI. La differenza è che, oltre a produrre informazione, può disporre di tool e autorità. Per questo il suo operating model deve governare non soltanto qualità dell'output, ma autonomia, revoca e blast radius.
