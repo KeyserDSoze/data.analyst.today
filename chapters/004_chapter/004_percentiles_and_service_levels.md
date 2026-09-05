@@ -1,30 +1,10 @@
-## 4.3 Percentili e code: descrivere l'esperienza che la media non rappresenta
+## 4.3 Percentili e code: quando il costo del problema vive lontano dalla media
 
-In molti processi operativi non ci interessa soltanto il comportamento centrale.
+In molti processi operativi la domanda più importante non è quale esperienza viva il caso centrale, ma **quanto peggiora l'esperienza per la parte più sfortunata della popolazione**. Tempi di risposta, latenza, consegne, attese, perdite e carichi di lavoro hanno spesso code che una media comprime troppo aggressivamente.
 
-Ci interessa sapere **quanto è brutta la coda**.
+I **percentili** rendono quella coda leggibile. Dire che il `P95` del tempo di risposta è 15 ore significa che circa il 95% delle osservazioni si trova a 15 ore o meno e il restante 5% supera quella soglia. Non stiamo descrivendo un caso “tipico”: stiamo collocando un confine nella distribuzione.
 
-È il caso di:
-
-- tempi di risposta;
-- latenza;
-- consegne;
-- attese;
-- tempi di processo;
-- importi di perdita;
-- carichi di lavoro.
-
-I **percentili** trasformano la distribuzione in soglie interpretabili.
-
-Dire che il `P95` del tempo di risposta è 15 ore significa che circa il 95% delle osservazioni si trova a 15 ore o meno e circa il 5% sopra quella soglia.
-
-### Caso simulato/composito — Il customer care sembra veloce
-
-Un'azienda SaaS dichiara un tempo medio di prima risposta di **2 ore e 14 minuti**.
-
-Il dato è plausibile, ma non ci dice che esperienza vive la coda dei clienti.
-
-L'analista calcola:
+Consideriamo un'azienda SaaS che dichiara un tempo medio di prima risposta di **2 ore e 14 minuti**. La cifra sembra rassicurante finché non osserviamo la distribuzione:
 
 ```text
 P50 = 47 minuti
@@ -34,67 +14,15 @@ P95 = 15h 18m
 P99 = 41h
 ```
 
-La storia cambia.
+La maggioranza dei clienti riceve risposta rapidamente, ma una quota relativamente piccola aspetta molto più a lungo. Quando l'analista scompone il `P95` per piano e giorno della settimana, la coda si concentra nel piano Basic durante il weekend. L'EDA ha così trasformato una generica “coda lunga” in una popolazione operativa precisa su cui indagare capacità, prioritizzazione o processo.
 
-La maggioranza riceve una risposta rapidamente, ma una piccola quota attende molto più a lungo.
+## Percentile e soglia di servizio rispondono a domande diverse
 
-Segmentando il P95 per piano e giorno della settimana, il problema si concentra nel piano Basic durante il weekend.
+Un servizio può essere descritto dicendo `P95 = 4,8 ore` oppure `92% dei ticket entro 4 ore`. Le due statistiche sono complementari, non intercambiabili. La prima chiede sotto quale valore cade una quota definita della popolazione; la seconda parte da una soglia già importante per il business e chiede quale quota la rispetti.
 
-L'EDA non ha soltanto scoperto "una coda lunga". Ha trasformato un problema medio in una popolazione operativa identificabile.
+Quando esiste uno SLA, la percentuale entro soglia può essere direttamente collegata a un impegno operativo o contrattuale. Il percentile aiuta invece a vedere quanto lontano si spinge la coda e se essa sta cambiando anche quando lo SLA aggregato resta stabile.
 
-### Percentile e soglia di servizio non sono la stessa cosa
-
-Possiamo descrivere un servizio in almeno due modi:
-
-**Percentile:**
-
-> P95 = 4,8 ore.
-
-**Quota entro una soglia:**
-
-> 92% dei ticket riceve risposta entro 4 ore.
-
-Sono viste complementari.
-
-La prima chiede:
-
-> sotto quale valore cade il 95% dei casi?
-
-La seconda chiede:
-
-> quale quota dei casi rispetta una soglia già definita?
-
-Nei processi con SLA la seconda può essere direttamente collegata al contratto; la prima aiuta a capire la forma della coda.
-
-### P99 non è automaticamente "più rigoroso"
-
-Scegliere un percentile più estremo non rende sempre migliore la metrica.
-
-Il P99 può essere molto importante per servizi digitali ad alto volume, dove l'1% rappresenta milioni di richieste. Su un processo con 120 casi al mese, invece, il P99 può dipendere da una o due osservazioni e risultare molto instabile.
-
-Quindi dobbiamo sempre mostrare anche la dimensione della popolazione.
-
-### Le code possono avere proprietari diversi
-
-Se il P95 complessivo è alto, chiediamoci:
-
-- riguarda tutti i segmenti o uno solo?
-- si concentra in particolari ore o giorni?
-- è associato a una tipologia di richiesta?
-- emerge soltanto oltre una certa soglia di volume?
-- la mediana è stabile mentre la coda peggiora?
-
-Queste domande sono spesso più utili della ricerca di una singola "media migliore".
-
-### Evitare il percentile opportunistico
-
-Un errore comunicativo consiste nel scegliere dopo aver visto i dati il percentile che produce la storia desiderata.
-
-Se il P90 è migliorato ma il P99 è peggiorato, non dobbiamo decidere quale dei due mostrare in base alla convenienza narrativa.
-
-Dobbiamo chiedere quale parte della distribuzione conta per la decisione.
-
-### Tabella minima per una metrica di servizio
+Per questo una metrica di servizio è spesso più leggibile quando tiene insieme posizione, coda, soglia e volume:
 
 | Elemento | Esempio |
 |---|---|
@@ -106,6 +34,14 @@ Dobbiamo chiedere quale parte della distribuzione conta per la decisione.
 | % entro SLA | 81% |
 | Volume | 28.420 ticket |
 
-Questa struttura evita che una singola statistica nasconda la dimensione e la forma dell'esperienza.
+La numerosità è essenziale soprattutto quando ci spingiamo verso percentili estremi. `P99` non significa automaticamente “più rigoroso” di `P95`. Su milioni di richieste l'1% può rappresentare una popolazione enorme e operativamente rilevante; su 120 casi al mese il P99 può dipendere da una o due osservazioni e oscillare violentemente.
+
+## La coda va attribuita a una popolazione, non soltanto misurata
+
+Quando un percentile peggiora, la prossima domanda non è quale altro percentile calcolare. È capire **chi compone quella coda e in quali condizioni vi entra**. Può concentrarsi in particolari segmenti, ore, giorni, tipi di richiesta, livelli di carico o regioni. La mediana può rimanere stabile mentre il P95 peggiora, indicando che il processo centrale non è cambiato ma una minoranza sta vivendo un deterioramento sostanziale.
+
+Questa attenzione protegge anche da un uso opportunistico dei percentili. Se il P90 migliora e il P99 peggiora, non dovremmo scegliere dopo aver visto i dati quale mostrare in base alla storia che preferiamo. Dobbiamo tornare alla decisione: **quale parte della distribuzione produce un costo abbastanza importante da meritare attenzione?**
+
+La risposta ci porta naturalmente alla forma complessiva della distribuzione. I percentili ne descrivono alcuni punti; un istogramma può mostrarci come quei punti sono collegati tra loro.
 
 > **Quando il costo del problema vive nella coda, la media è spesso il posto sbagliato in cui guardare.**
