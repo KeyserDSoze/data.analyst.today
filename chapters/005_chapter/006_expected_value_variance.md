@@ -1,24 +1,14 @@
-## 5.5 Valore atteso e rischio: la media degli esiti non basta per decidere
+## 5.5 Valore atteso e rischio: la media degli esiti non è ancora una decisione
 
-Il **valore atteso** combina esiti possibili e probabilità. Risponde a una domanda del tipo:
+Una distribuzione ci dice quali risultati consideriamo possibili e con quale probabilità. Il **valore atteso** comprime quella distribuzione in un singolo numero:
 
-> **Se potessimo ripetere molte volte una decisione nelle stesse condizioni, quale risultato medio produrrebbe?**
+`E[X] = Σ_x x · P(X = x)`.
 
-Per una variabile discreta:
+In termini intuitivi risponde a una domanda controfattuale e ripetibile: **se potessimo affrontare molte volte lo stesso tipo di decisione nelle stesse condizioni, quale risultato medio emergerebbe?**
 
-`E[X] = Σ_x x · P(X = x)`
+È un concetto potentissimo per ricavi attesi, perdite da frode, costi di guasto, valore di un lead o pricing. Ma, proprio perché comprime una distribuzione, può nascondere differenze decisive tra strategie che hanno la stessa media.
 
-Nel lavoro analitico il concetto compare continuamente:
-
-- ricavo atteso di una campagna;
-- perdita attesa da frode;
-- costo atteso di un guasto;
-- valore atteso di un lead;
-- margine atteso di una decisione di pricing.
-
-Ma il valore atteso non contiene da solo tutta la decisione.
-
-### Caso simulato/composito — Due campagne, stesso valore atteso
+## Stesso expected value, mondi diversi
 
 Un e-commerce deve scegliere tra due campagne promozionali.
 
@@ -30,9 +20,7 @@ Un e-commerce deve scegliere tra due campagne promozionali.
 | Normale | 60% | 80.000 € |
 | Ottimo | 20% | 140.000 € |
 
-Valore atteso:
-
-`0,20 × 20.000 + 0,60 × 80.000 + 0,20 × 140.000 = 80.000 €`.
+Il valore atteso è 80.000 €.
 
 **Campagna B**
 
@@ -42,93 +30,46 @@ Valore atteso:
 | Buono | 10% | 80.000 € |
 | Eccezionale | 45% | 200.000 € |
 
-Anche qui:
+Anche qui il valore atteso è 80.000 €.
 
-`0,45 × (-40.000) + 0,10 × 80.000 + 0,45 × 200.000 = 80.000 €`.
+Trattare le due campagne come equivalenti significherebbe cancellare quasi tutta l'informazione utile. La prima concentra gli esiti attorno a valori positivi; la seconda accetta quasi una probabilità su due di perdere 40.000 € in cambio di una coda positiva molto più grande.
 
-Stesso valore atteso. Distribuzione degli esiti completamente diversa.
+Se l'azienda ha liquidità limitata o la perdita di 40.000 € compromette altri progetti, la Campagna B può essere inaccettabile nonostante l'expected value positivo. Se invece l'impresa prende centinaia di decisioni simili e poco correlate ed è in grado di assorbirne la volatilità, la valutazione può cambiare. **Expected value e tolleranza al rischio descrivono cose diverse.**
 
-Se l'azienda non può permettersi una perdita di 40.000 €, la Campagna B può essere inaccettabile anche con expected value positivo. Se invece gestisce centinaia di iniziative poco correlate e può assorbire la volatilità, la valutazione può cambiare.
+La varianza formalizza una parte di questa differenza:
 
-Il punto è:
+`Var(X) = E[(X − E[X])²]`.
 
-> **expected value e tolleranza al rischio sono concetti distinti.**
+La deviazione standard riporta la dispersione nell'unità originale. Non esaurisce il rischio — soprattutto quando le code sono asimmetriche — ma impedisce di confondere strategie con lo stesso centro e distribuzioni molto diverse.
 
-### Varianza e deviazione standard descrivono quanto gli esiti si disperdono
+## La media della domanda non basta per dimensionare la capacità
 
-La varianza misura la dispersione degli esiti attorno al valore atteso:
+Due SKU vendono in media 120 unità al giorno. Il primo ha deviazione standard 8, il secondo 47. Una policy di riordino costruita soltanto sulla media tratterebbe i due prodotti quasi allo stesso modo, mentre il secondo espone il business a un rischio molto maggiore di stock-out e overstock.
 
-`Var(X) = E[(X − E[X])²]`
-
-La deviazione standard riporta la misura nell'unità originale.
-
-Questa idea collega probabilità e decisione: due strategie con la stessa media possono avere code e volatilità molto diverse.
-
-### Caso simulato/composito — Due SKU da 120 unità al giorno
-
-Due prodotti hanno domanda media di 120 unità al giorno.
-
-- SKU A: deviazione standard 8;
-- SKU B: deviazione standard 47.
-
-Una policy di riordino costruita soltanto sulla media li tratterebbe quasi allo stesso modo.
-
-Ma il secondo SKU espone il business a un rischio molto maggiore di stock-out o overstock.
-
-Per operations interessa quindi almeno la coppia:
+Per operations la quantità utile è quindi almeno la coppia:
 
 > **domanda attesa + distribuzione dell'errore attorno alla domanda attesa**.
 
-Il Capitolo 7 trasformerà questa intuizione in forecast e intervalli predittivi.
+Nel Capitolo 7 useremo la stessa idea per forecast e intervalli predittivi. Qui serve vedere il principio: la media descrive dove tende a stare il processo; la dispersione decide quanto spesso possiamo trovarci molto lontani da quel centro.
 
-### Expected loss: collegare probabilità e conseguenza
+## Dalla probabilità alla conseguenza
 
-Supponiamo che una certa classe di transazioni abbia:
-
-- probabilità di frode: 0,3%;
-- perdita media se la frode avviene: 1.400 €.
-
-La perdita attesa per transazione è:
+Un'altra applicazione del valore atteso collega direttamente rischio e costo. Se una classe di transazioni ha probabilità di frode dello 0,3% e la perdita media quando la frode avviene è 1.400 €, la perdita attesa per transazione è:
 
 `0,003 × 1.400 € = 4,20 €`.
 
-Se un controllo aggiuntivo costa 0,40 € a transazione e riduce significativamente la perdita attesa, può avere senso economico. Se costa 12 €, probabilmente no — a meno che non riduca anche altri rischi importanti.
+Un controllo aggiuntivo da 0,40 € per transazione può avere senso se riduce abbastanza quella perdita attesa. Uno da 12 € difficilmente si giustifica sulla sola frode attesa, a meno che non protegga anche altri rischi rilevanti.
 
-Questo è il ponte tra statistica e decisione:
+La formula `probabilità × conseguenza` è semplice, ma cambia la qualità della decisione perché sposta l'attenzione dalla sola frequenza dell'evento al **costo economico dell'errore**.
 
-**probabilità × conseguenza**.
+## Quando l'expected value non è la guida sufficiente
 
-### Il valore atteso non è una promessa né un ordine automatico
-
-Consideriamo un progetto con:
-
-- 90% di probabilità di perdere 50.000 €;
-- 10% di probabilità di guadagnare 600.000 €.
-
-Expected value:
+Consideriamo infine un progetto con il 90% di probabilità di perdere 50.000 € e il 10% di probabilità di guadagnarne 600.000. Il valore atteso è:
 
 `0,90 × (-50.000) + 0,10 × 600.000 = +15.000 €`.
 
-Dire “il progetto vale +15.000 €” senza altro sarebbe fuorviante.
+Dire semplicemente “il progetto vale +15.000 €” sarebbe una compressione pericolosa. L'iniziativa può essere una tantum, la perdita può creare un problema di liquidità, gli esiti possono essere correlati ad altri rischi aziendali e il management può avere vincoli che rendono il downside non accettabile.
 
-Un solo progetto non verrà necessariamente ripetuto molte volte. La perdita può compromettere la liquidità. Gli esiti possono essere correlati con altri rischi aziendali. Il management può avere vincoli che rendono alcuni downside non accettabili.
+Per questo il Capitolo 15 aggiungerà scenari, sensibilità, soglie decisionali, Value of Information, costi asimmetrici e reversibilità. Qui basta fissare una disciplina: quando due alternative sono incerte, non confrontiamo soltanto il loro valore medio. Guardiamo anche **quanto sono dispersi gli esiti, quanto è grave la coda negativa e se la decisione è abbastanza ripetibile da rendere la media di lungo periodo una guida utile**.
 
-Per questo il Capitolo 15, dedicato alla decisione, aggiungerà elementi come:
-
-- scenari;
-- sensitività;
-- soglie decisionali;
-- value of information;
-- costi asimmetrici;
-- capacità di assorbire il downside.
-
-Qui fissiamo la base probabilistica.
-
-### Quattro domande prima di confrontare decisioni incerte
-
-1. Qual è il valore atteso?
-2. Quanto sono dispersi gli esiti?
-3. Quanto è grave la coda negativa?
-4. La decisione è ripetibile abbastanza volte da rendere il valore medio una guida utile?
-
-> **Una strategia non è “buona” perché ha expected value positivo. È buona rispetto a obiettivi, vincoli e distribuzione degli esiti.**
+> **Una strategia non diventa buona perché ha expected value positivo. Diventa valutabile quando expected value, distribuzione degli esiti e capacità di assorbire il downside vengono letti insieme.**
