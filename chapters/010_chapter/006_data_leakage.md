@@ -1,170 +1,82 @@
-## 10.6 Data leakage e training-serving skew: il modello non può usare informazione che la decisione non possiede
+## 10.6 Data leakage e training-serving skew: proteggere la frontiera `as-of`
 
-Il leakage è uno dei modi più efficaci per costruire un modello eccellente che non esiste davvero.
+Un modello può sembrare straordinario semplicemente perché gli abbiamo lasciato leggere informazione che, nel momento reale della decisione, non esiste ancora.
 
-Succede quando il processo di training riceve informazione che non sarebbe disponibile **nella stessa forma e nello stesso momento** quando la previsione deve essere prodotta.
+Questo è il senso professionale del **data leakage**: il processo di training o validation riceve informazione che non sarebbe disponibile **nella stessa forma e nello stesso momento** al prediction time. Il risultato non è soltanto una metrica ottimistica. È la valutazione di un sistema che in produzione non potremo riprodurre.
 
-La documentazione ufficiale di scikit-learn definisce il data leakage proprio in questi termini: informazione non disponibile al prediction time entra nella costruzione del modello e rende le metriche di validazione troppo ottimistiche.
+La regola più utile è immaginare, per ogni prediction row, una query storica:
 
-Fonte: https://scikit-learn.org/stable/common_pitfalls.html
+> **“Mostrami soltanto ciò che il sistema conosceva alle 06:00 del 3 marzo 2025.”**
 
-### La regola `as-of`
+Se una feature non può essere ricostruita `as-of` quel momento senza utilizzare aggiornamenti successivi, non appartiene alla feature set validata per quella previsione.
 
-Per ogni prediction row dovrebbe essere possibile immaginare una query storica del tipo:
+### Il futuro può entrare in modi diversi
 
-> **Mostrami solo ciò che il sistema conosceva alle 06:00 del 3 marzo 2025.**
+A volte il leakage è evidente: predire churn il 1° marzo usando ticket aperti durante marzo, oppure predire default usando `sent_to_collections`, valorizzato soltanto dopo la mora. Più spesso è nascosto nel processo.
 
-Se una feature non può essere ricostruita `as-of` quel momento senza usare aggiornamenti successivi, non appartiene alla feature set di quella previsione.
+Può entrare quando preprocessing, scaling, imputazione o feature selection imparano anche dal validation/test set; quando lo stesso soggetto compare quasi duplicato nei due lati dello split; oppure quando una tabella “storica” è in realtà una current-state table ricalcolata oggi.
 
-Questa regola è più forte di:
+Per questo split e feature lineage devono essere verificati insieme.
 
-> "la colonna esiste nel database."
+### Caso reale documentato — 10.000 feature casuali e accuracy 0,76
 
-Molte colonne esistono oggi proprio perché il futuro è già accaduto.
+La documentazione scikit-learn mostra un esempio volutamente estremo con **200 osservazioni**, target binario casuale e **10.000 feature generate casualmente**. Non esiste segnale reale.
 
-### Quattro forme comuni di leakage
+Se però la feature selection viene eseguita sull'intero dataset prima dello split, un modello può raggiungere accuracy circa **0,76**. La selezione ha usato anche il target del futuro test set e ha premiato coincidenze casuali favorevoli.
 
-**1. Future leakage**  
-Eventi successivi al prediction time entrano direttamente nella feature.
+Quando l'ordine diventa correttamente:
 
-Esempio: predire churn il 1° marzo usando ticket aperti tra il 1° e il 31 marzo.
-
-**2. Target/label leakage**  
-Una variabile è una conseguenza quasi diretta dell'outcome.
-
-Esempio: prevedere default usando `sent_to_collections`, valorizzato solo dopo la mora.
-
-**3. Preprocessing leakage**  
-Imputazione, scaling, feature selection o altre trasformazioni imparano proprietà anche dal validation/test set.
-
-**4. Entity/group leakage**  
-Informazione quasi duplicata della stessa entità appare nei due lati dello split e rende la valutazione più semplice del deployment reale.
-
-### Caso reale documentato — 10.000 feature casuali, accuracy 0,76
-
-Scikit-learn mostra un esempio volutamente estremo.
-
-Il dataset contiene:
-
-- 200 osservazioni;
-- target binario casuale;
-- **10.000 feature generate casualmente**.
-
-Non esiste alcun segnale reale.
-
-Se però la feature selection viene fatta sull'intero dataset prima dello split, il modello può ottenere accuracy intorno a **0,76**.
-
-La feature selection ha avuto accesso anche al target del futuro test set e ha selezionato coincidenze casuali favorevoli.
-
-Quando il processo corretto diventa:
-
-**split → fit feature selection sul train → transform train/test → fit model → evaluate**, 
+```text
+split
+→ fit feature selection sul train
+→ transform train/test
+→ fit model
+→ evaluate
+```
 
 la performance torna vicino al caso.
 
-È uno dei migliori esempi di una regola generale:
+Riferimento: https://scikit-learn.org/stable/common_pitfalls.html#data-leakage
 
-> **anche una trasformazione perfettamente legittima può diventare leakage se impara dal futuro set di valutazione.**
+La lezione è più ampia della feature selection: una trasformazione legittima diventa leakage se impara dal set che dovrebbe valutare la generalizzazione.
 
-Fonte: https://scikit-learn.org/stable/common_pitfalls.html#data-leakage
+### Pipeline significa anche proteggere il confine
 
-### Pipeline: proteggere il confine, non solo organizzare codice
+Scikit-learn raccomanda le `Pipeline` perché aiutano a fit-tare scaler, imputer e selector soltanto sui dati consentiti all'interno dei fold. Ma il principio è tool-agnostic: vale per SQL, notebook, dbt, feature store, cloud pipeline e codice generato da AI.
 
-Scikit-learn raccomanda le `Pipeline` anche perché aiutano a garantire che trasformazioni come scaler, imputer e feature selector vengano fit solo sui dati di training durante validation e cross-validation.
+Una pipeline ben costruita non può però decidere da sola se `retention_offer_status` nasce prima o dopo il churn intent. Per questo il controllo sintattico deve essere accompagnato da lineage e semantica temporale.
 
-Il principio è tool-agnostic.
+### Caso simulato/composito — HealthFlow
 
-Vale anche per:
+HealthFlow vuole prevedere no-show 48 ore prima dell'appuntamento. Un primo modello raggiunge **AUC 0,94**. Tra le feature compare `days_since_last_contact`, apparentemente storica.
 
-- SQL transformations;
-- notebook;
-- feature store;
-- dbt/modeling layer;
-- cloud pipelines;
-- AI-generated code.
+Il CRM però ricalcola quel campo ogni notte rispetto allo stato corrente. Quando ricostruiamo appuntamenti di sei mesi fa, il valore incorpora contatti avvenuti **dopo** l'appuntamento. Ricostruendo la feature da log storici realmente `as-of`, l'AUC scende a **0,72**.
 
-La domanda è sempre:
+Il secondo numero è meno spettacolare ed è il primo credibile. Una diminuzione di performance può essere un miglioramento della qualità dell'evidenza.
 
-> **quale dataset ha potuto influenzare la trasformazione che sto applicando?**
+### Leakage e training-serving skew sono parenti, non sinonimi
 
-### Caso simulato/composito — HealthFlow e il campo che cambia retroattivamente
+Il leakage descrive un processo di sviluppo che ha visto troppo. Il **training-serving skew** compare quando il modello in produzione vede qualcosa di diverso da ciò su cui è stato addestrato o validato: preprocessing differente, latenze diverse, definizioni non allineate, dati che cambiano o feedback loop.
 
-HealthFlow vuole prevedere no-show 48 ore prima di un appuntamento per decidere chi riceve reminder intensivi.
+Google documenta casi di produzione in cui questo skew ha degradato la performance e raccomanda di misurarlo esplicitamente, riutilizzando quando possibile la stessa logica tra training e serving e loggando le feature realmente viste online.
 
-Un modello iniziale raggiunge AUC 0,94.
-
-Tra le feature c'è:
-
-`days_since_last_contact`
-
-Il campo sembra storico, ma il CRM lo ricalcola ogni notte rispetto allo stato corrente.
-
-Quando l'analista ricostruisce appuntamenti di sei mesi fa, il valore incorpora anche contatti avvenuti **dopo** l'appuntamento.
-
-Ricostruendo la feature tramite log storici `as-of`, l'AUC scende a 0,72.
-
-Il secondo risultato è molto meno impressionante. È anche il primo risultato reale.
-
-### Training-serving skew: stessa feature, significato diverso
-
-Il leakage riguarda spesso il training storico. In produzione compare un problema affine: **training-serving skew**.
-
-Google documenta sistemi di produzione in cui differenze tra pipeline di training e serving hanno degradato la performance. Le cause includono:
-
-- preprocessing implementato diversamente;
-- feature aggiornate con latenze diverse;
-- cambi di distribuzione;
-- feedback loop del sistema.
-
-Google raccomanda di misurare esplicitamente lo skew e, dove possibile, di riutilizzare o loggare le stesse feature viste al serving.
-
-Fonte: https://developers.google.com/machine-learning/guides/rules-of-ml/
-
-Questa distinzione è utile:
-
-- **leakage:** il modello in sviluppo ha visto troppo;
-- **training-serving skew:** il modello in produzione vede qualcosa di diverso da ciò su cui è stato addestrato.
-
-Entrambi rompono la promessa della validation.
+Riferimento: https://developers.google.com/machine-learning/guides/rules-of-ml/
 
 ### Feature availability matrix
 
-Per modelli importanti conviene creare una tabella come:
+Per modelli importanti la frontiera informativa merita un artefatto esplicito:
 
-| Feature | Source | Available at prediction time? | Historical as-of available? | Serving latency |
+| Feature | Source | Available at prediction time? | Historical `as-of` available? | Serving latency |
 |---|---|---|---|---|
 | invoice_balance | billing snapshot | sì | sì | 1h |
 | latest_ticket_status | CRM current state | sì oggi | **no storico affidabile** | realtime |
 | cancellation_reason | cancellation event | no | sì | post-outcome |
 | app_sessions_30d | event log | sì | sì | 15m |
 
-Una riga "no storico affidabile" non significa necessariamente che la feature non sarà mai usabile. Significa che non possiamo validare onestamente oggi il modello storico che la usa senza ricostruire quella storia.
-
-### AI e leakage
-
-Un LLM può generare in pochi secondi:
-
-- split;
-- preprocessing;
-- feature selection;
-- modello;
-- metriche.
-
-Non può dedurre automaticamente dalla colonna `retention_offer_status` se il valore viene scritto prima o dopo il churn intent, se non gli forniamo lineage e semantica temporale.
-
-È un esempio perfetto della tesi del Capitolo 0: la sintassi può essere delegata; la responsabilità sulla frontiera informativa no.
+Una feature con “no storico affidabile” potrebbe essere tecnicamente disponibile in futuro, ma non può essere usata oggi per una validation storica onesta finché non ricostruiamo quella history.
 
 ### Anti-leakage review
 
-Prima di fidarti di un modello molto performante, verifica:
+Prima di fidarci di una performance sorprendente dobbiamo riuscire a difendere prediction time, timestamp di nascita delle feature, storico `as-of`, separazione tra feature window e label window, preprocessing fit sul solo train/fold, split delle entità, training-serving parity e plausibilità del risultato.
 
-- prediction time esplicito;
-- timestamp di nascita di ogni feature;
-- storico `as-of` reale, non ricostruito con current state;
-- label window e feature window non sovrapposte impropriamente;
-- preprocessing fit solo sul train/fold corretto;
-- entity/group split coerente;
-- training-serving parity;
-- plausibilità della performance rispetto al problema.
-
-> **Quando un modello sembra conoscere troppo bene il futuro, la prima ipotesi non dovrebbe essere “abbiamo trovato un algoritmo straordinario”. Dovrebbe essere “da dove è entrato il futuro?”**
+> **Quando un modello sembra conoscere troppo bene il futuro, la prima domanda non è quale algoritmo abbiamo inventato. È da quale passaggio della pipeline è entrato il futuro.**
