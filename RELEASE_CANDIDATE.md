@@ -1,113 +1,77 @@
-# Release Candidate — RC1
+# Release Candidate — stato corrente
 
-Data: **2 settembre 2026**
+Ultimo aggiornamento: **5 settembre 2026**.
 
-Stato: **release candidate editoriale**
+Il repository contiene release candidate storiche già pubblicate, ma il manoscritto corrente ha ricevuto successivamente una revisione prose-first sostantiva dell'intero corpo. Questo file non riutilizza quindi RC1 o RC2 come se descrivessero ancora la baseline editoriale corrente.
 
-Questo file definisce la prima release candidate del progetto `data.analyst.today` senza introdurre una versione SemVer, una licenza o un copyright non ancora scelti.
+## Candidate storiche
 
-## Cosa significa RC1
+### v1.0.0-rc1
 
-RC1 è il punto in cui il manoscritto smette di essere in editing continuo e diventa una build candidata alla pubblicazione.
+Prima release candidate pubblica. La relativa nota resta in `release-notes/v1.0.0-rc1.md`.
 
-Da questo momento una modifica al corpo è giustificata solo da:
+### v1.0.0-rc2
 
-- errore fattuale dimostrato;
-- fonte diventata inaffidabile o irraggiungibile;
-- errore grammaticale o tipografico reale;
-- difetto di rendering;
-- problema di navigazione/accessibilità;
-- regressione rilevata dalla CI.
+Seconda release candidate pubblica, focalizzata principalmente su identità editoriale, frontespizio, impaginazione e formati distributivi. La relativa nota resta in `release-notes/v1.0.0-rc2.md`.
 
-Non sono motivi sufficienti:
+RC2 dichiarava esplicitamente che quell'intervento non modificava il contenuto sostantivo. Il pass editoriale completato il **5 settembre 2026** è invece sostantivo e coinvolge tutti i Capitoli 0–19, front matter e reference layer. Per questo RC1/RC2 restano artefatti storici e non vengono sovrascritti.
 
-- preferenza stilistica marginale;
-- desiderio di aggiungere un altro esempio senza una lacuna dimostrata;
-- aggiornamento cosmetico di tool o terminologia già corretti;
-- espansione del corpo perché “si potrebbe dire di più”.
+## Stato del manoscritto post-revisione
 
-## Gate editoriali
+La baseline di contenuto e apparati validata dopo il pass finale è:
 
-| Gate | Stato |
-|---|---|
-| Capitoli 0–19 completi | **PASS** |
-| Review capitolo-per-capitolo | **PASS** |
-| Source/factual audit globale | **PASS** |
-| Freshness recheck release-gate | **PASS** |
-| Formula/LaTeX cleanup | **PASS** |
-| Front matter + navigazione | **PASS** |
-| Reference layer | **PASS** |
-| Proofread + consistency pass | **PASS** |
-| Layout QA PDF | **PASS** |
-| Layout QA DOCX | **PASS** |
-| CI strict + build-output guardrails | **PASS** sulla baseline validata |
+`470ad51bd762c912a15addbce40619f03e42c415`
 
-## Baseline tecnica validata
+Book CI run `33980921004`: **SUCCESS**.
 
-La baseline di build verificata prima della dichiarazione RC1 è l'head:
-
-`ccff96add69f53af5393e03918068a164288fb83`
-
-La Book CI su quella baseline è **SUCCESS** e riporta:
+La run conferma:
 
 - **20 capitoli**;
 - **321 file Markdown** nel corpo;
-- **251.126 parole stimate**;
-- **1.860.230 caratteri**;
-- **190 URL esterni distinti**;
+- **247.697 parole stimate**;
+- **1.772.827 caratteri**;
+- **189 URL esterni distinti**;
 - **0 file con LaTeX residuo**;
 - **0 file con grafie ASCII legacy**;
-- **1.209 pagine PDF**;
-- **389 bookmark PDF**;
-- **213/213 tabelle DOCX** con repeating header;
-- nessuna footnote Markdown `[^...]` irrisolta negli output;
-- frontespizio PDF senza numero pagina stampato;
-- frontespizio DOCX senza footer visibile.
+- **723 pagine PDF**;
+- **344 voci outline PDF**;
+- **232 tabelle DOCX** con repeating header;
+- **30 documenti XHTML EPUB**;
+- metadata autore `Alessandro Rapiti` verificati nei formati distributivi;
+- nessuna footnote Markdown irrisolta negli output.
 
-I commit successivi alla baseline che aggiornano esclusivamente audit, README e questo manifest non modificano il corpo del libro o il renderer. Devono comunque mantenere CI verde prima di essere considerati parte della candidate.
+Il source/factual audit è stato riallineato alla revisione finale. In particolare il precedente customer case NXP del Capitolo 17 e i claim `75% / 90%` sono stati rimossi e sostituiti con documentazione AWS corrente su cost allocation e unit metrics.
 
-## Controllo automatico
+Dettagli:
 
-Il gate della candidate è:
+- `EDITORIAL_AUDIT.md`;
+- `SOURCE_FACTUAL_AUDIT.md`.
 
-```bash
-python scripts/normalize_sources.py --check
-python scripts/lint_book.py --strict
-python scripts/build.py
-```
+## Nessuna nuova candidate pubblicata automaticamente
 
-La Book CI verifica inoltre gli output generati:
+Questo pass non modifica il release manifest e non pubblica una nuova GitHub Release. Gli step release-specific della CI risultano infatti correttamente `skipped`.
 
-- footnote risolte;
-- outline PDF presente;
-- repeating header delle tabelle DOCX;
-- first-page footer DOCX vuoto;
-- generazione riuscita di Markdown, DOCX e PDF.
+La prossima candidate pubblica dovrà usare **un nuovo identificatore** invece di riutilizzare RC1 o RC2. Il numero/tag esatto resta una decisione di pubblicazione separata.
 
-## Source/factual freeze
+## Gate per la prossima candidate
 
-L'audit dei **190 URL distinti** è chiuso. Il freshness recheck del 2 settembre 2026 ha ricontrollato le fonti più time-sensitive e quelle esplicitamente sotto revisione.
+Prima di creare una nuova candidate pubblica devono essere veri contemporaneamente:
 
-Esito: **nessuna correzione al manoscritto richiesta**.
+| Gate | Stato corrente |
+|---|---|
+| Capitoli 0–19 revisionati | **PASS** |
+| Front matter allineato | **PASS** |
+| Reference layer allineato | **PASS** |
+| Source/factual audit corrente | **PASS** |
+| Freshness recheck finale | **PASS** |
+| Normalized sources | **PASS** |
+| Lint strict | **PASS** |
+| Markdown/DOCX/PDF/EPUB build | **PASS** |
+| Output guardrails | **PASS** |
+| Nuovo tag / release identifier scelto | **OPEN — publishing decision** |
+| Copyright/licenza definitiva | **OPEN — publishing decision** |
 
-Non va ripetuto un audit globale prima della release stabile salvo cambiamenti sostantivi al testo o regressioni delle fonti.
-
-## Layout freeze
-
-Il PDF e il DOCX sono stati controllati sugli artifact prodotti dalla CI.
-
-Sono stati corretti e verificati:
-
-- footnote/endnote;
-- indice dei casi reali;
-- bookmark PDF;
-- frontespizio PDF;
-- frontespizio DOCX;
-- tabelle DOCX multipagina;
-- reference layer e ultime pagine;
-- campioni di code block, tabelle e sezioni ad alta densità.
-
-## Tesi da non alterare nella candidate
+## Tesi da preservare
 
 Definizione finale:
 
@@ -117,25 +81,8 @@ Ultima riga del corpo:
 
 > **Gli strumenti cambieranno. Il timone resta una responsabilità.**
 
-## Metadata ancora aperti
+## Criterio di freeze
 
-Questi elementi sono decisioni di pubblicazione e non bloccano la qualità editoriale di RC1:
+Il pass editoriale descritto in questa conversazione è chiuso. Nuove modifiche alla futura candidate dovrebbero essere motivate da errori fattuali o tipografici, source decay, regressioni di build/rendering, accessibilità/navigazione, metadata di pubblicazione oppure da una nuova revisione sostantiva esplicitamente aperta.
 
-- versione pubblica/numero di release definitivo;
-- copyright definitivo;
-- licenza definitiva;
-- eventuale tag Git;
-- eventuale GitHub Release e canali di distribuzione.
-
-`book.yml` resta intenzionalmente privo di un numero di versione finché non viene scelta una convenzione di release.
-
-## Criterio di promozione
-
-RC1 può essere promossa a release stabile quando:
-
-1. il commit candidato ha Book CI verde;
-2. non sono emerse regressioni dopo il freeze;
-3. i metadata di pubblicazione necessari sono stati scelti;
-4. gli artifact da distribuire provengono dalla stessa pipeline validata.
-
-Se emerge un difetto sostantivo, si corregge il problema e si crea una nuova candidate. Non si riapre automaticamente l'intero ciclo editoriale.
+Non è necessario riaprire l'intero manoscritto per preferenze stilistiche marginali o per aggiungere esempi non richiesti da una lacuna dimostrata.
