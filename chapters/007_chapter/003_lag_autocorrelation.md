@@ -1,16 +1,8 @@
 ## 7.2 Lag e autocorrelazione: capire quanta memoria contiene la serie
 
-In un dataset tabellare possiamo talvolta trattare le righe come osservazioni indipendenti. In una serie temporale questa assunzione è spesso sbagliata.
+Una serie temporale non è soltanto una tabella ordinata per data. L'ordine stesso contiene informazione. Se il processo possiede inerzia, calendario o cicli ricorrenti, il valore di oggi può essere informativo sul valore di domani e osservazioni molto vicine possono essere assai meno indipendenti di quanto suggerisca il numero di righe.
 
-Il valore di oggi può essere informativo sul valore di domani perché il processo possiede **memoria**.
-
-Un **lag** è una versione ritardata della serie:
-
-- lag 1 su dati giornalieri = ieri;
-- lag 7 = lo stesso giorno della settimana precedente;
-- lag 12 su dati mensili = lo stesso mese dell'anno precedente.
-
-L'**autocorrelazione** misura la relazione tra la serie e sé stessa a lag differenti. NIST la usa per rilevare struttura non casuale e supportare l'identificazione dei pattern temporali.[^nist-acf]
+Un **lag** è semplicemente la serie vista con un ritardo: su dati giornalieri `lag 1` significa ieri, `lag 7` lo stesso giorno della settimana precedente; su dati mensili `lag 12` richiama lo stesso mese dell'anno precedente. L'**autocorrelazione** misura quanto la serie assomigli a sé stessa a questi ritardi. NIST la utilizza proprio per rendere visibile struttura non casuale e periodicità.[^nist-acf]
 
 ### Caso simulato/composito — Il contact center che sembrava caotico
 
@@ -27,93 +19,29 @@ Un contact center osserva:
 | Dom | 3.320 |
 | Lun successivo | 8.510 |
 
-La deviazione standard giornaliera è alta. Se ignoriamo il calendario, il processo sembra molto instabile.
+La deviazione standard giornaliera è alta. Se trattiamo ogni giorno come un'osservazione intercambiabile, il processo sembra instabile. Ma il lunedì successivo assomiglia molto più al lunedì precedente che alla domenica immediatamente prima. Per il capacity planning, `lag 7` contiene più informazione di `lag 1`.
 
-Ma il lunedì successivo assomiglia molto più al lunedì precedente che alla domenica immediatamente precedente.
+Questa differenza rende evidente un principio: il lag utile deve avere **significato operativo**, non soltanto essere disponibile nel software. Una domanda urbana può avere memoria a 24 ore e 7 giorni; il traffico web B2B può seguire soprattutto il calendario lavorativo; le vendite mensili possono conservare informazione dal mese precedente e dall'anno precedente; un sensore industriale può avere dipendenza a pochi secondi. In un'azienda aperta cinque giorni su sette, persino “giorno lavorativo precedente” può essere una relazione più sensata del semplice `t-1`.
 
-Per la pianificazione del personale, il lag 7 contiene più informazione del lag 1.
+### Memoria apparente e memoria residua
 
-La serie non è “rumorosa senza struttura”. Ha una forte memoria settimanale.
+Una forte autocorrelazione grezza può essere prodotta da trend e stagionalità già visibili. Se le vendite crescono quasi ogni mese, valori adiacenti saranno simili anche senza una dinamica locale particolarmente interessante. Per questo la domanda più utile non è soltanto *quanto è alta l'ACF?*, ma:
 
-### Il lag deve avere significato operativo
+> **Dopo aver rappresentato trend, calendario e stagionalità, rimane ancora dipendenza temporale nei residui?**
 
-Non cerchiamo lags solo perché il software li propone.
+Se sì, il modello non ha ancora catturato tutta la struttura. Se no, gran parte della memoria osservata era già spiegata dalle componenti sistematiche.
 
-Possibili memorie del processo:
+Questa distinzione è importante anche per l'incertezza. Diecimila misure al minuto dello stesso processo persistente non contengono necessariamente l'equivalente di diecimila osservazioni indipendenti. Ignorare la dipendenza seriale può produrre errori standard troppo piccoli, alert eccessivi e una falsa impressione di quanta informazione nuova stiamo raccogliendo. NIST, nel lavoro sui change-point, sottolinea esplicitamente che autocorrelazione e variabilità naturale devono essere considerate quando si cerca di identificare cambiamenti nella serie.[^nist-changepoint]
 
-- domanda urbana → 24 ore e 7 giorni;
-- traffico web B2B → giorno lavorativo precedente e settimana precedente;
-- vendite mensili → mese precedente e anno precedente;
-- sensori industriali → secondi/minuti precedenti;
-- rinnovi annuali → mesi dalla scadenza precedente.
+L'autocorrelazione, però, resta una relazione predittiva, non una spiegazione causale. Se `y_t` è correlato con `y_(t-1)`, il valore precedente non diventa per questo la causa del successivo. Entrambi possono riflettere domanda persistente, capacità, calendario, prezzo, meteo, stock o composizione dei clienti. Il passato può essere informativo senza essere il meccanismo.
 
-Il calendario aziendale può generare lags che non corrispondono perfettamente a quello civile.
+Un autocorrelation plot serve quindi soprattutto a formulare domande: compaiono picchi a 7, 14 e 21 giorni? La dipendenza decade lentamente perché la serie non è stazionaria? Dopo decomposizione o trasformazione il residuo assomiglia di più a rumore? La risposta non seleziona automaticamente un algoritmo; definisce quale struttura il modello dovrà riuscire a spiegare.
 
-Un business aperto cinque giorni su sette può avere una memoria “giorno lavorativo precedente” più utile del semplice `t-1`.
+Nel Temporal Decision Brief la memoria della serie dovrebbe poter essere descritta così:
 
-### Autocorrelazione grezza e autocorrelazione residua
+> **La serie mostra dipendenza rilevante ai lag ______, coerente con ______. Dopo aver controllato per ______, rimane/non rimane struttura seriale materialmente rilevante.**
 
-Una forte autocorrelazione può derivare da trend o stagionalità già visibili.
-
-Se le vendite crescono ogni mese, valori vicini saranno simili anche senza una dinamica locale particolarmente interessante.
-
-Per questo è utile chiedere:
-
-> dopo aver rimosso trend e stagionalità, rimane ancora dipendenza temporale?
-
-Se sì, il residuo contiene struttura che il modello non ha ancora catturato.
-
-Se no, gran parte della “memoria” era già spiegata dalle componenti sistematiche.
-
-### Autocorrelazione non è causalità
-
-Se `y_t` è correlato a `y_(t-1)`, non significa che il valore precedente **causi** il successivo.
-
-Entrambi possono essere prodotti da:
-
-- domanda persistente;
-- capacità stabile;
-- calendario;
-- prezzo;
-- clima;
-- stock;
-- composizione dei clienti.
-
-L'autocorrelazione ci dice che il passato contiene informazione sul futuro. Non ci dice il meccanismo causale.
-
-### Perché ignorarla rende l'incertezza troppo piccola
-
-Supponiamo di avere 10.000 misure al minuto provenienti dallo stesso processo molto persistente.
-
-Non possediamo necessariamente l'equivalente informativo di 10.000 osservazioni indipendenti.
-
-Se una tecnica inferenziale assume indipendenza e noi ignoriamo la dipendenza seriale, possiamo:
-
-- sottostimare l'errore standard;
-- produrre troppi alert;
-- dichiarare cambiamenti più convincenti di quanto siano;
-- sovrastimare il valore di nuovi dati molto ravvicinati.
-
-NIST, discutendo change-point su serie autocorrelate, osserva che ignorare l'autocorrelazione può portare a identificare più cambiamenti di quanti ce ne siano realmente.[^nist-changepoint]
-
-### ACF come domanda, non come decorazione
-
-Un autocorrelation plot dovrebbe servire a formulare domande:
-
-- lag 1 è forte perché esiste inerzia?
-- compaiono picchi a 7, 14, 21 giorni?
-- la dipendenza decade lentamente, suggerendo trend/non stazionarietà?
-- dopo la trasformazione o decomposizione il residuo assomiglia maggiormente a rumore?
-
-Il grafico non decide il modello da solo. Aiuta a capire quale struttura deve essere spiegata.
-
-### La domanda operativa
-
-Nel Temporal Decision Brief, la parte sulla memoria dovrebbe poter dire:
-
-> **La serie mostra dipendenza rilevante ai lag ______, coerente con ______. Dopo aver controllato per ______, rimane/non rimane struttura seriale significativa da modellare.**
-
-Questo è molto più utile di scrivere soltanto “ACF alta”.
+Il passo successivo è capire se questa memoria opera dentro un processo abbastanza stabile da poter essere trasferito nel tempo, oppure se livello, varianza e relazioni stanno cambiando insieme alla serie.
 
 [^nist-acf]: NIST/SEMATECH e-Handbook of Statistical Methods, “Autocorrelation”, https://www.itl.nist.gov/div898/handbook/eda/section3/eda35c.htm
 [^nist-changepoint]: NIST, *Statistical Methods for Change-Point Detection in Surface Temperature Records*, https://www.nist.gov/publications/statistical-methods-change-point-detection-surface-temperature-records
