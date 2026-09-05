@@ -1,411 +1,63 @@
-## 18.3 Data product e self-service: autonomia senza trasferire ambiguità al consumer
+## 18.3 Data product e self-service: autonomia senza trasferire l'ambiguità
 
-Il self-service analytics viene spesso riassunto così:
+Il self-service analytics viene spesso descritto come la possibilità per gli utenti business di accedere ai dati senza aprire ticket al data team. È una definizione troppo debole. Se l'utente non deve più aspettare una coda, ma deve comunque indovinare quale tabella usare, quale metrica sia authoritative, quale data rappresenti l'evento giusto, quali righe siano complete e chi contattare quando i numeri non tornano, non abbiamo eliminato il costo: **lo abbiamo spostato sul consumer**.
 
-> “Gli utenti business possono accedere ai dati senza chiedere al data team.”
+Il self-service maturo nasce quindi dalla sezione precedente. Ownership, serving state e reliability non sono controlli esterni al prodotto; sono parte dell'esperienza che permette al consumer di usarlo senza ricostruire ogni volta il contesto. Il punto non è rendere tutto interrogabile. È incorporare abbastanza significato e guardrail da rendere economico il comportamento corretto.
 
-È una definizione insufficiente.
+## Un data product è una promessa, non una tabella
 
-Se l'utente non deve aprire un ticket, ma deve comunque indovinare:
+Una tabella ben modellata o una dashboard molto usata non diventano automaticamente un data product. Il salto avviene quando esistono consumer riconoscibili e una promessa mantenibile. L'Analytics Operating Contract deve rendere espliciti almeno purpose, consumer, contract, reliability, ownership e lifecycle. In altre parole: quale problema supportiamo, per chi, che cosa può essere assunto stabile, quali gate proteggono l'output, chi risponde del servizio e come verrà cambiato o ritirato.
 
-- quale tabella usare;
-- quale metrica è autorevole;
-- quale data rappresenta l'evento corretto;
-- quali righe sono complete;
-- chi contattare quando qualcosa non torna;
+AWS descrive il data mesh attraverso domain ownership, data as a product, self-service platform e federated governance; nella Prescriptive Guidance distingue inoltre domain team, platform team e governance team. Non serve adottare formalmente un data mesh per usare la lezione organizzativa: il dominio possiede significato e use case, la piattaforma fornisce capability comuni, la governance definisce guardrail che non possono essere locali.
 
-abbiamo eliminato una coda di supporto e trasferito il costo cognitivo al consumer.
+Fonti:
+- https://aws.amazon.com/what-is/data-mesh/
+- https://docs.aws.amazon.com/prescriptive-guidance/latest/strategy-data-mesh/teams-interactions.html
 
-Il self-service maturo non significa **assenza del team centrale**.
+## Il Customer 360 da 400 colonne che nessuno vuole usare
 
-Significa che una parte rilevante del contesto necessario per usare bene il dato è incorporata nel prodotto, nei guardrail e nel sistema di supporto.
+Un team costruisce `customer_360` in nove mesi. La tabella contiene oltre 400 colonne: identity, campagne, revenue, piani, utilizzo, supporto, churn, score e decine di flag. Tecnicamente è ricca. Dopo il rilascio, però, Marketing continua a usare il proprio export, Customer Success un mart locale, Finance non si fida di `lifetime_revenue` e Product costruisce una nuova tabella.
 
-## Data product: output tecnico o promessa operativa?
+La prima interpretazione potrebbe essere “manca adoption” o “serve un catalogo migliore”. Ma tutti conoscono già l'asset. Il problema è la **trust usability**. Marketing non sa se `campaign_source` sia first touch o latest touch; Customer Success non sa se `customer_id` rappresenti account, workspace o legal entity; Finance non riconcilia revenue con billing; Product vede campi cambiare senza notice.
 
-Una tabella ben modellata non è automaticamente un data product.
+Il redesign parte dai consumer, non dalle colonne disponibili. Il team seleziona tre use case — campaign segmentation, retention analysis, account health review — e per ciascuno definisce grain, decisione, metriche authoritative, freshness, access boundary, known limitations, owner, query pattern ed escalation. Il core model scende a 72 campi; feature sperimentali e use case non compatibili vengono separati. L'uso cresce perché diminuisce l'ambiguità, non perché aumenta il volume del prodotto.
 
-Una dashboard molto usata non è automaticamente un data product.
+## Product boundary: una buona promessa dice anche cosa non promette
 
-Un data product esiste quando c'è una promessa mantenibile verso consumer riconoscibili.
+Un oggetto chiamato `customer_360` invita al riuso oltre il proprio design. Un boundary più onesto può chiamarsi `Customer Lifecycle Core` e promettere identity certificata per analytics, acquisition source authoritative, lifecycle dates, recurring revenue, activity aggregates e support summary. Può contemporaneamente dichiarare fuori scope real-time personalization, credit scoring, raw clickstream completo, attribution causale e legal master-data authority.
 
-Possiamo descriverlo con sei elementi.
+Questa parte negativa del contratto è fondamentale. Un prodotto self-service è più sicuro quando il consumer sa rapidamente **what, who, when, how good, how to use, what not to do, what changed e where to go**. Se servono cinque meeting per rispondere, l'asset è discoverable ma non self-service.
 
-### 1. Purpose
+## Certified, exploratory e restricted non sono la stessa superficie
 
-Quale problema o famiglia di decisioni supporta?
+L'autonomia cresce quando il sistema distingue chiaramente la promessa. Una **certified zone** può contenere metriche authoritative, owner, SLO e compatibilità controllata. Una **exploration zone** può consentire sandbox e dati sperimentali con reliability più bassa. Una **restricted zone** protegge dati sensibili con purpose limitation e audit. Una **published product zone** espone asset destinati al riuso, con contract e lifecycle espliciti.
 
-### 2. Consumer
+Lo scopo non è creare quattro piattaforme. È evitare due estremi: centralizzazione in cui ogni domanda passa dal team data e anarchia in cui ogni consumer deve ricostruire semantica, qualità e policy da zero.
 
-Chi lo usa e con quale livello di competenza?
-
-### 3. Contract
-
-Che cosa può assumere stabile il consumer?
-
-### 4. Reliability
-
-Quali SLO e quality gate valgono?
-
-### 5. Ownership
-
-Chi risponde di significato, esercizio e cambiamento?
-
-### 6. Lifecycle
-
-Come viene evoluto, deprecato e ritirato?
-
-Questa struttura entra nell'**Analytics Operating Contract**.
-
-## Caso simulato/composito: il Customer 360 che nessuno vuole usare
-
-Un team data costruisce `customer_360`.
-
-Il progetto dura nove mesi.
-
-La tabella contiene oltre 400 colonne:
-
-- identity;
-- campagne;
-- revenue;
-- piani;
-- utilizzo;
-- support;
-- churn;
-- score;
-- decine di flag.
-
-Tecnicamente è ricca.
-
-Dopo il rilascio:
-
-- Marketing continua a usare il proprio export;
-- Customer Success usa un mart locale;
-- Finance non utilizza `lifetime_revenue`;
-- Product costruisce una nuova tabella.
-
-### Perché?
-
-Marketing non sa se `campaign_source` rappresenti first touch o latest touch.
-
-Customer Success non sa se `customer_id` sia account, workspace o legal entity.
-
-Finance non riesce a riconciliare revenue con billing.
-
-Product trova campi che cambiano senza change notice.
-
-Il problema non è la discoverability.
-
-Tutti conoscono la tabella.
-
-Il problema è la **trust usability**.
-
-## Ridisegnare dal consumer verso la sorgente
-
-Il team smette di chiedere:
-
-> “Quali campi possiamo mettere nel Customer 360?”
-
-E parte da tre use case:
-
-1. campaign segmentation;
-2. retention analysis;
-3. account health review.
-
-Per ogni use case definisce:
-
-- grain;
-- decisione;
-- metriche authoritative;
-- freshness;
-- access boundary;
-- known limitations;
-- owner;
-- query examples;
-- escalation path.
-
-Il core model scende a 72 campi.
-
-Le feature sperimentali vengono separate.
-
-I campi critici hanno definizioni e owner.
-
-L'uso cresce perché il prodotto contiene **meno ambiguità**, non più colonne.
-
-## Caso reale documentato: AWS e il concetto di data product
-
-AWS descrive il data mesh come un modello che combina:
-
-- domain-oriented ownership;
-- data as a product;
-- self-service platform;
-- federated governance.
-
-Nella stessa documentazione un data product viene descritto come una componente strutturata e riutilizzabile che serve un purpose business e può essere usata autonomamente da altri team, con standard comuni che favoriscono interoperabilità e qualità.
-
-Fonte: https://aws.amazon.com/what-is/data-mesh/
-
-La AWS Prescriptive Guidance separa inoltre responsabilità di:
-
-- domain team, che possiedono i data product;
-- self-service platform team, che mantiene capacità condivise;
-- governance team, che garantisce standard e requisiti.
-
-Fonte: https://docs.aws.amazon.com/prescriptive-guidance/latest/strategy-data-mesh/teams-interactions.html
-
-Questa struttura è utile come esempio organizzativo, non come dogma architetturale.
-
-Non ogni azienda ha bisogno di “fare data mesh”.
-
-Il principio trasferibile è:
-
-> **la responsabilità del dominio e la piattaforma condivisa risolvono problemi differenti.**
-
-## Product boundary: dove finisce la promessa?
-
-Un prodotto chiamato `customer_360` può diventare pericolosamente ampio.
-
-La product boundary deve dire che cosa il prodotto **non** promette.
-
-Esempio:
-
-`Customer Lifecycle Core` promette:
-
-- customer identity certificata per analytics;
-- acquisition source authoritative;
-- lifecycle dates;
-- recurring revenue;
-- activity aggregates giornalieri;
-- support summary.
-
-Non promette:
-
-- real-time personalization;
-- credit scoring;
-- raw clickstream completo;
-- marketing attribution causale;
-- legal master-data authority.
-
-Un boundary chiaro riduce il rischio che lo stesso asset venga usato oltre il proprio design.
-
-## Self-service contract
-
-Un consumer dovrebbe poter sapere rapidamente:
-
-### What
-
-Che cosa rappresenta il prodotto?
-
-### Who
-
-Chi è owner?
-
-### When
-
-Quanto è fresco e quando viene aggiornato?
-
-### How good
-
-Quali SLO/test proteggono il dato?
-
-### How to use
-
-Quali interface e pattern sono supportati?
-
-### What not to do
-
-Quali interpretazioni sono fuori scope?
-
-### What changed
-
-Qual è la versione e quali breaking change recenti?
-
-### Where to go
-
-Dove segnalare problemi o chiedere supporto?
-
-Se servono cinque meeting per rispondere a queste domande, il prodotto non è ancora davvero self-service.
-
-## Self-service non è “puoi interrogare tutto”
-
-Un ambiente maturo può separare superfici differenti.
-
-### Certified zone
-
-- metriche e data product authoritative;
-- SLO;
-- owner;
-- documentazione;
-- compatibilità controllata.
-
-### Exploration zone
-
-- sandbox;
-- dati sperimentali;
-- query ad hoc;
-- expectation di reliability più bassa.
-
-### Restricted zone
-
-- dati sensibili;
-- accesso motivato;
-- purpose limitation;
-- audit.
-
-### Published product zone
-
-- asset destinati al riuso organizzativo;
-- contract esplicito;
-- lifecycle e supporto.
-
-Questo evita due estremi:
-
-- centralizzazione in cui il team data deve rispondere a ogni domanda;
-- anarchia in cui ogni utente deve ricostruire semantica e qualità.
-
-## Governance come paved road
-
-Una governance utile rende il comportamento corretto più semplice.
-
-Microsoft, nella Fabric Adoption Roadmap, raccomanda una governance che bilanci controllo ed empowerment, usando il modello più leggero capace di soddisfare gli obiettivi e integrando le regole nel normale workflow degli utenti.
+Microsoft formula un principio analogo nella Fabric Adoption Roadmap: la governance funziona meglio quando bilancia controllo ed empowerment, usa il modello più leggero capace di raggiungere gli obiettivi e rende semplice seguire le regole all'interno del normale workflow.
 
 Fonte: https://learn.microsoft.com/en-us/power-bi/guidance/fabric-adoption-roadmap-governance
 
-In pratica, una **paved road** self-service può offrire:
+Questa è l'idea della **paved road**: template di data product, default sicuri, test standard, catalogazione, lineage, naming, CI/CD, cost metadata e support channel riducono il lavoro ripetitivo. L'autonomia cresce perché non dobbiamo reinventare i guardrail a ogni use case.
 
-- template di data product;
-- default di accesso sicuri;
-- test standard;
-- catalogazione automatica;
-- lineage;
-- naming;
-- semantic definitions;
-- CI/CD;
-- cost tagging;
-- support channel.
+## Il team centrale non può possedere il significato di tutto
 
-L'autonomia cresce perché non dobbiamo reinventare queste capacità ogni volta.
+Un central team può costruire ottime capability e diventare comunque collo di bottiglia se deve essere semantic owner di supply chain, risk, finance, marketing, product e supporto. Un operating model federato separa meglio le responsabilità: domain ownership per significato e valore locale; platform capability per primitive riutilizzabili; federated governance per privacy, security, identity, interoperability, certification e audit.
 
-## Il central team non deve diventare un product factory universale
+AWS Prescriptive Guidance rende questa separazione concreta: i domain team creano e mantengono data product e use case; il self-service platform team possiede e mantiene la piattaforma; il governance team definisce principi e guardrail. La struttura non è un dogma architetturale, ma un buon antidoto all'idea che “self-service” significhi semplicemente dare accesso al warehouse.
 
-Un team centrale può essere molto bravo a costruire data mart.
+Fonte: https://docs.aws.amazon.com/prescriptive-guidance/latest/strategy-data-mesh/teams-interactions.html
 
-Ma se deve conoscere in profondità:
+## Supporto e interfaccia fanno parte del prodotto
 
-- supply chain;
-- risk;
-- marketing;
-- finance;
-- product;
-- customer support;
+Self-service non significa assenza di supporto. Significa spostare il supporto dalle domande ripetitive ai problemi che richiedono giudizio. Ticket per 100 consumer, time-to-first-success, misunderstanding semantici, dipendenze create correttamente e tempo per trovare l'owner sono metriche molto più informative del semplice numero di utenti abilitati. Se i consumer raddoppiano e i ticket raddoppiano allo stesso ritmo, abbiamo scalato il pubblico, non il self-service.
 
-e diventare owner semantico di tutto, prima o poi diventa collo di bottiglia.
+Anche l'interfaccia deve seguire il consumer. La stessa boundary può essere esposta via SQL view, semantic layer, API, dashboard, notebook template o feature service. Democratizzazione non significa mostrare a tutti lo stesso livello tecnico: il self-service di un analyst SQL e quello di un sales manager sono problemi differenti.
 
-Un modello federato può separare:
+## Adoption come feedback, non come applausometro
 
-### Domain ownership
+Usage è un segnale, non una prova di valore. Un asset molto interrogato può esserlo perché non esistono alternative. Un asset poco usato può essere essenziale a un closing trimestrale. Per questo la scorecard di un data product dovrebbe leggere insieme **trust, usability, reuse e decision value**: SLO e incident; discoverability e support burden; consumer indipendenti e duplicazioni ritirate; processi decisionali supportati e valore creato dove misurabile.
 
-Il dominio risponde del significato e del valore del proprio prodotto.
+> **Un data product non scala perché molte persone possono accedervi. Scala quando molte persone possono usarlo correttamente senza ricostruire ogni volta significato, fiducia e responsabilità.**
 
-### Platform capability
-
-La piattaforma fornisce strumenti e standard riutilizzabili.
-
-### Federated governance
-
-L'organizzazione definisce policy comuni per concetti che non possono essere locali:
-
-- privacy;
-- security;
-- identity;
-- naming;
-- interoperability;
-- certification;
-- audit.
-
-## Self-service support: una funzione del prodotto
-
-Self-service non significa “nessun supporto”.
-
-Significa spostare supporto da domande ripetitive a problemi ad alto valore.
-
-Possiamo misurare:
-
-- ticket per 100 consumer;
-- percentuale di ticket già coperti da documentazione;
-- time-to-first-success;
-- query fallite per misunderstanding semantico;
-- dipendenze create correttamente;
-- tempo medio necessario per trovare l'owner.
-
-Se l'uso aumenta ma i ticket crescono linearmente, il prodotto forse sta scalando i consumer, non il self-service.
-
-## Interfaccia: non ogni consumer deve vedere il livello più basso
-
-Lo stesso product boundary può essere servito tramite:
-
-- SQL table/view;
-- semantic layer;
-- API;
-- dashboard;
-- notebook template;
-- feature service.
-
-L'interfaccia deve dipendere dal consumer.
-
-Il self-service di un analyst SQL non è il self-service di un sales manager.
-
-Un errore frequente è chiamare “democratizzazione” l'esposizione dello stesso livello tecnico a tutti.
-
-## Feedback loop
-
-Un prodotto senza feedback tende a seguire la propria roadmap invece del valore dei consumer.
-
-Feedback utili:
-
-- use case effettivi;
-- query pattern;
-- ticket;
-- feature richieste;
-- confusioni semantiche;
-- decisioni supportate;
-- consumer che hanno abbandonato il prodotto;
-- asset duplicati costruiti altrove.
-
-Una tabella molto interrogata può essere usata perché è l'unica disponibile.
-
-Una tabella poco interrogata può essere essenziale a un closing trimestrale.
-
-Usage da solo non misura product value.
-
-## Data product scorecard
-
-Un prodotto può essere valutato su quattro dimensioni.
-
-### Trust
-
-- SLO attainment;
-- incident;
-- reconciliation;
-- semantic stability.
-
-### Usability
-
-- discoverability;
-- documentation;
-- time-to-first-answer;
-- support burden.
-
-### Reuse
-
-- consumer indipendenti;
-- duplicazioni ritirate;
-- nuove analisi costruite senza re-implementare logica core.
-
-### Decision value
-
-- processi ricorrenti supportati;
-- tempo risparmiato;
-- qualità/velocità decisionale;
-- valore economico dove misurabile.
-
-> **Un data product non scala perché molti possono accedervi. Scala quando molti possono usarlo correttamente senza ricostruire da zero significato, fiducia e responsabilità.**
+Ma una promessa self-service stabile deve anche poter cambiare. Il prossimo problema è quindi il più insidioso: come evolvere un prodotto senza lasciare che una breaking change venga scoperta retroattivamente nel meeting in cui il numero è già stato usato.
