@@ -1,16 +1,10 @@
 ## 12.6 Semantic layer come serving boundary: pubblicare significato, non solo tabelle
 
-Nel Capitolo 11 abbiamo già costruito la semantica delle metriche e l'Analytical Data Contract.
-
-Qui ci interessa una domanda architetturale diversa:
+Nel Capitolo 11 abbiamo definito che cosa significano metriche, dimensioni e relazioni. Qui la domanda è architetturale:
 
 > **Dove viene pubblicata quella semantica affinché dashboard, notebook, applicazioni e agenti non debbano ricostruirla separatamente?**
 
-Il semantic layer è uno dei possibili **serving boundary** tra modelli analitici e consumer.
-
-### Il percorso
-
-Una struttura concettuale può essere:
+Il semantic layer è uno dei possibili **serving boundary** tra modelli analitici e consumer. Una struttura concettuale può essere:
 
 ```text
 curated tables
@@ -22,33 +16,11 @@ semantic layer
 BI / notebooks / natural-language analytics / applications
 ```
 
-Il semantic layer non sostituisce i modelli sottostanti.
-
-Espone in modo più consumabile:
-
-- metriche;
-- dimensioni;
-- relazioni;
-- gerarchie;
-- calendario;
-- nomi business;
-- policy di accesso dove supportate.
-
-### Il valore architetturale: ridurre accoppiamento
-
-Senza un serving boundary condiviso, ogni consumer può diventare direttamente dipendente da:
-
-- nomi fisici delle tabelle;
-- dettagli dei join;
-- colonne tecniche;
-- cambiamenti di storage;
-- business logic ripetuta.
-
-Con un'interfaccia semantica stabile, parte di questa complessità viene nascosta dietro un contratto più vicino al linguaggio del business.
+Il valore non sta nel nascondere le tabelle, ma nel ridurre l'accoppiamento dei consumer ai dettagli fisici: join, nomi tecnici, colonne, storage e business logic ripetuta. Un'interfaccia semantica può esporre metriche, dimensioni, relazioni, gerarchie, calendario e nomi business attraverso un contratto più stabile.
 
 ### Caso simulato/composito — SkyShop e tre conversion rate
 
-SkyShop ha tre metriche legittime:
+SkyShop usa tre metriche legittime:
 
 ```text
 session_to_order_conversion
@@ -56,90 +28,23 @@ user_to_purchase_conversion
 checkout_to_paid_conversion
 ```
 
-Il problema non è scegliere una sola conversion universale.
+Il problema non è sceglierne una come “conversione universale”. È evitare che tre dashboard mostrino tutte `conversion_rate` facendo credere che il concetto sia unico.
 
-Il problema è evitare che tre dashboard espongano tutte la label `conversion_rate` senza spiegare quale fenomeno rappresentano.
+Il Capitolo 11 risolve la definizione. Il Capitolo 12 deve assicurarsi che quelle definizioni vengano **servite da un punto riconoscibile e governabile**, così i consumer non reinventano la semantica ogni volta.
 
-Il lavoro semantico appartiene al Capitolo 11.
-
-Il lavoro architetturale di questa sezione è:
-
-> **rendere quelle tre definizioni disponibili attraverso un punto di consumo riconoscibile e governabile.**
-
-### Caso reale documentato — metric views come semantic object
-
-Databricks documenta le metric views come oggetti che centralizzano misure riusabili e dimensioni, così gli utenti possono interrogare le stesse definizioni senza duplicarne la logica nei singoli consumer.
+Databricks documenta le metric views proprio come oggetti semantici che centralizzano misure e dimensioni riusabili per consumer differenti.
 
 Fonte: https://docs.databricks.com/aws/en/uc-semantics/metric-views
 
-La tecnologia specifica può cambiare. Il pattern rimane:
+### Centralizzare non corregge gli errori
 
-```text
-shared semantic definition
-→ many consumers
-```
+Se `net_revenue` è costruita su refund mancanti, pubblicarla in un semantic layer non la rende corretta. Anzi, un errore centralizzato può propagarsi più rapidamente. Per questo il serving boundary deve dipendere da modelli testati, lineage, owner, versioning e stato di qualità.
 
-### Il serving layer non corregge upstream data
+Il vantaggio emerge soprattutto durante un cambiamento. Con la logica duplicata in 27 dashboard dobbiamo trovare e modificare ogni copia. Con un serving boundary condiviso possiamo almeno sapere quale definizione cambia, quali consumer dipendono da essa e quale versione stanno usando.
 
-Se `net_revenue` è costruita su refund mancanti, centralizzarla non la rende corretta.
+Questo diventa ancora più importante con l'AI. Un agente può tradurre linguaggio naturale in query, ma deve poter distinguere `raw amount`, `recognized revenue` e `net sales`. Un semantic layer riduce l'ambiguità esponendo definizioni certificate e relazioni valide, senza trasformare “certificato” in “infallibile”.
 
-Anzi, un errore centralizzato può propagarsi più velocemente.
-
-Per questo il serving boundary deve dipendere da:
-
-- modelli testati;
-- lineage;
-- owner;
-- versioning;
-- quality state.
-
-Centralizzazione senza qualità crea **incoerenza coerente**: tutti sbagliano nello stesso modo.
-
-### Il vantaggio durante un cambiamento
-
-Supponiamo che una definizione certificata debba cambiare.
-
-Con logica duplicata in 27 dashboard dobbiamo:
-
-- trovare ogni copia;
-- capire le differenze locali;
-- modificare separatamente;
-- verificare che nessuna sia rimasta indietro.
-
-Con un serving boundary condiviso possiamo almeno sapere:
-
-- quale definizione cambia;
-- quali consumer dipendono da essa;
-- quale versione stanno usando.
-
-La lineage della sezione successiva diventa quindi essenziale.
-
-### Semantic serving e AI
-
-Quando un agente traduce linguaggio naturale in query, deve poter distinguere:
-
-```text
-raw amount
-vs
-recognized revenue
-vs
-net sales
-```
-
-Il semantic layer può ridurre lo spazio di ambiguità esponendo:
-
-- metriche certificate;
-- descrizioni;
-- dimensioni supportate;
-- relazioni valide.
-
-Ma l'AI non deve interpretare “certificato” come “infallibile”.
-
-Valgono ancora test, caveat e ownership.
-
-### Campo della Data Flow Architecture Map
-
-Nel nodo `SERVE` annotiamo:
+Nel nodo `SERVE` della Data Flow Architecture Map annotiamo:
 
 ```text
 serving interface:
@@ -152,12 +57,4 @@ fallback if serving fails:
 owner:
 ```
 
-### Confine editoriale
-
-Ricordiamo:
-
-- Ch11: **che cosa significa la metrica e come viene costruita**;
-- Ch12: **dove quella definizione viene servita e come si collega ai consumer**;
-- Ch18: **come l'organizzazione governa ownership, adozione e lifecycle su scala**.
-
-> **Un semantic layer è utile architetturalmente quando riduce la dipendenza dei consumer dai dettagli fisici senza nascondere provenienza, stato di qualità e ownership della definizione.**
+> **Un semantic layer è utile architetturalmente quando riduce la dipendenza dei consumer dai dettagli fisici mantenendo visibili provenienza, stato di qualità e ownership della definizione.**
