@@ -1,17 +1,13 @@
 ## 8.3 Confondenti: capire perché i gruppi erano diversi prima del trattamento
 
-Il confounding nasce quando il processo che assegna l'esposizione crea gruppi che differiscono anche per cause dell'outcome.
-
-In forma intuitiva:
+Il confounding nasce quando lo stesso processo che rende più probabile il trattamento influenza anche l'outcome. In forma minima:
 
 ```text
 Z -> trattamento
 Z -> outcome
 ```
 
-`Z` apre un percorso non causale tra trattamento e outcome.
-
-La conseguenza è importante: il confronto grezzo mescola l'effetto che vogliamo stimare con differenze già presenti tra i gruppi.
+Il confronto grezzo tra trattati e non trattati mescola allora due cose: il possibile effetto del trattamento e differenze che esistevano già prima. Il problema non è nel coefficiente finale; nasce nel modo in cui il mondo ha prodotto i gruppi.
 
 ### Caso simulato/composito — La campagna display che sembrava triplicare la conversione
 
@@ -22,9 +18,7 @@ Un e-commerce osserva:
 | Esposti agli annunci | 5,8% |
 | Non esposti | 2,1% |
 
-La piattaforma pubblicitaria, però, mostra più annunci proprio agli utenti che hanno visitato siti della categoria, cercato prodotti simili o dimostrato recente intento d'acquisto.
-
-Una rappresentazione plausibile è:
+La differenza è **+3,7 pp**, ma la piattaforma mostra più annunci proprio agli utenti che hanno visitato siti della categoria, cercato prodotti simili o manifestato recente intento d'acquisto. Una storia plausibile è quindi:
 
 ```text
 intento preesistente -> probabilità di esposizione
@@ -32,36 +26,13 @@ intento preesistente -> probabilità di acquisto
 esposizione ----------> possibile effetto sull'acquisto
 ```
 
-Il `+3,7 pp` osservato contiene sia selezione sia possibile effetto advertising.
+La differenza osservata contiene insieme selezione e possibile effetto advertising. Una regressione può aggiustare parte del problema solo se misura adeguatamente le cause comuni rilevanti e se le tratta nel ruolo causale corretto.
 
-### “Associato a trattamento e outcome” non basta come definizione operativa
+Questo è il punto in cui la regola “controlliamo per tutte le colonne” smette di essere prudente e diventa pericolosa. Una variabile correlata sia al trattamento sia all'outcome può essere una causa comune pre-treatment, un semplice predittore, un mediatore generato dal trattamento, un collider, un proxy imperfetto o perfino una conseguenza dell'outcome. Il ruolo nel processo, non la correlazione, determina se l'adjustment aiuta.
 
-Una variabile non va controllata solo perché è correlata con entrambe le cose.
+### Il prezzo del gelato e la temperatura
 
-Per decidere se aggiustare dobbiamo chiederci **dove si trova nel processo causale**.
-
-Una variabile può essere:
-
-- causa comune pre-trattamento — potenziale confondente;
-- semplice predittore dell'outcome;
-- mediatore generato dal trattamento;
-- collider;
-- proxy imperfetto di un confondente;
-- conseguenza dell'outcome.
-
-Il ruolo, non la correlazione, determina se il controllo aiuta o danneggia.
-
-### Caso simulato/composito — Prezzo del gelato e temperatura
-
-Una catena di gelaterie trova una correlazione positiva tra prezzo medio e quantità venduta.
-
-Il management potrebbe concludere che aumentare il prezzo aumenta la domanda.
-
-Ma nei giorni più caldi:
-
-- la domanda aumenta;
-- alcuni store attivano pricing dinamico;
-- il prezzo medio cresce.
+Una catena di gelaterie trova una correlazione positiva tra prezzo medio e quantità venduta. Se nei giorni più caldi aumenta la domanda e alcuni store attivano pricing dinamico, la struttura può essere:
 
 ```text
 temperatura -> prezzo
@@ -69,76 +40,21 @@ temperatura -> prezzo
      +-------> domanda
 ```
 
-Confrontare giornate climaticamente molto diverse attribuisce al prezzo una parte dell'effetto della temperatura.
+Confrontare giornate climaticamente diverse attribuisce al prezzo una parte dell'effetto della temperatura. Aggiungere “più feature” non risolve il problema se non abbiamo prima ricostruito quali variabili appartengono al percorso causale.
 
-### “Controlliamo per tutte le colonne” è un anti-pattern causale
+Hernán e Robins descrivono proprio questo passaggio come una scelta strutturale: l'adjustment deve essere guidato da conoscenza causale a priori e da un modello delle cause comuni, non da una procedura che aggiunge automaticamente covariate perché migliorano il fit.[^whatif-confounding]
 
-Una regressione con cinquanta feature non è automaticamente più causale di una con cinque.
+Alcune cause comuni sono facilmente misurabili — storico acquisti, dimensione account, tenure, geografia, utilizzo pre-trattamento, calendario — mentre altre possono rimanere quasi invisibili nel warehouse: motivazione, intento reale, qualità del management, urgenza, forza della relazione commerciale, severità di un problema non registrata. Matching, weighting e regressione possono bilanciare **ciò che osserviamo**. Non eliminano per definizione il confounding non osservato.
 
-Aggiungere indiscriminatamente variabili può:
+Per questo una delle domande più utili viene prima del notebook:
 
-- bloccare mediatori e cambiare l'estimand;
-- aprire percorsi attraverso collider;
-- introdurre misure post-trattamento;
-- aumentare instabilità e extrapolation;
-- dare un falso senso di completezza.
+> **Perché questa unità ha ricevuto il trattamento?**
 
-Il set di adjustment dovrebbe essere giustificato da una storia causale e dal timing delle variabili.
+Intervistare chi prende la decisione operativa può far emergere informazioni che il dataset non possiede. Se Customer Success dice “offriamo lo sconto solo quando il procurement minaccia esplicitamente di andarsene” e quella minaccia non è registrata, nessuna regressione sul CRM può controllarla direttamente.
 
-### Confondenti osservati e non osservati
+Questa dinamica è frequente nei processi aziendali perché gli interventi sono spesso **reattivi al rischio**: più supporto ai clienti in difficoltà, più sconti a chi minaccia churn, più manutenzione agli impianti fragili, più visite manageriali ai negozi peggiori. Il trattamento può quindi apparire associato a outcome peggiori anche quando sta riducendo il danno rispetto al controfattuale.
 
-Alcune cause comuni possono essere ben misurate:
-
-- storico acquisti;
-- dimensione account;
-- tenure;
-- area geografica;
-- utilizzo prima del trattamento;
-- calendario.
-
-Altre sono più difficili:
-
-- motivazione;
-- reale intenzione di acquisto;
-- qualità del management;
-- urgenza;
-- relazione commerciale;
-- severità di un problema non registrata.
-
-Matching, weighting e regressione possono bilanciare o aggiustare **ciò che osserviamo**.
-
-Non eliminano per definizione il confounding non osservato.
-
-### Il processo di assegnazione viene prima del dataset
-
-Una domanda spesso più utile di “quali feature abbiamo?” è:
-
-> **Perché questa persona ha ricevuto il trattamento?**
-
-Intervistare chi prende la decisione operativa può rivelare variabili assenti dal database.
-
-Per esempio:
-
-> “Offriamo lo sconto solo quando il procurement minaccia esplicitamente di andarsene.”
-
-Se `minaccia_di_churn` non è registrata, nessuna regressione sul CRM può controllarla direttamente.
-
-### Confounding by indication
-
-In molti processi aziendali l'intervento viene attivato proprio perché il rischio è elevato:
-
-- più supporto ai clienti in difficoltà;
-- più sconti ai clienti che minacciano churn;
-- più manutenzione agli impianti fragili;
-- più visite manageriali ai negozi peggiori.
-
-Il trattamento può quindi apparire associato a outcome peggiori anche quando è utile.
-
-Questo meccanismo ritornerà nel caso finale del capitolo.
-
-### Scheda minima sul confounding
-
-Prima di aggiustare un confronto osservazionale, documenta:
+Prima di aggiustare un confronto osservazionale conviene fissare in una piccola scheda le assunzioni che stiamo facendo:
 
 ```text
 Trattamento:
@@ -152,4 +68,6 @@ Quali importanti non sono misurate?
 Quali variabili NON dobbiamo controllare e perché?
 ```
 
-> **Il confounding non è un difetto del coefficiente. È una conseguenza del modo in cui il mondo ha prodotto i gruppi che stiamo confrontando.**
+La sezione successiva rende questa dinamica ancora più concreta: quando l'azienda interviene proprio perché il rischio è già salito, il trattamento arriva dopo che una parte della traiettoria causale è iniziata.
+
+[^whatif-confounding]: Hernán, M.A. & Robins, J.M., *Causal Inference: What If*, capitolo sul confounding e causal DAG: https://www.hsph.harvard.edu/miguel-hernan/wp-content/uploads/sites/1268/2024/04/hernanrobins_WhatIf_26apr24.pdf
