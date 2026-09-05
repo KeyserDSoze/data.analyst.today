@@ -2,53 +2,27 @@
 
 > **Caso simulato/composito.** Azienda, numeri e circostanze sono costruiti a fini didattici.
 
-Il management di **MercatoHub**, marketplace europeo di elettronica ricondizionata, riceve il report del secondo trimestre:
-
-- GMV: **+18,7% YoY**;
-- ordini: **+12,1%**;
-- average order value: **+5,9%**;
-- clienti attivi: **+9,4%**.
+Il management di **MercatoHub**, marketplace europeo di elettronica ricondizionata, riceve il report del secondo trimestre. I quattro numeri in apertura sono tutti positivi: **GMV +18,7% YoY**, **ordini +12,1%**, **average order value +5,9%**, **clienti attivi +9,4%**.
 
 La prima slide preparata per il management titola:
 
 > **La crescita sta accelerando.**
 
-I numeri sono corretti. La conclusione, però, contiene molta più informazione di quanta ne abbiano dimostrata i quattro KPI.
+La headline non contiene un errore aritmetico. Contiene però un'interpretazione molto più ricca dei quattro KPI: suggerisce una crescita ampia, strutturale e sufficientemente sana da poter giustificare nuovi investimenti. È esattamente il tipo di salto che l'EDA deve stressare.
 
-La domanda analitica diventa quindi:
+La domanda diventa quindi:
 
-> **La crescita è ampia, sostenibile e accompagnata da segnali operativi coerenti, oppure è concentrata in pochi driver?**
+> **La crescita è diffusa, robusta e accompagnata da segnali operativi coerenti, oppure è concentrata in pochi driver?**
 
-### Handoff dal Capitolo 3: il dataset è utilizzabile
+Il dataset arriva dal Capitolo 3 con una Data Readiness Review completata: grain, chiavi, duplicati, resi e copertura temporale sono già stati verificati. Rimane un caveat noto: `active_customer` ha cambiato significato con il lancio della nuova app. Questo confine è importante perché non stiamo rifacendo la data-quality review; stiamo usando una conoscenza già acquisita per evitare di interpretare male una metrica.
 
-La Data Readiness Review è già stata completata. Grain, chiavi, ordini duplicati, resi e copertura temporale sono stati verificati.
+## La distribuzione indebolisce la prima generalizzazione
 
-Resta un caveat noto: la definizione storica di `active_customer` è stata alterata dal lancio della nuova app. Per questo nell'EDA useremo anche `unique_buyers`, definito in modo coerente su entrambi gli anni.
+L'AOV passa da **€286 a €303**. La media conferma che il valore economico per ordine è salito, ma la distribuzione mostra che il movimento non è uniforme: `P50` passa soltanto da **€231 a €234**, mentre `P90` cresce da **€612 a €735**.
 
-Questo confine è importante. Non stiamo rifacendo la data-quality review. Stiamo esplorando un dataset che sappiamo **come** usare e con quali caveat.
+Il cliente al centro della distribuzione spende quasi quanto l'anno precedente. L'aumento medio è quindi sostenuto soprattutto dagli ordini di fascia alta. La frase “gli ordini valgono di più” diventa una descrizione più precisa: **è aumentato soprattutto il peso degli ordini ad alto valore**.
 
-### Passo 1 — Guardare la distribuzione, non solo l'AOV
-
-L'AOV passa da 286 € a 303 €.
-
-La mediana racconta però un movimento molto più piccolo:
-
-- P50: 231 € → 234 €;
-- P90: 612 € → 735 €.
-
-Il cliente al centro della distribuzione spende quasi quanto l'anno precedente. L'aumento medio è trainato soprattutto dalla parte alta della distribuzione.
-
-L'osservazione cambia da:
-
-> “Gli ordini valgono mediamente di più.”
-
-A:
-
-> **“È cresciuto soprattutto il peso degli ordini ad alto valore.”**
-
-La seconda frase è più precisa e suggerisce subito la domanda successiva: *quali ordini?*
-
-### Passo 2 — Scomporre la crescita per categoria
+La decomposizione per categoria localizza immediatamente questa coda:
 
 | Categoria | GMV YoY |
 |---|---:|
@@ -58,92 +32,52 @@ La seconda frase è più precisa e suggerisce subito la domanda successiva: *qua
 | Fotografia | +9% |
 | Gaming GPU | +71% |
 
-La categoria Gaming GPU genera il **46% dell'incremento assoluto di GMV**, pur rappresentando meno del 15% del business nel periodo precedente.
+Gaming GPU genera il **46% dell'incremento assoluto di GMV** pur rappresentando meno del 15% del business nel periodo precedente. La crescita complessiva è reale, ma una parte molto grande dell'accelerazione vive in una sola categoria.
 
-La crescita complessiva è quindi reale, ma non è uniformemente distribuita nel catalogo.
+## Anche la crescita clienti dipende da una definizione
 
-Questo non rende il risultato peggiore. Lo rende **più concentrato**.
+Il +9,4% di `active_customer` sembra confermare che la crescita sia sostenuta da una base clienti più ampia. Ma con la nuova app è diventato necessario autenticarsi anche per salvare un prodotto nei preferiti. La metrica storica, che definisce attivo chi ha almeno una visita autenticata negli ultimi 90 giorni, incorpora quindi un cambiamento dell'interfaccia.
 
-### Passo 3 — Controllare il denominatore della crescita clienti
+Quando l'analista usa `unique_buyers`, definito in modo coerente su entrambi gli anni, la crescita è **+4,1%**. Entrambi i numeri sono veri: utenti autenticati attivi +9,4%, persone o account che hanno acquistato +4,1%. Solo il secondo, però, risponde direttamente alla domanda su quanto si sia ampliata la base degli acquirenti.
 
-`active_customer` cresce del 9,4%, ma la definizione include chiunque abbia effettuato almeno una visita autenticata negli ultimi 90 giorni.
+Questo cambia il rapporto tra le componenti della crescita. Il GMV sale molto più rapidamente degli acquirenti unici: una parte rilevante dell'espansione viene quindi da valore e mix degli ordini, non semplicemente da più clienti.
 
-Con la nuova app è diventato necessario fare login per salvare un prodotto nei preferiti. L'attività autenticata è quindi aumentata anche per una modifica del comportamento richiesto dall'interfaccia.
+## Categoria e seller raccontano la stessa concentrazione da due lati
 
-Gli **acquirenti unici**, definiti in modo stabile, crescono invece del **4,1%**.
+MercatoHub ha 1.840 seller attivi. La mediana del GMV per seller è quasi invariata, mentre il top 5% cresce del **38%**. I seller maggiori sono proprio quelli più esposti a GPU e hardware premium.
 
-Entrambi i numeri sono veri:
+A questo punto due strutture si sovrappongono: la crescita è concentrata per categoria e per seller. Non significa che la concentrazione sia necessariamente negativa; significa che la headline “la crescita sta accelerando” nasconde **da dove** quell'accelerazione provenga e quanto potrebbe dipendere dalla tenuta di un gruppo relativamente ristretto di prodotti e operatori.
 
-- utenti autenticati attivi: +9,4%;
-- persone/account che hanno acquistato: +4,1%.
+## Un denominatore incoerente trasformava anche il post-vendita in una buona notizia
 
-Ma supportano interpretazioni diverse.
+Il vecchio report mostra `return rate = 7,8%`; la nuova dashboard `7,1%`. Sembrerebbe un ulteriore segnale di crescita sana. Le due serie, però, usano denominatori differenti: lo storico misura **ordini con almeno un reso / ordini consegnati**, il nuovo **unità restituite / unità spedite**.
 
-Dire “la base clienti cresce del 9,4%” sarebbe troppo ambiguo per una decisione di investimento.
+Sono metriche legittime ma non comparabili. Ricostruendo entrambi i periodi con la stessa definizione a livello ordine, il risultato diventa:
 
-### Passo 4 — Guardare la concentrazione tra seller
+```text
+anno precedente: 7,8%
+anno corrente:    8,3%
+Gaming GPU:       11,2% → 12,8%
+```
 
-Il marketplace ha 1.840 seller attivi.
+La storia cambia ancora. La categoria che traina gran parte dell'accelerazione mostra anche un'esperienza post-vendita più problematica. L'EDA non ha dimostrato che la categoria “causi” il peggioramento complessivo né che i resi rendano la crescita non profittevole; ha identificato un guardrail che la headline iniziale non conteneva.
 
-La mediana del GMV per seller è quasi invariata. Il top 5% cresce invece del 38%.
+## La crescita sopravvive anche quando stressiamo i giorni eccezionali
 
-Il box plot e la distribuzione per decile mostrano che una quota crescente del GMV è prodotta dai seller più grandi, molti dei quali vendono proprio GPU e hardware premium.
+Tre giornate hanno GMV eccezionalmente alto e coincidono con il lancio di una GPU molto richiesta. Sono eventi commerciali reali, non outlier da cancellare. La domanda è quanto influenzino la conclusione.
 
-Ora abbiamo due concentrazioni che si sovrappongono:
+La sensitivity analysis produce:
 
-- concentrazione per categoria;
-- concentrazione per seller.
+```text
+GMV YoY con tutti i giorni:             +18,7%
+GMV YoY senza i tre principali launch: +12,6%
+```
 
-Un KPI aggregato di crescita non rendeva visibile nessuna delle due.
+La crescita resta forte. Quindi la headline non dipende interamente da tre giornate. Allo stesso tempo, circa un terzo dell'accelerazione rispetto alla crescita “core” è associato a un evento molto concentrato. La robustezza non elimina la concentrazione; la quantifica.
 
-### Passo 5 — Trattare i tassi come definizioni complete
+## L'EDA Evidence Map ricompone il caso
 
-Il vecchio report indica un return rate del 7,8%; il nuovo dashboard mostra 7,1%.
-
-Il confronto sembra positivo, ma le due versioni usano denominatori differenti:
-
-- storico: **ordini con almeno un reso / ordini consegnati**;
-- nuovo: **unità restituite / unità spedite**.
-
-Non sono la stessa metrica.
-
-L'analista ricostruisce la serie usando una definizione coerente, `ordini con almeno un reso / ordini consegnati`, per entrambi i periodi.
-
-Il risultato è:
-
-- anno precedente: **7,8%**;
-- anno corrente: **8,3%**.
-
-Per la categoria GPU il tasso passa dall'11,2% al 12,8%.
-
-La storia non è più “crescita con qualità in miglioramento”, ma:
-
-> **crescita concentrata in una categoria che mostra anche un'esperienza post-vendita più problematica.**
-
-Questa è ancora descrizione, non spiegazione causale.
-
-### Passo 6 — Misurare quanto il risultato dipende da pochi giorni
-
-Tre giornate hanno GMV eccezionalmente alto. Corrispondono al lancio di una GPU molto richiesta e sono eventi commerciali reali.
-
-Non vanno cancellate come errori.
-
-Ma possiamo chiedere quanto influenzino la conclusione.
-
-Sensitivity analysis:
-
-- GMV YoY con tutti i giorni: **+18,7%**;
-- GMV YoY escludendo i tre giorni di lancio: **+12,6%**.
-
-La crescita resta forte. Quindi il risultato non dipende interamente da tre osservazioni.
-
-Tuttavia circa un terzo dell'accelerazione apparente rispetto alla crescita “core” è associata a un evento molto concentrato.
-
-Questa è informazione decisionale importante.
-
-### Passo 7 — Costruire l'EDA Evidence Map
-
-A questo punto l'analista non scrive ancora una spiegazione unica. Organizza ciò che l'EDA ha realmente stabilito.
+A questo punto l'analista può separare ciò che è osservato dalle interpretazioni che restano aperte:
 
 | Livello | Evidenza |
 |---|---|
@@ -155,38 +89,12 @@ A questo punto l'analista non scrive ancora una spiegazione unica. Organizza ci�
 | **Non dimostrato** | Che il marketing abbia causato la crescita; che il boom GPU sia persistente; che la maggiore concentrazione sia economicamente negativa. |
 | **Prossimo passo** | Analizzare contribution margin, repeat buyers, acquisizione per canale e persistenza delle coorti GPU. |
 
-Questa tabella è il vero output dell'EDA.
-
-### Dalla headline alla conclusione difendibile
-
-La headline iniziale era:
-
-> **La crescita sta accelerando.**
-
-Dopo l'EDA diventa:
+La headline iniziale può quindi essere sostituita da una conclusione più lunga ma molto più difendibile:
 
 > **Il GMV cresce del 18,7% YoY e la crescita resta solida (+12,6%) anche escludendo i tre principali giorni di lancio. L'accelerazione è però concentrata nella categoria Gaming GPU, negli ordini di fascia alta e nei seller maggiori. Gli acquirenti unici crescono del 4,1%, molto meno della precedente metrica di “active customer”. Inoltre, usando una definizione comparabile, il return rate peggiora dal 7,8% all'8,3%. La crescita è quindi reale, ma meno diffusa e accompagnata da rischi di concentrazione e post-vendita che richiedono analisi ulteriori prima di aumentare indiscriminatamente gli investimenti.**
 
-È una conclusione più lunga, ma soprattutto è **calibrata sull'evidenza**.
+Il management non approva automaticamente un aumento generalizzato del budget marketing del 25%. Decide invece di separare nei report la crescita core dal contributo delle categorie ad alta volatilità, monitorare concentrazione seller, contribution margin e return rate della GPU, usare `unique_buyers` come metrica stabile della base acquirenti e verificare nei mesi successivi persistenza, repeat purchase e margine. Eventuali attribuzioni a specifici canali marketing verranno testate con disegni più forti.
 
-### Decisione
+Il valore dell'EDA non è stato trovare una versione più pessimista della storia. È stato trasformare **un aggregato corretto** in una descrizione della struttura abbastanza precisa da capire quali rischi monitorare e quali spiegazioni meritino il prossimo investimento analitico.
 
-Il management non approva automaticamente un aumento generalizzato del budget marketing del 25%.
-
-Decide invece di:
-
-1. separare nei report crescita core e contributo delle categorie ad alta volatilità;
-2. monitorare concentrazione seller, contribution margin e return rate della GPU;
-3. utilizzare `unique_buyers` come metrica stabile della crescita della base acquirenti;
-4. verificare nei mesi successivi se la domanda GPU produce repeat purchase e margine sostenibile;
-5. progettare test mirati prima di attribuire l'accelerazione a uno specifico canale marketing.
-
-Il valore dell'EDA non è stato trovare una frase più pessimista.
-
-È stato trasformare:
-
-> **un aggregato corretto**
-
-in:
-
-> **una descrizione della struttura abbastanza precisa da sapere quali spiegazioni meritano di essere testate.**
+> **Una buona EDA non distrugge la headline iniziale per principio. La sottopone a abbastanza attrito da scoprire quale parte meriti davvero di sopravvivere.**
