@@ -1,105 +1,42 @@
-## 17.7 “Quante persone dobbiamo pianificare lunedì?”
+## 17.7 Arcadia Parcel — “Quante persone dobbiamo pianificare lunedì?”
 
-### Caso simulato/composito: Arcadia Parcel
+> **Caso simulato/composito.** Organizzazione, numeri e sequenza sono costruiti per la didattica.
 
-**Arcadia Parcel** gestisce 38 hub logistici e deve pianificare il personale per il lunedì successivo.
+Arcadia Parcel gestisce **38 hub logistici** e deve impegnare personale e contractor per il lunedì successivo. Il team Data Science presenta due forecast: modello A con MAPE **6,8%**, modello B con MAPE **7,4%**. Se la decisione fosse scegliere il modello con errore percentuale medio minore, A vincerebbe.
 
-Il team di Data Science presenta due forecast dei colli giornalieri:
+Operations però osserva che A sottostima sistematicamente proprio nei giorni di picco. E nei picchi l'errore costa molto di più. La decisione reale è quindi:
 
-- modello A: MAPE `6,8%`;
-- modello B: MAPE `7,4%`.
+> **Con quanta capacità dobbiamo impegnarci oggi per minimizzare il costo atteso di lunedì?**
 
-La conclusione sembra ovvia: A è migliore.
+Qui il capstone può essere deliberatamente corto. Non ci serve una nuova famiglia di modelli; ci serve collegare il forecast alla loss function della decisione.
 
-L'operations manager però segnala un problema.
+### La metrica del modello e la metrica del business non coincidono
 
-Nei giorni di picco il modello A tende a sottostimare sistematicamente. E proprio lì l'errore costa di più.
+Arcadia stima che un'ora di capacità inutilizzata costi circa **€24**, mentre un'ora di capacità mancante nei picchi generi in media circa **€67** tra overtime, backlog, ritardi e penali SLA. Overforecast e underforecast non sono quindi errori economicamente simmetrici.
 
-La domanda reale non è:
+Una MAPE media può trattare due errori della stessa magnitudine in modo equivalente. La policy operativa non può farlo.
 
-> “Quale forecast ha errore medio minore?”
+Il Temporal Decision Brief registra perciò l'orizzonte, la decisione associata, il costo di over/under-capacity, i quantili rilevanti e i vincoli di staffing. Per Milano Hub 3 il point forecast viene sostituito dalla distribuzione che serve alla scelta:
 
-È:
+```text
+P10 = 74.000 colli
+P50 = 82.000
+P90 = 94.000
+```
 
-> **“Con quanta capacità dobbiamo impegnarci oggi per minimizzare il costo atteso di lunedì?”**
+Pianificare sopra P50 nei giorni critici non significa credere che P90 sia “più accurato”. Significa accettare più rischio di capacità inutilizzata per ridurre un downside di understaffing molto più costoso.
 
-## Routing iniziale
+### B può essere un modello peggiore e una decisione migliore
 
-| Elemento | Scelta |
-|---|---|
-| Decisione | staffing e contractor capacity per hub |
-| Failure cost | understaffing → overtime, SLA, backlog; overstaffing → ore inutilizzate |
-| Claim necessario | predittivo + decision economics |
-| Reversibilità | diminuisce avvicinandosi al giorno operativo |
-| Incertezza critica | coda alta della domanda, non soltanto errore medio |
-| Stop rule | non scegliere il modello sulla sola MAPE |
+Il team continua a misurare MAE, bias, calibration degli intervalli, errori per hub/regime e performance sui picchi. Ma confronta anche il costo prodotto dalla policy: overtime, idle labor, SLA penalty, backlog spillover, contractor premium e cost per parcel.
 
-## 1. La loss function del modello non è necessariamente quella del business
+Su questo secondo livello, il modello B — pur avendo MAPE 7,4% contro 6,8% — genera un piano con expected operational cost inferiore nei giorni critici. Il ranking dei modelli cambia perché abbiamo finalmente valutato **l'errore che il business paga**, non soltanto l'errore che la leaderboard conta.
 
-Supponiamo che:
+Questa scoperta chiude quasi tutta la decisione. Non serve costruire un terzo modello più sofisticato per dimostrare il punto.
 
-- un'ora di capacità inutilizzata costi circa `€24`;
-- un'ora di capacità mancante nei picchi generi in media `€67` tra overtime, ritardi e penali.
+### Il forecast deve essere specifico della decisione e dell'orizzonte
 
-Gli errori non sono simmetrici.
-
-Una metrica media che tratta `+1.000` e `-1.000` unità come errori equivalenti non rappresenta bene la decisione.
-
-Il **Temporal Decision Brief** deve quindi registrare:
-
-- orizzonte;
-- decisione collegata;
-- costo di overforecast;
-- costo di underforecast;
-- quantili rilevanti;
-- eventuali vincoli minimi/massimi di capacità.
-
-## 2. Dal point forecast alla distribuzione
-
-Per Milano Hub 3 il forecast diventa:
-
-- P10: `74.000` colli;
-- P50: `82.000`;
-- P90: `94.000`.
-
-Il team smette di trattare `82.000` come “il futuro”.
-
-È una stima centrale dentro una distribuzione.
-
-Nei periodi in cui l'understaffing è molto costoso può essere razionale pianificare su un percentile superiore al P50.
-
-Non perché il P90 sia “più preciso”, ma perché la funzione di costo rende conveniente una posizione più prudente.
-
-## 3. Forecast accuracy e decision loss
-
-Il team introduce due livelli di valutazione.
-
-### Model quality
-
-- MAE;
-- bias;
-- calibration degli intervalli;
-- performance per hub e regime;
-- errore sui picchi.
-
-### Decision quality
-
-- overtime cost;
-- idle labor cost;
-- SLA penalty;
-- backlog spillover;
-- contractor premium;
-- cost per parcel.
-
-Il modello B, pur avendo MAPE medio peggiore, produce un piano operativo con costo atteso inferiore nei giorni critici.
-
-Questa è una lezione generale:
-
-> **un modello può essere inferiore secondo una metrica statistica e superiore secondo la decisione che deve supportare.**
-
-## 4. Orizzonti diversi, decisioni diverse
-
-Arcadia usa quattro orizzonti:
+Arcadia usa inoltre quattro finestre che corrispondono a quattro impegni diversi:
 
 | Orizzonte | Decisione |
 |---|---|
@@ -108,122 +45,39 @@ Arcadia usa quattro orizzonti:
 | 48 ore | fine tuning operativo |
 | intra-day | riallocazione tra hub e backlog management |
 
-Pretendere un unico forecast per tutte le decisioni crea falsa semplicità.
+A otto settimane contano scenario e capacità strutturale; a 48 ore weather, backlog, preorder e segnali recenti possono diventare decisivi. “Il forecast” non è quindi un singolo prodotto universale. La disponibilità informativa e il costo di errore cambiano con il momento in cui dobbiamo agire.
 
-A otto settimane contano scenario e capacità strutturale.
+AWS descrive il **driver-based forecasting** come un processo che collega la previsione a driver futuri — per esempio lanci, promozioni, nuovi utenti o cambiamenti architetturali — e richiede di aggiornare le assunzioni quando emergono nuove informazioni.[^aws-driver] Il dominio della fonte è cloud financial management, ma il principio trasferibile è lo stesso: un forecast operativo deve poter incorporare ciò che sappiamo che cambierà il sistema, invece di estrapolare passivamente il passato.
 
-A 48 ore possono contare weather, backlog, preorder e segnali operativi recenti.
+### Anche una buona previsione deve poter degradare
 
-Il **dato giusto** cambia con l'orizzonte.
+Sciopero, chiusura hub, nuova partnership, meteo estremo, promozione non presente nel training o cambio di cut-off possono rendere il regime corrente poco comparabile al validation history. In questi casi Arcadia non continua a mostrare lo stesso numero con la stessa fiducia. Può passare a intervallo più ampio, scenario manuale, fallback model o override documentato.
 
-## 5. Un forecast può diventare inutile dopo un cambio di regime
+`DEGRADE` è un comportamento del sistema decisionale, non un'ammissione di sconfitta.
 
-Il team definisce anche eventi che invalidano o degradano il forecast:
+### La policy, non il modello, è il vero deliverable
 
-- sciopero;
-- chiusura hub;
-- nuova partnership commerciale;
-- meteo estremo;
-- promozione non presente nel training;
-- cambio di cut-off operativo.
+Le opzioni finali sono semplici. Usare A e pianificare sul P50 massimizza la metrica media ma sottostima picchi costosi. Usare B sempre sul P50 corregge parte del bias senza incorporare esplicitamente economics. La policy preferita usa **forecast probabilistico + capacity rule**: percentile diverso per hub/regime, contractor flessibili dove l'incertezza è maggiore, override per shock documentati e review basata su decision cost.
 
-In questi casi il sistema non deve continuare a mostrare lo stesso numero con la stessa fiducia.
+La policy cambia se cambia il rapporto **€67/€24**, se i contractor diventano scarsi, il forecast perde calibration, compare un nuovo driver o il backlog modifica la capacità processabile.
 
-Può passare a:
+### Evidence Ledger
 
-- scenario manuale;
-- intervallo più ampio;
-- modello fallback;
-- override documentato.
+| Observed | Inferred | Still unknown |
+|---|---|---|
+| A MAPE 6,8%; B 7,4% | B è più utile nei picchi con la loss attuale | stabilità futura del rapporto costi under/over |
+| A sottostima i picchi | percentile > P50 può essere razionale | nuovi regime shock |
+| under-capacity €67/h vs idle €24/h | decision loss è criterio più rilevante della sola MAPE | disponibilità/prezzo contractor futuri |
+| Milano P10 74k, P50 82k, P90 94k | | |
 
-Questa è una **stop/degrade condition**, non un fallimento da nascondere.
+La headline executive può essere:
 
-## Caso pubblico documentato: driver-based forecasting
+> **Il modello con errore medio minore sottostima i picchi, che sono gli errori più costosi. Proponiamo staffing basato sulla distribuzione prevista e sui costi asimmetrici, con percentile e flessibilità diversi per hub.**
 
-AWS Cloud Financial Management descrive il **driver-based forecasting** come approccio che collega la previsione a driver futuri — per esempio lanci di prodotto, promozioni, nuovi utenti o cambi architetturali — invece di estrapolare soltanto il trend storico. La guida sottolinea anche l'importanza di documentare e rivedere le assunzioni quando emergono nuove informazioni.
+L'outcome review misura bias/calibration ma anche overtime, idle hours, SLA breaches, backlog, cost per parcel, contractor premium e differenza tra costo previsto e realizzato.
 
-Fonte: https://aws.amazon.com/blogs/aws-cloud-financial-management/understand-and-build-driver-based-forecasting/
+**Percorso effettivo:** Temporal Decision Brief → Uncertainty Brief → Decision Record → Decision Communication Pack, con Data Readiness Review soltanto quando cambiano fonti o regime.
 
-Il dominio è cloud spend, ma il principio è generale:
+> **Il caso è volutamente corto: quando il problema è la loss function della policy, un altro decimo di MAPE non è automaticamente altra informazione utile.**
 
-> **una previsione operativa migliora quando i driver della decisione entrano esplicitamente nel modello o negli scenari.**
-
-## 6. Decision Record
-
-Arcadia confronta:
-
-### A — Modello A + staffing sul P50
-
-Migliore MAPE, ma sottostima i picchi e genera costi di shortage elevati.
-
-### B — Modello B + staffing sul P50
-
-Più prudente nei picchi, ma non usa ancora esplicitamente la funzione di costo.
-
-### C — Forecast probabilistico + policy di capacità
-
-- intervalli previsivi;
-- percentile scelto in funzione dei costi;
-- policy diversa per hub;
-- contractor flessibili dove l'incertezza è più alta;
-- override documentato per shock di regime;
-- review del costo decisionale, non soltanto dell'errore.
-
-La scelta è C.
-
-## 7. Switching condition
-
-La policy cambia se:
-
-- il rapporto tra costo di under/overstaffing cambia;
-- la disponibilità di contractor diminuisce;
-- il forecast perde calibration;
-- compare un nuovo driver operativo;
-- il backlog cambia il volume effettivamente processabile.
-
-Il forecast non viene separato dalla policy che lo consuma.
-
-## 8. Decision Communication Pack
-
-La headline non è:
-
-> “Il modello B ha MAPE 7,4%.”
-
-È:
-
-> **“Il modello con errore medio minore sottostima i picchi, che sono gli errori più costosi. Proponiamo staffing basato sulla distribuzione prevista e sui costi asimmetrici, con percentile e flessibilità diversi per hub.”**
-
-Il pack mostra:
-
-1. distribuzione della domanda;
-2. costo under/over;
-3. expected cost per policy;
-4. hub a rischio;
-5. stop/degrade conditions.
-
-## 9. Outcome review
-
-Metriche:
-
-- forecast bias e calibration;
-- overtime;
-- idle hours;
-- SLA breaches;
-- backlog;
-- cost per parcel;
-- contractor premium;
-- differenza tra costo previsto e realizzato.
-
-## Cosa abbiamo scelto di non fare
-
-Non serve necessariamente il modello con architettura più sofisticata.
-
-Non serve ottimizzare un decimo di punto di MAPE se la policy continua a usare male il forecast.
-
-La catena effettiva è:
-
-**Temporal Decision Brief → Uncertainty Brief → Decision Record → Decision Communication Pack**
-
-con Data Readiness Review quando cambiano fonti o regime.
-
-> **La metrica migliore per un forecast non è quella che premia il modello più elegante. È quella che ci aiuta a evitare gli errori più costosi della decisione.**
+[^aws-driver]: AWS Cloud Financial Management Blog, *Understand and build driver-based forecasting*, https://aws.amazon.com/blogs/aws-cloud-financial-management/understand-and-build-driver-based-forecasting/
