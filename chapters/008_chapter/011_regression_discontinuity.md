@@ -1,138 +1,50 @@
 ## 8.10 Regression Discontinuity: quando una soglia modifica il trattamento
 
-Molti processi assegnano interventi tramite cutoff:
+Molte policy aziendali non assegnano il trattamento casualmente, ma lo fanno cambiare bruscamente a una soglia: supporto premium sopra un ARR minimo, chiamata retention sotto un health score, credito oltre un cutoff, incentivo sopra una performance threshold o spedizione gratuita oltre un valore d'ordine. Quando la regola è abbastanza rigida, le unità appena sopra e appena sotto la soglia possono creare un confronto quasi-sperimentale.
 
-- supporto premium sopra un ARR minimo;
-- chiamata retention sotto un health score;
-- credito sopra una soglia;
-- incentivo oltre una performance threshold;
-- spedizione gratuita sopra un valore d'ordine.
-
-Quando il trattamento cambia bruscamente a una soglia, le unità appena sopra e appena sotto possono offrire un confronto quasi-sperimentale.
-
-Questa è l'intuizione della **Regression Discontinuity Design (RDD)**.
+Questa è l'intuizione della **Regression Discontinuity Design (RDD)**: non chiediamo che trattati e non trattati siano comparabili ovunque, ma che lo siano **localmente attorno al cutoff**, salvo il trattamento che cambia proprio lì.
 
 ### Caso simulato/composito — Health score 60
 
-Un SaaS assegna automaticamente una chiamata proattiva agli account con `health_score < 60`.
-
-Confrontare tutti i trattati con tutti i non trattati sarebbe sbagliato: i trattati sono, per definizione, più a rischio.
-
-Ma vicino alla soglia:
+Un SaaS assegna automaticamente una chiamata proattiva agli account con `health_score < 60`. Confrontare tutti i trattati con tutti i non trattati sarebbe poco informativo, perché i trattati sono per definizione più fragili. Vicino alla soglia osserviamo invece:
 
 | Health score | Chiamata | Churn 30 gg |
 |---|---|---:|
 | 58–59 | sì | 13,2% |
 | 60–61 | no | 16,7% |
 
-Il salto locale è circa `-3,5 pp`.
+Il salto locale è circa `-3,5 pp`. La causal claim è credibile solo se, senza chiamata, l'outcome atteso avrebbe attraversato la soglia in modo **continuo**. In altre parole, score 59 e 60 non devono essere identici; devono differire abbastanza poco da rendere plausibile che proprio al cutoff cambi soprattutto l'accesso al trattamento.
 
-Se le unità appena sotto e sopra 60 sarebbero altrimenti comparabili, quel salto può identificare un effetto causale **locale**.
+La World Bank presenta RDD come un confronto tra unità vicine a una soglia di eleggibilità e lega la credibilità del design alla regola di assegnazione e alla comparabilità locale.[^worldbank-rdd]
 
-### L'assunzione chiave è la continuità del controfattuale
+### Quello che cambia alla soglia definisce l'effetto
 
-L'idea non è che score 59 e 60 siano identici.
-
-È che, in assenza del trattamento, l'outcome atteso cambierebbe **in modo continuo** attraversando il cutoff.
-
-Se proprio a 60 cambia soltanto l'accesso alla chiamata, una discontinuità nell'outcome è informativa sul trattamento.
-
-La World Bank presenta RDD come confronto tra unità vicine a una soglia di eleggibilità, sottolineando che la credibilità deriva dalla regola di assegnazione e dalla comparabilità locale.[^worldbank-rdd]
-
-### Sharp e fuzzy RDD
-
-**Sharp RDD**
+In una **sharp RDD** il cutoff determina perfettamente il trattamento:
 
 ```text
 score < 60  -> trattamento certo
 score >= 60 -> controllo certo
 ```
 
-**Fuzzy RDD**
+In una **fuzzy RDD** la soglia modifica fortemente la probabilità di trattamento ma non la determina perfettamente. Alcuni account sotto 60 possono non ricevere la chiamata e alcuni sopra 60 possono riceverla comunque. In questo caso la discontinuità nella regola di assignment viene usata come fonte di variazione e l'interpretazione si avvicina alla logica IV: l'effetto riguarda soprattutto le unità la cui probabilità di trattamento cambia per effetto del cutoff.
 
-Il cutoff modifica fortemente la probabilità di trattamento, ma non la determina perfettamente.
+La località è quindi parte dell'estimand. Un effetto identificato intorno a 60 non può essere trasferito automaticamente agli account con score 20 o 95, ad altri segmenti o a periodi in cui la policy operativa è diversa.
 
-Per esempio:
+### Quando il cutoff smette di assomigliare a un piccolo esperimento
 
-- alcuni score 59 non ricevono la chiamata;
-- alcuni score 61 vengono comunque contattati.
+Se le unità possono manipolare con precisione la running variable, la comparabilità locale si indebolisce. Se i commerciali sanno che sopra **100.000 € di ARR** scattano servizi premium e possono riclassificare contratti per superare la soglia, le unità appena sopra e sotto potrebbero essere state selezionate in modo strategico. La distribuzione della running variable, la possibilità pratica di gaming e anomalie di massa vicino al cutoff diventano quindi diagnostics sostanziali.
 
-In una fuzzy RDD la discontinuità nell'assegnazione viene usata come fonte di variazione nel trattamento; l'interpretazione dell'effetto diventa più vicina alla logica IV e riguarda unità la cui probabilità di trattamento è modificata dal cutoff.
+Va inoltre verificato che alla stessa soglia non cambino più cose. Se `score < 60` attiva contemporaneamente chiamata, voucher e account manager senior, la discontinuità identifica l'effetto del **pacchetto**, non quello della sola chiamata.
 
-### L'effetto è locale
+Le covariate pre-treatment — ARR, tenure, industry, usage precedente — non dovrebbero mostrare salti sistematici proprio al cutoff. Una discontinuità netta in queste variabili suggerisce che la soglia coincida con altra selezione o con altre regole operative.
 
-Se il design identifica un effetto vicino a 60, non possiamo automaticamente estenderlo a:
-
-- score 20;
-- score 95;
-- clienti enterprise fuori dalla popolazione analizzata;
-- altri periodi con processo operativo diverso.
-
-La località non è un difetto.
-
-È parte dell'estimand.
-
-### Manipolazione della running variable
-
-Supponiamo che i commerciali sappiano che sopra 100.000 € di ARR un account riceve servizi premium e possano riclassificare contratti per superare la soglia.
-
-Se le unità possono manipolare con precisione il running variable, quelle appena sopra e sotto possono non essere comparabili.
-
-Diagnostics utili:
-
-- distribuzione della running variable vicino al cutoff;
-- procedure operative che generano il punteggio;
-- possibilità pratica di gaming;
-- anomalie di massa subito sopra/sotto la soglia.
-
-### Altri trattamenti allo stesso cutoff
-
-Se a `score < 60` il cliente riceve contemporaneamente:
-
-- chiamata;
-- voucher;
-- account manager senior;
-
-la discontinuità identifica l'effetto del **pacchetto**, non della sola chiamata.
-
-La domanda causale deve riflettere ciò che cambia davvero alla soglia.
-
-### Covariate continuity
-
-Variabili pre-treatment come:
-
-- ARR;
-- tenure;
-- industry;
-- utilizzo precedente;
-
-non dovrebbero mostrare salti sistematici proprio al cutoff se il design è credibile.
-
-Non è necessario che ogni differenza sia zero. Ma discontinuità nette nelle covariate fanno sospettare selezione o altre regole operative.
-
-### Bandwidth: quanto vicino è “vicino”?
-
-Una finestra molto ampia aumenta il campione ma confronta unità meno simili.
-
-Una finestra molto stretta migliora la località ma riduce precisione.
-
-Per questo il risultato dovrebbe essere controllato rispetto a bandwidth ragionevoli e specifiche alternative, non scelto soltanto quella che produce il coefficiente desiderato.
+Infine c'è il compromesso della **bandwidth**: una finestra ampia offre più dati ma confronta unità meno simili; una finestra stretta aumenta la comparabilità locale ma riduce precisione. Il risultato deve essere stressato su bandwidth ragionevoli e, quando utile, placebo cutoff, invece di scegliere la specifica che produce il coefficiente preferito.
 
 ### Caso simulato/composito — Spedizione gratuita sopra 500 €
 
-Un retailer B2B concede free shipping per ordini `>= 500 €`.
+Un retailer B2B concede free shipping per ordini `>= 500 €`. Gli ordini sopra soglia hanno repeat rate maggiore, ma un confronto globale è confuso dal fatto che ordini grandi appartengono a clienti diversi. La RDD può invece chiedere se esiste un salto nel repeat purchase appena attraversati i **500 €**, dove il valore d'ordine cambia poco mentre l'eleggibilità alla spedizione gratuita cambia bruscamente. Prima di interpretare il salto dobbiamo verificare che a 500 € non scattino altri benefit e che i clienti non manipolino sistematicamente il basket per superare la soglia.
 
-Gli ordini sopra soglia hanno repeat rate maggiore.
-
-Un confronto globale è confuso dal fatto che ordini grandi appartengono a clienti diversi.
-
-Una RDD può chiedere:
-
-> “Esiste un salto nel repeat purchase appena attraversata la soglia dei 500 €, dove il valore d'ordine cambia poco ma l'eleggibilità alla spedizione gratuita cambia bruscamente?”
-
-Prima di interpretarlo, bisogna però controllare che a 500 € non scattino anche altri benefit e che i clienti non aggiungano artificialmente prodotti solo per superare la soglia in modo da alterare il processo osservato.
-
-### RDD card
+La RDD card conserva i controlli che definiscono lo scope della causal claim:
 
 ```text
 Running variable:
@@ -149,6 +61,6 @@ Estimand locale:
 Popolazione a cui NON generalizzare:
 ```
 
-> **RDD è forte perché restringe la causal claim: non chiede se unità molto diverse sono comparabili, ma se un piccolo salto nella regola di trattamento crea un piccolo esperimento locale.**
+> **RDD è forte proprio perché restringe la domanda: usa il piccolo salto nella regola di trattamento come un piccolo esperimento locale.**
 
-[^worldbank-rdd]: World Bank e Inter-American Development Bank, *Impact Evaluation in Practice*, capitolo sulla Regression Discontinuity Design: https://www.worldbank.org/en/programs/sief-trust-fund/publication/impact-evaluation-in-practice
+[^worldbank-rdd]: World Bank e Inter-American Development Bank, *Impact Evaluation in Practice, Second Edition*, capitolo sulla Regression Discontinuity Design: https://www.worldbank.org/en/programs/sief-trust-fund/publication/impact-evaluation-in-practice
