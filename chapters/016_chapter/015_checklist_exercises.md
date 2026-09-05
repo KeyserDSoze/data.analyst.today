@@ -1,159 +1,106 @@
 ## 16.14 Decision Communication Pack: gate finale ed esercizi
 
-Il prodotto finale del capitolo non è “un bel grafico”.
+Il prodotto finale del capitolo non è “un bel grafico”. È una **Decision Communication Pack** che preserva il Decision Record mentre riduce il costo cognitivo per il destinatario.
 
-È una **Decision Communication Pack** che preserva il Decision Record mentre riduce il costo cognitivo per il destinatario.
+La Pack deve essere abbastanza compatta da guidare una decisione e abbastanza tracciabile da permettere a chi contesta un claim di risalire alla prova. Per questo il template finale conserva struttura operativa.
 
-## Il template
+## Template canonico
 
-### 1. Audience
+```text
+DECISION COMMUNICATION PACK
 
-- chi deve leggere?
-- chi deve decidere?
-- quali conoscenze possiamo assumere?
-- quale stakeholder sostiene il downside della scelta?
+1. AUDIENCE
+reader:
+decision owner:
+assumed knowledge:
+who bears downside:
 
-### 2. Decision question
+2. DECISION
+choice between:
+decision requested today:
+deadline:
 
-Scrivere la scelta in forma esplicita:
+3. HEADLINE / CLAIM
+headline:
+claim level:
+main caveat:
 
-> **“Dobbiamo scegliere tra...”**
+4. PRIMARY EVIDENCE
+artifact 1: role / source / claim
+artifact 2: role / source / claim
+artifact 3: role / source / claim
+artifact 4: role / source / claim
 
-Se non esistono alternative reali, probabilmente stiamo preparando un report e non una comunicazione decisionale.
+5. CONTEXT CONTRACT
+metric definition:
+population / denominator:
+period:
+baseline / target:
+freshness:
+maturity:
+method break / event annotation:
 
-### 3. Decision requested
+6. UNCERTAINTY
+what can change choice:
+switching value:
+distance from boundary:
 
-Che cosa chiediamo oggi?
+7. ALTERNATIVES
+preferred option:
+strongest alternative:
+business as usual if relevant:
 
-- approve;
-- reject;
-- pilot;
-- wait for X;
-- escalate;
-- monitor;
-- allocate budget;
-- change policy.
+8. VISUAL INTEGRITY
+scale:
+period selection:
+denominator:
+encoding:
+opposite-framing test:
 
-### 4. Headline / claim level
+9. ACCESSIBILITY
+redundant encoding:
+contrast / labels:
+no hover-only critical info:
+alt text:
+table/text alternative:
+keyboard / focus if interactive:
 
-Una frase che:
+10. MEETING
+30-second opening:
+challenge map:
+claim-threatening conditions:
+appendix:
 
-- risponde alla domanda;
-- non supera la forza dell'evidenza;
-- non nasconde il caveat che potrebbe cambiare la scelta.
+11. PROVENANCE
+Decision Record:
+metric/data version:
+data as-of:
+analysis source:
+owner:
 
-### 5. Primary evidence
+12. LEARNING
+decision taken:
+review date:
+next evidence / guardrail:
+```
 
-Massimo 2–4 elementi nella vista principale.
-
-Per ciascuno:
-
-- ruolo `orient / compare / diagnose / decide / verify`;
-- fonte;
-- definizione;
-- periodo;
-- visual/table scelto;
-- claim sostenuto.
-
-### 6. Context Contract
-
-- baseline;
-- target;
-- denominatore/population;
-- freshness;
-- provisional/final;
-- methodological break;
-- event annotation.
-
-### 7. Uncertainty e switching value
-
-- quale incertezza è decision-critical?
-- attraversa la soglia che cambierebbe scelta?
-- il caveat è visibile nel layer executive?
-
-### 8. Alternatives
-
-Almeno l'alternativa più credibile deve restare rappresentata quando il trade-off è materiale.
-
-La comunicazione non deve trasformare la recommendation in un'unica opzione apparentemente possibile.
-
-### 9. Visual Integrity Gate
-
-- scala corretta;
-- periodo non cherry-picked;
-- denominatore coerente;
-- encoding proporzionale;
-- confronto appropriato;
-- titolo claim-safe;
-- opposite-framing test superato.
-
-### 10. Accessibility Gate
-
-- il colore non è l'unico encoding;
-- informazioni essenziali esistono senza hover;
-- contrasto e label sono leggibili;
-- alt text utile;
-- forma tabellare/testuale disponibile quando necessaria;
-- navigazione da tastiera verificata se il prodotto è interattivo.
-
-### 11. Meeting plan
-
-Preparare:
-
-- opening di 30 secondi;
-- challenge map;
-- appendix;
-- regola per `answer now / appendix / claim-threatening / follow-up`.
-
-### 12. Provenance e learning
-
-- link al Decision Record;
-- metric definitions;
-- analysis source;
-- version/timestamp;
-- owner;
-- decisione effettivamente presa;
-- data di review.
+Il template non va riempito meccanicamente per ogni chart. Serve per comunicazioni in cui una cattiva compressione può cambiare la scelta.
 
 ## Communication Readiness Gate
 
-Prima della consegna assegniamo uno stato.
+La Pack può terminare in tre stati.
 
-### READY
+**READY** significa che decision question, claim, primary evidence, caveat decision-critical, integrity, accessibility e provenance sono coerenti con l'uso previsto.
 
-- decision question chiara;
-- claim sostenuto;
-- evidenza sufficiente;
-- caveat decision-critical visibile;
-- visual integrity e accessibility gate superati;
-- provenance disponibile.
+**READY WITH CAVEATS** significa che la comunicazione è utilizzabile, ma un limite deve accompagnarla esplicitamente. Un esempio è un forecast abbastanza maturo per capacity planning preliminare ma ancora `PROVISIONAL` su un feed importante.
 
-### READY WITH CAVEATS
-
-La comunicazione può essere usata, ma un limite deve accompagnarla esplicitamente.
-
-Esempio:
-
-> “Forecast utilizzabile per capacity planning preliminare; preorder retailer C ancora provisional.”
-
-### NOT READY
-
-Blocchiamo la comunicazione decisionale se:
-
-- la headline supera il claim consentito;
-- il dato è troppo immaturo;
-- una definizione è ambigua;
-- il framing nasconde un'alternativa materiale;
-- un errore di scala/denominatore altera il messaggio;
-- non possiamo ricostruire la provenance.
-
-La pressione del meeting non trasforma `NOT READY` in `READY`.
+**NOT READY** è lo stato corretto quando la headline supera il claim, il dato è troppo immaturo, una definizione resta ambigua, il framing nasconde un'alternativa materiale, scala o denominatore alterano l'impressione oppure la provenance non è ricostruibile. La pressione del meeting non trasforma `NOT READY` in `READY`.
 
 ---
 
 ## Esercizio 1 — Dal Decision Record alla Pack
 
-Hai questo Decision Record sintetico:
+Decision Record sintetico:
 
 - decisione: aumentare o no il prezzo del piano Pro;
 - alternative: +0%, +3%, +7%;
@@ -164,162 +111,86 @@ Hai questo Decision Record sintetico:
 - evidenza causale: test precedente su un segmento, non sull'intera base;
 - decision owner: CRO.
 
-Costruisci una Decision Communication Pack di una pagina con:
+Costruisci una Pack di una pagina con headline, decision requested, massimo tre visual/table, caveat, alternative, switching value e provenance. Poi scrivi una headline deliberatamente troppo forte e spiega quale claim level viola.
 
-1. headline;
-2. decision requested;
-3. massimo tre visual/table;
-4. caveat;
-5. alternative;
-6. switching value;
-7. appendix/provenance.
-
-Poi scrivi una headline **troppo forte** e spiega perché non è consentita.
+---
 
 ## Esercizio 2 — Visual Integrity Gate
 
 Conversion rate:
 
-- control: 97,8%;
-- treatment: 98,4%.
+```text
+control:   97,8%
+treatment: 98,4%
+```
 
-Progetta tre rappresentazioni:
+Progetta tre rappresentazioni: una manipolativa, una tecnicamente corretta ma cognitivamente debole e una decision-ready. Per ciascuna indica scala, encoding, impressione probabile e rischio decisionale. La versione finale deve rendere visibili proporzione, delta e uncertainty rilevante.
 
-1. una deliberatamente manipolativa;
-2. una tecnicamente corretta ma cognitivamente debole;
-3. una decision-ready che mostri proporzione, delta e incertezza.
+---
 
-Per ciascuna identifica:
+## Esercizio 3 — Opposite-framing test
 
-- scala;
-- encoding;
-- impressione probabile;
-- rischio di decisione.
+Una campagna mostra ROAS **4,1** nella settimana post-lancio contro **3,2** nella settimana precedente. Costruisci il framing più favorevole, il framing più sfavorevole usando confronti plausibili e infine il framing professionale. Elenca quali dati devi conoscere prima di scegliere: stagionalità, holdout, spend mix, delayed conversion, baseline storica o altro.
 
-## Esercizio 3 — Opposite framing test
-
-Una campagna mostra ROAS 4,1 nella settimana post-lancio contro 3,2 nella settimana precedente.
-
-Costruisci:
-
-- il framing più favorevole alla campagna;
-- il framing più sfavorevole usando dati plausibili aggiuntivi;
-- la visualizzazione che useresti professionalmente.
-
-Indica quali confronti devi conoscere prima di scegliere la versione finale: stagionalità, holdout, spend mix, delayed conversion, baseline storica o altro.
+---
 
 ## Esercizio 4 — Dashboard da ridurre
 
-Una executive dashboard contiene 28 KPI, 10 slicer, due mappe e 14 visual.
+Una executive dashboard contiene 28 KPI, 10 slicer, due mappe e 14 visual. Le decisioni settimanali reali sono riallocare inventory, intervenire sulle regioni sotto SLA, aggiornare il forecast e approvare eccezioni commerciali.
 
-Le decisioni settimanali reali sono:
+Ridisegna l'architettura in **decision layer**, **diagnostic layer** ed **evidence/export layer**. Per ogni elemento rimosso dalla home spiega quale task serviva e perché non è decision-critical nella prima vista.
 
-1. riallocare inventory;
-2. intervenire sulle regioni sotto SLA;
-3. aggiornare il forecast;
-4. approvare eccezioni commerciali.
-
-Ridisegna l'architettura in:
-
-- executive/decision layer;
-- diagnostic layer;
-- evidence/export layer.
-
-Per ogni elemento eliminato spiega perché non appartiene alla home.
+---
 
 ## Esercizio 5 — Uncertainty communication
 
-Un progetto costa €1,0M.
+Un progetto costa **€1,0M**. Il beneficio centrale è **€1,25M**, con range plausibile **€0,55M–€1,85M**. Il CFO vuole una sola cifra sulla slide.
 
-Beneficio stimato:
+Prepara una comunicazione sbagliata e una headline corretta. Disegna la forma che mostra range e break-even e discuti la scelta se un pilot da **€80k** potesse ridurre fortemente l'incertezza.
 
-- point estimate: €1,25M;
-- range plausibile: €0,55M–€1,85M.
-
-Il CFO vuole una sola cifra sulla slide.
-
-Prepara:
-
-- una comunicazione sbagliata;
-- una headline corretta;
-- la forma visiva che mostra il threshold;
-- la decisione che suggeriresti se un pilot da €80k potesse ridurre fortemente l'incertezza.
+---
 
 ## Esercizio 6 — Meeting challenge
 
-Durante una presentazione il CFO scopre che un segmento contiene una riclassificazione recente.
+Durante una presentazione il CFO scopre che un segmento contiene una riclassificazione recente. Scrivi come gestiresti quattro casi differenti: errore locale con claim invariato, dettaglio disponibile in appendix, problema claim-threatening e follow-up non blocking. L'obiettivo non è apparire sicuri, ma diagnosticare l'impatto sul Decision Record.
 
-Scrivi quattro possibili risposte, una per ogni classe:
-
-- local error, claim unchanged;
-- evidence in appendix;
-- claim-threatening;
-- follow-up non blocking.
-
-L'obiettivo non è apparire sicuri. È diagnosticare l'impatto sulla decisione.
+---
 
 ## Esercizio 7 — Accessibility audit
 
-Prendi una dashboard reale o pubblica e verifica:
+Prendi una dashboard reale o pubblica e verifica color-only encoding, contrasto, dimensione del testo, hover-only information, alt text, keyboard navigation, ordine di lettura, disponibilità di tabella/dati, comportamento su schermo piccolo e leggibilità in screenshot/PDF.
 
-- color-only encoding;
-- contrasto;
-- dimensione del testo;
-- hover-only information;
-- alt text;
-- keyboard navigation;
-- ordine di lettura;
-- disponibilità di tabella/dati;
-- comportamento su schermo piccolo;
-- leggibilità in screenshot o PDF.
+Proponi almeno cinque modifiche e indica quali migliorano anche la comprensione per utenti senza esigenze assistive specifiche.
 
-Proponi almeno cinque modifiche e indica quali migliorano anche la comprensione per tutti gli utenti.
+Riferimenti:
 
-## Esercizio 8 — Caso NorthRiver, secondo round
+- W3C, *Web Content Accessibility Guidelines (WCAG) 2.2*, https://www.w3.org/TR/WCAG22/
+- Microsoft Learn, *Design Power BI reports for accessibility*, https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-accessibility-creating-reports
 
-Riprendi il caso 16.12.
+---
 
-Il feed preorder finale riduce il forecast centrale da 162k a 153k pacchi/giorno e P80 da 171k a 164k.
+## Esercizio 8 — NorthRiver, secondo round
 
-La capacità interna resta 148k.
+Riprendi il caso 16.12. Il feed preorder finale riduce il forecast centrale da **162k a 153k pacchi/giorno** e P80 da **171k a 164k**. La capacità interna resta **148k**. Il carrier propone di ridurre il commitment B da **€780k a €620k** in cambio di una capacità massima di **163k**.
 
-Il carrier propone però di ridurre il commitment dell'opzione B da €780k a €620k in cambio di una capacità massima di 163k.
+Aggiorna Decision Record, switching value, recommendation, headline, primary visual e decision requested. Indica quali parti della vecchia Pack diventano obsolete e non devono essere riutilizzate per inerzia.
 
-Aggiorna:
+---
 
-- Decision Record;
-- switching value;
-- recommendation;
-- headline;
-- primary visual;
-- decision requested.
+## Esercizio 9 — Accessibility by design
 
-Spiega quale parte della vecchia Pack diventa obsoleta e deve essere sostituita.
+Usa WCAG 2.2 e la guida Microsoft per progettare un mini-standard interno per dashboard: color policy, contrast, alt text, keyboard/focus, table alternative, test su device e ownership del controllo. Distingui requisiti di accessibilità da semplici preferenze estetiche.
 
-## Esercizio 9 — Caso pubblico: accessibility by design
-
-Leggi le linee guida W3C WCAG 2.2 e la guida Microsoft per l'accessibilità dei report Power BI.
-
-Progetta un mini standard interno per dashboard analitiche con:
-
-- color policy;
-- contrast;
-- alt text;
-- keyboard/focus;
-- table alternative;
-- test su device;
-- ownership del controllo.
-
-Distingui requisiti di accessibilità da semplici preferenze estetiche.
+---
 
 ## Esercizio 10 — Decision Communication Pack completa
 
 Scegli una decisione reale o simulata e produci:
 
 1. Decision Record sintetico;
-2. Pack executive da 30 secondi;
-3. evidence layer da massimo quattro visual;
-4. appendix/provenance;
+2. decision layer da 30 secondi;
+3. evidence layer con massimo quattro visual;
+4. provenance/appendix;
 5. Context Contract;
 6. Visual Integrity Gate;
 7. Accessibility Gate;
@@ -327,28 +198,29 @@ Scegli una decisione reale o simulata e produci:
 9. challenge map;
 10. stato finale `READY / READY WITH CAVEATS / NOT READY`.
 
+La verifica finale non riguarda la bellezza del materiale. Chiedi se una persona può capire la scelta più rapidamente **senza** ricevere un claim più forte, una uncertainty più piccola o un'alternativa meno credibile di quelle contenute nel Decision Record.
+
 ## Chiusura del capitolo
 
-Il Capitolo 15 ci ha insegnato che una decisione deve essere valutata rispetto ad alternative, rischio, incertezza e reversibilità.
+Il Capitolo 15 ha costruito la decisione rispetto ad alternative, rischio, uncertainty e reversibilità. Questo capitolo ha aggiunto una responsabilità: **preservare quelle proprietà durante la compressione**.
 
-Questo capitolo aggiunge un'altra responsabilità:
+La catena finale è:
 
-> **preservare quelle proprietà quando l'analisi viene compressa per essere comunicata.**
+```text
+Decision Record
+→ Decision Communication Pack
+→ interpretazione / challenge
+→ scelta
+→ azione
+→ learning
+```
 
-Una buona visualizzazione non sostituisce una buona analisi.
-
-Una buona analisi non garantisce una buona decisione.
-
-Una buona decisione può essere comunicata male.
-
-La professionalità consiste nel mantenere la catena integra:
-
-**Decision Record → Communication Pack → interpretazione → scelta → azione → learning**.
+Questo prepara il Capitolo 17. Nei casi end-to-end non basterà scegliere il metodo analitico corretto: dovremo anche scegliere **quale evidenza merita di arrivare alla decisione e con quale forma**, senza trasformare il capstone in una dimostrazione di tecniche.
 
 > **La comunicazione analitica è riuscita quando rende la decisione più facile da capire senza renderla artificialmente più facile da accettare.**
 
-### Fonti per gli esercizi
+### Fonti
 
-- W3C, *Web Content Accessibility Guidelines (WCAG) 2.2*: https://www.w3.org/TR/WCAG22/
-- Microsoft Learn, *Design Power BI reports for accessibility*: https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-accessibility-creating-reports
-- Government Analysis Function, *Data visualisation: testing dashboards for design and accessibility*: https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-testing-dashboards-for-design-and-accessibility/
+- W3C, *Web Content Accessibility Guidelines (WCAG) 2.2*, https://www.w3.org/TR/WCAG22/
+- Microsoft Learn, *Design Power BI reports for accessibility*, https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-accessibility-creating-reports
+- Government Analysis Function, *Data visualisation: testing dashboards for design and accessibility*, https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-testing-dashboards-for-design-and-accessibility/
