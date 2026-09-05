@@ -1,25 +1,8 @@
 ## 15.5 Decision Record: congelare il ragionamento prima che l'esito riscriva la storia
 
-Molte organizzazioni documentano bene i dati e male le decisioni.
+Molte organizzazioni documentano bene dati e KPI, ma male il momento in cui una scelta viene costruita. Tre mesi dopo ricordiamo cosa abbiamo fatto e quale numero è salito o sceso; molto più difficilmente ricordiamo quali alternative erano disponibili, quali informazioni possedevamo, quale downside avevamo accettato e quale evidenza avrebbe dovuto farci cambiare idea.
 
-Tre mesi dopo ricordiamo:
-
-- cosa è stato fatto;
-- quale KPI è salito o sceso;
-
-ma spesso non ricordiamo:
-
-- quali alternative erano realmente disponibili;
-- quali informazioni avevamo;
-- quali assunzioni guidavano la scelta;
-- quale downside avevamo accettato;
-- quale evidenza avrebbe dovuto farci cambiare idea.
-
-Il **Decision Record** serve a proteggere questa memoria.
-
-Ma non è un documento da scrivere dopo per giustificare ciò che abbiamo già deciso.
-
-> **Va costruito prima della decisione, quando l'incertezza è ancora visibile.**
+Il **Decision Record** protegge questa memoria. Non è un documento da scrivere dopo per giustificare una scelta già presa. Va costruito **prima della decisione**, quando alternative, vincoli e incertezza sono ancora visibili.
 
 ### Il template canonico
 
@@ -100,13 +83,11 @@ expected range / scenarios:
 information to record for evaluation:
 ```
 
-### Recommendation e decisione devono restare separate
+La struttura è volutamente ampia, ma non ogni decisione richiede la stessa profondità. Una scelta reversibile e poco costosa può usare una versione compatta; pricing globale, capex pluriennale o una policy con impatto su persone richiedono più disciplina. Ciò che non cambia è la logica: **quale scelta, rispetto a quali alternative, con quale evidenza e quale rischio?**
 
-L'analista può raccomandare A.
+### Recommendation e decisione non sono la stessa responsabilità
 
-Il decision owner può scegliere B per ragioni legittime che il modello analitico non rappresenta completamente.
-
-Il record dovrebbe conservare entrambe le cose:
+L'analista può raccomandare A e il decision owner scegliere B per ragioni legittime che il modello analitico non rappresenta completamente. Il record deve conservare entrambe le cose:
 
 ```text
 analytics recommendation: A
@@ -114,39 +95,15 @@ chosen decision: B
 reason: strategic partnership / capacity / legal constraint
 ```
 
-Questo evita due errori:
+Questo evita di riscrivere l'analisi come se avesse raccomandato ciò che poi è stato scelto e impedisce di attribuire all'analista una responsabilità che appartiene al business owner.
 
-1. riscrivere l'analisi come se avesse raccomandato ciò che poi è stato scelto;
-2. attribuire all'analista una decisione che apparteneva al business owner.
+Consideriamo una piattaforma B2B che aumenta il prezzo del piano Pro del 12%. Sei mesi dopo il churn cresce e un nuovo team propone subito un rollback. Il Decision Record originale mostra però che il price change era stato approvato insieme a rimozione di un usage limit, supporto premium e migrazione graduale della base. L'obiettivo primario era aumentare contribution margin e ARPA; il guardrail dichiarato era churn non oltre +1,5 pp e un piccolo deterioramento era già presente nello scenario centrale.
 
-### Caso simulato/composito — il prezzo che “nessuno ricordava”
+Senza record, il team giudica la scelta con una metrica diversa da quella usata ex ante. Con il record, la domanda diventa: **il churn osservato supera il trade-off che avevamo dichiarato accettabile?**
 
-Una piattaforma B2B aumenta il prezzo del piano Pro del 12%.
+### Il timestamp epistemico impedisce all'hindsight di riscrivere la decisione
 
-Sei mesi dopo il churn cresce.
-
-Un nuovo team propone immediatamente un rollback.
-
-Il Decision Record originale mostra però che la scelta era stata approvata insieme a:
-
-- rimozione di un usage limit;
-- supporto premium;
-- migrazione graduale della base;
-- obiettivo primario di aumentare contribution margin e ARPA;
-- guardrail: churn non oltre +1,5 pp;
-- expectation: un piccolo aumento di churn era già incluso nello scenario centrale.
-
-Senza il record, il team giudica la decisione con una metrica diversa da quella usata ex ante.
-
-Con il record, la domanda diventa:
-
-> “Il churn osservato supera il trade-off che avevamo dichiarato accettabile?”
-
-È una discussione molto più rigorosa.
-
-### Timestamp epistemico: cosa sapevamo allora?
-
-Un Decision Record deve fissare un **information cut-off**.
+Ogni Decision Record dovrebbe fissare un information cut-off:
 
 ```text
 data as-of: 2026-09-01 07:00
@@ -155,19 +112,15 @@ customer research available: wave 3
 known competitor move: no
 ```
 
-Perché dopo l'esito molte informazioni diventano ovvie.
+Dopo l'esito, molte informazioni sembrano ovvie. La decision quality deve invece essere valutata rispetto a ciò che era ragionevolmente conoscibile **prima**.
 
-La qualità della decisione deve essere valutata usando ciò che era ragionevolmente conoscibile **prima**.
-
-### Registrare l'incertezza, non soltanto la stima centrale
-
-Debole:
+Per lo stesso motivo registriamo l'incertezza, non soltanto la stima centrale. Invece di:
 
 ```text
 expected revenue uplift: +8%
 ```
 
-Meglio:
+preferiamo:
 
 ```text
 central: +8%
@@ -176,83 +129,29 @@ main downside driver: adoption
 switching value: +3,1%
 ```
 
-Questo rende possibile una review futura senza fingere che il team avesse previsto esattamente l'esito.
+Così una review futura può distinguere un outcome sorprendente da un esito che era già dentro il range accettato.
 
-### What would change our mind?
+### “What would change our mind?” è una parte della scelta
 
-Questo è uno dei campi più importanti del record.
+Una decisione forte non dichiara soltanto ciò in cui crediamo. Dichiara quale evidenza ci farebbe aggiornare.
 
-Esempi:
+> Se il CAC pilot supera €2.100 dopo almeno 100 lead qualificati, l'espansione completa non è più preferita.
 
-> “Se il CAC pilot supera €2.100 dopo almeno 100 lead qualificati, l'espansione completa non è più preferita.”
+> Se contribution margin per visitor scende oltre il 2% per due settimane, il pricing test entra in review/rollback.
 
-> “Se contribution margin per visitor scende oltre il 2% per due settimane, rollback del pricing test.”
+> Se la nuova fonte dati non riconcilia entro 0,5% con Finance, nessun rollout executive.
 
-> “Se la nuova fonte dati non riconcilia entro 0,5% con Finance, nessun rollout executive.”
+Queste non sono note accessorie. Sono il ponte tra decisione e learning.
 
-Una decisione forte non dice soltanto ciò in cui crediamo.
+Anche i guardrail hanno un ruolo diverso dall'obiettivo. Se l'obiettivo è contribution margin +8%, i guardrail possono essere churn < +1,5 pp, support tickets < +10% e nessun deterioramento materiale dell'enterprise NRR. Rendono visibile **quale costo non siamo disposti a pagare per ottenere il beneficio principale**.
 
-Dichiara **quale evidenza ci farebbe aggiornare**.
+### Il Decision Record collega, non duplica, gli artefatti precedenti
 
-### Guardrail ≠ obiettivo
+Il record rimanda ad Analytical Brief, Data Readiness Review, Uncertainty Brief, Causal Identification Brief, Experiment Contract, Predictive Decision Card, AI Analysis Control Sheet e agli altri deliverable che qualificano l'evidenza. Non deve ricopiare l'intero lavoro tecnico: deve portare nel confronto soltanto ciò che può cambiare la scelta.
 
-Un progetto può raggiungere il KPI primario e fallire comunque.
+Il **Decision Record** è quindi diverso dal **decision memo**. Il primo costruisce e conserva il ragionamento; il secondo ne sarà la superficie comunicativa, tema del Capitolo 16.
 
-Esempio pricing:
-
-```text
-objective:
-contribution margin +8%
-
-guardrails:
-churn < +1,5 pp
-support tickets < +10%
-enterprise NRR non deteriora materialmente
-```
-
-I guardrail rendono visibile il costo che non siamo disposti a pagare per raggiungere l'obiettivo.
-
-### Decision Record e deliverable precedenti
-
-Il record non ricopia tutto il lavoro analitico.
-
-Rimanda agli artefatti che qualificano l'evidenza:
-
-```text
-Analytical Brief
-Data Readiness Review
-Uncertainty Brief
-Causal Identification Brief
-Experiment Contract
-Predictive Decision Card
-AI Analysis Control Sheet
-...
-```
-
-Nel Decision Record entra soltanto ciò che è necessario per confrontare le alternative.
-
-### Decision Record ≠ decision memo
-
-Il **Decision Record** è l'artefatto completo e strutturato.
-
-Il **decision memo** è la sua superficie di comunicazione sintetica.
-
-Il Capitolo 16 lavorerà su come comunicare evidenza e decisione.
-
-Qui la priorità è costruire bene la scelta prima di raccontarla bene.
-
-### La decisione va chiusa con un learning contract
-
-Prima dell'esecuzione definiamo:
-
-- cosa osserveremo;
-- quando;
-- con quale baseline;
-- quale range ci aspettavamo;
-- quali segnali richiedono review;
-- chi decide un eventuale cambio di rotta.
-
-Così il ciclo diventa:
+Prima dell'esecuzione il record si chiude con un learning contract: cosa osserveremo, quale baseline useremo, quando avverrà la review, quale range avevamo previsto e quali segnali richiederanno un cambio di rotta. Il ciclo diventa:
 
 ```text
 evidence
@@ -263,7 +162,7 @@ evidence
 → update
 ```
 
-Non:
+non:
 
 ```text
 evidence
@@ -272,7 +171,5 @@ evidence
 → outcome
 → nuova storia ex post
 ```
-
-### Regola operativa
 
 > **Un buon Decision Record non prova che avevamo ragione. Prova che sapevamo quale scelta stavamo facendo, contro quali alternative, con quale evidenza, quali rischi e quali condizioni ci avrebbero fatto cambiare idea.**
