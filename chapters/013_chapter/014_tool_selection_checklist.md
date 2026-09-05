@@ -1,36 +1,12 @@
 ## 13.13 Tooling Decision Record: scegliere, motivare e sapere quando cambiare
 
-Una checklist aiuta a non dimenticare domande.
+Una checklist aiuta a non dimenticare domande. Un **Tooling Decision Record (TDR)** registra invece la scelta in modo che, tra sei mesi, possiamo capire **perché era sensata e se le condizioni che la giustificavano esistono ancora**.
 
-Un **Tooling Decision Record (TDR)** fa un passo in più: registra la scelta in modo che tra sei mesi possiamo capire **perché era sensata e se lo è ancora**.
+Non deve diventare burocrazia. Per un'analisi semplice può stare in mezza pagina; per un prodotto critico può essere più dettagliato. Il valore nasce da quattro obblighi: partire dal problema, confrontare alternative reali, dichiarare i limiti della scelta e definire un'**exit condition**.
 
-Non deve diventare burocrazia.
+La prima alternativa da ammettere è spesso “non costruire”: risposta manuale una tantum, query ad hoc, asset già esistente, miglioramento del processo corrente o nessuna automazione finché il valore atteso non è sufficiente. Se confrontiamo soltanto strumenti nuovi, la conclusione è già incorporata nella domanda.
 
-Per un'analisi semplice può stare in mezza pagina.
-
-Per un prodotto critico può essere più dettagliato.
-
-Il valore nasce da quattro obblighi:
-
-1. partire dal problema;
-2. confrontare alternative reali;
-3. dichiarare i limiti della scelta;
-4. definire un'**exit condition**.
-
-### Prima regola: “non costruire” è un'alternativa
-
-Tra le opzioni candidate dovrebbero poter comparire anche:
-
-- risposta manuale una tantum;
-- query ad hoc;
-- usare un asset esistente;
-- migliorare un processo già disponibile;
-- non automatizzare ancora;
-- non fare nulla perché il valore atteso è troppo basso.
-
-Se confrontiamo soltanto strumenti nuovi, abbiamo già incorporato la conclusione nella domanda.
-
-### TDR — sezione 1: decision context
+### 1. Decision context
 
 ```text
 Decision / use case:
@@ -43,11 +19,9 @@ Decision deadline:
 Expected lifetime of the solution:
 ```
 
-La distinzione tra **decision deadline** e **solution lifetime** è importante.
+`Decision deadline` e `solution lifetime` non sono la stessa cosa. Potremmo aver bisogno di una risposta domani e di un processo stabile per tre anni; non è obbligatorio che la prima implementazione soddisfi già tutti gli obblighi del terzo anno.
 
-Possiamo aver bisogno di una risposta domani e di un processo stabile per i prossimi tre anni. Non necessariamente la stessa implementazione deve soddisfare entrambe le esigenze fin dal primo giorno.
-
-### TDR — sezione 2: problem shape
+### 2. Problem shape
 
 ```text
 Data location:
@@ -62,17 +36,9 @@ Human interaction required:
 Downstream systems:
 ```
 
-Questa parte impedisce di usare parole vaghe come:
+Questa sezione impedisce termini vaghi come “big data” o “real time” senza ordini di grandezza e senza una decisione che li richieda.
 
-> grandi dati
-
-oppure:
-
-> serve real time.
-
-Servono numeri o almeno ordini di grandezza.
-
-### TDR — sezione 3: risk and control
+### 3. Risk and control
 
 ```text
 Impact if wrong:
@@ -85,9 +51,9 @@ Recovery requirement:
 Required review / approval:
 ```
 
-Due problemi con lo stesso volume possono richiedere tool diversi se uno produce un report esplorativo e l'altro blocca transazioni.
+Due problemi con la stessa scala possono richiedere soluzioni radicalmente diverse se uno produce una EDA esplorativa e l'altro alimenta un processo operativo.
 
-### TDR — sezione 4: people and ownership
+### 4. People and ownership
 
 ```text
 Builder:
@@ -100,16 +66,16 @@ Who handles failures:
 Who approves semantic changes:
 ```
 
-Questa sezione impedisce di scegliere un sistema che esiste soltanto finché esiste la persona che lo ha costruito.
+Questa parte evita che il sistema esista soltanto finché esiste la persona che lo ha costruito.
 
-### TDR — sezione 5: candidates
+### 5. Candidate comparison
 
-Per ogni alternativa scriviamo almeno:
+Compiliamo soltanto le alternative realmente plausibili, includendo sempre una soluzione più semplice quando esiste.
 
 | Candidate | Vantaggi | Limiti | TCO / effort | Rischio | Reversibilità |
 |---|---|---|---|---|---|
 | Manual / one-off | | | | | |
-| Existing tool/process | | | | | |
+| Existing process | | | | | |
 | Spreadsheet | | | | | |
 | SQL/shared model | | | | | |
 | Python/R/notebook | | | | | |
@@ -117,11 +83,9 @@ Per ogni alternativa scriviamo almeno:
 | Low-code | | | | | |
 | Managed/shared platform | | | | | |
 
-Non dobbiamo compilare righe irrilevanti.
+Non serve riempire righe irrilevanti. Serve evitare il confronto tra una proposta reale e alternative caricaturali.
 
-L'importante è non confrontare una soluzione reale con un'alternativa caricaturale.
-
-### TDR — sezione 6: chosen design
+### 6. Chosen design
 
 ```text
 Chosen tool / combination:
@@ -133,21 +97,11 @@ Known limitations:
 Controls required:
 ```
 
-La domanda:
+Le due domande centrali sono speculari: **perché non basta una soluzione più semplice?** e **perché non serve ancora quella più sofisticata?**. Insieme proteggono sia dall'underengineering sia dall'acquisto prematuro di complessità.
 
-> **perché una soluzione più semplice non basta?**
+### 7. Exit condition
 
-è uno dei migliori antidoti all'overengineering.
-
-La domanda opposta:
-
-> **perché non serve ancora quella più sofisticata?**
-
-impedisce di comprare future capability senza un requisito reale.
-
-### TDR — sezione 7: exit condition
-
-Questa è la parte più importante del record.
+Questa è la parte più importante del TDR.
 
 ```text
 Review / migrate if ANY of these becomes true:
@@ -165,53 +119,13 @@ Review / migrate if ANY of these becomes true:
 - annual TCO exceeds ...
 ```
 
-L'exit condition trasforma:
+L'exit condition trasforma “Excel o SQL?” in una domanda più utile: **in quali condizioni Excel smette di essere sufficiente per questa responsabilità?**
 
-> Excel vs SQL
+La stessa domanda business può quindi generare TDR differenti. Per una review una tantum su 2.000 account, `SQL export + spreadsheet` può essere proporzionato. Con **300 milioni di eventi** e review settimanale, un modello SQL nel warehouse riduce lavoro ripetuto. Con **800 Customer Success manager** e workflow operativo, la stessa logica può richiedere un modello certificato e serving BI/CRM. La domanda è la stessa; il sistema di responsabilità è cambiato.
 
-in una domanda molto più utile:
+### Decision gate
 
-> **in quali condizioni Excel smette di essere sufficiente?**
-
-### Caso simulato/composito — stessa domanda, tre TDR diversi
-
-Domanda business:
-
-> Quali account enterprise hanno ridotto l'uso del prodotto di oltre il 30% negli ultimi 60 giorni?
-
-#### Scenario A — 2.000 account, review una tantum
-
-```text
-Choice: SQL export + spreadsheet
-Reason: dataset piccolo, decisione domani, forte review manuale
-Exit condition: processo diventa settimanale o condiviso da CS
-```
-
-#### Scenario B — 300 milioni di eventi, review settimanale
-
-```text
-Choice: SQL model nel warehouse + tabella account-level
-Reason: compute vicino al dato, logica ripetibile
-Serving: export o BI leggero
-Exit condition: CS richiede monitoraggio continuo e self-service
-```
-
-#### Scenario C — 800 CS manager, workflow operativo
-
-```text
-Choice: certified SQL model + BI/CRM serving
-Reason: consumo ricorrente, access control, refresh e ownership
-Optional Python: risk model se aggiunge valore validato
-Exit condition: score diventa automatic decision input → nuova production/risk review
-```
-
-La domanda business è identica.
-
-Il sistema di responsabilità no.
-
-### Decision gate in dieci domande
-
-Prima di approvare la scelta, un reviewer dovrebbe riuscire a rispondere:
+Prima di approvare una scelta un reviewer dovrebbe poter rispondere a queste domande:
 
 1. Quale decisione abilita?
 2. Qual è il minimo requisito reale?
@@ -224,26 +138,9 @@ Prima di approvare la scelta, un reviewer dovrebbe riuscire a rispondere:
 9. Esiste un'opzione più semplice e reversibile?
 10. **Quale evento ci obbligherà a rivalutare questa scelta?**
 
-Se la decima risposta è:
-
-> vedremo
-
-il TDR non è ancora finito.
-
-### Il TDR non deve diventare un vincolo permanente
-
-Una decisione tecnica non è una promessa identitaria.
-
-Cambiare idea quando cambiano i requisiti è un segnale di maturità.
-
-Il record serve proprio a distinguere:
-
-- cambiamento ragionato;
-- tool hopping guidato dalla moda.
+Se la decima risposta è “vedremo”, il record non è ancora completo.
 
 ### Template compatto
-
-Per lavori piccoli è sufficiente:
 
 ```text
 TOOLING DECISION RECORD
@@ -265,6 +162,6 @@ Exit condition:
 Review date:
 ```
 
-### Regola operativa
+Una decisione tecnica non è una promessa identitaria. Cambiare idea quando cambiano i requisiti è maturità; cambiare tool perché è cambiata la moda è un'altra cosa. Il TDR serve a distinguere i due casi.
 
 > **Una buona tool choice non dice soltanto cosa useremo. Dice perché è sufficiente, quale complessità stiamo evitando e quali cambiamenti renderebbero la decisione obsoleta.**
