@@ -1,354 +1,81 @@
-## 18.7 Testing pyramid: proteggere struttura, significato e decisione
+## 18.7 Testing strategy: proteggere struttura, significato e decisione
 
-Un singolo test non può garantire la qualità di un prodotto analitico perché gli errori nascono a livelli differenti.
+Un singolo test non può garantire la qualità di un prodotto analitico perché gli errori nascono a livelli differenti. Possiamo avere schema rotto, duplicazione, join errato, volume incompleto, mapping sbagliato, semantic drift, serie storica non più comparabile o un prodotto perfettamente corretto che non serve più la decisione per cui era stato costruito.
 
-Possiamo avere:
+Per questo la testing strategy deve essere letta come una **difesa a strati**. La metafora della piramide resta utile: alla base abbiamo controlli economici e frequenti; salendo, i test diventano meno numerosi, più costosi e più vicini al significato business. Ma la misura della maturità non è il numero di test. È la **failure-mode coverage**: quali errori materialmente pericolosi conosciamo e quale strato li ferma prima che raggiungano il consumer?
 
-- schema rotto;
-- duplicazione;
-- join errato;
-- volume incompleto;
-- mapping sbagliato;
-- metrica semanticamente diversa;
-- series discontinuity;
-- prodotto perfettamente corretto ma non più adatto alla decisione.
+## Dalla sorgente al significato
 
-Per questo è utile una **testing pyramid**.
+Il primo strato sono i **source contract checks**: partition arrivata, schema atteso, identifier, source count, freshness, required fields e compatibilità di versione. Servono a separare un errore di trasformazione da una sorgente che non ha consegnato ciò che prometteva.
 
-La metafora della piramide indica due cose:
+Seguono gli **structural tests**: tipo, not null, uniqueness, accepted values, referential integrity e grain invariant. Sono economici e necessari, ma proteggono la forma del dato, non la sua verità economica. Una tabella può rispettare perfettamente lo schema e duplicare revenue del 40%.
 
-1. alla base abbiamo molti controlli economici, frequenti e automatizzabili;
-2. salendo abbiamo controlli meno numerosi, più costosi e più vicini al significato business.
+Gli **invariant di trasformazione** iniziano a proteggere il modello mentale: una riga d'ordine non può generare due righe fatturabili senza una ragione, `net_revenue ≤ gross_revenue` nel contesto definito, opening balance + movements = closing balance, un customer non appartiene contemporaneamente a segmenti esclusivi, una join non può espandere righe oltre una soglia attesa.
 
-La piramide non è una garanzia matematica.
+Poi arriva la **reconciliation**, spesso il gate più forte perché confronta l'output con una vista indipendente: warehouse revenue vs ledger, completed orders vs captured payments, invoice total vs line item, inventory snapshot vs operational source. Per un prodotto T3 può essere blocking; per T1 può bastare una review periodica. Il principio non cambia: un controllo end-to-end cattura failure che molti test locali non possono vedere.
 
-È una strategia di difesa ridondante.
+## Distribution test: anomalia non significa errore
 
-## Livello 0 — Source contract checks
+Volume, null rate, cardinalità, distribuzioni, percentili, mix, drift e seasonal baseline aiutano a rilevare cambiamenti che meritano attenzione. Ma una campagna può davvero raddoppiare il traffico e un'acquisizione può cambiare customer mix. Per questo molti distribution test devono generare `WARN` o investigation, non blocco automatico.
 
-Prima della trasformazione verifichiamo se la sorgente mantiene la propria promessa.
+La soglia dipende dalla variabilità naturale e dal costo dei due errori: pubblicare un dato sbagliato oppure interrompere inutilmente il servizio. Anche la data quality contiene una decision theory implicita.
 
-Esempi:
+## Il test più difficile: il dato significa ancora la stessa cosa?
 
-- partition arrivata;
-- schema/versione attesi;
-- primary identifier presente;
-- source count;
-- source freshness;
-- required fields;
-- event/version compatibility.
+I **semantic tests** chiedono se il prodotto rappresenti ancora ciò che il business pensa. Il denominatore della conversion è ancora valido? `completed_order` significa la stessa cosa? Gli account sospesi entrano nel churn? `revenue_date` è order, invoice o recognition date? Una nuova trial policy rende ancora comparabile la serie?
 
-Questi controlli separano:
+Un retailer monitora `cancellation_rate`. Schema, not-null, accepted values, volume e range storico sono tutti verdi. Durante un cambio operativo, però, gli ordini bloccati per frode passano dalla label `cancelled` a `closed_by_system`. Il KPI sembra migliorare. Non c'è un bug sintattico; è cambiata la classificazione del fenomeno.
 
-> “la trasformazione è sbagliata”
+Un invariant semantico più robusto — “quale quota di ordini termina senza fulfillment, indipendentemente dalla label?” — avrebbe reso visibile la discontinuità. Questo esempio spiega perché il test deve nascere dal failure mode, non dalla colonna disponibile.
 
-da
+## Consumer e decision test: anche un prodotto corretto può diventare obsoleto
 
-> “la sorgente non ha consegnato ciò che ci aspettavamo”.
+Al livello più alto chiediamo se il prodotto continua a servire il processo per cui esiste. Arriva prima della deadline? I consumer comprendono metrica e caveat? Un nuovo workflow rende obsoleto il KPI? I threshold sono ancora coerenti con il denominatore? Il report contiene ancora le informazioni necessarie alla decisione?
 
-## Livello 1 — Structural tests
+Questi controlli possono essere UAT, business-owner review, scenario walkthrough o fit-for-purpose review periodica. Sono meno automatizzabili, ma proteggono un failure mode che nessun schema test può catturare: **la decisione è cambiata mentre il prodotto è rimasto fermo**.
 
-Sono economici e numerosi.
+## Recovery test: rilevare non basta
 
-Controllano:
-
-- tipo;
-- not null;
-- uniqueness;
-- accepted values;
-- referential integrity;
-- grain invariants;
-- schema compatibility.
-
-Sono necessari.
-
-Non sono sufficienti.
-
-Una tabella può rispettare perfettamente lo schema e duplicare revenue del 40%.
-
-## Livello 2 — Transformation invariants
-
-Qui testiamo proprietà della logica.
-
-Esempi:
-
-- una riga ordine non può generare due righe fatturabili senza una ragione esplicita;
-- `net_revenue ≤ gross_revenue` in un contesto definito;
-- opening balance + movements = closing balance;
-- un cliente non può appartenere contemporaneamente a due segmenti esclusivi;
-- il numero di righe dopo un join non può crescere oltre una soglia attesa.
-
-Questi test iniziano a proteggere il **modello mentale** oltre allo schema.
-
-## Livello 3 — Reconciliation tests
-
-Confrontiamo output con una fonte o una vista indipendente.
-
-Esempi:
-
-- warehouse revenue vs ledger;
-- completed orders vs captured payments;
-- invoice total vs line-item aggregation;
-- inventory snapshot vs operational source;
-- payout total vs payment provider.
-
-La reconciliation è potente perché verifica una proprietà di business end-to-end.
-
-Per prodotti T3 può essere un blocking gate.
-
-Per prodotti T1 può essere una review periodica.
-
-## Livello 4 — Distribution and behavioral tests
-
-Controllano se il dato si comporta in modo plausibile:
-
-- volume;
-- null rate;
-- cardinalità;
-- distribuzione;
-- percentili;
-- mix;
-- drift;
-- seasonal baseline;
-- source contribution.
-
-Questi controlli spesso devono distinguere **anomalia** da **errore**.
-
-Una campagna può davvero raddoppiare il traffico.
-
-Un'acquisizione può cambiare customer mix.
-
-Per questo molti distribution test dovrebbero generare:
-
-- `WARN`;
-- investigation;
-- contextual gate;
-
-non sempre un blocco automatico.
-
-## Livello 5 — Semantic tests
-
-Qui chiediamo se il dato continua a rappresentare ciò che il business pensa.
-
-Esempi:
-
-- il denominatore della conversion è ancora valido?
-- `completed_order` significa ancora la stessa cosa?
-- gli account sospesi entrano nel churn?
-- `revenue_date` è order, invoice o recognition date?
-- la nuova trial policy rende comparabile la serie?
-- il mapping di prodotto riflette ancora la nuova organizzazione?
-
-Questi test sono più difficili perché richiedono conoscenza del dominio.
-
-Alcuni possono essere automatizzati come invariant.
-
-Altri richiedono una review nel change process.
-
-## Caso simulato/composito: tutti i test tecnici verdi
-
-Un retailer monitora `cancellation_rate`.
-
-Passano:
-
-- schema;
-- not-null;
-- accepted values;
-- volume;
-- range storico.
-
-Durante un cambio operativo gli ordini bloccati automaticamente per frode passano da:
-
-`cancelled`
-
-a
-
-`closed_by_system`.
-
-Il cancellation rate appare migliorato.
-
-Il numero non contiene un bug sintattico.
-
-È cambiata la classificazione del fenomeno.
-
-Un controllo semantico del tipo:
-
-> “quale quota di ordini termina senza fulfillment, indipendentemente dalla label?”
-
-avrebbe reso visibile la discontinuità.
-
-## Livello 6 — Consumer / decision tests
-
-Il livello più alto verifica se il prodotto continua a servire il processo per cui è stato costruito.
-
-Esempi:
-
-- il dashboard permette ancora di prendere la decisione prima della deadline?
-- la metric definition è compresa dai consumer?
-- il nuovo flow operativo ha reso obsoleto un KPI?
-- un threshold continua a essere coerente con il nuovo denominatore?
-- il report contiene tutte le alternative richieste dal Decision Record?
-
-Questi controlli possono includere:
-
-- UAT;
-- business-owner review;
-- scenario walkthrough;
-- periodic fit-for-purpose review.
-
-Una dashboard può passare tutti i test dati ed essere comunque **decisionally obsolete**.
-
-## Livello 7 — Recovery tests
-
-Un sistema non è davvero affidabile soltanto perché sa rilevare errori.
-
-Deve sapere recuperare.
-
-Per prodotti critici testiamo anche:
-
-- replay;
-- backfill;
-- restore;
-- fallback source;
-- stale snapshot;
-- rollback;
-- re-certification.
-
-La domanda è:
-
-> **“Abbiamo mai provato il recovery prima di averne bisogno?”**
-
-Google SRE tratta testing e recovery come parte della reliability engineering, non come attività separate dal funzionamento del servizio.
+Un sistema critico deve anche dimostrare di saper recuperare. Replay, backfill, restore, fallback source, stale snapshot, rollback e re-certification non dovrebbero essere procedure provate per la prima volta durante un incidente. Google SRE tratta testing e recovery come parti della reliability engineering.
 
 Fonte: https://sre.google/sre-book/testing-reliability/
 
-## Blocking, warning e informational
+La domanda operativa è:
 
-Un test senza una policy di risposta è soltanto un numero.
+> **Abbiamo mai provato il recovery prima di averne bisogno?**
 
-Ogni controllo dovrebbe avere una disposition.
+## Ogni test deve avere una disposition
 
-### BLOCKING
+Un test senza policy di risposta è un numero in più. Gli stati devono essere chiari.
 
-Il prodotto non può essere certificato.
+- `BLOCKING`: il prodotto non può essere certificato. Esempi: Finance reconciliation T3 fuori tolerance, chiave critica duplicata, source coverage materialmente incompleta, semantic contract incompatibile.
+- `WARNING`: il prodotto può essere servito con caveat o richiede investigation. Esempi: mix anomalo, volume sopra baseline, freshness vicina alla soglia.
+- `INFORMATIONAL`: segnale utile a trend o manutenzione, senza azione immediata.
 
-Esempi:
+Questa distinzione riduce alert fatigue e impedisce che tutto diventi rosso.
 
-- Finance reconciliation T3 fuori tolerance;
-- chiave critica duplicata;
-- fonte materialmente incompleta;
-- semantic contract incompatibile.
+## Failure-mode coverage: la vera matrice di test
 
-### WARNING
-
-Il prodotto può essere servito con caveat o richiede investigation.
-
-Esempi:
-
-- mix anomalo;
-- volume sopra baseline;
-- freshness vicina alla soglia.
-
-### INFORMATIONAL
-
-Trend utile per capacity/maintenance, senza azione immediata.
-
-Questo evita che tutto diventi rosso.
-
-## Test coverage deve seguire il failure mode, non le colonne
-
-Una metrica comune nella software engineering è code coverage.
-
-Nell'analytics una misura più utile è spesso **failure-mode coverage**.
-
-Chiediamo:
-
-- quali errori materialmente pericolosi conosciamo?
-- quale test li intercetta?
-- a quale livello?
-- prima o dopo la pubblicazione?
-- esiste un gap?
-
-Esempio:
+Una testing strategy matura parte dai rischi della decisione:
 
 | Failure mode | Controllo | Gate |
 |---|---|---|
 | store POS mancante | source coverage | BLOCK |
-| revenue duplicated by join | reconciliation | BLOCK |
-| unusual category mix | distribution | WARN |
-| active-customer definition changed | semantic change review | BLOCK |
-| report no longer used | adoption review | RETIRE candidate |
+| revenue duplicata da join | reconciliation | BLOCK |
+| category mix insolito | distribution | WARN |
+| `active_customer` ridefinito | semantic change review | BLOCK |
+| report non più usato | adoption review | RETIRE candidate |
 
-La testing strategy è più forte quando nasce dai rischi della decisione.
+Questa tabella è più utile di una percentuale astratta di coverage. Dice che cosa stiamo proteggendo, dove lo intercettiamo e quale azione segue.
 
-## Test ownership
+Anche i test hanno owner e lifecycle. Una threshold può diventare obsoleta, un alert può generare falsi positivi per mesi, un invariant può non rappresentare più il processo. Per prodotti critici dobbiamo sapere chi approva il test, quale failure mode copre, chi modifica la soglia e quale azione genera. Un alert ignorato da sei mesi non è più un controllo.
 
-Anche i test hanno owner.
+## Profondità per tier
 
-Un test può diventare obsoleto.
+T0 può vivere con sanity check esplorativi. T1 aggiunge structural test, basic invariant e freshness. T2 richiede source contract, invariant, reconciliation, distribution, semantic gate e post-deploy verification. T3 aggiunge tutto ciò che è materialmente necessario, inclusi independent reconciliation, controlled change, recovery test e audit evidence.
 
-Una threshold può non riflettere più il business.
-
-Per prodotti critici dovremmo sapere:
-
-- chi approva il test;
-- chi modifica la threshold;
-- quale failure mode protegge;
-- quando è stato rivisto;
-- quale azione genera.
-
-Un alert ignorato per sei mesi non è più un controllo.
-
-## False positive e false negative dei controlli
-
-Se un quality test genera continuamente falsi allarmi, il team lo bypasserà.
-
-Se è troppo permissivo, dà falsa fiducia.
-
-La threshold deve essere calibrata rispetto a:
-
-- variabilità naturale;
-- stagionalità;
-- business events;
-- costo di investigation;
-- costo di pubblicare dato sbagliato.
-
-Anche la data quality ha una decision theory implicita.
-
-## Testing pyramid per tier
-
-### T0
-
-- controlli esplorativi;
-- sanity check manuali.
-
-### T1
-
-- structural;
-- basic invariants;
-- freshness;
-- owner review.
-
-### T2
-
-- source contract;
-- structural;
-- invariants;
-- reconciliation;
-- distribution;
-- semantic gate;
-- post-deploy verification.
-
-### T3
-
-- tutto ciò che è materialmente necessario;
-- independent reconciliation;
-- controlled change;
-- recovery test;
-- audit evidence.
-
-Il numero di test non determina la maturità.
-
-La maturità è coprire i failure mode che contano senza creare una macchina di alert inutili.
+La regola resta la stessa del capitolo: **il failure cost determina il controllo**, non il desiderio di costruire una piattaforma sofisticata.
 
 > **La data quality non è una batteria di test verdi. È una rete di evidenze che rende difficile a un errore materialmente importante attraversare tutti i livelli e arrivare indisturbato alla decisione.**
+
+Una rete di controlli affidabile ha però un costo. Il passo successivo è rendere leggibile quanto paghiamo per mantenere quella promessa e se il service level acquistato crea davvero valore.
