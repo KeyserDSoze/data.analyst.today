@@ -1,155 +1,49 @@
 ## 16.5 Comunicare l'incertezza: mostrare ciò che può cambiare la decisione
 
-Una stima centrale è facile da ricordare.
+Una stima centrale è facile da ricordare e quindi facile da trasformare in una promessa. Dire “prevediamo **€12,4 milioni** il prossimo mese” può essere tecnicamente corretto e, nello stesso tempo, occultare proprio l'informazione che il decision maker dovrebbe usare per scegliere.
 
-> “Prevediamo €12,4 milioni il prossimo mese.”
+Il primo passo è distinguere famiglie diverse di incertezza. Quella **statistica** riguarda variabilità della stima; la **data maturity** riguarda freshness, completezza e revisioni attese; la **scenario uncertainty** riguarda futuri o regimi differenti; l'incertezza **semantica o di identificazione** riguarda definizione, comparabilità e forza del claim. Non tutte queste cose possono essere compresse in un confidence interval.
 
-È anche facile da usare come se fosse una promessa.
+La domanda utile, ereditata dal Capitolo 15, è:
 
-Una comunicazione professionale deve distinguere almeno quattro famiglie di incertezza:
+> **L'incertezza attraversa il valore al quale cambieremmo scelta?**
 
-1. **statistica** — variabilità della stima;
-2. **data maturity** — freshness, completezza, dati ancora provvisori;
-3. **scenario / structural** — futuro, regime change, assunzioni economiche;
-4. **identification / semantic** — definizione, causalità, comparabilità.
+Se un progetto produce beneficio plausibile tra **€4,8M e €6,1M** contro un costo di **€1,2M**, il range è ampio ma non necessariamente decision-critical. Se il beneficio centrale è **€1,2M**, il range è **€0,4M–€1,9M** e il costo è **€1,0M**, l'incertezza attraversa il break-even. In quel caso deve entrare nella headline o accanto alla recommendation.
 
-Non tutte possono essere compresse in un confidence interval.
+### Caso simulato/composito — Il forecast venduto come promessa
 
-## Il criterio decisionale: attraversa lo switching value?
+Un produttore industriale porta al board un forecast Q4 di **€84,2M**. Il modello aveva in realtà un prediction interval all'80% di **€76M–€92M**, ma il range rimane nel notebook tecnico. Il board usa €84,2M come input puntuale per cash planning e acquisti; il trimestre chiude a **€78,5M** e il forecast viene giudicato “sbagliato”.
 
-Dal Capitolo 15 ereditiamo una domanda molto più utile di:
+Il failure non è soltanto statistico. È di traduzione: un oggetto probabilistico è stato comunicato come commitment.
 
-> “Quanto è largo l'intervallo?”
-
-Chiediamo:
-
-> **“L'incertezza attraversa il valore al quale cambieremmo scelta?”**
-
-### Caso A — Incertezza non decision-critical
-
-- beneficio progetto: €4,8M–€6,1M;
-- costo: €1,2M;
-- nessun downside strategico rilevante.
-
-L'intervallo è ampio, ma l'opzione resta preferibile in tutto il range plausibile.
-
-### Caso B — Incertezza decision-critical
-
-- beneficio centrale: €1,2M;
-- range plausibile: €0,4M–€1,9M;
-- costo: €1,0M.
-
-Qui l'incertezza attraversa il break-even.
-
-Deve comparire nella headline o accanto alla recommendation, non in una nota finale.
-
-## Caso simulato/composito — Il forecast venduto come promessa
-
-Un produttore industriale presenta al board:
-
-> **Q4 revenue: €84,2M**
-
-Il modello aveva in realtà un prediction interval 80% di €76M–€92M, ma il range rimane nel notebook tecnico.
-
-Il board usa €84,2M come input puntuale per cash planning e acquisti.
-
-Le vendite chiudono a €78,5M.
-
-La previsione viene classificata come “sbagliata”.
-
-Il problema non è soltanto statistico. È un **failure di traduzione**: un oggetto probabilistico è stato comunicato come commitment.
-
-Una versione migliore:
+Una comunicazione decisionale rende il range operativo:
 
 > **La stima centrale Q4 è €84,2M; l'80% prediction interval è €76M–€92M. Il cash plan resta robusto sopra €79M, quindi il downside inferiore richiede una contingency sugli acquisti.**
 
-L'incertezza diventa collegata all'azione.
+Ora l'incertezza non è una nota metodologica: modifica il piano.
 
-## Data maturity: “provvisorio” è una proprietà del numero
+## Provisional è una proprietà del numero
 
-Supponiamo che la revenue giornaliera sia D+1 ma i refund arrivino fino a D+5.
+Se la revenue giornaliera è D+1 ma i refund arrivano fino a D+5, “Net revenue ieri: €4,1M” non è un numero finale. La Pack deve poter mostrare `data as-of`, stato `PROVISIONAL / RECONCILED / FINAL`, expected revision e prossimo refresh. Una misura può essere computazionalmente corretta e ancora troppo immatura per l'azione richiesta.
 
-Scrivere:
+Lo stesso vale per un KPI costruito con feed a latenze differenti: il lettore deve sapere se la decisione sta usando uno stato finalizzato o una fotografia destinata a cambiare.
 
-> “Net revenue ieri: €4,1M”
+## Il verbo fa parte del metodo
 
-senza indicare che il dato è provvisorio comunica una precisione che il sistema non possiede ancora.
+“La release ha ridotto la conversione” e “il calo è concentrato sugli utenti esposti alla release” non sono due stili equivalenti. La prima frase contiene un claim causale, la seconda un finding localizzato. La grammatica deve preservare il livello di evidenza costruito nei Capitoli 8 e 14.
 
-Una Decision Communication Pack dovrebbe poter mostrare:
+Per questo una executive rewrite non può rimuovere un caveat causale semplicemente per rendere il messaggio più netto.
 
-- `fresh as of`;
-- stato `provisional / reconciled / final`;
-- eventuale expected revision;
-- quando verrà aggiornato il dato.
+## Visualizzare l'incertezza in funzione della scelta
 
-Questo è particolarmente importante nelle dashboard operative.
+Error bar, confidence band, prediction interval, fan chart, distribuzione e scenario table sono strumenti diversi. Se il compito è confrontare alternative, spesso **range + switching value** è più utile di una distribuzione completa. Se il compito è capire come cresce l'incertezza con l'orizzonte, una fan chart può essere appropriata. Se conta la maturity del dato, uno status testuale può essere più informativo di qualsiasi banda.
 
-## Linguaggio calibrato: il verbo è parte del metodo
+La Government Analysis Function raccomanda di comunicare qualità, uncertainty e cambiamenti in modo che il lettore possa capire il loro impatto sull'uso dei dati.[^gaf-uncertainty] Una nota generica come “risultati soggetti a incertezza” è formalmente prudente ma operativamente debole. Molto più utile è dire:
 
-Confrontiamo:
+> “Il ranking tra A e B si inverte se l'uplift reale di A è sotto il 2,8%; il range corrente include valori inferiori a questa soglia.”
 
-> “La release ha ridotto la conversione.”
+Questo collega uncertainty e decision boundary.
 
-con:
+> **Comunicare bene l'incertezza non significa mostrare ogni dubbio possibile. Significa rendere visibile l'incertezza che limita il claim, modifica il downside o può cambiare l'azione.**
 
-> “Il calo è concentrato sugli utenti esposti alla release; non abbiamo ancora isolato causalmente l'effetto.”
-
-Oppure:
-
-> “Il pricing causa il churn.”
-
-con:
-
-> “Il pricing è compatibile con il pattern osservato, ma i dati storici non separano bene prezzo, mix di coorte e account maturity.”
-
-La forza grammaticale della frase deve essere coerente con il **claim level** costruito nei capitoli 8 e 14.
-
-## Visualizzare l'incertezza
-
-Possibili forme:
-
-- error bars;
-- confidence band;
-- prediction interval;
-- fan chart;
-- distribuzione;
-- downside/base/upside coerenti;
-- range annotato;
-- tabella con switching value.
-
-La forma dipende dalla decisione.
-
-Se il pubblico deve confrontare alternative, spesso è più utile mostrare **range + threshold** che una distribuzione completa.
-
-## Qualità e limiti devono essere utilizzabili
-
-La Government Analysis Function britannica raccomanda di comunicare qualità, incertezza e cambiamenti in modo che l'utente possa capire l'impatto sull'interpretazione e sull'uso dei dati.
-
-Una nota come:
-
-> “I risultati sono soggetti a incertezza.”
-
-è formalmente prudente ma operativamente inutile.
-
-Meglio:
-
-> “Il ranking tra A e B si inverte se l'uplift reale di A è sotto il 2,8%; l'intervallo corrente include valori inferiori a questa soglia.”
-
-## Non nascondere il problema con più decimali
-
-Precisione numerica e certezza epistemica sono cose diverse.
-
-`12,417M` può avere tre decimali e dipendere da:
-
-- refund ancora incompleti;
-- FX provvisorio;
-- forecast altamente instabile;
-- definizione contestata.
-
-Il numero più preciso non è necessariamente il messaggio più affidabile.
-
-> **Comunicare l'incertezza bene significa mostrare non tutta l'incertezza possibile, ma quella che limita il claim o può cambiare l'azione.**
-
-### Fonte
-
-- Government Analysis Function, *Communicating quality, uncertainty and change*: https://analysisfunction.civilservice.gov.uk/policy-store/communicating-quality-uncertainty-and-change/
+[^gaf-uncertainty]: Government Analysis Function, *Communicating quality, uncertainty and change*, https://analysisfunction.civilservice.gov.uk/policy-store/communicating-quality-uncertainty-and-change/
