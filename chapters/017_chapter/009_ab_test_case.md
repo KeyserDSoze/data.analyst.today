@@ -1,224 +1,77 @@
-## 17.8 “Il test è positivo: possiamo fare rollout?”
+## 17.8 VelaPay — “Il test è positivo: possiamo fare rollout?”
 
-### Caso simulato/composito: VelaPay
+> **Caso simulato/composito**, con un caso Microsoft reale documentato sul Sample Ratio Mismatch.
 
-VelaPay introduce un checkout semplificato.
+VelaPay testa un checkout semplificato. Dopo 14 giorni il controllo converte al **71,4%**, la variante al **72,3%**: uplift assoluto **+0,9 pp**, `p = 0,018`. In Slack arriva la frase prevedibile: “Test vinto. Rollout?”.
 
-Dopo 14 giorni:
+Il capstone deve resistere proprio a questa compressione. Il test può aver prodotto un numero statisticamente significativo e non avere ancora **autorità decisionale**. Prima di chiedere se B vince, dobbiamo sapere se il confronto è credibile e se il beneficio supera i danni collaterali.
 
-- controllo: `71,4%`;
-- variante: `72,3%`;
-- uplift assoluto: `+0,9 pp`;
-- p-value: `0,018`.
+### Il risultato più importante del primo test è `BLOCKED`
 
-La frase che arriva in Slack è:
+L'Experiment Contract originale rende verificabili primary metric, unità di randomizzazione, split atteso, MDE, durata, guardrail, criteri di esclusione, segment analysis e rollout policy. Ed è proprio confrontando l'esecuzione con quel contratto che emergono segnali contrari alla narrativa “test vinto”.
 
-> “Test vinto. Rollout?”
+Payment authorization è stabile, ma chargeback passa da **0,42% a 0,57%**, i support contacts crescono del **6%** e Android low-end mostra conversion **-1,8 pp**. Soprattutto compare un'anomalia di allocazione/telemetria collegata a una versione obsoleta dell'SDK e lo split presenta un **Sample Ratio Mismatch** statisticamente chiaro.
 
-Il capstone comincia da una domanda più rigorosa:
+Un SRM non è un caveat da scrivere sotto il p-value. È un trust gate.
 
-> **L'esperimento è abbastanza affidabile e il profilo beneficio/rischio è abbastanza favorevole da cambiare la policy di prodotto?**
+Microsoft Research documenta gli SRM come sintomo di problemi che possono nascere in assignment, execution, logging, join o analysis e raccomanda di diagnosticarli prima di usare il risultato per una decisione.[^ms-srm-paper] In un caso pubblico su un image carousel MSN, una variante sembrava ridurre engagement; il test aveva però un SRM e l'indagine mostrò che il bot detection filtrava in modo sproporzionato utenti molto coinvolti nella variante. Dopo la correzione, la direzione apparente del risultato si invertì.[^ms-srm-case]
 
-## Routing iniziale
+La lezione per VelaPay è netta: **un p-value non ripara un confronto la cui comparabilità può essere compromessa**.
 
-| Elemento | Scelta |
-|---|---|
-| Decisione | rollout 100%, rollout graduale o nessun rollout |
-| Failure cost | spedire una variante dannosa o bloccare una variante utile |
-| Claim necessario | causale, perché il test è progettato proprio per identificare l'effetto |
-| Reversibilità | alta con rollout progressivo |
-| Incertezza critica | integrità randomizzazione + guardrail economici |
-| Stop rule | nessuna conclusione finché SRM/data quality non sono spiegati |
+Il team distingue quindi assignment, exposure logging, event loss e treatment effect. Finché non sa quale dei primi tre ha generato il mismatch, lo stato corretto è:
 
-## 1. Il primary metric non è tutta la decisione
+```text
+EXPERIMENT STATUS: BLOCKED
+rollout authority: NONE
+```
 
-L'analista controlla i guardrail e trova:
+Questo è il finale professionale della prima fase. Non “positive with caveats”, non “rollout prudente”: **BLOCKED**.
 
-- payment authorization rate: stabile;
-- chargeback rate: `0,42% → 0,57%`;
-- support contacts: `+6%`;
-- Android low-end: conversione `-1,8 pp`;
-- anomalia di allocazione associata a una versione obsoleta dell'SDK.
+### Ripristinare la fiducia richiede nuova evidenza, non una spiegazione convincente
 
-Il risultato principale è positivo.
+La root cause viene ricondotta all'SDK obsoleto. Dopo la correzione VelaPay esegue una nuova fase limitata invece di reinterpretare retroattivamente il test originale. Il nuovo risultato mostra uplift più piccolo, intervallo compatibile con beneficio moderato, nessun peggioramento materialmente rilevante dei chargeback, Android low-end stabile e support contacts entro guardrail.
 
-La decisione non è ancora pronta.
+Ora la conversazione può spostarsi dall'integrità all'economia. La conversione da sola non è l'outcome decisionale: il team usa **incremental gross profit per 1.000 checkout**, includendo conversione aggiuntiva, fee, chargeback, support cost e refund/fraud effect rilevanti.
 
-Esistono almeno tre domande:
+Anche il precedente segnale Android viene trattato con disciplina. È decision-critical perché il segmento è grande e il downside plausibile, ma non autorizza una ricerca libera di decine di sottogruppi. I segmenti pre-specificati e quelli operativamente critici vengono distinti dalle analisi esplorative; una policy permanente richiede conferma separata.
 
-1. possiamo fidarci del confronto?
-2. il beneficio supera i danni collaterali?
-3. l'eterogeneità è reale o rumore esplorativo?
+A questo punto lo stato cambia davvero:
 
-## 2. Experiment Contract prima dell'analisi
+```text
+EXPERIMENT STATUS: APPROVED FOR RAMP
+```
 
-L'Experiment Contract originale specificava:
+La differenza tra i due stati non è retorica. Prima mancava il diritto di interpretare il comparison; dopo abbiamo un confronto credibile e un profilo benefit/guardrail accettabile.
 
-- unità di randomizzazione;
-- split atteso;
-- primary metric;
-- guardrail;
-- MDE;
-- durata minima;
-- criteri di esclusione;
-- policy per segment analysis;
-- stopping rule;
-- rollout policy prevista in caso di esito positivo.
+### Dal test alla policy di rollout
 
-Questo documento è ciò che permette di distinguere una sorpresa legittima da una metrica scelta dopo aver visto i dati.
+Restano tre alternative. Un rollout immediato al 100% massimizza velocità ma anche blast radius. Nessun rollout ignora evidenza utile ormai ripristinata. VelaPay sceglie un ramp progressivo:
 
-## 3. Sample Ratio Mismatch: il risultato può essere numericamente corretto e sperimentalmente inaffidabile
+1. **10%** degli utenti e osservazione per **72 ore**;
+2. **50%** se chargeback, latency e support restano entro soglia;
+3. **100%** soltanto se primary metric e guardrail rimangono coerenti;
+4. rollback se una stop condition viene superata.
 
-Il test presenta un lieve ma statisticamente chiaro **Sample Ratio Mismatch**.
+L'esperimento produce quindi una causal estimate; il Decision Record la trasforma in una **policy reversibile**.
 
-Il team non lo tratta come una nota tecnica.
+### Evidence Ledger
 
-È un trust gate.
+| Observed | Inferred | Still unknown |
+|---|---|---|
+| primo test +0,9 pp, p=0,018 | il primo uplift non è decision-authoritative | effetto stabile al 100% rollout |
+| SRM + SDK anomaly | comparabilità del primo test compromessa | novelty/decay di lungo periodo |
+| primo chargeback 0,42→0,57%; contacts +6% | | |
+| dopo fix: uplift moderato, guardrail stabili | ramp controllato è proporzionato al rischio | |
 
-### Caso reale documentato: Microsoft e SRM
+La headline executive deve conservare questa storia di fiducia ripristinata:
 
-Microsoft Research documenta gli SRM come sintomo di problemi che possono nascere in assignment, execution, logging, join o analysis. La raccomandazione è di non fidarsi dei risultati finché la causa del mismatch non è stata diagnosticata.
+> **Il primo test mostrava uplift ma non era affidabile a causa di un problema di allocazione. Dopo la correzione, il beneficio resta positivo e i guardrail sono stabili. Raccomandiamo ramp 10% → 50% → 100% con rollback sulle soglie concordate.**
 
-Fonte: https://www.microsoft.com/en-us/research/publication/diagnosing-sample-ratio-mismatch-in-online-controlled-experiments-a-taxonomy-and-rules-of-thumb-for-practitioners/
+Dopo il rollout si monitorano conversione, gross profit per 1.000 checkout, chargeback, support contacts, latency/crash, device critici e novelty/decay.
 
-Microsoft racconta anche un caso reale su un image carousel MSN. Una variante appariva peggiorare engagement; l'esperimento aveva però un SRM. L'indagine mostrò che un algoritmo di bot detection stava filtrando in modo sproporzionato utenti molto coinvolti nella variante. Corretto il problema, la direzione del risultato si invertì.
+**Percorso effettivo:** Experiment Contract → trust checks → **BLOCKED** → correzione + nuova evidenza → Uncertainty Brief → Decision Record → Decision Communication Pack → ramp gate → outcome review.
 
-Fonte: https://www.microsoft.com/en-us/research/articles/diagnosing-sample-ratio-mismatch-in-a-b-testing/
+> **Il caso non insegna che un A/B test produce una decisione. Insegna che la prima decisione può essere rifiutarsi di usare un risultato finché il sistema non ha riguadagnato il diritto di fidarsi del confronto.**
 
-La lezione è forte:
-
-> **un p-value non ripara un confronto la cui comparabilità è stata compromessa.**
-
-## 4. Root-cause dell'SRM
-
-Nel caso VelaPay, l'SDK obsoleto gestisce in modo diverso una parte dell'assegnazione/telemetria su specifici device.
-
-Il team separa quindi:
-
-- problema di assignment;
-- problema di exposure logging;
-- problema di event loss;
-- vero effetto del trattamento.
-
-Finché la root-cause non è chiusa, l'esito resta `BLOCKED` per rollout globale.
-
-Questa è una vera **stop condition**.
-
-## 5. Significatività non equivale a valore economico
-
-Anche eliminando il problema di integrità, `+0,9 pp` sulla conversione non basta.
-
-VelaPay introduce un outcome economico:
-
-**incremental gross profit per 1.000 checkout**
-
-che incorpora:
-
-- conversione aggiuntiva;
-- fee;
-- chargeback;
-- support cost;
-- refund/fraud effect rilevanti.
-
-Ora il test può essere valutato sulla decisione, non soltanto sulla metrica più visibile.
-
-## 6. Segmenti: investigare senza trasformare rumore in policy
-
-Il calo Android low-end è decision-critical perché:
-
-- il segmento è grande;
-- l'effetto potenziale è materialmente negativo;
-- esiste una plausibile spiegazione tecnica.
-
-Ma il team evita di cercare decine di sottogruppi finché non trova quello “interessante”.
-
-La segment analysis segue una gerarchia:
-
-1. segmenti pre-specificati;
-2. segmenti operativamente critici;
-3. analisi esplorativa marcata come tale;
-4. conferma separata prima di creare policy permanente.
-
-## 7. Seconda fase: correggere, poi ristabilire fiducia
-
-Dopo aver corretto l'allocazione, VelaPay esegue una nuova fase limitata.
-
-Il nuovo test mostra:
-
-- uplift più piccolo;
-- intervallo compatibile con beneficio moderato;
-- nessun deterioramento materialmente rilevante dei chargeback;
-- Android low-end stabile;
-- support contacts entro guardrail.
-
-La decisione cambia da `BLOCKED` a `APPROVED FOR RAMP`.
-
-## 8. Decision Record: dal risultato alla rollout policy
-
-Le alternative sono:
-
-### A — Rollout immediato 100%
-
-Massimizza velocità, ma aumenta blast radius.
-
-### B — Nessun rollout
-
-Molto prudente, ma spreca evidenza positiva dopo la correzione.
-
-### C — Rollout progressivo con gate
-
-1. 10% utenti, osservazione 72 ore;
-2. 50% se chargeback, latency e support restano entro soglia;
-3. 100% solo se primary metric e guardrail restano coerenti;
-4. rollback automatico/manuale se una stop condition viene superata.
-
-La scelta è C.
-
-Questo è il punto in cui experimentation incontra decision engineering.
-
-## 9. Decision Communication Pack
-
-La headline non è:
-
-> “p = 0,018: B vince.”
-
-È:
-
-> **“Il primo test mostrava uplift ma non era affidabile a causa di un problema di allocazione. Dopo la correzione, il beneficio resta positivo e i guardrail sono stabili. Raccomandiamo ramp 10% → 50% → 100% con rollback se chargeback o latency superano soglia.”**
-
-Il pack mostra:
-
-- effect size e intervallo;
-- trust checks;
-- guardrail;
-- economics;
-- segmenti critici;
-- rollout/rollback plan.
-
-## 10. Outcome review
-
-Dopo il rollout misuriamo:
-
-- conversione;
-- gross profit per 1.000 checkout;
-- chargeback;
-- support contacts;
-- latency/crash;
-- effetti per device critici;
-- novelty/decay nel tempo.
-
-Un esperimento non termina quando il notebook produce una stella di significatività.
-
-Termina quando l'evidenza è stata trasformata in una policy operativa controllabile.
-
-## Cosa abbiamo scelto di non fare
-
-Non serve ripetere tutta la teoria inferenziale del Capitolo 5 né tutta la meccanica del Capitolo 9.
-
-Qui il punto è selezionare i gate che possono invalidare **questa decisione**.
-
-La catena è:
-
-**Experiment Contract → trust checks → Uncertainty Brief → Decision Record → Decision Communication Pack → rollout gate → outcome review**
-
-> **Un A/B test non produce una decisione. Produce evidenza causale che deve ancora superare integrità, economia, guardrail e rollout risk.**
+[^ms-srm-paper]: Microsoft Research, *Diagnosing Sample Ratio Mismatch in Online Controlled Experiments: A Taxonomy and Rules of Thumb for Practitioners*, https://www.microsoft.com/en-us/research/publication/diagnosing-sample-ratio-mismatch-in-online-controlled-experiments-a-taxonomy-and-rules-of-thumb-for-practitioners/
+[^ms-srm-case]: Microsoft Research, *Diagnosing Sample Ratio Mismatch in A/B testing*, https://www.microsoft.com/en-us/research/articles/diagnosing-sample-ratio-mismatch-in-a-b-testing/
