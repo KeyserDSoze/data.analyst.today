@@ -47,4 +47,4 @@ Il punto operativo è semplice: un comparison group non è “il gruppo che il d
 > **Prima di calcolare l'effetto, descrivi il mondo alternativo che vuoi rappresentare. Se non sai farlo, la causal question non è ancora sufficientemente definita.**
 
 [^worldbank-counterfactual]: World Bank e Inter-American Development Bank, *Impact Evaluation in Practice, Second Edition*, capitolo 3 e parte II: https://www.worldbank.org/en/programs/sief-trust-fund/publication/impact-evaluation-in-practice
-[^whatif]: Hernán, M.A. & Robins, J.M., *Causal Inference: What If*, Harvard T.H. Chan School of Public Health: https://www.hsph.harvard.edu/miguel-hernan/causal-inference-book/
+[^whatif]: Hernán, M.A. & Robins, J.M., *Causal Inference: What If*, Harvard T.H. Chan School of Public Health: https://www.hsph.harvard.edu/miguel-hernan/wp-content/uploads/sites/1268/2024/04/hernanrobins_WhatIf_26apr24.pdf
