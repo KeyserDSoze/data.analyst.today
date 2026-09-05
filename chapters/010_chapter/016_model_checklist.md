@@ -1,362 +1,257 @@
-## 10.16 Predictive Decision Card: documentare il sistema che trasforma uno score in una decisione
+## 10.16 Predictive Decision Card: il contratto operativo del sistema predittivo
 
-Il modello non è il deliverable finale di un progetto predittivo.
+Il modello non è il deliverable finale. Il deliverable è una specifica che permetta a una persona diversa da chi ha costruito il notebook di capire **che cosa viene previsto, con quale informazione, come la generalizzazione è stata verificata, come lo score diventa una decisione e che cosa faremo quando il sistema degrada**.
 
-Il deliverable è una specifica verificabile che dica:
+Lo chiameremo **Predictive Decision Card**. Non sostituisce model registry, documentazione tecnica o governance regolatoria. Collega in una sola vista prediction task, evidence, operating policy e monitoring.
 
-- che cosa viene previsto;
-- con quale informazione disponibile;
-- come è stata verificata la generalizzazione;
-- come lo score diventa un'azione;
-- quali limiti ha il sistema;
-- come sapremo che sta degradando.
+La forma strutturata è intenzionale: questa sezione deve poter essere riusata come gate di progetto.
 
-Lo chiameremo **Predictive Decision Card**.
+## 1. Decisione e capacità
 
-Non sostituisce documentazione tecnica, model registry o governance regolatoria. Serve a collegare in una sola pagina logica **prediction task, evidence e decision policy**.
+```text
+Decisione:
+Azione disponibile:
+Capacità minima/massima:
+Costo dell'azione:
+Costo FP / FN o altra business loss:
+Valore a rischio:
+Owner della decisione:
+```
 
-### 1. Decisione
+Scrivere prima l'azione evita di costruire score senza uso. Se il team può gestire 2.000 casi, una policy che ne genera 6.000 non è pronta anche con metriche eccellenti.
 
-Scrivere prima l'azione, non l'algoritmo.
+## 2. Prediction specification
 
-Esempio:
+```text
+Prediction unit:
+Technical identity key:
+Prediction time:
+Target:
+Horizon:
+Label maturity:
+Population / eligibility:
+Scope geografico/prodotto:
+Casi non coperti / out-of-distribution:
+```
 
-> Ogni lunedì prioritizzare fino a 2.000 account per revisione Customer Success, senza superare la capacità disponibile e dando precedenza ai casi con maggiore valore atteso a rischio.
+Il prediction time definisce la frontiera informativa. Horizon e label maturity impediscono di valutare troppo presto un batch e chiamare “negativi” outcome che non hanno ancora avuto tempo di maturare.
 
-Se non sappiamo che cosa cambia grazie allo score, non abbiamo ancora definito l'utilità del modello.
+## 3. Feature availability e lineage `as-of`
 
-### 2. Prediction unit
+Per ogni famiglia critica documentare:
 
-Quale entità riceve una previsione?
+| Campo | Domanda |
+|---|---|
+| source of truth | da dove nasce la feature? |
+| semantic timestamp | a quale momento del mondo si riferisce? |
+| availability | esiste al prediction time? |
+| historical `as-of` | possiamo ricostruirla correttamente nel passato? |
+| serving latency | quanto ritarda online/batch? |
+| fallback | che cosa succede se manca? |
+| owner | chi risponde della definizione? |
 
-- cliente;
-- account;
-- ordine;
-- transazione;
-- ticket;
-- macchina;
-- spedizione.
+Una feature che “esiste oggi” ma non ha history `as-of` affidabile non può sostenere una validation storica onesta.
 
-Va indicata anche la chiave tecnica che rappresenta quell'entità e come vengono gestiti duplicati, account collegati o identità multi-device.
+## 4. Baseline e candidato
 
-### 3. Prediction time
+```text
+Baseline semplice:
+Candidate model / version:
+Feature set / version:
+Training window:
+Complexity justification:
+Costo aggiuntivo di serving/maintenance:
+```
 
-In quale istante viene prodotta la previsione?
+La complexity justification dovrebbe poter essere espressa con una frase concreta, per esempio:
 
-Esempio:
+> “Il gradient boosting porta precision@2000 dal 31% al 39% rispetto al logit, con latency compatibile con il batch settimanale.”
 
-> lunedì alle 05:00 Europe/Rome.
+Il nome dell'algoritmo non è una giustificazione.
 
-Questa riga definisce la frontiera informativa dell'intero sistema.
+## 5. Validation design
 
-### 4. Horizon, target e label maturity
+Scrivere prima una frase in linguaggio business:
 
-Specificare:
-
-- evento o quantità da prevedere;
-- finestra futura;
-- regola di costruzione della label;
-- momento in cui la label può essere considerata matura.
-
-Esempio:
-
-> churn volontario entro 60 giorni; la valutazione completa di una prediction batch è disponibile dopo 60 giorni più 7 giorni di stabilizzazione dei sistemi amministrativi.
-
-Senza label maturity rischiamo di valutare troppo presto il modello e chiamare falsi negativi eventi che non hanno ancora avuto tempo di manifestarsi.
-
-### 5. Popolazione e scope
-
-Dichiarare:
-
-- popolazione eleggibile;
-- esclusioni;
-- mercati;
-- prodotti;
-- segmenti;
-- intervalli delle feature su cui esiste supporto sufficiente;
-- casi fuori distribuzione o non coperti.
-
-La card deve poter rispondere:
-
-> **per chi sappiamo che questa performance è stata verificata?**
-
-### 6. Feature availability e sorgenti `as-of`
-
-Per ogni famiglia di feature importante documentare:
-
-- source of truth;
-- timestamp semantico;
-- disponibilità al prediction time;
-- possibilità di ricostruzione storica `as-of`;
-- serving latency;
-- eventuale fallback.
-
-Le feature senza history affidabile devono essere marcate esplicitamente. "Esiste oggi" non significa "era disponibile nella validation storica".
-
-### 7. Baseline
-
-Ogni modello candidato deve avere un avversario semplice:
-
-- media/mediana;
-- base rate;
-- regola operativa esistente;
-- regressione lineare/logistica;
-- heuristic score.
-
-La domanda è:
-
-> **quanto valore predittivo aggiunge il modello rispetto a ciò che avremmo fatto comunque?**
-
-### 8. Validation design statement
-
-Scrivere una frase in linguaggio business.
-
-Esempio:
-
-> Il test è out-of-time e lascia fuori interi account perché il modello dovrà generalizzare sia a clienti mai usati nel training sia a periodi futuri.
+> **“Il test è out-of-time e lascia fuori interi account perché il modello dovrà generalizzare sia a clienti nuovi sia a periodi futuri.”**
 
 Poi documentare:
 
-- train/validation/test;
-- grouping;
-- temporal ordering;
-- cross-validation;
-- eventuale final holdout;
-- pipeline anti-leakage.
+```text
+Train:
+Validation / CV:
+Final test:
+Temporal ordering:
+Grouping:
+Anti-leakage pipeline:
+Slices critiche:
+Baseline nello stesso split/fold:
+Worst-case performance:
+```
 
-### 9. Modello candidato e complexity justification
+Lo split deve rappresentare il deployment, non soltanto dividere righe.
 
-Non basta scrivere `XGBoost` o `logistic regression`.
+## 6. Performance: separare errore, ranking e probabilità
 
-Registrare:
+Per target continui:
 
-- famiglia di modello;
-- feature set/versione;
-- principali hyperparameter rilevanti;
-- confronto con baseline;
-- incremento fuori campione;
-- costo aggiuntivo di serving/maintenance;
-- motivo per cui la complessità è giustificata.
+```text
+Primary error metric:
+Median / P90 / P95 error:
+Bias medio:
+Errori per slice critiche:
+Business loss, se disponibile:
+```
 
-Esempio:
+Per classification/ranking:
 
-> gradient boosting aumenta precision@2000 dal 31% al 39% rispetto al logit, con latency e costi compatibili con batch settimanale.
+```text
+Base rate:
+ROC-AUC, se pertinente:
+PR-AUC / Average Precision, se evento raro:
+Precision@K / recall@capacity:
+Confusion matrix agli operating point:
+Performance per segmenti critici:
+```
 
-### 10. Ranking/discrimination
+Se gli score vengono trattati come probabilità, aggiungere:
 
-Per classification/ranking indicare ciò che misura la capacità di ordinare i casi:
+```text
+Calibration globale:
+Reliability per segmenti:
+Brier/log loss o proper score scelto:
+Recalibration method:
+Dataset usato per fit del calibratore:
+```
 
-- ROC-AUC quando pertinente;
-- PR-AUC / Average Precision per eventi rari;
-- lift/gain;
-- precision@K;
-- recall@capacity;
-- performance per segmenti critici.
+Uno score utile al ranking non va venduto come probabilità se la calibration non è stata verificata.
 
-Per target continui indicare metriche di errore e distribuzione degli errori coerenti con la decisione.
+## 7. Operating policy
 
-### 11. Calibration
+```text
+Threshold / top-K / ranking rule:
+Dataset usato per scegliere la soglia:
+Capacity constraint:
+Economic weighting:
+Human review / override:
+Policy version:
+Fallback policy:
+```
 
-Se gli score vengono trattati come probabilità, documentare:
+La soglia è parte della policy e deve essere versionata come il modello. Se un modello produce probabilità corrette ma la soglia rende la coda ingestibile, il sistema decisionale è comunque sbagliato.
 
-- calibration globale;
-- reliability per segmenti chiave;
-- Brier/log loss o altre proper scoring rule;
-- metodo di recalibration;
-- dataset su cui è stato appreso il calibratore.
+## 8. Interpretabilità e causal caveat
 
-Uno score utile solo per ranking non deve essere venduto come probabilità affidabile.
-
-### 12. Operating policy
-
-Come diventa azione lo score?
-
-Possibili policy:
-
-- threshold;
-- top-K;
-- più soglie per diversi livelli di intervento;
-- ranking combinato con valore economico;
-- review umana.
-
-Registrare:
-
-- cutoff o capacità;
-- data su cui è stato scelto;
-- logica di tuning;
-- condizioni di override.
-
-La soglia è parte della policy e deve avere una versione, proprio come il modello.
-
-### 13. Capacity e cost matrix
-
-Esplicitare almeno:
-
-- capacità massima/minima;
-- costo FP;
-- costo FN;
-- costo dell'azione;
-- valore a rischio;
-- eventuali vincoli di servizio o regolatori.
-
-Se il team può gestire 2.000 alert, una policy che ne produce 6.000 non è pronta anche se la metrica del modello è eccellente.
-
-### 14. Interpretabilità e causal caveat
-
-Documentare:
-
-- metodo di feature importance/explanation;
-- dataset su cui viene calcolato;
-- stabilità delle feature principali;
-- gruppi correlati/proxy;
-- variabili non modificabili;
-- leve con evidenza causale separata.
+```text
+Explanation / feature importance method:
+Dataset su cui è calcolato:
+Stabilità tra periodi/fold:
+Gruppi correlati/proxy:
+Feature non modificabili:
+Leve con evidenza causale separata:
+```
 
 Frase obbligatoria quando pertinente:
 
 > **Feature importance descrive ciò che il modello usa per predire; non dimostra l'effetto di modificare quella feature.**
 
-### 15. Monitoring contract
+Se lo score attiva una chiamata, sconto, ispezione o altro trattamento, la card deve inoltre indicare come verrà valutata la policy — randomized holdout, esperimento o altro disegno causale appropriato. Predictive quality risponde a *chi è a rischio*; policy evaluation risponde a *l'azione cambia davvero l'outcome e crea valore netto?*
 
-Per ciascun layer indicare metrica, frequenza, trigger, owner e azione.
+## 9. Monitoring, retraining e rollback
 
-Minimo:
+Il monitoring deve coprire il sistema, non soltanto il modello:
 
-- data quality/freshness;
-- training-serving skew;
-- feature/population drift;
-- score distribution;
-- volume sopra soglia/top-K composition;
-- ranking/error metrics quando maturano le label;
-- calibration;
-- metriche operative;
-- outcome downstream.
+| Layer | Esempi |
+|---|---|
+| data | schema, missing, freshness, categorie nuove |
+| serving | training-serving skew, feature latency |
+| score | distribuzione, volume sopra soglia, top-K composition |
+| predictive | ranking/error, calibration quando maturano le label |
+| operations | selected, contacted, capacity, time-to-action |
+| business | outcome, incremental value, costi, guardrail |
 
-### 16. Retraining e recalibration triggers
+Per ciascuno definire:
 
-Specificare quando il sistema viene rivalutato:
+```text
+Metrica:
+Frequenza:
+Trigger:
+Owner:
+Azione:
+```
 
-- calendario;
-- deterioramento performance;
-- calibration drift;
-- cambi di policy/prodotto;
-- nuove popolazioni;
-- feature pipeline change.
+Distinguere sempre:
 
-E distinguere:
+- **recalibration** — corregge score → probabilità;
+- **retraining** — riapprende il modello;
+- **redesign** — cambia target, feature o policy;
+- **rollback/fallback** — torna a una versione o euristica stabile.
 
-- **recalibration** — corregge la mappa score → probabilità;
-- **retraining** — ricalcola il modello;
-- **redesign** — cambia target, feature o processo decisionale.
+I trigger possono essere calendar-based, performance-triggered, drift-triggered o event-triggered dopo cambi di prodotto/policy. Non ogni drift giustifica un retrain.
 
-Non ogni drift richiede retraining.
-
-### 17. Fallback e rollback
-
-Che cosa succede se:
-
-- scoring non parte;
-- una feature core manca;
-- il modello supera una soglia di deterioramento;
-- il serving produce output fuori range?
-
-Definire:
-
-- baseline/heuristic fallback;
-- ultima versione stabile;
-- freeze della policy;
-- rollback del modello;
-- owner autorizzato.
-
-### 18. Owner, versioni e lineage
+## 10. Release status, owner e versioni
 
 Registrare almeno:
 
-- model owner;
-- business owner;
-- data/feature owner;
-- model version;
-- feature version;
-- policy/threshold version;
-- training window;
-- codice/query/notebook/pipeline;
-- data di validazione.
+```text
+Model owner:
+Business owner:
+Data/feature owner:
+Model version:
+Feature version:
+Policy/threshold version:
+Training window:
+Validation date:
+Code/query/pipeline lineage:
+```
 
-Uno score senza lineage diventa presto impossibile da difendere.
-
-### 19. Se lo score attiva un trattamento: separare prediction da policy effect
-
-Quando lo score decide chi riceve una chiamata, sconto, ispezione o intervento, la card deve spiegare come verrà misurato il valore della policy.
-
-Possibili strumenti:
-
-- randomized holdout;
-- experiment;
-- quasi-esperimento;
-- altro design causale appropriato.
-
-La performance predittiva risponde a:
-
-> **chi è a rischio?**
-
-La valutazione della policy risponde a:
-
-> **l'azione cambia davvero l'outcome e crea valore netto?**
-
-Non vanno fuse nella stessa metrica.
-
-### 20. Release status e limitazioni
-
-Un linguaggio utile può essere:
-
-- **NOT READY — validation insufficiente**;
-- **NOT READY — leakage/serving issue**;
-- **SHADOW MODE**;
-- **PILOT / HUMAN-IN-THE-LOOP**;
-- **PRODUCTION WITH CONSTRAINTS**;
-- **PRODUCTION**;
-- **FREEZE / RECALIBRATE**;
-- **ROLLBACK**;
-- **RETIRED**.
-
-Aggiungere sempre le limitazioni che cambiano l'uso:
-
-> validato solo su Italia e Francia; performance non verificata sui nuovi mercati DACH; label maturity 60 giorni; calibration instabile sui clienti con tenure < 30 giorni.
-
-### Template compatto
+Uno stato operativo utile può essere:
 
 ```text
-Decision:
-Prediction unit:
+NOT READY — validation insufficiente
+NOT READY — leakage/serving issue
+SHADOW MODE
+PILOT / HUMAN-IN-THE-LOOP
+PRODUCTION WITH CONSTRAINTS
+PRODUCTION
+FREEZE / RECALIBRATE
+ROLLBACK
+RETIRED
+```
+
+Le limitazioni che cambiano l'uso devono restare visibili, per esempio: *validato solo su Italia e Francia; DACH non verificato; label maturity 60 giorni; calibration instabile per tenure <30 giorni*.
+
+## Template compatto
+
+```text
+PREDICTIVE DECISION CARD
+
+Decision / capacity:
+Prediction unit / identity:
 Prediction time:
-Target / horizon:
-Label maturity:
+Target / horizon / label maturity:
 Population / scope:
 Feature sources / as-of availability:
 Baseline:
-Validation design:
 Candidate model / version:
 Complexity justification:
+Validation design:
 Ranking / error metrics:
 Calibration:
 Operating policy / threshold / top-K:
-Capacity / cost assumptions:
+Cost assumptions:
 Interpretability / causal caveats:
+Policy-effect evaluation:
 Monitoring contract:
 Retraining / recalibration triggers:
 Fallback / rollback:
 Owners / lineage:
-Policy-effect evaluation:
 Release status:
 Known limitations:
 ```
 
-### La domanda finale
+La card dovrebbe permettere a una persona che non ha costruito il sistema di completare questa frase:
 
-La card deve permettere a una persona che non ha costruito il modello di completare questa frase:
+> **“Questo sistema produce questa previsione in questo momento, per questa popolazione, usando soltanto queste informazioni; è stato validato in questo modo; attiva questa policy; se degrada o fallisce, faremo questo.”**
 
-> **"Questo sistema produce questa previsione in questo momento, per questa popolazione, usando soltanto queste informazioni; è stato validato in questo modo; attiva questa policy; se sbaglia succede questo; se degrada faremo questo."**
-
-Se non riusciamo a scriverla, non abbiamo ancora un sistema predittivo governabile.
-
-> **La Predictive Decision Card non documenta soltanto il modello. Documenta la promessa che stiamo facendo quando lasciamo che quel modello influenzi una decisione.**
+> **La Predictive Decision Card documenta la promessa che facciamo quando lasciamo che uno score influenzi una decisione.**
