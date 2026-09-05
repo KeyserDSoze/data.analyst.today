@@ -1,256 +1,78 @@
-## 17.10 “Stiamo crescendo: perché il margine peggiora?”
+## 17.10 NovaCompute — “Stiamo crescendo: perché il margine peggiora?”
 
-### Caso simulato/composito: NovaCompute
+> **Caso simulato/composito.** Organizzazione, numeri e sequenza sono costruiti per la didattica.
 
-NovaCompute offre infrastruttura cloud a PMI europee.
+NovaCompute offre infrastruttura cloud a PMI europee. Nel trimestre revenue cresce del **24%**, i clienti attivi del **31%** e il consumo compute del **42%**, mentre l'EBITDA margin scende dal **18% all'11%**. Il board propone una lettura rassicurante: “stiamo investendo per crescere”. Il CFO fa una domanda più utile:
 
-Nel trimestre:
+> **La nuova crescita sta costruendo valore o sta scalando un'economia peggiorativa?**
 
-- revenue: `+24%`;
-- clienti attivi: `+31%`;
-- consumo compute: `+42%`;
-- EBITDA margin: `18% → 11%`.
+Il failure cost è evidente: accelerare un segmento con contribution economics strutturalmente deboli può trasformare la crescita in un moltiplicatore di perdita. Ma la risposta non richiede subito prediction o causal inference. Richiede prima un **denominatore economico difendibile**.
 
-Il board vede la crescita e propone una spiegazione rassicurante:
+La stop rule è quindi: **non accelerare il nuovo segmento sulla sola revenue growth finché cost boundary e unit economics non riconciliano con Finance**.
 
-> “Stiamo investendo per crescere.”
+### Il primo problema è decidere che cosa appartiene al costo dell'unità
 
-Può essere vero.
+Il team riconcilia revenue riconosciuta, crediti promozionali, infrastructure cost, support cost, partner fee, incentivi commerciali, shared cost e periodizzazione. L'Analytical Data Contract specifica quali componenti entrano nel contribution margin usato per la decisione e come i costi condivisi vengono allocati.
 
-Ma prima di accettare questa storia il CFO chiede:
+Questa fase è più importante di qualsiasi modello. Due team possono mostrare lo stesso “margin per workload” e includere costi diversi; una policy costruita su metriche con boundary differenti non è confrontabile.
 
-> **“La nuova crescita sta costruendo valore o sta scalando un'economia peggiorativa?”**
+Anche il denominatore richiede una scelta. “Costo per cliente” è naturale ma mescola account che eseguono poche centinaia di job al mese con altri che ne eseguono milioni. NovaCompute costruisce quindi più viste coordinate: revenue e infrastructure cost per compute hour, support cost e contribution margin per workload, margin per cliente/coorte commerciale e costo delle unità di picco dove la capacità premium è il vero driver.
 
-## Routing iniziale
+La formula di riferimento del caso è:
 
-| Elemento | Scelta |
-|---|---|
-| Decisione | continuare a spingere il nuovo segmento, repricing o redesign cost-to-serve |
-| Failure cost | scalare rapidamente workload a contribution margin troppo basso |
-| Claim necessario | economico/diagnostico; causalità solo per interventi specifici |
-| Reversibilità | media: pricing e incentivi si cambiano, contratti e capacità già venduta meno |
-| Incertezza critica | allocazione dei costi e denominatore economico |
-| Stop rule | non accelerare il segmento sulla sola revenue growth finché l'economia per unità non è riconciliata |
+```text
+Contribution Margin per Workload
+= Revenue
+- Variable Infrastructure Cost
+- Variable Support Cost
+- Incentives
+```
 
-## 1. Crescita aggregata e creazione di valore sono cose diverse
+Non è una definizione universale. È il contratto con cui **questo business** decide quale attività crea o consuma valore.
 
-Revenue, GMV, utenti o transazioni possono aumentare mentre il valore creato da ogni unità peggiora.
+AWS Cloud Intelligence Dashboards offre un esempio documentato del principio generale, senza bisogno di attribuire risultati a una singola azienda: la documentazione corrente descrive chargeback/showback, cost allocation e **unit metrics** come il costo medio orario di EC2; le guide SaaS mostrano inoltre come costruire metriche come cost per API call. L'utilità non sta nella dashboard in sé, ma nel collegare spend e usage a un'unità operativa interpretabile.[^aws-cid][^aws-unit]
 
-Questo accade quando il mix si sposta verso attività con:
+### Il mix rivela che non tutta la crescita vale allo stesso modo
 
-- margine inferiore;
-- costo di servizio superiore;
-- incentivi più alti;
-- maggiore volatilità;
-- maggiore consumo di capitale o capacità.
+Il nuovo segmento `AI batch workloads` cresce molto più rapidamente del core, ma ha sconti medi superiori, picchi su risorse costose, bassa prevedibilità e maggiore support intensity. Il gross margin è circa **9%**, contro **38%** del core business.
 
-Per capire NovaCompute dobbiamo quindi scendere dal totale al **driver economico**.
+Il +24% di revenue rimane vero. È però economicamente eterogeneo.
 
-## 2. Prima riconciliare Finance e operations
+La decomposition separa volume, mix verso AI batch, sconti, mix di compute resource, utilization inefficiente, support intensity e costo unitario infrastrutturale. Questo rende possibile distinguere due fenomeni che l'EBITDA aggregato comprimeva insieme.
 
-Il team non parte dal dashboard cloud.
+Una parte dei costi può essere un investimento transitorio: onboarding, engineering e supporto iniziale che si riducono con scala o apprendimento. Un'altra parte può essere **unit economics strutturalmente debole**: ogni nuova unità aggiunge revenue ma porta con sé abbastanza costo variabile da diluire il valore.
 
-Riconcilia:
+Nel caso NovaCompute esistono entrambe. La seconda è abbastanza materiale da impedire la decisione “continuiamo così perché stiamo crescendo”.
 
-- revenue riconosciuta;
-- crediti promozionali;
-- infrastructure cost;
-- support cost;
-- partner fee;
-- incentivi commerciali;
-- costi shared allocati;
-- periodizzazione.
+### Non serve sapere causalmente dove finisce ogni euro per correggere un boundary sbagliato
 
-L'obiettivo è costruire un **Analytical Data Contract** che definisca cosa entra e cosa non entra nel contribution margin operativo usato per la decisione.
+Gli unit economics possono a loro volta mentire se gli shared cost sono allocati arbitrariamente, il denominator è manipolabile, le unità differiscono per quality of service, alcuni costi sono differiti o un segmento scarica spese su un altro team. Per questo definition owner, grain, frequency, shared-cost rule, P&L reconciliation e versioning sono parte del KPI.
 
-Senza questa riconciliazione, due team potrebbero dire “margin per workload” intendendo costi diversi.
+Ma una volta che il boundary è riconciliato, non serve attribuire causalmente ogni euro di infrastruttura prima di prendere la prima decisione. Il problema decisionale è già chiaro: il segmento AI non va né accelerato indiscriminatamente né chiuso prima di testare se pricing e cost-to-serve possono essere corretti.
 
-## 3. Scegliere l'unità economica giusta
+Le alternative sono quindi tre. Continuare senza modifiche massimizza top-line ma rischia di scalare margin dilution. Chiudere il segmento protegge il margine nel breve e può distruggere un'opportunità strategica. La policy preferita è **economicamente differenziata**: pricing legato a picchi e workload type, distinzione interruptible/premium, limiti agli incentivi per account con contribution margin persistentemente negativo, margin review per coorte e redesign tecnico dove esiste un chiaro cost-to-serve driver.
 
-“Costo per cliente” sembra naturale.
+Il Decision Record include anche un periodo di apprendimento e una soglia oltre la quale un workload rimasto sotto target richiede escalation o ridimensionamento.
 
-Ma alcuni clienti eseguono poche centinaia di job al mese e altri milioni.
+La strategia cambia se cost-to-serve scende abbastanza con la scala, willingness-to-pay non sostiene il repricing, cambia il workload mix, utilization migliora, support cost resta alto oltre la fase iniziale o una nuova architettura modifica materialmente il costo unitario.
 
-Il denominatore cliente mescola economie molto diverse.
+### Evidence Ledger
 
-NovaCompute costruisce quindi più unità:
+| Observed | Inferred | Still unknown |
+|---|---|---|
+| revenue +24%, compute +42%, EBITDA margin 18→11% | crescita e creazione di valore stanno divergendo | quanto del support/cost premium scenderà con scala |
+| AI batch gross margin ~9% vs core 38% | pricing/cost-to-serve sono leve più mirate della chiusura | willingness-to-pay dopo repricing |
+| sconti, picchi costosi e support intensity più alti | parte del deterioramento è strutturale, non solo investimento upfront | beneficio del redesign architetturale |
 
-- revenue per compute hour;
-- infrastructure cost per compute hour;
-- support cost per workload;
-- contribution margin per workload;
-- margin per cliente/coorte commerciale;
-- cost per unità di picco dove la capacità premium è il driver.
+La headline executive può quindi dire:
 
-La formula di riferimento è:
+> **La crescita è reale ma il mix è economicamente più debole: AI batch cresce più velocemente del core e porta gross margin molto inferiore per sconti, picchi costosi e support intensity. Non raccomandiamo di chiuderlo; proponiamo pricing e cost-to-serve differenziati con soglie economiche esplicite.**
 
-`Contribution Margin per Workload = Revenue - Variable Infrastructure Cost - Variable Support Cost - Incentives`
+L'outcome review segue contribution margin per workload, revenue/infrastructure cost per compute hour, support cost, utilization, incentive payback, retention e crescita assoluta del contribution profit. Un segmento può ridurre la margin percentage e aumentare profitto assoluto in modo attraente; anche la review deve quindi rispettare la funzione obiettivo originale.
 
-Non è una formula universale.
+**Percorso effettivo:** Analytical Data Contract → Data Readiness Review → EDA Evidence Map → Decision Record → Decision Communication Pack. Tooling Decision Record o Data Flow Architecture Map entrano soltanto se il redesign cost-to-serve diventa davvero un progetto infrastrutturale.
 
-È una rappresentazione del modo in cui **questo business** crea e consuma valore.
+> **Unit economics non è dividere il costo totale per un numero comodo. È scegliere un'unità e un cost boundary che permettano di vedere se la crescita sta moltiplicando valore o soltanto attività.**
 
-## 4. Il mix che cambia la storia
-
-Il nuovo segmento `AI batch workloads` cresce molto rapidamente.
-
-Ma presenta:
-
-- sconti medi più alti;
-- picchi di utilizzo su risorse costose;
-- bassa prevedibilità;
-- maggiore supporto tecnico;
-- gross margin circa `9%`, contro `38%` del core business.
-
-Il +24% di revenue non è falso.
-
-È economicamente eterogeneo.
-
-La nuova crescita pesa molto più sui costi variabili e sul supporto di quanto il totale faccia vedere.
-
-## 5. Decomposition: volume, prezzo, mix, cost-to-serve
-
-Il team decompone il deterioramento del margine in:
-
-- più volume;
-- mix verso AI batch;
-- sconti;
-- mix di risorse compute;
-- utilization inefficiente;
-- support intensity;
-- costo unitario infrastrutturale.
-
-Questo permette di distinguere due storie:
-
-### “Stiamo investendo”
-
-Costi temporanei o upfront che dovrebbero ridursi con scala/apprendimento.
-
-### “Stiamo scalando un'unità debole”
-
-Economia variabile strutturalmente povera che peggiora proprio aumentando il volume.
-
-Nel caso NovaCompute esistono entrambe, ma la seconda spiega una quota materialmente importante.
-
-## Caso reale documentato: NXP e unit-cost analysis
-
-AWS documenta come **NXP Semiconductors** abbia implementato Cloud Intelligence Dashboards per ottenere maggiore visibilità su costi e utilizzo cloud, inclusi workload HPC legati alla progettazione dei chip. Il case study riporta una riduzione del 75% dei costi di tooling FinOps e un aumento del 90% dell'efficienza FinOps; soprattutto, descrive l'uso di unit-cost analysis su compute e storage per individuare inefficienze e supportare decisioni di allocazione.
-
-Fonte: https://aws.amazon.com/solutions/case-studies/npx-cid/
-
-Il punto didattico non è che una dashboard produca automaticamente risparmio.
-
-È che il costo totale risponde a:
-
-> “quanto spendiamo?”
-
-mentre un unit cost ben scelto aiuta a rispondere:
-
-> **“quale attività sta generando quella spesa e con quale economia?”**
-
-## 6. L'errore possibile: unit economics senza boundary
-
-Anche il costo per unità può mentire se:
-
-- i shared cost vengono allocati arbitrariamente;
-- il denominatore è manipolabile;
-- le unità non sono comparabili per qualità/servizio;
-- i costi differiti vengono esclusi;
-- un segmento scarica costi su un altro team.
-
-Per questo la metrica deve avere:
-
-- definition owner;
-- cost boundary;
-- grain;
-- frequency;
-- reconciliation con P&L;
-- regola per shared cost;
-- versione.
-
-Questo trasforma il KPI in un oggetto governato, non in una formula locale.
-
-## 7. Decision Record
-
-NovaCompute confronta:
-
-### A — Continuare la crescita senza modifiche
-
-Massimizza top-line ma rischia di scalare margin dilution.
-
-### B — Chiudere il segmento AI
-
-Protegge margine nel breve ma può distruggere un'opportunità strategica prima di correggere pricing/cost-to-serve.
-
-### C — Rendere economicamente differenziata la policy
-
-1. pricing legato ai picchi e al tipo di workload;
-2. separazione tra interruptible e premium;
-3. limite agli incentivi sui clienti con contribution margin negativo persistente;
-4. margin review per coorte commerciale;
-5. redesign architetturale per abbassare cost-to-serve;
-6. threshold di escalation per workload che restano sotto target dopo il periodo di apprendimento.
-
-La scelta è C.
-
-## 8. Switching condition
-
-La strategia cambia se:
-
-- cost-to-serve diminuisce abbastanza da rendere il segmento competitivo;
-- willingness-to-pay risulta insufficiente;
-- il workload mix cambia;
-- l'utilization migliora con scala;
-- il support cost non scende dopo la fase iniziale;
-- una nuova architettura modifica materialmente il costo unitario.
-
-Il Decision Record registra queste condizioni prima che il board giudichi la scelta soltanto dal risultato trimestrale.
-
-## 9. Decision Communication Pack
-
-La headline non è:
-
-> “EBITDA margin -7 punti.”
-
-È:
-
-> **“La crescita è reale ma il mix è economicamente più debole: il segmento AI batch cresce più velocemente del core e porta gross margin molto inferiore per sconti, picchi costosi e support intensity. Non raccomandiamo di chiuderlo; proponiamo pricing e cost-to-serve differenziati con soglie economiche esplicite.”**
-
-Il pack mostra:
-
-1. revenue growth vs contribution growth;
-2. margin bridge;
-3. unit economics per workload;
-4. scenario dopo repricing/cost reduction;
-5. threshold che decide continuazione o ridimensionamento.
-
-## 10. Outcome review
-
-Metriche:
-
-- contribution margin per workload;
-- revenue per compute hour;
-- infrastructure cost per compute hour;
-- support cost;
-- utilization;
-- incentive payback;
-- retention del segmento;
-- crescita assoluta del contribution profit.
-
-La metrica finale non deve essere soltanto “margin % è salito?”.
-
-Un segmento può ridurre la percentuale di margine ma aumentare profitto assoluto in modo economicamente attraente. Anche qui serve capire la funzione obiettivo.
-
-## Cosa abbiamo scelto di non fare
-
-Non serve un modello predittivo complesso per riconoscere un deterioramento di unit economics.
-
-Non serve attribuire causalmente ogni euro di infrastruttura prima di correggere pricing evidentemente disallineato.
-
-La catena è:
-
-**Analytical Data Contract → Data Readiness Review → EDA Evidence Map → Decision Record → Decision Communication Pack**
-
-con Tooling Decision Record o Data Flow Architecture Map soltanto se la soluzione richiede cambiare davvero infrastruttura, non per completare una checklist.
-
-> **Un business può crescere nei volumi e deteriorarsi nel valore. Il unit economics rende visibile la differenza soltanto se l'unità e il boundary economico sono quelli giusti.**
+[^aws-cid]: AWS, *CUDOS, CID, KPI — Cloud Intelligence Dashboards on AWS*, https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/cudos-cid-kpi.html
+[^aws-unit]: AWS, *SaaS Unit Metrics — Cloud Intelligence Dashboards on AWS*, https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/saas-unit-metrics.html
