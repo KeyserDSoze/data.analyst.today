@@ -1,59 +1,18 @@
 ## 11.5 Fact, dimension e star schema: progettare un modello che protegga il significato
 
-I sistemi operativi sono progettati per far funzionare processi. I modelli analitici sono progettati per rendere quei processi interrogabili.
+I sistemi operativi sono progettati per far funzionare processi; i modelli analitici devono renderli interrogabili in modo coerente. Copiare direttamente la struttura di un ERP o di un CRM nel layer analitico spesso trasferisce a ogni consumer la responsabilità di ricostruire grain, relazioni e storia attraverso join ripetuti e fragili.
 
-Le due esigenze non coincidono.
-
-Un CRM può essere perfettamente normalizzato per aggiornare account, contatti, contratti, indirizzi e preferenze. Copiare quella struttura direttamente in una dashboard può però costringere ogni analyst a ricostruire la stessa semantica attraverso molti join fragili.
-
-Lo **star schema** separa due ruoli:
-
-- **fact tables** — eventi, transazioni, snapshot o misure;
-- **dimension tables** — contesto descrittivo con cui filtrare, raggruppare e interpretare i fatti.
-
-Microsoft Learn sottolinea che, nei modelli dimensionali, le dimensioni servono tipicamente a filtrare e raggruppare mentre le fact vengono riepilogate; raccomanda inoltre che le fact table abbiano un grain coerente.
+Lo **star schema** offre una separazione utile: le **fact table** rappresentano osservazioni, eventi, transazioni o snapshot; le **dimension table** forniscono il contesto con cui filtrare e raggruppare quei fatti. Microsoft Learn sottolinea proprio questa divisione e raccomanda fact table a grain coerente.
 
 Fonte: https://learn.microsoft.com/en-us/power-bi/guidance/star-schema
 
-### Il modello non inizia dalle tabelle: inizia dal processo di business
+La parte importante, però, non è disegnare una stella. È partire dal processo di business e chiedere **che cosa vogliamo misurare**. Solo dopo definiamo il grain della fact: una riga per linea di vendita confermata, una riga per evento contrattuale, una riga per prodotto-magazzino-giorno a fine giornata. Il grain della fact diventa il contratto delle aggregazioni possibili.
 
-Prima domanda:
+### Meridian Retail: dal clone dell’ERP a un modello condiviso
 
-> quale processo stiamo misurando?
+Meridian Retail ha 180 negozi e un e-commerce europeo. Il primo data mart commerciale copia quasi integralmente l’ERP; per ottenere revenue mensile per categoria e regione servono join tra nove tabelle operative. Dopo pochi mesi emergono tre failure mode: dashboard diverse assegnano negozi a regioni diverse, le categorie prodotto storiche vengono reinterpretate con la classificazione corrente e alcune query duplicano revenue attraverso relazioni many-to-many.
 
-Esempi:
-
-- vendita;
-- pagamento;
-- spedizione;
-- utilizzo prodotto;
-- subscription lifecycle;
-- inventario;
-- ticket di supporto.
-
-Poi definiamo il grain della fact:
-
-> `fact_sales`: una riga per linea di vendita confermata.
-
-> `fact_subscription_events`: una riga per evento contrattuale.
-
-> `fact_inventory_snapshot`: una riga per prodotto-magazzino-giorno a fine giornata.
-
-Solo dopo scegliamo dimensioni e misure.
-
-### Caso simulato/composito — Meridian Retail e il mart che copiava l’ERP
-
-Meridian Retail ha 180 negozi e un e-commerce europeo.
-
-Il primo data mart commerciale copia quasi integralmente l’ERP. Per ottenere revenue mensile per categoria e regione servono join tra nove tabelle operative.
-
-Dopo pochi mesi emergono tre problemi:
-
-1. dashboard differenti assegnano negozi a regioni diverse;
-2. categorie prodotto storiche vengono reinterpretate con la classificazione corrente;
-3. alcune query duplicano revenue attraverso relazioni molti-a-molti.
-
-Il team ridisegna il modello:
+Il team ridisegna il processo:
 
 ```text
                  dim_date
@@ -63,24 +22,11 @@ dim_store --- fact_sales --- dim_product
                dim_customer
 ```
 
-`fact_sales` ha una riga per linea di vendita confermata e conserva misure atomiche come:
+`fact_sales` contiene una riga per linea di vendita confermata e conserva misure atomiche come quantity, gross revenue, discount amount, return amount quando attribuibile, net revenue e cost. Le dimensioni forniscono il contesto. Il vantaggio non è soltanto avere query più corte: è fare in modo che grain, relazioni e storia non debbano essere reinventati da ogni dashboard.
 
-- quantity;
-- gross revenue;
-- discount amount;
-- return amount quando attribuibile;
-- net revenue;
-- cost.
+### Evento e stato non sono la stessa fact
 
-Le dimensioni forniscono il contesto business.
-
-Il vantaggio non è soltanto una query più corta. È che lo stesso processo viene rappresentato con un **grain e relazioni condivise**.
-
-### Event fact e snapshot fact rispondono a domande diverse
-
-Per l’inventario possiamo avere:
-
-**event fact**
+Per l’inventario possiamo registrare movimenti:
 
 ```text
 +10 ricezione
@@ -88,9 +34,7 @@ Per l’inventario possiamo avere:
 -1 danneggiato
 ```
 
-oppure:
-
-**periodic snapshot**
+oppure snapshot periodici:
 
 ```text
 2026-08-01 → stock 84
@@ -98,85 +42,17 @@ oppure:
 2026-08-03 → stock 91
 ```
 
-Gli eventi descrivono i movimenti.
+La prima fact descrive flussi; la seconda stati. Possono coesistere, ma non sono intercambiabili. Sommare stock giornaliero nel tempo significa trattare uno stato come un flusso.
 
-Gli snapshot descrivono lo stato a un momento.
+Lo stesso principio vale per le date. Una vendita può avere `order_date`, `payment_date`, `ship_date`, `delivery_date`, `recognition_date` e `return_date`. Queste colonne non sono ridondanza tecnica: rappresentano eventi economici e operativi differenti. Un modello robusto deve poter distinguere bookings, cash incassato, consegne e revenue riconosciuto senza farli collassare sotto un unico “mese”.
 
-Le due strutture possono coesistere, ma non sono intercambiabili.
+### La storia dimensionale è parte del modello
 
-Se sommiamo stock giornaliero nel tempo, stiamo trattando uno stato come un flusso.
+Supponiamo che un prodotto passi da `Accessories` a `Premium Accessories`. Possiamo voler riclassificare oggi tutto lo storico, oppure sapere come era classificato il prodotto al momento della vendita. Sono due domande legittime e producono report differenti.
 
-### La dimensione tempo non è una sola data
+Quando serve preservare il contesto storico, una fact può puntare a una **surrogate key** che identifica una versione della dimensione, mentre la business key continua a identificare l’entità. Microsoft Learn include surrogate key e Slowly Changing Dimensions tra i concetti centrali del modeling a stella proprio perché permettono di distinguere identità e versioni storiche.
 
-Una vendita può avere:
-
-- `order_date`;
-- `payment_date`;
-- `ship_date`;
-- `delivery_date`;
-- `recognition_date`;
-- `return_date`.
-
-Queste date non sono duplicati tecnici. Rappresentano eventi business differenti.
-
-Un modello dimensionale robusto deve permettere di rispondere a domande come:
-
-> revenue ordinato questo mese?
-
-> cash incassato questo mese?
-
-> revenue riconosciuto questo mese?
-
-senza fingere che siano la stessa metrica temporale.
-
-### Dimensioni correnti e dimensioni storiche
-
-Supponiamo che un prodotto passi dalla categoria `Accessories` a `Premium Accessories`.
-
-Esistono almeno due domande legittime:
-
-1. come classificheremmo oggi le vendite storiche?
-2. come era classificato il prodotto quando la vendita avvenne?
-
-Se sovrascriviamo semplicemente il valore corrente, la seconda domanda diventa impossibile.
-
-Le Slowly Changing Dimensions servono proprio a preservare, quando necessario, versioni storiche degli attributi.
-
-Microsoft Learn include le slowly changing dimensions tra i concetti chiave del modeling a stella e mostra il ruolo delle surrogate keys nel distinguere versioni diverse della stessa entità business.
-
-### Surrogate key e business key
-
-Una fact può conservare:
-
-```text
-customer_sk = 912837
-```
-
-mentre la business key resta:
-
-```text
-customer_id = C10482
-```
-
-Se il segmento del cliente cambia nel tempo, due versioni della dimensione possono condividere `customer_id` ma avere surrogate key differenti.
-
-La fact storica punta così alla versione valida nel momento dell’evento.
-
-Il beneficio analitico è importante:
-
-> il contesto storico non viene ricostruito accidentalmente usando lo stato corrente.
-
-### Star schema non significa “una tabella larga per tutto”
-
-Una tabella unica può sembrare comoda, ma può introdurre:
-
-- attributi ripetuti su milioni di righe;
-- logiche di aggiornamento duplicate;
-- difficoltà nel preservare storia;
-- inconsistenze tra domini;
-- misure a grain differenti nello stesso dataset.
-
-Il modello dimensionale cerca invece un confine leggibile tra:
+Lo star schema non significa quindi “una tabella larga per tutto”. Una tabella unica può mescolare misure a grain diversi, ripetere attributi su milioni di righe e rendere difficile preservare la storia. Il confine più utile rimane:
 
 ```text
 fatto osservato
@@ -184,22 +60,7 @@ fatto osservato
 contesto dell’osservazione
 ```
 
-### Il grain della fact è un contratto di aggregazione
-
-Se `fact_sales` è una riga per linea di vendita, allora possiamo chiedere:
-
-- revenue per prodotto;
-- revenue per negozio;
-- unità per giorno;
-- margine per categoria.
-
-Ma non possiamo inserire nella stessa riga, senza cautela, metriche che esistono a grain ordine o cliente e poi sommarle come se fossero line-level.
-
-Il modello fisico deve rendere difficile commettere errori semantici comuni, non soltanto possibile ottenere il risultato corretto.
-
-### Star schema nell’Analytical Data Contract
-
-Per ogni fact importante documentiamo:
+### Fact contract
 
 | Campo | Esempio |
 |---|---|
@@ -213,4 +74,4 @@ Per ogni fact importante documentiamo:
 | history policy | categoria prodotto as-of vendita |
 | late-arriving policy | aggiornamento dimensionale/reconciliation |
 
-> **Il modello dati migliore non è quello che riproduce fedelmente il database operativo. È quello che rende semplici, coerenti e verificabili le domande analitiche importanti.**
+> **Il modello dati migliore non copia fedelmente il database operativo. Rende semplici e verificabili le domande analitiche importanti, e rende più difficile formulare per errore quelle sbagliate.**
