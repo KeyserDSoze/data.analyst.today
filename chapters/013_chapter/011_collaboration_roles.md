@@ -1,140 +1,29 @@
 ## 13.10 Il team è parte dello stack: scegliere strumenti che qualcuno possa possedere
 
-Una soluzione tecnicamente elegante può essere una pessima scelta se nessuno nel team reale può revisionarla, operarla o modificarla.
+Una soluzione tecnicamente elegante può essere una pessima scelta se nessuno nel team reale può revisionarla, operarla o modificarla. La mantenibilità non è una proprietà del tool da solo: è una proprietà della combinazione **tool + persone + processo**.
 
-Per questo il Tooling Decision Record deve considerare **chi mantiene il lavoro**, non soltanto chi lo costruisce.
+Immaginiamo due opzioni. La prima è tecnicamente ottimale, ma la conosce una sola persona e richiede deployment complesso. La seconda è leggermente meno sofisticata, ma è standard aziendale, ha logging e accessi già integrati e può essere revisionata da sei persone. Se la differenza di performance non cambia la decisione, la seconda può avere un costo totale molto inferiore.
 
-Il Capitolo 18 entrerà nell'operating model analitico. Qui ci interessa una conseguenza pratica:
+Questo non significa scegliere sempre ciò che il team conosce già. La familiarità non deve diventare inerzia. Significa riconoscere che **la capacità collettiva è un requisito reale**, esattamente come runtime, freshness o costo.
 
-> **la mantenibilità è una proprietà della combinazione tool + persone + processo.**
+### Quando un artefatto attraversa un confine organizzativo
 
-### Il rischio del “best tool in theory”
+Un analyst può collegare un dashboard a tre sorgenti operative e intervenire manualmente ogni lunedì quando il refresh fallisce. Finché è un prototipo personale, il costo può essere tollerabile. Quando **80 manager** iniziano a dipendere da quell'output, lo stesso failure mode cambia natura: non abbiamo più soltanto un'analisi, ma un servizio dati ricorrente.
 
-Immaginiamo due opzioni.
+Non serve che l'analista diventi improvvisamente data engineer. Serve riconoscere che ownership e tooling devono essere rivalutati insieme.
 
-**A**
+I segnali di handoff sono spesso concreti: più team dipendono dall'output, serve uno SLA, compaiono secret e credenziali gestiti, una trasformazione viene riusata ampiamente, il failure blocca un processo business, serve recovery o on-call, oppure il dataset deve avere access control più sofisticato. A quel punto alcune responsabilità possono restare in Analytics e altre passare ad Analytics Engineering o Data Engineering. Il titolo del ruolo conta meno della **responsabilità esplicita**.
 
-- soluzione tecnicamente ottimale;
-- conosciuta da una sola persona;
-- nessun supporto interno;
-- deployment complesso.
+### Il tool deve adattarsi anche alla capacità operativa
 
-**B**
+Un data scientist può produrre un churn score con **AUC 0,89** e una lista di **62.000 account** ad alto rischio. Se Customer Success può contattarne **450 a settimana**, il problema non si risolve con una libreria ML migliore. Serve un sistema di lavoro che colleghi rischio, valore, capacità di intervento, policy e misurazione dell'effetto.
 
-- soluzione leggermente meno sofisticata;
-- standard aziendale;
-- sei persone in grado di revisionarla;
-- logging e accessi già integrati.
+La lezione del Capitolo 10 rimane: una previsione deve entrare in una decision policy. Qui aggiungiamo che **la scelta di tooling deve adattarsi al sistema di persone che trasforma l'output in azione**.
 
-Se la differenza di performance non cambia la decisione, B può avere un costo totale molto inferiore.
+### Bus factor come segnale di rischio
 
-La familiarità non deve dominare la scelta, ma **la capacità collettiva è un requisito reale**.
+Una domanda semplice è: quante persone potrebbero mantenere questo processo se il suo autore fosse indisponibile per un mese? Per un prodotto critico, `bus factor = 1` è un rischio concreto. Possiamo mitigarlo standardizzando il tool, facendo pairing e review, riducendo custom code, spostando il workload su una piattaforma supportata o creando runbook e documentazione.
 
-### Caso simulato/composito — dashboard che si rompe ogni lunedì
-
-Un analyst collega una dashboard direttamente a tre sorgenti operative.
-
-Ogni lunedì un refresh fallisce e l'analyst interviene manualmente.
-
-Finché il dashboard è un prototipo, questa soluzione può essere tollerabile.
-
-Quando 80 manager iniziano a dipendere dall'output, il failure mode cambia natura.
-
-Non serve che l'analyst diventi improvvisamente un data engineer.
-
-Serve riconoscere che la responsabilità è passata da:
-
-> analisi
-
-ad
-
-> **servizio dati ricorrente**.
-
-Il tool e l'ownership devono essere rivalutati insieme.
-
-### Handoff threshold
-
-Alcuni segnali indicano che un artefatto sta attraversando un confine organizzativo:
-
-- più team dipendono dall'output;
-- serve SLA;
-- servono credenziali/secret gestiti;
-- una trasformazione è riusata ampiamente;
-- il failure blocca un processo business;
-- serve on-call o recovery;
-- il codice deve essere deployment-ready;
-- il dataset deve avere access control sofisticato.
-
-A quel punto possiamo decidere di:
-
-- mantenere ownership analytics con supporto engineering;
-- estrarre alcuni componenti verso analytics engineering;
-- affidare ingestion/orchestration a data engineering;
-- mantenere la logica semantica sotto ownership business/analytics.
-
-Il titolo del ruolo conta meno della **responsabilità esplicita**.
-
-### Caso simulato/composito — modello eccellente, capacità operativa sbagliata
-
-Un data scientist produce un churn score con AUC 0,89.
-
-La lista contiene 62.000 account ad alto rischio.
-
-Customer Success può contattarne 450 a settimana.
-
-Questo non è un problema che si risolve scegliendo una libreria ML diversa.
-
-Serve collaborazione tra:
-
-- chi modella il rischio;
-- chi conosce valore e segmenti;
-- chi definisce la policy;
-- chi esegue l'intervento;
-- chi misura l'effetto.
-
-Il Capitolo 10 ci ha già dato la Predictive Decision Card. Qui la lezione è che **lo strumento deve adattarsi al sistema di lavoro che trasforma l'output in azione**.
-
-### Bus factor e tool choice
-
-Una domanda utile è:
-
-> Quante persone potrebbero mantenere questo processo se il suo autore fosse indisponibile per un mese?
-
-Non esiste una soglia universale.
-
-Ma per un processo critico:
-
-```text
-bus factor = 1
-```
-
-è un segnale di rischio.
-
-Possibili mitigazioni:
-
-- standardizzare il tool;
-- documentare;
-- fare pairing/review;
-- ridurre custom code;
-- spostare il workload su piattaforma supportata;
-- creare runbook;
-- trasferire ownership.
-
-### Campo del Tooling Decision Record
-
-```text
-builder:
-long-term owner:
-reviewers available:
-team skill coverage:
-platform support:
-on-call / recovery need:
-bus factor:
-handoff threshold:
-documentation/runbook:
-exit condition:
-```
-
-### Regola operativa
+Il Tooling Decision Record dovrebbe quindi distinguere builder e long-term owner, indicare reviewer disponibili, skill coverage, platform support, recovery need e soglia di handoff. Una soluzione non è completa finché non sappiamo **chi la possiede dopo che l'entusiasmo iniziale è finito**.
 
 > **Non scegliere soltanto uno strumento che tu sappia usare. Scegli una soluzione che l'organizzazione possa continuare a capire e possedere quando il lavoro smette di essere personale.**
