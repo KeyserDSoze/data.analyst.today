@@ -1,175 +1,33 @@
 ## 19.3 Semantic leverage: quando l'interfaccia diventa più semplice
 
-Una delle promesse più visibili dell'AI applicata ai dati è:
+Una delle promesse più visibili dell'AI applicata ai dati è che chiunque potrà interrogare il business in linguaggio naturale. È plausibile che una parte crescente dell'interazione con l'analytics diventi conversazionale. Ma una UI più semplice non rende più semplice il problema sottostante. Spesso lo rende soltanto meno visibile.
 
-> “Chiunque potrà fare domande ai dati in linguaggio naturale.”
+Se un manager chiede “qual è il churn in Francia?”, la generazione della query può essere quasi istantanea. La domanda continua però a contenere un'ambiguità strutturale: logo churn o revenue churn? Cancellation o non-renewal? Volontario o totale? A 30, 60 o 90 giorni? Mensile o annualizzato? La difficoltà non è tradurre le parole in SQL. È collegare quelle parole alla **versione di realtà che l'organizzazione ha deciso di considerare autorevole per quella decisione**.
 
-È plausibile che una parte crescente dell'interazione con l'analytics diventi più conversazionale.
+La catena resta quindi:
 
-Ma una UI più semplice non rende il problema sottostante più semplice.
+**linguaggio umano → concetto business → entità/metrica → semantic contract → dati → query → evidenza**
 
-Spesso accade il contrario.
+Il natural-language access comprime soprattutto l'ultimo tratto. Se il semantic contract è debole, rende semplicemente più facile produrre una risposta sbagliata in modo convincente.
 
-## Il linguaggio naturale comprime la sintassi, non l'ambiguità
+Questo cambia la scala del problema. Una definizione ambigua usata da due analyst genera due numeri. La stessa ambiguità esposta a migliaia di richieste conversazionali può diventare un **blast radius semantico**. Per questo l'AI aumenta il valore di metriche certificate, entity definition, time semantics, lineage, freshness metadata, ownership, deprecation status, access policy e risposte verificate per le domande critiche. Il Capitolo 11 le ha trattate come data modeling; il Capitolo 18 come operating responsibility. Qui vediamo la conseguenza professionale: **formalizzare il significato è una forma di leverage**.
 
-Un manager chiede:
+Il lavoro resta spesso invisibile perché l'utente vede soltanto una casella di testo. Dietro quella casella qualcuno deve aver deciso che cosa sia un customer, quale evento renda una transazione valida, quale data governi il periodo, quale revenue sia certificata, quali metriche non siano combinabili, che cosa fare con un asset deprecated o stale e quando una parola ambigua richieda chiarimento invece di una risposta automatica.
 
-> “Qual è il churn in Francia?”
+Consideriamo la richiesta “mostrami i 20 clienti con revenue più alta negli ultimi 12 mesi”. In un'azienda con contratti annuali, professional services, crediti, invoice multi-entity, revenue recognition differita e ARR separato dalla recognized revenue, `invoice_amount` può essere un campo reale e la classifica può essere matematicamente perfetta. Ma se la decisione riguarda gli account prioritari del board, il concetto corretto potrebbe essere recognized revenue o ARR a seconda dello scopo. L'errore non è sintattico: è **ontologico**.
 
-La generazione SQL può essere quasi istantanea.
+È qui che la **semantic fluency** diventa una capacità professionale. Non significa conoscere a memoria un glossario. Significa trasformare parole business in entità e metriche verificabili, accorgersi quando due stakeholder chiamano nello stesso modo concetti diversi, distinguere il campo disponibile dal concetto corretto, rendere esplicite le eccezioni invece di nasconderle nella query e collaborare con Finance, Product, Engineering e Governance per stabilire il significato che può essere riusato.
 
-Ma `churn` potrebbe significare:
+Una possibile evoluzione del ruolo passa quindi da “costruisco il dashboard che risponde alla domanda” a **“rendo il dominio interrogabile senza costringere ogni consumer a ricostruirne il significato”**. Questo può voler dire curare metric contract, semantic model, verified answer, failure query e policy di chiarimento. È semantic product thinking, non semplice report building.
 
-- logo churn;
-- revenue churn;
-- gross churn;
-- cancellation;
-- non-renewal;
-- churn volontario;
-- churn a 30/60/90 giorni;
-- mensile o annualizzato.
+Microsoft documenta oggi questa esigenza direttamente nelle funzioni di preparazione dei semantic model per Copilot in Power BI. AI data schema, verified answers e AI instructions servono a restringere il contesto, ridurre ambiguità, mappare il linguaggio dell'organizzazione e guidare il sistema verso campi e risposte approvate. La stessa documentazione avverte che le instructions sono guidance interpretata dal modello, non una garanzia assoluta: la semantica resta quindi un sistema da progettare e testare, non un prompt magico.
 
-La difficoltà non è tradurre parole in query.
+Fonti pubbliche:
+- https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai
+- https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai-faq
 
-È collegare la richiesta alla **versione di realtà che l'organizzazione ha deciso di considerare autorevole per quella decisione**.
+Più l'interfaccia diventa naturale, meno la velocità nel costruire una vista distingue da sola un analyst. Resta una domanda più difficile: **come facciamo in modo che migliaia di domande diverse attraversino un significato coerente senza impedire l'esplorazione?**
 
-La catena reale è:
+Chi sa rispondere non sta soltanto modellando dati. Sta progettando la grammatica con cui persone e agenti parlano del business.
 
-**linguaggio umano → concetto business → entità/metrica → semantic contract → dati → query → evidenza**.
-
-Natural language analytics comprime soprattutto l'ultimo tratto.
-
-## Più accesso, più blast radius semantico
-
-Se due analyst interpretano diversamente una metrica, abbiamo già un problema.
-
-Se diecimila richieste conversazionali possono generare automaticamente query su interpretazioni diverse, il problema scala.
-
-Quindi l'AI aumenta il valore di infrastrutture come:
-
-- metriche certificate;
-- business glossary;
-- entity definitions;
-- time semantics;
-- lineage;
-- freshness metadata;
-- owner;
-- deprecation status;
-- access policy;
-- verified answer per domande critiche.
-
-Il Capitolo 11 le ha trattate come disciplina di data modeling.
-
-Il Capitolo 18 come disciplina operativa.
-
-Qui ci interessa la conseguenza professionale:
-
-> **la capacità di formalizzare il significato diventa una forma di leverage.**
-
-## Il lavoro invisibile dietro una chat semplice
-
-L'utente vede una casella di testo.
-
-Perché quella casella possa rispondere bene, qualcuno deve avere stabilito:
-
-- che cosa sia un customer;
-- che cosa sia una transazione valida;
-- quale date field governi il periodo;
-- quale revenue sia certificata;
-- quali metriche non possano essere combinate;
-- quali asset siano deprecated;
-- cosa fare quando il dato è stale;
-- quale definizione usare se il termine è ambiguo.
-
-Questo lavoro è meno spettacolare di un nuovo agente.
-
-Ma spesso è ciò che decide se l'agente può essere affidabile.
-
-## Caso simulato/composito: “top 20 clienti per revenue”
-
-Un commerciale chiede:
-
-> “Mostrami i 20 clienti con revenue più alta negli ultimi 12 mesi.”
-
-Il sistema produce immediatamente una classifica.
-
-L'azienda però ha:
-
-- contratti annuali;
-- professional services una tantum;
-- crediti;
-- invoice multi-entity;
-- revenue recognition differita;
-- ARR separato dalla recognized revenue.
-
-Il sistema può usare un campo `invoice_amount` perfettamente valido.
-
-La risposta può essere sintatticamente e matematicamente corretta.
-
-Ma se la decisione riguarda account prioritari per il board, Finance potrebbe richiedere `recognized_revenue` o perfino `ARR`, a seconda del contesto.
-
-L'errore non è di codice.
-
-È **ontologico**.
-
-## Semantic fluency come competenza di carriera
-
-Un analyst con forte semantic fluency sa:
-
-- trasformare parole business in entità e metriche verificabili;
-- riconoscere quando due stakeholder usano lo stesso termine per concetti diversi;
-- distinguere campo disponibile da concetto corretto;
-- documentare eccezioni senza nasconderle nella query;
-- progettare alternative nominate invece di metriche ambigue;
-- collaborare con Finance, Product, Engineering e Governance sul significato;
-- valutare se un agente sta usando l'asset autorevole.
-
-Questa competenza attraversa Data Analyst e Analytics Engineer.
-
-E può diventare ancora più importante quando l'accesso tecnico diventa più democratico.
-
-## Da report builder a semantic product thinking
-
-Una possibile evoluzione del ruolo è passare da:
-
-> “costruisco il dashboard che risponde alla domanda”
-
-verso:
-
-> “rendo il dominio interrogabile senza costringere ogni consumer a ricostruirne il significato”.
-
-Questo può includere:
-
-- definire metric contracts;
-- mantenere glossari;
-- progettare semantic models;
-- curare verified/certified answers;
-- raccogliere failure query;
-- osservare quali parole generano ambiguità;
-- decidere quando una domanda richiede chiarimento invece di una risposta automatica.
-
-## L'esempio pubblico già incontrato nel libro
-
-Nel Capitolo 14 abbiamo visto un esempio documentato da Microsoft in cui Copilot per Power BI poteva usare una colonna `Birthday` per rispondere a una domanda temporale sul profitto se il semantic model non guidava sufficientemente il sistema.
-
-Il caso è istruttivo perché mostra il punto centrale: un campo può essere reale, una query può essere valida e la risposta può comunque avere **semantica sbagliata**.
-
-Microsoft oggi offre strumenti come AI instructions, AI data schemas e verified answers proprio per rendere più esplicito il contesto fornito ai sistemi conversazionali.
-
-Fonte pubblica: https://learn.microsoft.com/en-us/power-bi/create-reports/copilot-prepare-data-ai
-
-## Il vantaggio professionale
-
-Nel mondo dei dashboard, un analyst poteva differenziarsi anche attraverso velocità nella costruzione delle viste.
-
-Nel mondo conversazionale parte di quella velocità viene assorbita dal sistema.
-
-Resta però una domanda molto più difficile:
-
-> **“Come facciamo in modo che diecimila domande diverse attraversino un significato coerente?”**
-
-Chi sa rispondere bene a questa domanda non sta soltanto costruendo metriche.
-
-Sta progettando **la grammatica con cui persone e agenti parlano del business**.
-
-> **Quando l'interfaccia diventa naturale, la semantica diventa infrastruttura e competenza strategica.**
+> **Quando la sintassi diventa economica, la semantica diventa infrastruttura.**
