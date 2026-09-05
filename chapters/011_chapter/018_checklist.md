@@ -1,10 +1,6 @@
-## 11.17 Analytical Data Contract: prima di fidarsi di una trasformazione
+## 11.17 Analytical Data Contract: rendere verificabile una trasformazione prima di pubblicarla
 
-Una query può essere elegante, veloce e sintatticamente perfetta. Il deliverable di questo capitolo non è quindi una checklist di sintassi, ma un **Analytical Data Contract**: una specifica compatta che rende esplicite le proprietà che una trasformazione deve preservare.
-
-Non è necessariamente un file YAML o un prodotto specifico. Può vivere in documentazione, codice, metadata o tooling dedicato.
-
-La cosa importante è che le decisioni semantiche non restino nascoste dentro SQL.
+L’**Analytical Data Contract** è il deliverable operativo del capitolo. Qui la struttura a campi è intenzionale: deve essere scansionabile durante design, review e incident analysis. Non è una checklist di sintassi e non richiede necessariamente YAML o un prodotto specifico; può vivere in metadata, documentazione o codice. Ciò che conta è che grain, popolazione, tempo, metriche e policy di aggiornamento non restino nascosti dentro SQL.
 
 ### 1. Business meaning
 
@@ -15,11 +11,7 @@ decision supported:
 owner:
 ```
 
-Domande:
-
-- quale decisione deve supportare il dataset?
-- quale fenomeno business rappresenta?
-- esiste una definizione certificata della metrica?
+Il dataset deve avere un fenomeno e una decisione riconoscibili. Prima di modellarlo verifichiamo se la metrica esiste già in una fonte certificata e chi possiede la definizione.
 
 ### 2. Grain e popolazione
 
@@ -30,12 +22,7 @@ eligible population:
 exclusions:
 ```
 
-Controllare:
-
-- cosa rappresenta una riga;
-- se il grain cambia durante le trasformazioni;
-- quali entità devono sopravvivere anche senza match;
-- se filtri e `NULL` cambiano il denominatore.
+Controllare che il grain sia pronunciabile, che ogni cambio di grain sia esplicito e che filtri, `INNER JOIN` e `NULL` non eliminino silenziosamente casi necessari al denominatore.
 
 ### 3. Keys e relationship semantics
 
@@ -48,12 +35,7 @@ many-to-many bridge:
 allocation policy:
 ```
 
-Controllare:
-
-- unicità reale delle chiavi;
-- one-to-one / one-to-many / many-to-many;
-- row multiplier atteso;
-- conservazione dei totali dopo allocazioni.
+Verificare unicità reale, cardinalità 1:1 / 1:N / N:M, row multiplier e conservazione dei totali quando una misura viene allocata.
 
 ### 4. Time semantics
 
@@ -65,12 +47,7 @@ point-in-time attributes:
 late-arrival policy:
 ```
 
-Chiedere:
-
-- quale data risponde alla domanda?
-- quale timezone interpreta il business?
-- gli attributi devono essere correnti o storici?
-- come trattiamo backfill, rettifiche e lateness?
+La data deve rappresentare l’evento richiesto dalla decisione. Dichiarare inoltre timezone, current-state vs as-of history, backfill e restatement.
 
 ### 5. Identity e version semantics
 
@@ -81,12 +58,7 @@ winner rule:
 tie-break:
 ```
 
-Controllare:
-
-- cosa significa “duplicato”;
-- se le righe sono eventi o versioni;
-- se la deduplicazione è deterministica;
-- quanto valore viene rimosso.
+Specificare che cosa significa “duplicato”, se le righe sono eventi o versioni e quale regola deterministica produce l’eventuale stato corrente.
 
 ### 6. Metric semantics
 
@@ -99,12 +71,7 @@ refund/cancellation policy:
 FX policy:
 ```
 
-Controllare:
-
-- ratio of sums vs average of ratios;
-- stock vs flow;
-- metriche additive, semi-additive e non additive;
-- componenti condivisi del semantic layer.
+Controllare ratio of sums vs average of ratios, stock vs flow, componenti condivisi, denominatori zero, resi/rettifiche e valuta.
 
 ### 7. Transformation path
 
@@ -117,13 +84,7 @@ source
 → final model
 ```
 
-Ogni step dovrebbe avere:
-
-- grain in ingresso;
-- grain in uscita;
-- cosa cambia;
-- perché cambia;
-- test associati.
+Per ogni passaggio dichiarare grain in ingresso e uscita, ciò che cambia, perché cambia e quale test rende verificabile il cambiamento.
 
 ### 8. Quality invariants
 
@@ -134,16 +95,7 @@ severity:
 failure behavior:
 ```
 
-Includere dove rilevante:
-
-- uniqueness;
-- not null;
-- accepted values;
-- referential integrity;
-- volume/freshness;
-- join coverage;
-- allocation conservation;
-- reconciliation.
+Includere dove rilevante uniqueness, not null, accepted values, referential integrity, volume/freshness, join coverage, allocation conservation e reconciliation. Severity e failure behavior devono riflettere il rischio della decisione.
 
 ### 9. Update semantics
 
@@ -158,7 +110,7 @@ full refresh:
 reconciliation:
 ```
 
-Un modello incrementale deve dichiarare come continua a vedere modifiche tardive e se può essere ricostruito.
+Un modello incrementale deve spiegare come continua a osservare modifiche tardive e se può essere ricostruito dalla fonte di verità.
 
 ### 10. Service envelope
 
@@ -171,7 +123,7 @@ performance threshold:
 consumer pattern:
 ```
 
-La qualità include anche arrivare in tempo e con un costo proporzionato.
+La correttezza perde valore se il dato arriva dopo la decisione o richiede un costo sproporzionato al suo uso.
 
 ### 11. Lineage e ownership
 
@@ -183,13 +135,9 @@ technical owner:
 version/change log:
 ```
 
-Se una modifica rompe una definizione, dobbiamo sapere chi viene impattato.
-
-Il Capitolo 18 porterà questa logica a livello organizzativo. Qui ci basta rendere la trasformazione auditabile.
+Una breaking semantic change deve avere owner e consumer identificabili. Il Capitolo 18 allargherà questa disciplina a governance e observability organizzative.
 
 ### 12. AI execution boundary
-
-Se SQL viene generato o modificato da AI:
 
 ```text
 allowed sources:
@@ -199,9 +147,9 @@ required reconciliations:
 human approval for writes:
 ```
 
-L'AI deve ricevere più semantica possibile e operare dentro confini verificabili.
+Un agente AI dovrebbe implementare un contract già esplicito e operare dentro confini proporzionati al rischio dell’azione.
 
-### Un esempio compatto
+### Esempio compatto
 
 ```text
 MODEL: fct_valid_order_lines
@@ -238,14 +186,10 @@ OWNER
 Analytics Engineering / Finance
 ```
 
-Questa specifica permette a un analyst, a un reviewer o a un agente AI di capire ciò che il modello promette senza reverse-engineering completo della query.
+Questa specifica permette a un analyst, a un reviewer o a un agente AI di capire ciò che il modello promette senza dover prima fare reverse-engineering dell’intera query.
 
-### La domanda finale
+La domanda finale prima della pubblicazione è semplice:
 
-Prima di pubblicare un dataset o KPI importante chiediamo:
+> **Quali proprietà devono restare vere affinché questo risultato continui a significare ciò che promettiamo? Sono documentate, testate e associate a un comportamento quando si rompono?**
 
-> **Quali proprietà devono restare vere affinché il risultato continui a significare ciò che promettiamo? Sono documentate? Sono testate? Sappiamo che cosa succede quando si rompono?**
-
-La maturità SQL di un Data Analyst non si misura dal numero di funzioni che conosce.
-
-Si misura dalla capacità di costruire trasformazioni che **preservano significato, rendono visibili le assunzioni e possono essere comprese, testate e modificate senza affidarsi alla memoria dell'autore**.
+La maturità SQL non si misura dal numero di funzioni conosciute, ma dalla capacità di costruire trasformazioni che preservano significato e possono essere comprese, verificate e modificate senza dipendere dalla memoria dell’autore.
