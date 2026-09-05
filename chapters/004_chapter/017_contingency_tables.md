@@ -1,98 +1,32 @@
-## 4.16 Tabelle di contingenza: rendere visibili le relazioni tra categorie
+## 4.16 Tabelle di contingenza: il significato cambia con il denominatore
 
-Non tutte le domande riguardano variabili numeriche. Molte decisioni di business mettono in relazione categorie:
+Molte domande di business mettono in relazione categorie, non grandezze continue: cliente nuovo o esistente, piano mensile o annuale, churn sì o no, canale organico o paid, ticket risolto al primo contatto oppure no. In questi casi una **tabella di contingenza** rende visibile come i casi si distribuiscono tra combinazioni di categorie.
 
-- cliente nuovo o esistente;
-- piano mensile o annuale;
-- churn sì o no;
-- canale organico, paid o referral;
-- ticket risolto al primo contatto oppure no.
+Il punto analitico non è soltanto contare le celle. È decidere **rispetto a quale popolazione vogliamo leggerle**.
 
-Una **tabella di contingenza** incrocia due variabili categoriche e rende visibile come i casi si distribuiscono tra le loro combinazioni.
-
-Il punto non è soltanto contare. È scegliere **rispetto a quale popolazione** vogliamo leggere quelle frequenze.
-
-### Caso simulato/composito — “I clienti annuali abbandonano meno”
-
-La società SaaS immaginaria **CloudDesk** osserva 24.000 clienti.
+Consideriamo **CloudDesk**, società SaaS con 24.000 clienti. Nel totale osserviamo:
 
 | Piano | Clienti | Churn | Churn rate |
 |---|---:|---:|---:|
 | Mensile | 14.000 | 2.240 | 16,0% |
 | Annuale | 10.000 | 700 | 7,0% |
 
-La differenza è grande. Il team commerciale propone di spingere aggressivamente il passaggio all'annuale.
+La differenza è abbastanza grande da suggerire al team commerciale una spinta aggressiva verso l'annuale. Prima di trasformare l'associazione in una strategia, però, l'analista aggiunge la **customer tenure**.
 
-Prima di interpretare il piano come spiegazione, l'analista aggiunge una seconda dimensione: **customer tenure**.
+Tra i clienti con meno di sei mesi, il churn è 18,1% sul mensile e 16,4% sull'annuale. Tra quelli con almeno sei mesi, invece, è 12,8% contro 4,7%. L'associazione non scompare, ma cambia forma; inoltre il piano annuale contiene una quota molto più alta di clienti maturi.
 
-Clienti con meno di sei mesi:
+Il totale iniziale stava quindi mescolando almeno due strutture: differenze tra piano mensile e annuale e diversa composizione per anzianità. L'EDA non deve ancora stabilire quale sia causalmente responsabile del churn. Deve rendere visibile **quanto l'associazione aggregata dipenda dalla popolazione che compone ciascun gruppo**.
 
-| Piano | Clienti | Churn rate |
-|---|---:|---:|
-| Mensile | 8.500 | 18,1% |
-| Annuale | 2.000 | 16,4% |
+## Riga, colonna e totale rispondono a domande diverse
 
-Clienti con almeno sei mesi:
+La stessa tabella può essere normalizzata per riga, per colonna o sul totale, e ciascuna lettura cambia il denominatore. Se chiediamo “tra i clienti mensili, quale quota fa churn?”, il denominatore è il totale dei mensili. Se chiediamo “tra chi ha fatto churn, quale quota aveva il piano mensile?”, il denominatore è il totale dei churner.
 
-| Piano | Clienti | Churn rate |
-|---|---:|---:|
-| Mensile | 5.500 | 12,8% |
-| Annuale | 8.000 | 4,7% |
+Questa differenza sembra formale, ma corrisponde a due domande di business completamente diverse. Confonderle è un modo molto comune di ottenere una percentuale corretta e interpretarla male.
 
-L'associazione non scompare, ma cambia forma. Tra i clienti nuovi la differenza è piccola; tra quelli maturi è molto più ampia. Inoltre il piano annuale contiene una quota molto maggiore di clienti con tenure elevata.
+Anche numerosità e percentuale devono rimanere visibili insieme. Un churn del 30% può significare 3 casi su 10 oppure 3.000 su 10.000. La frequenza relativa coincide; la stabilità del pattern e l'impatto operativo no. L'EDA dovrebbe quindi conservare **tasso e base** ogni volta che segmenti piccoli rischiano di apparire prioritari soltanto perché producono percentuali estreme.
 
-L'aggregato iniziale stava quindi mescolando almeno due fenomeni:
+Dal caso CloudDesk possiamo concludere che piano, tenure e churn sono associati. Non possiamo ancora dire che convertire un cliente mensile all'annuale ridurrà il suo churn: chi sceglie un annuale può essere già più convinto del prodotto, più maturo o diverso per altre caratteristiche. Il Capitolo 5 introdurrà l'incertezza statistica dell'associazione; il Capitolo 8 affronterà la domanda causale.
 
-1. differenze tra piano mensile e annuale;
-2. diversa composizione dei due gruppi per anzianità.
+Prima, però, dobbiamo consolidare il principio che regge anche questa tabella: **una percentuale eredita il significato dal suo denominatore**. È il tema della prossima sezione.
 
-L'EDA non deve ancora stabilire quale dei due sia causale. Deve **rendere visibile la struttura che il totale nasconde**.
-
-### Percentuale per riga o per colonna?
-
-Una tabella di contingenza può mostrare conteggi, percentuali per riga, percentuali per colonna o percentuali sul totale. Non sono presentazioni intercambiabili.
-
-Se chiediamo:
-
-> Tra i clienti mensili, quale quota fa churn?
-
-il denominatore è il totale dei clienti mensili: ci serve una percentuale **per riga**.
-
-Se chiediamo:
-
-> Tra tutti i clienti che hanno fatto churn, quale quota aveva un piano mensile?
-
-il denominatore è il totale dei churner: può servirci una percentuale **per colonna**.
-
-La stessa matrice risponde quindi a domande differenti a seconda di come viene normalizzata.
-
-### Conteggi e percentuali vanno letti insieme
-
-Supponiamo di trovare un segmento con churn del 30%.
-
-- 3 churn su 10 clienti: 30%;
-- 3.000 churn su 10.000 clienti: 30%.
-
-La percentuale è identica, ma il peso dell'evidenza e l'impatto operativo non lo sono.
-
-In EDA è buona pratica conservare entrambi:
-
-> **frequenza relativa + numerosità della base**.
-
-Questo evita di trasformare segmenti minuscoli in priorità solo perché mostrano percentuali estreme.
-
-### La tabella descrive associazioni, non interventi
-
-Dal caso CloudDesk possiamo dire che piano, tenure e churn sono associati nei dati osservati.
-
-Non possiamo ancora concludere:
-
-> “se convertiamo un cliente mensile all'annuale, ridurremo il suo churn”.
-
-Chi sceglie un annuale può essere già più convinto del prodotto, più maturo, più grande o diverso per altre caratteristiche.
-
-I test statistici del Capitolo 5 ci aiuteranno a ragionare sull'incertezza dell'associazione. Il Capitolo 8 affronterà invece la domanda causale.
-
-Qui il compito è più fondamentale:
-
-> **mostrare come una relazione aggregata cambia quando condizioniamo sui gruppi che compongono la popolazione.**
+> **Una tabella di contingenza non dice soltanto quanti casi cadono in ogni cella. Costringe a dichiarare da quale popolazione stiamo guardando la relazione.**
