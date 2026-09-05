@@ -1,27 +1,20 @@
 ## 4.20 Sintesi ed esercizi: descrivere prima di spiegare
 
-L'Exploratory Data Analysis non è una fase decorativa e non è una gara a chi produce più grafici.
+Il Capitolo 3 ci ha insegnato a non trattare un dataset come una rappresentazione già affidabile della realtà. Questo capitolo aggiunge una seconda disciplina: **anche quando il dato è pronto, il primo riepilogo non è ancora il fenomeno**.
 
-È il lavoro con cui trasformiamo un dataset già sufficientemente affidabile in una **mappa della struttura osservata**:
+Media, mediana, percentili, tassi, grafici e correlazioni sono tutti modi di comprimere una struttura molto più ricca. Il lavoro dell'EDA consiste nello scegliere compressioni utili e, soprattutto, nel controllare che non cancellino proprio l'informazione che potrebbe cambiare la decisione.
 
-- dove si trova il centro;
-- quanto varia il fenomeno;
-- come sono fatte le code;
-- quali gruppi differiscono;
-- quanto il risultato dipende dal mix;
-- quali relazioni appaiono nei dati;
-- quali osservazioni o periodi guidano il pattern;
-- quanto la conclusione resiste a letture alternative.
+Per questo il percorso del capitolo non è stato una collezione di tecniche statistiche. Abbiamo iniziato dal centro e aggiunto dispersione, code e forma quando il centro non bastava. Abbiamo confrontato gruppi chiedendoci se il risultato dipendesse dalla composizione, osservato relazioni quantitative prima di ridurle a coefficienti, inserito il tempo quando calendario e trend potevano produrre pattern apparenti e usato sensitivity analysis per misurare quanto un insight dipendesse da punti, periodi o scelte di rappresentazione.
 
-NIST descrive l'EDA come un approccio orientato a massimizzare la comprensione dei dati, scoprire strutture, individuare anomalie e verificare assunzioni, con un ruolo centrale delle tecniche grafiche.[^nist-eda]
-
-Il principio che vogliamo portarci dietro è però ancora più operativo:
+Il principio che tiene insieme tutto è semplice:
 
 > **L'EDA restringe lo spazio delle spiegazioni plausibili. Non certifica automaticamente una spiegazione.**
 
-### Il deliverable del capitolo: EDA Evidence Map
+NIST descrive l'EDA come un approccio orientato a massimizzare la comprensione dei dati, scoprire strutture, individuare anomalie e verificare assunzioni, con un ruolo centrale delle tecniche grafiche.[^nist-eda] Nel nostro workflow questa filosofia diventa un confine professionale tra **pattern**, **ipotesi** e **causa dimostrata**.
 
-Alla fine di un'esplorazione seria dovremmo poter produrre una sintesi simile:
+## Il deliverable del capitolo: EDA Evidence Map
+
+La struttura operativa rimane deliberatamente compatta perché deve poter essere riutilizzata:
 
 ```text
 DOMANDA
@@ -48,22 +41,9 @@ Serve altra descrizione, inferenza, coorti, causalità,
 esperimento, forecasting o modellazione?
 ```
 
-Questo è il ponte verso il resto del libro. L'EDA non termina necessariamente con una decisione: spesso termina dicendoci **quale domanda vale la pena studiare con un metodo più forte**.
+Quando questa mappa è completa, sappiamo anche quando l'EDA deve fermarsi. Se un'altra segmentazione non riduce più l'incertezza rilevante e la domanda successiva riguarda generalizzazione, precisione della stima o plausibilità statistica, il metodo deve cambiare. È il ponte verso il Capitolo 5: non chiederemo più soltanto **che cosa mostrano i dati osservati**, ma quanto possiamo fidarci della stima e quanto possiamo generalizzarla oltre quel campione.
 
-### Dieci abitudini da rendere automatiche
-
-Prima di chiudere un'EDA, verifica di aver considerato almeno:
-
-1. **media e mediana**, quando entrambe aggiungono informazione;
-2. **dispersione e quantili**, non soltanto un valore centrale;
-3. **forma della distribuzione**, soprattutto asimmetria e multimodalità;
-4. **dimensione dei gruppi**, insieme alle percentuali;
-5. **numeratore e denominatore** delle metriche;
-6. **mix e popolazione di riferimento** nei confronti;
-7. **tempo e baseline** quando i dati hanno struttura temporale;
-8. **osservazioni influenti**, con sensitivity analysis quando necessario;
-9. **grafico prima del coefficiente** nelle relazioni quantitative;
-10. **linguaggio non causale** finché la causalità non è stata identificata.
+---
 
 ### Esercizio 1 — Il tempo medio di risposta migliora
 
@@ -194,17 +174,17 @@ La qualità dell'esercizio non dipende dal trovare la storia più interessante. 
 
 Prima di passare al Capitolo 5 dovresti riuscire a rispondere senza formule davanti:
 
-- Quando la mediana racconta meglio l'esperienza tipica rispetto alla media?
-- Che cosa aggiunge la dispersione a un valore centrale?
-- Perché P95 può essere più utile della media in un livello di servizio?
-- Perché un punto oltre `1,5 × IQR` non è automaticamente un errore?
-- Come distingui un denominatore aritmeticamente corretto da una popolazione realmente comparabile?
-- Perché bisogna guardare uno scatter plot prima di fidarsi di una correlazione?
-- Come può il mix invertire un confronto aggregato?
-- Che cosa deve contenere una sensitivity analysis?
-- Qual è la differenza tra **pattern**, **ipotesi** e **causa dimostrata**?
-- Qual è il prossimo metodo quando l'EDA non basta?
+1. Quando la mediana racconta meglio l'esperienza tipica rispetto alla media?
+2. Che cosa aggiunge la dispersione a un valore centrale?
+3. Perché P95 può essere più utile della media in un livello di servizio?
+4. Perché un punto oltre `1,5 × IQR` non è automaticamente un errore?
+5. Come distingui un denominatore aritmeticamente corretto da una popolazione realmente comparabile?
+6. Perché bisogna guardare uno scatter plot prima di fidarsi di una correlazione?
+7. Come può il mix invertire un confronto aggregato?
+8. Che cosa deve contenere una sensitivity analysis?
+9. Qual è la differenza tra **pattern**, **ipotesi** e **causa dimostrata**?
+10. Qual è il prossimo metodo quando l'EDA non basta?
 
-Se queste domande diventano automatiche, l'EDA smette di essere una lista di statistiche e diventa una disciplina di **controllo dell'interpretazione**.
+Se queste domande diventano automatiche, la statistica descrittiva smette di essere un inventario di formule e diventa una disciplina di **controllo dell'interpretazione**.
 
-[^nist-eda]: NIST, *NIST/SEMATECH e-Handbook of Statistical Methods — Exploratory Data Analysis*: https://www.nist.gov/publications/nistsematech-e-handbook-statistical-methods-chapter-1-exploratory-data-analysis
+[^nist-eda]: NIST, *NIST/SEMATECH e-Handbook of Statistical Methods — Exploratory Data Analysis*. https://www.nist.gov/publications/nistsematech-e-handbook-statistical-methods-chapter-1-exploratory-data-analysis
