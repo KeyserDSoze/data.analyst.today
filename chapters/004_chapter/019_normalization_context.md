@@ -1,101 +1,32 @@
-## 4.18 Rendere confrontabili i confronti: esposizione, mix e base di riferimento
+## 4.18 Rendere confrontabili i confronti: esposizione, mix e popolazione di riferimento
 
-Aver scelto un buon denominatore non garantisce ancora che due gruppi siano confrontabili.
+Scegliere un buon denominatore risolve soltanto una parte del problema. Due gruppi possono avere tassi calcolati correttamente e restare difficili da confrontare perché operano su popolazioni, opportunità o livelli di rischio differenti.
 
-Due team possono avere lo stesso win rate ma ricevere opportunità molto diverse. Due ospedali possono avere lo stesso tasso di complicanze ma trattare pazienti con profili di rischio differenti. Due negozi possono avere ricavi per metro quadrato simili ma operare in mercati con stagionalità e prezzi completamente diversi.
+È il motivo per cui due ospedali con lo stesso tasso di complicanze possono avere performance diverse se trattano pazienti con profili di rischio molto differenti; due negozi con ricavi per metro quadrato simili possono operare in mercati incompatibili; due team commerciali con lo stesso win rate possono ricevere pipeline costruite con regole di qualificazione diverse.
 
-Dopo la domanda:
+Dopo aver chiesto **“qual è il denominatore corretto?”**, dobbiamo quindi chiedere **“le basi che sto confrontando rappresentano condizioni abbastanza simili da rendere il confronto utile?”**.
 
-> **Qual è il denominatore corretto?**
+Consideriamo **VectorCore Systems**. I tre team chiudono 42 contratti Enterprise, 67 Mid-Market e 118 SMB. Per volume, SMB domina. Se aggiungiamo le opportunità qualificate otteniamo win rate del 40,0%, 31,2% e 20,0%: Enterprise passa in testa. Se aggiungiamo l'ACV medio — €148.000, €46.000 e €9.500 — il nuovo ARR diventa rispettivamente **€6,22M**, **€3,08M** e **€1,12M**.
 
-arriva quindi una seconda domanda:
+La classifica cambia a ogni metrica perché stiamo facendo domande diverse: quanto volume produciamo, con quale efficienza convertiamo l'opportunità disponibile, quanto valore economico generiamo. Nessuna delle tre statistiche misura automaticamente la “bravura commerciale”. Le opportunità enterprise possono essere pre-selezionate molto più duramente prima di arrivare nel pipeline, mentre SMB può ricevere enormi volumi di lead meno qualificati. Territori, cicli di vendita e maturità del mercato possono differire.
 
-> **Le basi che sto confrontando rappresentano davvero condizioni abbastanza simili da rendere il confronto utile?**
+Il compito dell'EDA non è trovare la metrica che incorona un vincitore. È capire **quale dimensione di performance corrisponda alla decisione e quali differenze di contesto rendano fragile il confronto**.
 
-### Caso simulato/composito — Qual è il team commerciale migliore?
+## Il mix può produrre performance apparente anche con tassi corretti
 
-La società B2B immaginaria **VectorCore Systems** confronta tre team.
+Due call center possono avere entrambi un first-contact resolution rate dell'82%, ma il primo gestire soprattutto password reset e il secondo fatturazione e integrazioni tecniche. Il denominatore “ticket gestiti” è formalmente corretto; il mix dei ticket rende però le basi molto diverse.
 
-| Team | Contratti chiusi |
-|---|---:|
-| Enterprise | 42 |
-| Mid-Market | 67 |
-| SMB | 118 |
+È lo stesso meccanismo incontrato nel Simpson's paradox. La composizione può creare, attenuare o invertire un confronto aggregato. La risposta non è segmentare indiscriminatamente, ma individuare dimensioni che rappresentino differenze plausibilmente rilevanti del processo.
 
-Se il criterio è il volume, SMB è primo.
+La scelta della popolazione di riferimento conta anche per strumenti standardizzati. Uno store aeroportuale può sembrare estremo rispetto all'intera rete e ordinario rispetto agli altri store aeroportuali. Lo z-score ha rimosso la scala originale, non ha scelto da solo il peer group corretto.
 
-Aggiungiamo le opportunità qualificate:
+## Intensità e impatto assoluto devono convivere
 
-| Team | Contratti | Opportunità | Win rate |
-|---|---:|---:|---:|
-| Enterprise | 42 | 105 | 40,0% |
-| Mid-Market | 67 | 215 | 31,2% |
-| SMB | 118 | 590 | 20,0% |
+Un altro errore consiste nel cercare una singola classifica che riassuma rischio e impatto. Se il segmento A ha 20% di reclami su 200 ordini, genera 40 reclami. Il segmento B ha 6% su 50.000 ordini e ne genera 3.000. A mostra il rischio relativo peggiore; B concentra quasi tutto il carico assoluto.
 
-Ora Enterprise sembra il più efficace.
+Se dobbiamo capire dove il processo è più fragile, A merita attenzione. Se l'obiettivo è ridurre rapidamente il numero totale di reclami, B può offrire molta più leva. Una buona EDA mantiene insieme entrambe le prospettive.
 
-Aggiungiamo il valore medio dei contratti:
-
-| Team | Contratti | ACV medio | Nuovo ARR |
-|---|---:|---:|---:|
-| Enterprise | 42 | 148.000 € | 6,22 M€ |
-| Mid-Market | 67 | 46.000 € | 3,08 M€ |
-| SMB | 118 | 9.500 € | 1,12 M€ |
-
-La classifica cambia ancora.
-
-Ma nemmeno il win rate rende automaticamente i team confrontabili. Le opportunità enterprise possono essere molto più selezionate prima di entrare nel pipeline; SMB può ricevere un volume enorme di lead meno qualificati; i cicli di vendita e i territori possono essere diversi.
-
-Il problema non è trovare **la metrica che incorona un vincitore**. È capire quale dimensione di performance corrisponde alla decisione.
-
-### Volume, efficienza e valore non sono sinonimi
-
-Tre domande producono tre metriche diverse:
-
-- **Quanto produciamo?** → contratti, ordini, revenue, casi risolti;
-- **Quanto convertiamo l'opportunità disponibile?** → win rate, conversion rate, output per ora;
-- **Quanto valore generiamo?** → ARR, margine, contribution margin, valore atteso.
-
-Una dashboard che usa una sola metrica per classificare processi complessi rischia di confondere questi livelli.
-
-### Il mix può creare performance apparente
-
-Supponiamo che due call center abbiano entrambi un first-contact resolution rate dell'82%.
-
-Il primo gestisce soprattutto richieste semplici di password reset. Il secondo gestisce principalmente problemi di fatturazione e integrazioni tecniche.
-
-Il tasso è identico. Il compito no.
-
-Prima di concludere che i team abbiano la stessa efficacia, potremmo dover stratificare per tipo di ticket o costruire un confronto su popolazioni più omogenee.
-
-È lo stesso principio incontrato con Simpson's paradox: **la composizione della popolazione può generare, attenuare o invertire un confronto aggregato**.
-
-### La base di riferimento conta anche per lo z-score
-
-Nella sezione 4.14 abbiamo standardizzato osservazioni rispetto a media e deviazione standard. Anche lì il risultato dipende dalla popolazione scelta.
-
-Uno store aeroportuale confrontato con tutta la rete può sembrare estremo. Confrontato soltanto con altri store aeroportuali può risultare normale.
-
-La standardizzazione matematica non sostituisce quindi la scelta analitica della **reference population**.
-
-### Mostrare sia intensità sia volume
-
-Un tasso alto su una base piccola e un tasso moderato su una base enorme possono suggerire priorità differenti.
-
-Per esempio:
-
-- segmento A: 20% di reclami su 200 ordini → 40 reclami;
-- segmento B: 6% su 50.000 ordini → 3.000 reclami.
-
-A ha il rischio relativo peggiore. B genera quasi tutto l'impatto assoluto.
-
-Se dobbiamo capire dove il processo è più fragile, guardiamo A. Se dobbiamo ridurre rapidamente il numero totale di reclami, B può avere più leva.
-
-Una buona EDA tiene insieme entrambe le prospettive.
-
-### Una matrice mentale per i confronti
-
-Prima di dichiarare che A è “migliore” o “peggiore” di B, chiediti:
+Per questo, prima di dire che A è migliore o peggiore di B, conviene rendere esplicite almeno queste dimensioni:
 
 | Dimensione | Domanda |
 |---|---|
@@ -106,4 +37,8 @@ Prima di dichiarare che A è “migliore” o “peggiore” di B, chiediti:
 | Valore | Gli eventi hanno lo stesso peso economico? |
 | Base | La popolazione di riferimento è appropriata? |
 
-> **Normalizzare non significa rendere magicamente uguali gruppi diversi. Significa rendere esplicito rispetto a che cosa li stiamo confrontando.**
+Questa matrice non standardizza magicamente gruppi diversi. Fa qualcosa di più utile: mostra **quale parte della comparabilità stiamo assumendo**.
+
+Il caso MercatoHub userà tutti questi strumenti insieme. La crescita del marketplace è reale, ma distribuzione, categoria, seller mix, denominatori e giorni eccezionali cambieranno progressivamente la headline senza negare il dato iniziale.
+
+> **Normalizzare non significa rendere uguali gruppi diversi. Significa dichiarare rispetto a quale esposizione, mix e popolazione il confronto pretende di avere senso.**
