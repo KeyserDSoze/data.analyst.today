@@ -1,18 +1,14 @@
 # Come usare questo libro
 
-Questo libro non è un catalogo di strumenti e non richiede di applicare ogni tecnica a ogni problema.
-
-È costruito attorno a una domanda più stabile:
+Questo libro non è un catalogo di strumenti e non richiede di applicare ogni tecnica a ogni problema. È costruito attorno a una domanda più stabile:
 
 > **Quale evidenza serve per prendere una decisione migliore, con un livello di affidabilità proporzionato al costo dell'errore?**
 
-Il percorso segue il lavoro reale del Data Analyst: parte da domande ambigue, attraversa dati imperfetti, analisi, incertezza, causalità, modelli, sistemi e comunicazione, e termina nella responsabilità di scegliere che cosa possiamo sostenere e che cosa resta ancora incerto.
+Il percorso segue il lavoro reale del Data Analyst: parte da domande ambigue, attraversa dati imperfetti, statistica, comportamento, tempo, causalità, modelli, sistemi e comunicazione, e arriva alla responsabilità di decidere che cosa possiamo sostenere, che cosa resta incerto e quali capacità meritano di diventare ricorrenti.
 
 ## Lettura sequenziale
 
-La lettura dall'inizio alla fine è consigliata a chi vuole costruire un modello mentale completo.
-
-I capitoli sono organizzati in una progressione:
+La lettura dall'inizio alla fine è consigliata a chi vuole costruire un modello mentale completo. La progressione è:
 
 ```text
 mentalità
@@ -31,11 +27,11 @@ mentalità
 → decisione
 → comunicazione
 → casi end-to-end
-→ scala organizzativa
+→ sistema operativo dell'analytics
 → futuro professionale
 ```
 
-Ogni passaggio aggiunge un nuovo tipo di rischio da governare. La tecnica arriva dopo la domanda, non prima.
+Ogni passaggio introduce un nuovo failure mode da governare. La tecnica arriva dopo la decisione che deve supportare, non prima.
 
 ## Lettura per problema
 
@@ -80,37 +76,25 @@ Tooling Decision Record
 AI Analysis Control Sheet
 Decision Record
 Decision Communication Pack
+Capstone Routing Canvas
+Analytics Operating Contract
+Personal Career Operating Plan
 ```
 
-Non sono una checklist obbligatoria.
-
-Sono strumenti di controllo da attivare quando il rischio corrispondente è materialmente rilevante. Un problema semplice può richiederne pochi; un problema ad alto impatto può richiederne diversi.
-
-Il **Capstone Routing Canvas** del Capitolo 17 aiuta proprio a decidere quali artefatti servono e quali sarebbero soltanto complessità aggiuntiva.
+Non sono una pipeline obbligatoria. Sono controlli da attivare quando il rischio corrispondente è materialmente rilevante. Un problema semplice può richiederne pochi; un problema ad alto impatto può richiederne diversi. Il **Capstone Routing Canvas** del Capitolo 17 rende esplicita proprio questa selezione; il Capitolo 18 decide quando un workflow merita di essere promosso a servizio operativo; il Capitolo 19 applica lo stesso principio alla crescita professionale.
 
 ## Come leggere gli esempi
 
-Gli esempi hanno una funzione strutturale. Servono a mostrare:
+Gli esempi non seguono una ricetta unica. Alcuni si fermano dopo una reconciliation o una decomposition perché l'evidenza è già sufficiente; altri devono arrivare a causalità, experimentation, rollout o operating model perché il failure cost richiede un claim più forte. Nei casi end-to-end, quindi, è importante osservare non soltanto **che cosa viene fatto**, ma anche **che cosa viene deliberatamente saltato e perché**.
 
-**teoria → esempio breve → caso realistico → errore possibile → metodo operativo**.
-
-Quando un'organizzazione o un evento reale viene nominato, il testo lo tratta come **caso reale documentato** e collega il claim a una fonte pubblica.
-
-Quando numeri, organizzazioni o circostanze sono costruiti per la didattica, il caso è dichiarato **simulato/composito**.
+Quando un'organizzazione o un evento reale viene nominato, il testo lo tratta come **caso reale documentato** e limita il claim a ciò che una fonte pubblica consente di sostenere. Quando numeri, organizzazioni o circostanze sono costruiti per la didattica, il caso è dichiarato **simulato/composito**.
 
 ## Come usare l'AI durante la lettura
 
-L'AI può essere utile per:
+L'AI può essere utile per spiegare un passaggio con un esempio diverso, generare esercizi, produrre query candidate, attaccare un'ipotesi con spiegazioni concorrenti o simulare una review critica. Il modo più utile di usarla non è ottenere una risposta più velocemente, ma aumentare la quantità di ipotesi e verifiche che riusciamo a esplorare senza perdere il controllo del metodo.
 
-- spiegare un passaggio con un esempio diverso;
-- generare esercizi;
-- proporre query o codice da verificare;
-- attaccare un'ipotesi con spiegazioni alternative;
-- trasformare una sezione in una checklist operativa;
-- simulare una review critica di un deliverable.
-
-Ma la regola del libro resta la stessa:
+La regola del libro resta la stessa:
 
 > **possiamo delegare esecuzione, esplorazione, prime bozze e parte della verifica; non possiamo delegare la responsabilità di capire ciò che consegniamo.**
 
-L'obiettivo non è ricordare ogni formula o ogni sintassi. È costruire abbastanza competenza da sapere quale domanda stiamo realmente risolvendo, quale evidenza abbiamo, quali assunzioni stiamo facendo e quando fermarci prima di rafforzare troppo una conclusione.
+L'obiettivo non è ricordare ogni formula o ogni sintassi. È costruire abbastanza competenza da sapere quale decisione stiamo realmente supportando, che cosa il dato significa, quale evidenza abbiamo, quali assunzioni stiamo facendo e quando fermarci prima di rafforzare troppo una conclusione.
