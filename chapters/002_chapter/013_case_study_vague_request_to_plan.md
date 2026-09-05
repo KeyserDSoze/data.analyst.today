@@ -1,202 +1,113 @@
 ## 2.12 Caso end-to-end: da “facci una dashboard clienti” a un piano analitico
 
-**Caso simulato/composito.** Velora Home è un retailer omnicanale di prodotti per la casa. Il CRM contiene circa 1,8 milioni di profili cliente e l'e-commerce rappresenta una quota crescente dei ricavi.
+**Caso simulato/composito.** Velora Home è un retailer omnicanale di prodotti per la casa. Il CRM contiene circa **1,8 milioni di profili cliente** e l'e-commerce rappresenta una quota crescente dei ricavi.
 
-Il responsabile commerciale apre una richiesta:
+Il responsabile commerciale apre una richiesta apparentemente semplice:
 
 > **“Ci serve una dashboard clienti perché ultimamente ci sembra che stiano andando peggio.”**
 
-La frase contiene un output desiderato, ma non ancora un problema analitico.
+Se il team accettasse il deliverable come specifica, potrebbe iniziare immediatamente a scegliere KPI, filtri e visualizzazioni. Il brief costringe invece a fermarsi sulla parte meno precisa della frase: che cosa significa che i clienti “stanno andando peggio” e quale decisione dovrebbe migliorare grazie alla dashboard?
 
-### Passo 1 — Scoprire la preoccupazione reale
+### La dashboard nasconde una decisione da €600.000
 
-Durante una breve intervista emerge che il management non è genericamente preoccupato per “i clienti”.
+Durante una breve intervista emerge che il management non è genericamente preoccupato per la clientela. Ha osservato una metrica interna secondo cui la percentuale di nuovi clienti che effettua un secondo acquisto entro 90 giorni sarebbe scesa dal **33,8% al 27,1%** nell'arco di circa sei mesi.
 
-Ha osservato una metrica interna secondo cui la percentuale di nuovi clienti che effettua un secondo acquisto entro 90 giorni sarebbe scesa dal **33,8% al 27,1%** in circa sei mesi.
+La preoccupazione reale è quindi la capacità di trasformare il primo ordine in una relazione ripetuta. Il numero conta perché il team deve decidere dove concentrare circa **€600.000 di budget** del trimestre successivo: onboarding e CRM post-primo ordine, campagne di riattivazione, revisione delle promozioni di acquisizione, interventi sull'esperienza di consegna oppure nessun investimento specifico finché il fenomeno non sia stato confermato. Il Commercial Director e il CRM Lead sono i decision owner.
 
-Il problema di business diventa:
+Questa informazione cambia già il progetto. Non serve una panoramica generica sui clienti; serve capire se il deterioramento della repeat purchase sia reale, dove si concentri e quale tipo di intervento meriti un approfondimento successivo.
 
-> la capacità di trasformare il primo ordine in una relazione ripetuta potrebbe essersi deteriorata.
+La metrica viene quindi formalizzata prima di guardare i segmenti:
 
-### Passo 2 — Specificare la decisione
+> **Repeat Purchase Rate 90d = clienti con almeno un secondo ordine valido entro 90 giorni / nuovi clienti pienamente osservabili per almeno 90 giorni.**
 
-Il team deve decidere dove concentrare circa €600.000 di budget del trimestre successivo.
+Un ordine valido esclude test, cancellazioni integrali e ordini fraudolenti annullati. I clienti troppo recenti per aver maturato novanta giorni di osservazione non entrano nel denominatore. Senza questa condizione, la freschezza apparente della metrica introdurrebbe un bias meccanico verso il basso.
 
-Le alternative principali sono:
+Il brief dichiara inoltre che la prima fase è **diagnostica**. Il team vuole verificare il trend, localizzarlo e restringere le spiegazioni plausibili; eventuali associazioni con promozioni o delivery experience non verranno automaticamente interpretate come effetti causali.
 
-- onboarding e CRM post-primo ordine;
-- campagne di riattivazione;
-- revisione delle promozioni di acquisizione;
-- interventi sull'esperienza di consegna;
-- nessun intervento specifico finché il fenomeno non è confermato.
+### Prima di spiegare il calo, il team verifica che il calo esista
 
-Il decision owner è il Commercial Director insieme al CRM Lead.
+La baseline primaria utilizza coorti mensili comparabili degli ultimi 18 mesi, con attenzione allo stesso periodo dell'anno precedente. Le segmentazioni iniziali vengono scelte perché corrispondono a ipotesi o leve reali: canale di acquisizione, primo prodotto o categoria, sconto sul primo ordine, paese, valore del primo ordine, ritardo rispetto alla promessa di consegna e contatti con il supporto.
 
-Ora sappiamo perché il numero conta.
+Anche il registro delle ipotesi include spiegazioni di business diverse — mix di acquisizione, promozioni una tantum, mix prodotto, delivery, problemi post-acquisto, prezzi e stagionalità — ma contiene deliberatamente anche un'ipotesi di **misurazione**: sei mesi prima il sistema di identificazione cliente potrebbe essere cambiato.
 
-### Passo 3 — Definire la metrica
+Questa pista viene verificata presto perché costa poco e, se vera, compromette l'intero outcome. Il sanity check scopre infatti che Velora Home ha migrato parte dell'e-commerce a un nuovo identity provider. Per alcuni clienti che acquistano una seconda volta da un dispositivo diverso, il nuovo ordine viene collegato a un nuovo `customer_id` invece che al profilo originale.
 
-La metrica viene formalizzata così:
+La repeat purchase grezza stava quindi mescolando due fenomeni:
 
-**Repeat Purchase Rate 90d = clienti con almeno un secondo ordine valido entro 90 giorni / nuovi clienti pienamente osservabili per almeno 90 giorni**
+- clienti che non avevano realmente riacquistato;
+- clienti che avevano riacquistato ma che il sistema non riconosceva più come la stessa persona.
 
-“Ordine valido” esclude test, cancellazioni integrali e ordini fraudolenti annullati.
+Dopo una ricostruzione controllata dell'identità, il quadro cambia in modo materiale:
 
-La popolazione esclude i clienti troppo recenti per avere maturato 90 giorni di osservazione.
+| Misura | Inizio periodo | Fine periodo |
+|---|---:|---:|
+| metrica originaria | 33,8% | 27,1% |
+| metrica corretta | 33,6% | 30,4% |
 
-Questa definizione evita un errore comune: trattare clienti ancora immaturi come se avessero già fallito il secondo acquisto.
+Circa metà del deterioramento apparente era un artefatto di misurazione. Se il team avesse iniziato dalla dashboard, avrebbe potuto rendere più visibile e più autorevole un trend parzialmente falso.
 
-### Passo 4 — Dichiarare il tipo di domanda
+Ma il sanity check non chiude il problema. La metrica corretta mostra ancora un calo reale di circa **3,2 punti percentuali**. Ora, però, il team sa qual è il fenomeno che deve spiegare.
 
-La prima fase è **diagnostica**.
+### Il delta residuo restringe la decisione
 
-Il brief esplicita:
+L'analisi diagnostica mostra che la maggior parte del deterioramento residuo si concentra nei clienti acquisiti tramite paid social, entrati con uno sconto iniziale superiore al 25% e con il primo ordine in poche categorie fortemente promosse. Questa combinazione spiega circa **il 60% del delta residuo** rispetto alle coorti di riferimento.
 
-> “Vogliamo verificare se il deterioramento è reale, localizzarlo e restringere le spiegazioni plausibili. Le associazioni osservate non verranno interpretate automaticamente come effetti causali delle promozioni o dell'esperienza di consegna.”
+I clienti che subiscono consegne in ritardo mostrano anch'essi una repeat purchase inferiore. Tuttavia, i ritardi sono aumentati soprattutto nelle stesse categorie promozionate. La delivery experience e il mix promozionale sono quindi ancora confusi: i dati osservazionali disponibili non permettono di attribuire il calo a una sola delle due spiegazioni.
 
-Questa frase sarà importante più avanti.
+Questo è il punto in cui il tipo di domanda dichiarato nel brief protegge la qualità della conclusione. Il team può dire che i clienti provenienti da campagne paid-social ad alto sconto mostrano risultati peggiori; non può ancora dire che **lo sconto causa bassa retention**. Le promozioni potrebbero attirare clienti con propensione al riacquisto già diversa, e il problema logistico potrebbe contribuire nello stesso segmento.
 
-### Passo 5 — Definire baseline e segmentazioni
-
-La baseline primaria sono coorti mensili comparabili degli ultimi 18 mesi, con attenzione allo stesso periodo dell'anno precedente.
-
-Segmentazioni prioritarie:
-
-- canale di acquisizione;
-- primo prodotto/categoria;
-- sconto sul primo ordine;
-- paese;
-- valore del primo ordine;
-- ritardo rispetto alla promessa di consegna;
-- presenza di contatti con il supporto.
-
-Ogni segmentazione è collegata a un'ipotesi o a una possibile azione.
-
-### Passo 6 — Costruire il registro delle ipotesi
-
-Tra le spiegazioni candidate:
-
-1. mix di acquisizione spostato verso canali con minore repeat rate;
-2. promozioni una tantum che attirano clienti poco propensi al riacquisto;
-3. mix prodotti del primo ordine cambiato;
-4. peggioramento dei tempi di consegna;
-5. aumento di problemi post-acquisto;
-6. aumento prezzi;
-7. stagionalità;
-8. cambiamento del sistema di identificazione cliente.
-
-L'ultima ipotesi viene trattata come prioritaria perché può essere verificata rapidamente e, se vera, compromettere l'intero outcome.
-
-### Passo 7 — Tradurre in requisiti dati
-
-Dati **required**:
-
-- customer identity storicizzata;
-- ordini validi con data e importo;
-- data di prima acquisizione;
-- cancellazioni e rimborsi.
-
-Dati **useful**:
-
-- acquisition channel;
-- categoria del primo ordine;
-- sconto;
-- promessa e data effettiva di consegna;
-- support interactions;
-- paese.
-
-Il brief rende subito visibile che l'identità cliente è un requisito critico, non un dettaglio di implementazione.
-
-### Passo 8 — Il sanity check cambia il problema
-
-Durante la verifica emerge che sei mesi prima Velora Home ha migrato parte dell'e-commerce a un nuovo identity provider.
-
-Per alcuni clienti che acquistano una seconda volta da dispositivo diverso, il secondo ordine viene collegato a un nuovo `customer_id` anziché al profilo originale.
-
-La repeat purchase rate grezza stava quindi confondendo:
-
-- vero mancato riacquisto;
-- mancato riconoscimento dello stesso cliente.
-
-Dopo una ricostruzione controllata dell'identità, il trend cambia:
-
-- metrica originaria: **33,8% → 27,1%**;
-- metrica corretta: **33,6% → 30,4%**.
-
-Circa metà del deterioramento apparente era un artefatto di misurazione.
-
-Ma non tutto.
-
-Rimane un calo reale di circa **3,2 punti percentuali** da spiegare.
-
-### Passo 9 — L'analisi diagnostica localizza il delta residuo
-
-La decomposizione mostra che la parte maggiore del calo residuo è concentrata nei clienti:
-
-- acquisiti tramite paid social;
-- entrati con sconto iniziale superiore al 25%;
-- con primo ordine in poche categorie fortemente promosse.
-
-Questa combinazione spiega circa il 60% del delta residuo rispetto alle coorti di riferimento.
-
-I clienti con consegne in ritardo mostrano anch'essi repeat rate più bassa, ma il ritardo è aumentato soprattutto nelle stesse categorie promozionate. L'effetto di logistica e mix prodotto non è ancora separato in modo credibile.
-
-Il brief impedisce una conclusione eccessiva:
-
-> non possiamo dire che “gli sconti causano bassa retention” soltanto perché il segmento scontato ha risultati peggiori.
-
-Potrebbe esserci selezione: le promozioni attirano clienti con caratteristiche diverse.
-
-### Passo 10 — La decisione cambia
-
-La richiesta iniziale suggeriva una dashboard generica e possibili campagne CRM.
-
-L'evidenza porta a un piano diverso:
+La decisione cambia una seconda volta. All'inizio il management immaginava una dashboard clienti e una possibile spesa in campagne CRM. Alla fine della prima fase il piano è diverso:
 
 1. correggere e monitorare permanentemente l'identity stitching;
-2. evitare di usare la vecchia serie storica senza ricostruzione;
-3. rivedere la qualità economica delle campagne paid-social ad alto sconto;
-4. separare in un'analisi successiva l'effetto del mix promozionale da quello della delivery experience;
-5. progettare un test su incentivi/onboarding invece di assumere che la correlazione osservata sia causale.
+2. non utilizzare la vecchia serie storica senza ricostruzione;
+3. riesaminare gli economics delle campagne paid-social ad alto sconto;
+4. separare in un'analisi successiva il contributo del mix promozionale da quello della delivery experience;
+5. progettare un test su incentivi o onboarding invece di trasformare una correlazione osservata in causalità.
 
-Il team non investe immediatamente i €600.000 in riattivazione.
+Il team **non** investe immediatamente i €600.000 in riattivazione. Prima corregge la misurazione e decide quale nuova evidenza valga la pena raccogliere.
 
-Prima corregge la misurazione e ridisegna il successivo esperimento.
+### Il brief che resta dopo l'indagine
 
-### L'Analytical Brief finale
+Il documento finale conserva in forma compatta ciò che il caso ha reso esplicito:
 
-**Problema di business:** repeat purchase dei nuovi clienti potenzialmente in deterioramento.
+```text
+Problema di business:
+repeat purchase dei nuovi clienti potenzialmente in deterioramento.
 
-**Decisione:** dove allocare il budget retention/acquisition del prossimo trimestre.
+Decisione:
+dove allocare il budget retention/acquisition del prossimo trimestre.
 
-**Domanda primaria:** il calo della repeat purchase rate 90d è reale e, se sì, quali segmenti e cambiamenti osservabili spiegano maggiormente il delta?
+Domanda primaria:
+il calo della Repeat Purchase Rate 90d è reale e, se sì,
+quali segmenti e cambiamenti osservabili spiegano maggiormente il delta?
 
-**Tipo:** diagnostica; nessuna attribuzione causale automatica.
+Tipo di domanda:
+diagnostica; nessuna attribuzione causale automatica.
 
-**Outcome:** repeat purchase rate 90d su clienti pienamente maturi.
+Outcome:
+Repeat Purchase Rate 90d su clienti pienamente maturi.
 
-**Baseline:** coorti mensili storiche e year-over-year comparabile.
+Baseline:
+coorti mensili storiche e year-over-year comparabile.
 
-**Segmentazioni:** canale, sconto, primo prodotto, paese, delivery, support.
+Segmentazioni:
+canale, sconto, primo prodotto, paese, delivery, support.
 
-**Dati required:** identità storica + ordini validi.
+Dati required:
+identità storica + ordini validi.
 
-**Rischio principale noto:** migrazione identity provider.
+Rischio principale noto:
+migrazione identity provider.
 
-**Output:** memo decisionale + dataset/cohort view validata; dashboard soltanto per metriche che meritano monitoraggio ricorrente.
+Output:
+memo decisionale + dataset/cohort view validata;
+dashboard soltanto per metriche che meritano monitoraggio ricorrente.
 
-**Stop rule della prima fase:** validare la metrica, spiegare la parte materialmente rilevante del delta e identificare quali ipotesi richiedono un test successivo.
+Stop rule prima fase:
+validare la metrica, spiegare la parte materialmente rilevante del delta
+e identificare quali ipotesi richiedono un test successivo.
+```
 
-### La lezione
+La richiesta iniziale era “facci una dashboard clienti”. Il brief ha rivelato una domanda molto diversa: **possiamo fidarci del deterioramento osservato, dove si concentra e quale informazione ci serve prima di spendere il budget?**
 
-La richiesta era:
-
-> “Facci una dashboard clienti.”
-
-Il problema reale era:
-
-> “Possiamo fidarci del deterioramento osservato, dove si concentra e quale decisione vale la pena prendere?”
-
-La differenza tra le due frasi è il lavoro analitico prima dell'analisi.
-
-> **Non automatizzare una richiesta prima di avere stabilito quale problema, quale decisione e quale evidenza devono governarla.**
+Questa differenza è il lavoro analitico che avviene prima dell'analisi — e, in questo caso, è ciò che impedisce alla velocità di trasformare un errore di identity stitching in una decisione da €600.000.
