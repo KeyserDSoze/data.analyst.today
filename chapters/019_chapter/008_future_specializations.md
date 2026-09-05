@@ -1,226 +1,33 @@
-## 19.7 Specializzazioni future: prevedere problemi, non job title
+## 19.7 Specializzazioni future: scegliere problemi che sopravvivono ai tool
 
-Provare a indovinare i titoli professionali del 2035 ha poco valore.
+Provare a indovinare i job title del 2035 ha poco valore. I nomi cambiano rapidamente e descrivono responsabilità diverse tra aziende. È più robusto chiedere quali **classi di problema** continueranno a essere abbastanza costose, ambigue e rischiose da richiedere profondità e judgment anche quando una parte crescente dell'esecuzione sarà automatizzata.
 
-I nomi cambiano velocemente e spesso descrivono cose diverse tra aziende.
+Una specializzazione utile può essere pensata come l'intersezione tra **problema/domain × metodo × operating responsibility**. In questa prospettiva, le direzioni interessanti non sono previsioni di titoli: sono territori in cui possiamo accumulare capitale professionale.
 
-È più robusto chiedersi:
+| Classe di problema | Domanda che deve restare governata | Capacità che acquistano valore |
+|---|---|---|
+| Measurement e semantic systems | persone e agenti stanno parlando dello stesso fenomeno? | metric definition, entity/grain, semantic layer, measurement change, lineage, contract, certification/deprecation |
+| Experimentation e causal decisioning | quale cambiamento produce davvero un effetto, per chi e sotto quali condizioni? | experiment design, causal inference, heterogeneity, interference, guardrail, incremental value, rollout |
+| Revenue, pricing e growth economics | quale leva crea valore incrementale invece di spostare credito tra metriche? | pricing, elasticity, incrementality, retention economics, unit economics, scenario e threshold |
+| Operational decision analytics | come trasformiamo incertezza in staffing, inventory, routing, capacity o risk policy? | forecasting, asymmetric loss, service level, scenario planning, optimization literacy, feedback loop |
+| Analytics reliability e decision infrastructure | come resta affidabile una decisione ricorrente quando crescono consumer e automazione? | SLO, ownership, testing, observability, incident/recovery, change, cost-to-serve, adoption, retirement |
+| AI/agent evaluation analytics | il sistema automatico sta creando valore affidabile o soltanto activity? | eval design, severity-weighted error, human correction, escalation/abstention, cost per accepted outcome, observability, authority evaluation |
+| Domain decision specialization | quali meccanismi del settore cambiano davvero economia e rischio? | domain depth + analytical breadth + decision ownership |
 
-> **“Quali classi di problema continueranno a richiedere profondità, responsabilità e judgment?”**
+Queste aree non sono compartimenti stagni. Measurement e semantic systems, per esempio, attraversano Analytics Engineering e Governance; operational analytics può richiedere forecasting e optimization specialistica; experimentation può incontrare product analytics, causal inference e economics. Il punto non è trovare un'etichetta perfetta, ma costruire depth attorno a un problema reale.
 
-Una specializzazione può essere pensata come intersezione di tre elementi:
+L'area AI/agent evaluation rende particolarmente visibile questa logica. Immaginiamo un'azienda in cui un agente prepara la prima bozza delle analisi settimanali. Dopo due mesi il `92%` dei report viene generato automaticamente. Come metrica di automazione sembra un successo. Ma il team scopre che il `31%` richiede correzioni sostanziali, il `14%` contiene almeno un problema semantico, il tempo di review è aumentato e i junior tendono ad accettare output senza escalation più spesso dei senior.
 
-**problema/domain × metodo × operating responsibility**.
+Il KPI ha misurato **activity**, non qualità del servizio. La domanda professionale diventa quindi come costruire una scorecard che osservi task success con criteri verificabili, first-pass acceptance, severity-weighted error, human correction time, escalation appropriata, cost per accepted output, downstream incident e decision impact. È un problema sufficientemente ricco da richiedere metodo, dominio operativo e ownership anche se nessun mercato del lavoro userà mai il titolo “Agent Analytics Analyst”.
 
-## Direzione 1 — Measurement e semantic systems
+Lo stesso vale per le specializzazioni di dominio. Payments risk, healthcare operations, supply chain, insurance pricing, marketplace economics, subscription growth o energy planning restano interessanti quando combinano domain depth, analytical breadth e decision ownership. Il vantaggio non nasce dal conoscere più schermate di un software, ma dal riconoscere failure mode e meccanismi che un sistema generalista vede soltanto come correlazioni.
 
-Problema:
+Per scegliere dove approfondire, quindi, non serve inseguire ciò che appare più futuristico. Conviene cercare un problema ricorrente e costoso, con assunzioni non banali, abbastanza profondità da richiedere studio serio, un dominio in cui accumulare contesto, responsabilità che possa crescere e feedback reale sugli outcome. Una specializzazione così costruita è più resistente del badge su uno strumento.
 
-> come facciamo a garantire che persone e agenti parlino dello stesso fenomeno?
+La contrapposizione tra generalista e specialista diventa meno utile. Un profilo forte può essere generalista nel routing dei problemi, specialista in una o due aree ad alto valore, competente nel dominio e abbastanza maturo da coinvolgere specialisti più profondi quando il failure cost lo richiede.
 
-Capacità:
-
-- metric definition;
-- entity/grain design;
-- semantic layer;
-- measurement change;
-- lineage;
-- data contract;
-- certification/deprecation;
-- conversational analytics quality.
-
-Questa direzione unisce elementi di Data Analyst, Analytics Engineer e Governance.
-
-Più cresce il natural-language access, più cresce il blast radius della semantica sbagliata.
-
-## Direzione 2 — Product experimentation e causal decisioning
-
-Problema:
-
-> quale cambiamento produce davvero un effetto e per chi?
-
-Capacità:
-
-- experiment design;
-- causal inference;
-- heterogeneous effects;
-- guardrail;
-- incremental value;
-- rollout;
-- policy evaluation.
-
-Qui l'AI può accelerare query e analisi, ma design, interference, selection e interpretation restano aree ad alto responsibility moat.
-
-## Direzione 3 — Revenue / pricing / growth economics
-
-Problema:
-
-> quale leva crea valore incrementale invece di spostare credito tra metriche?
-
-Capacità:
-
-- pricing;
-- elasticity;
-- marketing incrementality;
-- retention economics;
-- sales efficiency;
-- unit economics;
-- scenario analysis;
-- decision thresholds.
-
-Il dominio conta molto perché marginal value e cost structure sono specifici del business.
-
-## Direzione 4 — Operational decision analytics
-
-Problema:
-
-> come trasformiamo incertezza in inventory, staffing, routing, capacity o risk policy?
-
-Capacità:
-
-- forecasting;
-- optimization literacy;
-- asymmetric loss;
-- service level;
-- scenario planning;
-- anomaly/incident triage;
-- operational feedback loop.
-
-È un'area in cui forecast accuracy e decision quality devono essere mantenuti distinti.
-
-## Direzione 5 — Analytics reliability e decision infrastructure
-
-Problema:
-
-> come facciamo a rendere affidabile una decisione ricorrente quando aumentano consumer, dati e automazione?
-
-Capacità:
-
-- analytical SLO;
-- semantic ownership;
-- testing;
-- observability;
-- incident/recovery;
-- change management;
-- cost-to-serve;
-- adoption;
-- retirement.
-
-È il territorio dell'Analytics Operating Contract del Capitolo 18.
-
-Il valore non nasce da una singola analisi brillante.
-
-Nasce dalla capacità di far funzionare il sistema anche quando la persona originaria non è presente.
-
-## Direzione 6 — AI/agent evaluation analytics
-
-Problema:
-
-> come misuriamo se agenti e sistemi AI stanno producendo valore affidabile invece di activity?
-
-Capacità:
-
-- eval design;
-- golden/edge cases;
-- severity-weighted error;
-- human correction analysis;
-- escalation/abstention;
-- cost per accepted outcome;
-- agent observability;
-- feedback loop;
-- policy/authority evaluation.
-
-### Caso simulato/composito
-
-Un'azienda introduce un agente che prepara la prima bozza delle analisi settimanali.
-
-KPI iniziale:
-
-> percentuale di report generati automaticamente.
-
-Dopo due mesi il valore è 92%.
-
-Sembra ottimo.
-
-Ma il team scopre che:
-
-- 31% richiede correzioni sostanziali;
-- 14% contiene almeno un problema semantico;
-- il tempo di review è aumentato;
-- alcune correzioni non vengono registrate;
-- i junior accettano output senza escalation più spesso dei senior.
-
-La metrica di automazione ha misurato **activity**.
-
-Non qualità del servizio.
-
-Una scorecard migliore usa:
-
-- task success con criterio verificabile;
-- first-pass acceptance;
-- severity-weighted error rate;
-- human correction time;
-- escalation appropriata;
-- cost per accepted output;
-- downstream incident;
-- decision impact.
-
-Questa può diventare una specializzazione reale anche se il titolo non sarà mai “Agent Analytics Analyst”.
-
-## Direzione 7 — Domain decision specialist
-
-Alcuni profili potrebbero diventare più fortemente identificati dal dominio:
-
-- payments risk;
-- healthcare operations;
-- supply chain;
-- insurance pricing;
-- marketplace economics;
-- subscription growth;
-- energy planning.
-
-Con AI e tool sempre più accessibili, il vantaggio può derivare dalla combinazione:
-
-**domain depth + analytical breadth + decision ownership**.
-
-## Come scegliere una specializzazione
-
-Non scegliere soltanto in base alla moda.
-
-Cerchiamo un'area in cui esistono contemporaneamente:
-
-1. un problema ricorrente e costoso;
-2. assunzioni/failure mode non banali;
-3. abbastanza profondità da richiedere apprendimento serio;
-4. un domain context che possiamo accumulare;
-5. responsabilità crescente da possedere;
-6. feedback reale sugli outcome.
-
-Questa combinazione crea capitale professionale più forte di un semplice badge su un tool.
-
-## Generalista o specialista?
-
-È una falsa alternativa.
-
-Un profilo forte può essere:
-
-- generalista nel routing dei problemi;
-- specialista in una o due aree ad alto valore;
-- competente nel dominio;
-- capace di collaborare con specialisti più profondi quando necessario.
-
-Il Capability Portfolio del paragrafo precedente rende meglio questa combinazione di un singolo titolo.
-
-## Un segnale dal Future of Jobs Report
-
-Il Future of Jobs Report 2025 continua a indicare ruoli legati a dati e AI tra quelli rilevanti per la trasformazione, mentre mostra contemporaneamente crescita della domanda per AI/big data e persistenza di analytical thinking come core skill.
+Il *Future of Jobs Report 2025* segnala contemporaneamente crescita delle competenze AI/big data e persistenza dell'analytical thinking tra le core skill. Non ci dice quali titoli esisteranno nel 2035, ma rende poco credibile l'idea che tecnologia e capacità analitica si muovano in direzioni opposte.
 
 Fonte: https://www.weforum.org/publications/the-future-of-jobs-report-2025/
-
-Non ci dice quali titoli esisteranno nel 2035.
-
-Ci dice però che **tecnologia e capacità analitica non sembrano muoversi in direzioni opposte**.
-
-## La regola
 
 > **Non specializzarti nel nome del tool. Specializzati in un problema abbastanza importante da sopravvivere a più generazioni di tool.**
